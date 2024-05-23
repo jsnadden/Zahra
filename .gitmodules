@@ -1,0 +1,3 @@
+[submodule "Zahra/vendor/spdlog"]
+	path = Zahra/vendor/spdlog
+	url = https://github.com/gabime/spdlog
