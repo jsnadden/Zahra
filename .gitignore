@@ -1,0 +1,14 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+# directories
+
+/.vs/Zahra
+/Zahra.sln
+/bin/
+/bin-int/
+
+# files
+
+*.user
