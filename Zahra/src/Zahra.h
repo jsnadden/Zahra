@@ -1,10 +1,10 @@
 #pragma once
 
-// for use by games
+// This is for use by client apps
 
-#include <stdio.h>
-#include "Core/Application.h"
+#include "Zahra/Application.h"
+#include "zpch.h"
 
 //------------ENTRY-POINT--------------
-#include "Core/EntryPoint.h"
+#include "Zahra/EntryPoint.h"
 //-------------------------------------

@@ -21,4 +21,3 @@ Zahra::Application* Zahra::CreateApplication()
 {
 	return new Sandbox();
 }
-

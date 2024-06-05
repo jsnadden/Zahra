@@ -6,7 +6,8 @@ extern Zahra::Application* Zahra::CreateApplication();
 
 int main(int argc, char* argv[])
 {
-	printf("Engine starting...\n");
+	Zahra::Log::Init();
+	Z_CORE_WARN("Initialised core log");
 
 	auto app = Zahra::CreateApplication();
 	app->Run();
