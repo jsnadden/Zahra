@@ -84,6 +84,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/MDd %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -110,6 +111,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/MD %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -137,6 +139,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/MD %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -161,6 +164,8 @@
     <ClInclude Include="src\Zahra\Events\Event.h" />
     <ClInclude Include="src\Zahra\Events\KeyEvent.h" />
     <ClInclude Include="src\Zahra\Events\MouseEvent.h" />
+    <ClInclude Include="src\Zahra\Layer.h" />
+    <ClInclude Include="src\Zahra\LayerStack.h" />
     <ClInclude Include="src\Zahra\Log.h" />
     <ClInclude Include="src\Zahra\Window.h" />
     <ClInclude Include="src\zpch.h" />
@@ -168,6 +173,8 @@
   <ItemGroup>
     <ClCompile Include="src\Platform\WindowsWindow.cpp" />
     <ClCompile Include="src\Zahra\Application.cpp" />
+    <ClCompile Include="src\Zahra\Layer.cpp" />
+    <ClCompile Include="src\Zahra\LayerStack.cpp" />
     <ClCompile Include="src\Zahra\Log.cpp" />
     <ClCompile Include="src\zpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

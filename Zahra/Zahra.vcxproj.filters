@@ -37,6 +37,12 @@
     <ClInclude Include="src\Zahra\Events\MouseEvent.h">
       <Filter>Zahra\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Layer.h">
+      <Filter>Zahra</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\LayerStack.h">
+      <Filter>Zahra</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Log.h">
       <Filter>Zahra</Filter>
     </ClInclude>
@@ -50,6 +56,12 @@
       <Filter>Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Application.cpp">
+      <Filter>Zahra</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Layer.cpp">
+      <Filter>Zahra</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\LayerStack.cpp">
       <Filter>Zahra</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Log.cpp">
