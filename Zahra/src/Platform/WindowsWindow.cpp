@@ -5,6 +5,8 @@
 #include "Zahra/Events/MouseEvent.h"
 #include "Zahra/Events/KeyEvent.h"
 
+#include <glad/glad.h>
+
 namespace Zahra
 {
 	static bool s_GLFWInitialised = false;
@@ -40,7 +42,7 @@ namespace Zahra
 		if (!s_GLFWInitialised)
 		{
 			int success = glfwInit();
-			Z_CORE_ASSERT(success, "Could not initialise GLFW!");
+			Z_CORE_ASSERT(success, "Failed to initialise GLFW!");
 
 			glfwSetErrorCallback(GLFWErrorCallback);
 
@@ -49,6 +51,10 @@ namespace Zahra
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(m_Window);
+
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		Z_CORE_ASSERT(status, "Failed to initialise Glad!")
+
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
@@ -104,6 +110,16 @@ namespace Zahra
 					break;
 				}
 				}
+			}
+		);
+
+		glfwSetCharCallback(m_Window,
+			[](GLFWwindow* window, unsigned int keycode)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				KeyTypedEvent event(keycode);
+				data.EventCallback(event);
 			}
 		);
 

@@ -13,8 +13,12 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 -- Include directories relative to root folder (solution directory)
 IncludeDir = {}
 IncludeDir["GLFW"] = "Zahra/vendor/GLFW/include"
+IncludeDir["Glad"] = "Zahra/vendor/Glad/include"
+IncludeDir["imgui"] = "Zahra/vendor/imgui"
 
 include "Zahra/vendor/GLFW"
+include "Zahra/vendor/Glad"
+include "Zahra/vendor/imgui"
 
 project "Zahra"
 	location "Zahra"
@@ -37,12 +41,16 @@ project "Zahra"
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
-		"%{IncludeDir.GLFW}"
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.imgui}"
 	}
 
 	links
 	{
 		"GLFW",
+		"Glad",
+		"imgui",
 		"opengl32.lib"
 	}
 
@@ -54,7 +62,8 @@ project "Zahra"
 		defines
 		{
 			"Z_PLATFORM_WINDOWS",
-			"Z_BUILD_DLL"
+			"Z_BUILD_DLL",
+			"GLFW_INCLUDE_NONE"
 		}
 
 		postbuildcommands

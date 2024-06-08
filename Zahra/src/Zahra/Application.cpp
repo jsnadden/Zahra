@@ -1,12 +1,17 @@
 #include "zpch.h"
 #include "Application.h"
 
-#define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
-
 namespace Zahra
 {
+#define BIND_EVENT_FN(x) Z_BIND_EVENT_FN(Application::x)
+
+	Application* Application::s_Instance = nullptr;
+
 	Application::Application()
 	{
+		Z_CORE_ASSERT(s_Instance, "Application already exists!");
+		s_Instance = this;
+
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 	}
@@ -32,10 +37,6 @@ namespace Zahra
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
 
-		//--JUST-FOR-DEBUGGING--
-		Z_CORE_TRACE(e);
-		//----REMOVE-LATER------
-
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
 			(*--it)->OnEvent(e);
@@ -47,11 +48,13 @@ namespace Zahra
 	void Application::PushLayer(Layer* layer)
 	{
 		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer* overlay)
 	{
 		m_LayerStack.PushOverlay(overlay);
+		overlay->OnAttach();
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)

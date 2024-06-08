@@ -1,20 +1,20 @@
 #include <Zahra.h>
 
-//class ExampleLayer : public Zahra::Layer
-//{
-//public:
-//	ExampleLayer() : Layer("E.g. lyr") {}
-//
-//	void OnUpdate() override
-//	{
-//		Z_INFO("ExampleLayer::Update");
-//	}
-//
-//	void OnEvent(Zahra::Event& event) override
-//	{
-//		Z_TRACE(event);
-//	}
-//};
+class ExampleLayer : public Zahra::Layer
+{
+public:
+	ExampleLayer() : Layer("E.g. lyr") {}
+
+	void OnUpdate() override
+	{
+		
+	}
+
+	void OnEvent(Zahra::Event& event) override
+	{
+		//Z_TRACE(event);
+	}
+};
 
 class Sandbox : public Zahra::Application
 {
@@ -22,7 +22,8 @@ public:
 
 	Sandbox()
 	{
-		//PushLayer(new ExampleLayer());
+		PushLayer(new ExampleLayer());
+		PushOverlay(new Zahra::ImGuiLayer());
 	}
 
 	~Sandbox()
