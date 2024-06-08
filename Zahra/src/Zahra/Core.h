@@ -10,9 +10,13 @@
 	#error "Currently only windows is supported."
 #endif
 
+#ifdef Z_DEBUG
+	#define Z_ENABLE_ASSERTS
+#endif
+
 #ifdef Z_ENABLE_ASSERTS
-	#def Z_ASSERT(x, ...) { if(!(x)) { Z_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
-	#def Z_ASSERT(x, ...) { if (!(x)) { Z_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+	#define Z_ASSERT(x, ...) { if(!(x)) { Z_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+	#define Z_CORE_ASSERT(x, ...) { if (!(x)) { Z_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 #else
 	#define Z_ASSERT(x, ...)
 	#define Z_CORE_ASSERT(x, ...)

@@ -4,14 +4,23 @@
     <Filter Include="Platform">
       <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Platform\OpenGL">
+      <UniqueIdentifier>{1E7D2C1D-8A08-9AE1-9319-1DD6FF23F6E1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Zahra">
       <UniqueIdentifier>{BB97920E-27AC-BABF-F02D-5E1F5C01B7F0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Zahra\Events">
       <UniqueIdentifier>{3FE36EEA-2B46-FE8E-D4CB-3645C00DCA11}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Zahra\ImGui">
+      <UniqueIdentifier>{25ADBA7B-9162-3371-1A57-2D48860B2A75}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.h">
+      <Filter>Platform\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\WindowsWindow.h">
       <Filter>Platform</Filter>
     </ClInclude>
@@ -37,6 +46,9 @@
     <ClInclude Include="src\Zahra\Events\MouseEvent.h">
       <Filter>Zahra\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h">
+      <Filter>Zahra\ImGui</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Layer.h">
       <Filter>Zahra</Filter>
     </ClInclude>
@@ -50,15 +62,19 @@
       <Filter>Zahra</Filter>
     </ClInclude>
     <ClInclude Include="src\zpch.h" />
-    <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h" />
-    <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.cpp">
+      <Filter>Platform\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\WindowsWindow.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Application.cpp">
       <Filter>Zahra</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\ImGui\ImGuiLayer.cpp">
+      <Filter>Zahra\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Layer.cpp">
       <Filter>Zahra</Filter>
@@ -70,7 +86,5 @@
       <Filter>Zahra</Filter>
     </ClCompile>
     <ClCompile Include="src\zpch.cpp" />
-    <ClCompile Include="src\Zahra\ImGui\ImGuiLayer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.cpp" />
   </ItemGroup>
 </Project>

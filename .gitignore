@@ -2,15 +2,14 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-# directories
+# binaries
+bin/
+bin-int/
 
-/.vs/Zahra
-/Zahra.sln
-/bin/
-/bin-int/
-
-# files
-
-*.user
-/Zahra/vendor/Glad/Glad.vcxproj
-/Zahra/vendor/Glad/Glad.vcxproj.filters
+# VS files
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.csproj

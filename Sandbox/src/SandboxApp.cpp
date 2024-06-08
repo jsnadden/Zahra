@@ -3,7 +3,7 @@
 class ExampleLayer : public Zahra::Layer
 {
 public:
-	ExampleLayer() : Layer("E.g. lyr") {}
+	ExampleLayer() : Layer("Example_Layer") {}
 
 	void OnUpdate() override
 	{
@@ -21,6 +21,7 @@ class Sandbox : public Zahra::Application
 public:
 
 	Sandbox()
+		: Zahra::Application()
 	{
 		PushLayer(new ExampleLayer());
 		PushOverlay(new Zahra::ImGuiLayer());

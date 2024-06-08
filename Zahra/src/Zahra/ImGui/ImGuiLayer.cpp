@@ -9,7 +9,7 @@
 
 namespace Zahra
 {
-	ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer")
+	ImGuiLayer::ImGuiLayer() : Layer("ImGui_Layer")
 	{}
 
 	ImGuiLayer::~ImGuiLayer()

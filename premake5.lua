@@ -8,6 +8,8 @@ workspace "Zahra"
 		"Distribution"
 	}
 
+	startproject "Sandbox"
+
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Include directories relative to root folder (solution directory)
@@ -16,9 +18,11 @@ IncludeDir["GLFW"] = "Zahra/vendor/GLFW/include"
 IncludeDir["Glad"] = "Zahra/vendor/Glad/include"
 IncludeDir["imgui"] = "Zahra/vendor/imgui"
 
-include "Zahra/vendor/GLFW"
-include "Zahra/vendor/Glad"
-include "Zahra/vendor/imgui"
+group "Dependencies"
+	include "Zahra/vendor/GLFW"
+	include "Zahra/vendor/Glad"
+	include "Zahra/vendor/imgui"
+group ""
 
 project "Zahra"
 	location "Zahra"

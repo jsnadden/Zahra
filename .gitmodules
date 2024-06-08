@@ -1,9 +1,12 @@
 [submodule "Zahra/vendor/spdlog"]
 	path = Zahra/vendor/spdlog
 	url = https://github.com/gabime/spdlog
+	ignore = all
 [submodule "Zahra/vendor/GLFW"]
 	path = Zahra/vendor/GLFW
 	url = https://github.com/TheCherno/glfw
+	ignore = all
 [submodule "Zahra/vendor/imgui"]
 	path = Zahra/vendor/imgui
 	url = https://github.com/TheCherno/imgui/
+	ignore = all
