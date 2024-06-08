@@ -17,11 +17,13 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "Zahra/vendor/GLFW/include"
 IncludeDir["Glad"] = "Zahra/vendor/Glad/include"
 IncludeDir["imgui"] = "Zahra/vendor/imgui"
+IncludeDir["glm"] = "Zahra/vendor/glm"
 
 group "Dependencies"
 	include "Zahra/vendor/GLFW"
 	include "Zahra/vendor/Glad"
 	include "Zahra/vendor/imgui"
+	--include "Zahra/vendor/glm"
 group ""
 
 project "Zahra"
@@ -38,7 +40,9 @@ project "Zahra"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/glm/glm/**.hpp",
+		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
 
 	includedirs
@@ -47,7 +51,8 @@ project "Zahra"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.imgui}"
+		"%{IncludeDir.imgui}",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -107,7 +112,10 @@ project "Sandbox"
 	includedirs
 	{
 		"Zahra/vendor/spdlog/include",
-		"Zahra/src"
+		"Zahra/src",
+		"Zahra/vendor",
+		"%{IncludeDir.imgui}",
+		--"%{IncludeDir.glm}"
 	}
 
 	links

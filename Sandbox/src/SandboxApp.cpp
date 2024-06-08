@@ -1,5 +1,7 @@
 #include <Zahra.h>
 
+#include "imgui/imgui.h"
+
 class ExampleLayer : public Zahra::Layer
 {
 public:
@@ -14,6 +16,14 @@ public:
 	{
 		//Z_TRACE(event);
 	}
+
+	void OnImGuiRender() override
+	{
+		ImGui::Begin("Testeze");
+		ImGui::Text("Peenussss");
+		ImGui::End();
+
+	}
 };
 
 class Sandbox : public Zahra::Application
@@ -24,7 +34,6 @@ public:
 		: Zahra::Application()
 	{
 		PushLayer(new ExampleLayer());
-		PushOverlay(new Zahra::ImGuiLayer());
 	}
 
 	~Sandbox()

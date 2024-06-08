@@ -6,6 +6,8 @@
 #include "Zahra/Window.h"
 #include "Zahra/LayerStack.h"
 
+#include "Zahra/ImGui/ImGuiLayer.h"
+
 namespace Zahra
 {
 	class ZAHRA_API Application
@@ -29,6 +31,8 @@ namespace Zahra
 		bool OnWindowClose(WindowCloseEvent& e);
 
 		std::unique_ptr<Window> m_Window;
+		ImGuiLayer* m_ImGuiLayer;
+
 		bool m_Running = true;
 
 		LayerStack m_LayerStack;

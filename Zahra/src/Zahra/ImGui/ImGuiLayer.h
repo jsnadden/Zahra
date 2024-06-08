@@ -13,31 +13,15 @@ namespace Zahra
 		ImGuiLayer();
 		~ImGuiLayer();
 
-		void OnAttach();
-		void OnDetach();
+		virtual void OnAttach() override;
+		virtual void OnDetach() override;
+		virtual void OnImGuiRender() override;
 
-		void OnUpdate();
-		void OnEvent(Event& event);
+		void Begin();
+		void End();
 
 	private:
 		float m_Time = 0.0f;
-
-		// Handle mouse events
-		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
-		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
-		bool OnMouseMovedEvent(MouseMovedEvent& e);
-		bool OnMouseScrolledEvent(MouseScrolledEvent& e);
-		// Handle keyboard events
-		bool OnKeyPressedEvent(KeyPressedEvent& e);
-		bool OnKeyReleasedEvent(KeyReleasedEvent& e);
-		bool OnKeyTypedEvent(KeyTypedEvent& e);
-		// Handle window events
-		bool OnWindowResizeEvent(WindowResizeEvent& e);
-		bool OnWindowCloseEvent(WindowCloseEvent& e);
-		//// Handle app events
-		//bool OnAppTickEvent(AppTickEvent& e);
-		//bool OnAppUpdateEvent(AppUpdateEvent& e);
-		//bool OnAppRenderEvent(AppRenderEvent& e);
 
 	};
 }
