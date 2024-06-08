@@ -156,7 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.h" />
-    <ClInclude Include="src\Platform\WindowsWindow.h" />
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Zahra.h" />
     <ClInclude Include="src\Zahra\Application.h" />
     <ClInclude Include="src\Zahra\Core.h" />
@@ -166,15 +166,19 @@
     <ClInclude Include="src\Zahra\Events\KeyEvent.h" />
     <ClInclude Include="src\Zahra\Events\MouseEvent.h" />
     <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\Zahra\Input.h" />
+    <ClInclude Include="src\Zahra\KeyCodes.h" />
     <ClInclude Include="src\Zahra\Layer.h" />
     <ClInclude Include="src\Zahra\LayerStack.h" />
     <ClInclude Include="src\Zahra\Log.h" />
+    <ClInclude Include="src\Zahra\MouseButtonCodes.h" />
     <ClInclude Include="src\Zahra\Window.h" />
     <ClInclude Include="src\zpch.h" />
+    <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.cpp" />
-    <ClCompile Include="src\Platform\WindowsWindow.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Zahra\Application.cpp" />
     <ClCompile Include="src\Zahra\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Zahra\Layer.cpp" />
@@ -183,6 +187,7 @@
     <ClCompile Include="src\zpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="vendor\GLFW\GLFW.vcxproj">
