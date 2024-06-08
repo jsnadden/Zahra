@@ -12,3 +12,5 @@
 # files
 
 *.user
+/Zahra/vendor/Glad/Glad.vcxproj
+/Zahra/vendor/Glad/Glad.vcxproj.filters
