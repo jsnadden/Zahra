@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Zahra/Core.h"
+#include "Zahra/Base.h"
 #include "Zahra/Events/Event.h"
 
 namespace Zahra
 {
-	class ZAHRA_API Layer
+	class Layer
 	{
 	public:
 		Layer(const std::string& name = "Layer");

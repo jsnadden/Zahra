@@ -2,7 +2,7 @@
 
 #include "zpch.h"
 
-#include "Zahra/Core.h"
+#include "Zahra/Base.h"
 #include "Zahra/Events/Event.h"
 
 
@@ -18,7 +18,7 @@ namespace Zahra
 			: Title(title), Width(width), Height(height) {}
 	};
 
-	class ZAHRA_API Window
+	class Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;

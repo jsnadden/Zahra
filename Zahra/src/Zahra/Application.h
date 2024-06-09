@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Core.h"
+#include "Zahra/Base.h"
 #include "Zahra/Events/Event.h"
 #include "Zahra/Events/ApplicationEvent.h"
 #include "Zahra/Window.h"
@@ -10,7 +10,7 @@
 
 namespace Zahra
 {
-	class ZAHRA_API Application
+	class Application
 	{
 	public:
 		Application();

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Zahra/Core.h"
+#include "Zahra/Base.h"
 
 namespace Zahra
 {
 
 	
-	class ZAHRA_API Input
+	class Input
 	{
 	public:
 		inline static bool IsKeyPressed(int keycode) { return s_Instance->IsKeyPressedImpl(keycode); }

@@ -19,10 +19,9 @@ public:
 
 	void OnImGuiRender() override
 	{
-		ImGui::Begin("Testeze");
-		ImGui::Text("Peenussss");
+		ImGui::Begin("Test gui");
+		ImGui::Text("Test text");
 		ImGui::End();
-
 	}
 };
 

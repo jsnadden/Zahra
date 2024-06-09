@@ -5,7 +5,7 @@
 namespace Zahra
 {
 
-	class ZAHRA_API MouseMovedEvent : public Event
+	class MouseMovedEvent : public Event
 	{
 	public:
 
@@ -33,7 +33,7 @@ namespace Zahra
 
 	};
 
-	class ZAHRA_API MouseScrolledEvent : public Event
+	class MouseScrolledEvent : public Event
 	{
 	public:
 
@@ -61,7 +61,7 @@ namespace Zahra
 
 	};
 
-	class ZAHRA_API MouseButtonEvent : public Event
+	class MouseButtonEvent : public Event
 	{
 	public:
 
@@ -77,7 +77,7 @@ namespace Zahra
 
 	};
 
-	class ZAHRA_API MouseButtonPressedEvent : public MouseButtonEvent
+	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
 		MouseButtonPressedEvent(int button) : MouseButtonEvent(button) {}
@@ -92,7 +92,7 @@ namespace Zahra
 		EVENT_CLASS_TYPE(MouseButtonPressed)
 	};
 
-	class ZAHRA_API MouseButtonReleasedEvent : public MouseButtonEvent
+	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
 		MouseButtonReleasedEvent(int button) : MouseButtonEvent(button) {}

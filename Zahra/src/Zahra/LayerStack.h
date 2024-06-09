@@ -4,7 +4,7 @@
 
 namespace Zahra
 {
-	class ZAHRA_API LayerStack
+	class LayerStack
 	{
 	public:
 		LayerStack();

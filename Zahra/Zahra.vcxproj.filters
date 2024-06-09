@@ -54,7 +54,7 @@
     <ClInclude Include="src\Zahra\Application.h">
       <Filter>src\Zahra</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Core.h">
+    <ClInclude Include="src\Zahra\Base.h">
       <Filter>src\Zahra</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\EntryPoint.h">

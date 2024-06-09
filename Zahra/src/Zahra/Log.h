@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Core.h"
+#include "Zahra/Base.h"
 
 #pragma warning(push, 0)
 #include <spdlog/spdlog.h>
@@ -9,7 +9,7 @@
 
 namespace Zahra
 {
-	class ZAHRA_API Log
+	class Log
 	{
 	public:
 		static void Init();

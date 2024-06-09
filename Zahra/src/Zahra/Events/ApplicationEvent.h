@@ -5,7 +5,7 @@
 namespace Zahra
 {
 
-	class ZAHRA_API WindowResizeEvent : public Event
+	class WindowResizeEvent : public Event
 	{
 	public:
 
@@ -33,7 +33,7 @@ namespace Zahra
 
 	};
 
-	class ZAHRA_API WindowCloseEvent : public Event
+	class WindowCloseEvent : public Event
 	{
 	public:
 
@@ -43,7 +43,7 @@ namespace Zahra
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class ZAHRA_API AppTickEvent : public Event
+	class AppTickEvent : public Event
 	{
 	public:
 
@@ -53,7 +53,7 @@ namespace Zahra
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class ZAHRA_API AppUpdateEvent : public Event
+	class AppUpdateEvent : public Event
 	{
 	public:
 
@@ -63,7 +63,7 @@ namespace Zahra
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class ZAHRA_API AppRenderEvent : public Event
+	class AppRenderEvent : public Event
 	{
 	public:
 

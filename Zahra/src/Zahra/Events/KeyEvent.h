@@ -5,7 +5,7 @@
 namespace Zahra
 {
 
-	class ZAHRA_API KeyEvent : public Event
+	class KeyEvent : public Event
 	{
 	public:
 
@@ -21,7 +21,7 @@ namespace Zahra
 
 	};
 
-	class ZAHRA_API KeyPressedEvent : public KeyEvent
+	class KeyPressedEvent : public KeyEvent
 	{
 	public:
 
@@ -46,7 +46,7 @@ namespace Zahra
 		int m_RepeatCount;
 	};
 	
-	class ZAHRA_API KeyReleasedEvent : public KeyEvent
+	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
 		KeyReleasedEvent(int keycode)
@@ -64,7 +64,7 @@ namespace Zahra
 		EVENT_CLASS_TYPE(KeyReleased)
 	};
 
-	class ZAHRA_API KeyTypedEvent : public KeyEvent
+	class KeyTypedEvent : public KeyEvent
 	{
 	public:
 
