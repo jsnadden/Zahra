@@ -1,8 +1,9 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-
 #include "Zahra/Window.h"
+#include "Zahra/Renderer/GraphicsContext.h"
+
+#include <GLFW/glfw3.h>
 
 namespace Zahra
 {
@@ -29,6 +30,7 @@ namespace Zahra
 		virtual void Shutdown();
 
 		GLFWwindow* m_Window;
+		GraphicsContext* m_Context;
 
 		struct WindowData
 		{

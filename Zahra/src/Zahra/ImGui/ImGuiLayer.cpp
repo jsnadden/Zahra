@@ -65,7 +65,6 @@ namespace Zahra
 
 	void ImGuiLayer::Begin()
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();

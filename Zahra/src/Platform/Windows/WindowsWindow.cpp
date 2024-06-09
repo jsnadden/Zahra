@@ -5,7 +5,7 @@
 #include "Zahra/Events/MouseEvent.h"
 #include "Zahra/Events/KeyEvent.h"
 
-#include <glad/glad.h>
+#include "Platform/OpenGL/OpenGLContext.h"
 
 namespace Zahra
 {
@@ -39,6 +39,7 @@ namespace Zahra
 
 		Z_CORE_INFO("Creating window {0} ({1},{2})", props.Title, props.Width, props.Height);
 
+
 		if (!s_GLFWInitialised)
 		{
 			int success = glfwInit();
@@ -50,10 +51,10 @@ namespace Zahra
 		}
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-		glfwMakeContextCurrent(m_Window);
 
-		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		Z_CORE_ASSERT(status, "Failed to initialise Glad!")
+		m_Context = new OpenGLContext(m_Window);
+
+		m_Context->Init();		
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
@@ -168,7 +169,7 @@ namespace Zahra
 		);
 
 	}
-	
+
 	void WindowsWindow::Shutdown()
 	{
 		glfwDestroyWindow(m_Window);
@@ -177,7 +178,8 @@ namespace Zahra
 	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
-		glfwSwapBuffers(m_Window);
+
+		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVSync(bool enabled)
