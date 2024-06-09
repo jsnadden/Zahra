@@ -6,10 +6,6 @@
 	path = Zahra/vendor/GLFW
 	url = https://github.com/TheCherno/glfw
 	ignore = all
-[submodule "Zahra/vendor/imgui"]
-	path = Zahra/vendor/imgui
-	url = https://github.com/TheCherno/imgui/
-	ignore = all
 [submodule "Zahra/vendor/glm"]
 	path = Zahra/vendor/glm
 	url = https://github.com/g-truc/glm
