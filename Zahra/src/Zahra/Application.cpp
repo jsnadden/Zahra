@@ -21,20 +21,20 @@ namespace Zahra
 		PushOverlay(m_ImGuiLayer);
 
 		/////////////////////////////////////////////////////////////
-		// TODO: ABSTRACT THIS STUFF
+		// TEMPORARILY DOING RENDERING HERE
 		// 
 		m_VertexArray.reset(VertexArray::Create());
 
-		// Create vertices and send to buffer
 		float vertices[6 * 7] = {
 			 0.56f,  0.00f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			 0.28f,  0.87f, 0.0f, 0.9f, 0.9f, 0.0f, 1.0f,
+			 0.28f,  0.87f, 0.0f, 0.7f, 0.7f, 0.0f, 1.0f,
 			-0.28f,  0.87f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-			-0.56f,  0.00f, 0.0f, 0.0f, 0.9f, 0.9f, 1.0f,
+			-0.56f,  0.00f, 0.0f, 0.0f, 0.7f, 0.7f, 1.0f,
 			-0.28f, -0.87f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-			 0.28f, -0.87f, 0.0f, 0.9f, 0.0f, 0.9f, 1.0f
+			 0.28f, -0.87f, 0.0f, 0.7f, 0.0f, 0.7f, 1.0f
 		};
-		m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
+		std::shared_ptr<VertexBuffer> vertexBuffer;
+		vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
 
 		{
 			BufferLayout layout = {
@@ -42,17 +42,16 @@ namespace Zahra
 				{ ShaderDataType::Float4, "a_Colour" }
 			};
 
-			m_VertexBuffer->SetLayout(layout);
+			vertexBuffer->SetLayout(layout);
 		}
 
-		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+		m_VertexArray->AddVertexBuffer(vertexBuffer);
 
-		// Create indices and send to index buffer (essentially an enumeration of the vertices, and their draw order)
-		unsigned int indices[6] = { 0, 1, 2, 3, 4, 5 };
-		m_IndexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
-		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
+		unsigned int indices[12] = { 0,1,2,0,2,3,0,3,4,0,4,5 };
+		std::shared_ptr<IndexBuffer> indexBuffer;
+		indexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+		m_VertexArray->SetIndexBuffer(indexBuffer);
 		
-		// shader source code
 		std::string vertexSrc = R"(
 			#version 330 core
 
@@ -83,7 +82,6 @@ namespace Zahra
 			}
 		)";
 
-		// compile/link shaders
 		m_Shader.reset(new Shader(vertexSrc, fragmentSrc));
 		//
 		/////////////////////////////////////////////////////////////
@@ -100,15 +98,18 @@ namespace Zahra
 		while (m_Running)
 		{
 			/////////////////////////////////////////////////////////////
-			// 
-			// clear buffers (basically a fresh canvas)
-			glClearColor(0.0f, 0.0f, 0.0f, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
+			// TEMPORARILY DOING RENDERING HERE
+			//
+			RenderCommand::SetClearColour({ 1.0f, 0.0f, 1.0f, 1.0f });
+			RenderCommand::Clear();
+			//
+			Renderer::BeginScene();
 
-			// draw!
 			m_Shader->Bind();
-			m_VertexArray->Bind();
-			glDrawElements(GL_TRIANGLE_FAN, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, NULL);
+			Renderer::Submit(m_VertexArray);
+
+			Renderer::EndScene();
+			//Renderer::Flush();
 			//
 			/////////////////////////////////////////////////////////////
 

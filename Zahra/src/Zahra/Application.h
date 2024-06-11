@@ -8,10 +8,11 @@
 
 #include "Zahra/ImGui/ImGuiLayer.h"
 
-// TODO REMOVE THESE INCLUDES
+// temporarily including all of this, while we're rendering directly in the run loop
 #include "Zahra/Renderer/Buffer.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/VertexArray.h"
+#include  "Zahra/Renderer/Renderer.h"
 
 namespace Zahra
 {
@@ -43,8 +44,6 @@ namespace Zahra
 		LayerStack m_LayerStack;
 
 		std::shared_ptr<Shader> m_Shader;
-		std::shared_ptr<VertexBuffer> m_VertexBuffer;
-		std::shared_ptr<IndexBuffer> m_IndexBuffer;
 		std::shared_ptr<VertexArray> m_VertexArray;
 
 		static Application* s_Instance;

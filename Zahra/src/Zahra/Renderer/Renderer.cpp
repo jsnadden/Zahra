@@ -3,6 +3,27 @@
 
 namespace Zahra
 {
-	// just hardcoded opengl for now, until another api is implemented
-	RendererAPI Renderer::s_RendererAPI = RendererAPI::OpenGL;
+
+	///////////////////////////////////////////////////
+	// TODO: IMPLEMENT THESE
+	void Renderer::BeginScene()
+	{
+
+	}
+
+	void Renderer::EndScene()
+	{
+
+	}
+	//
+	///////////////////////////////////////////////////
+
+	void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray)
+	{
+		// TODO: instead this should stick a rendercommand into a queue
+		vertexArray->Bind();
+		RenderCommand::DrawIndexed(vertexArray);
+	}
+	
+
 }

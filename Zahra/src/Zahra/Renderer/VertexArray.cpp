@@ -11,12 +11,12 @@ namespace Zahra
 	{
         switch (Renderer::GetAPI())
         {
-        case RendererAPI::None:      Z_CORE_ASSERT(false, "RendererAPI::None is not currently supported"); return nullptr;
-        case RendererAPI::OpenGL:    return new OpenGLVertexArray();
-        case RendererAPI::Direct3D:  Z_CORE_ASSERT(false, "RendererAPI::Direct3D is not currently supported"); return nullptr;
-        case RendererAPI::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::Vulkan is not currently supported"); return nullptr;
+        case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
+        case RendererAPI::API::OpenGL:    return new OpenGLVertexArray();
+        case RendererAPI::API::Direct3D:  Z_CORE_ASSERT(false, "RendererAPI::API::Direct3D is not currently supported"); return nullptr;
+        case RendererAPI::API::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan is not currently supported"); return nullptr;
         }
-        Z_CORE_ASSERT(false, "Unknown RendererAPI");
+        Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
         return nullptr;
 	}
 
