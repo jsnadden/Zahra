@@ -11,6 +11,7 @@
 // TODO REMOVE THESE INCLUDES
 #include "Zahra/Renderer/Buffer.h"
 #include "Zahra/Renderer/Shader.h"
+#include "Zahra/Renderer/VertexArray.h"
 
 namespace Zahra
 {
@@ -41,10 +42,10 @@ namespace Zahra
 
 		LayerStack m_LayerStack;
 
-		unsigned int m_VertexArray;
-		std::unique_ptr<Shader> m_Shader;
-		std::unique_ptr<VertexBuffer> m_VertexBuffer;
-		std::unique_ptr<IndexBuffer> m_IndexBuffer;
+		std::shared_ptr<Shader> m_Shader;
+		std::shared_ptr<VertexBuffer> m_VertexBuffer;
+		std::shared_ptr<IndexBuffer> m_IndexBuffer;
+		std::shared_ptr<VertexArray> m_VertexArray;
 
 		static Application* s_Instance;
 	};

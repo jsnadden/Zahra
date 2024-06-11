@@ -8,31 +8,6 @@ namespace Zahra
 {
 	Application* Application::s_Instance = nullptr;
 
-	// TODO: move this somewhere more appropriate:
-	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
-	{
-		switch (type)
-		{
-		case Zahra::ShaderDataType::Bool:   return GL_BOOL;
-
-		case Zahra::ShaderDataType::Int:    return GL_INT;
-		case Zahra::ShaderDataType::Int2:   return GL_INT;
-		case Zahra::ShaderDataType::Int3:   return GL_INT;
-		case Zahra::ShaderDataType::Int4:   return GL_INT;
-
-		case Zahra::ShaderDataType::Float:  return GL_FLOAT;
-		case Zahra::ShaderDataType::Float2: return GL_FLOAT;
-		case Zahra::ShaderDataType::Float3: return GL_FLOAT;
-		case Zahra::ShaderDataType::Float4: return GL_FLOAT;
-
-		case Zahra::ShaderDataType::Mat2:   return GL_FLOAT;
-		case Zahra::ShaderDataType::Mat3:   return GL_FLOAT;
-		case Zahra::ShaderDataType::Mat4:   return GL_FLOAT;
-		}
-
-		Z_CORE_ASSERT(false, "Invalid ShaderDataType");
-		return 0;
-	}
 
 	Application::Application()
 	{
@@ -48,55 +23,49 @@ namespace Zahra
 		/////////////////////////////////////////////////////////////
 		// TODO: ABSTRACT THIS STUFF
 		// 
-		// Create vertex array on GPU
-		glGenVertexArrays(1, &m_VertexArray);
-		glBindVertexArray(m_VertexArray);
+		m_VertexArray.reset(VertexArray::Create());
 
 		// Create vertices and send to buffer
-		float vertices[3 * 3] = {
-			-0.5f, -0.5f, 0.0f, //1.0f, 0.0f, 1.0f, 1.0f,
-			 0.5f, -0.5f, 0.0f, //1.0f, 0.0f, 1.0f, 1.0f,
-			 0.0f,  0.5f, 0.0f//, 1.0f, 0.0f, 1.0f, 1.0f
+		float vertices[6 * 7] = {
+			 0.56f,  0.00f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			 0.28f,  0.87f, 0.0f, 0.9f, 0.9f, 0.0f, 1.0f,
+			-0.28f,  0.87f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+			-0.56f,  0.00f, 0.0f, 0.0f, 0.9f, 0.9f, 1.0f,
+			-0.28f, -0.87f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+			 0.28f, -0.87f, 0.0f, 0.9f, 0.0f, 0.9f, 1.0f
 		};
 		m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
 
-		BufferLayout layout = {
-			{ ShaderDataType::Float3, "a_Position" }//,
-			//{ ShaderDataType::Float4, "a_Colour" }
-		};
-
-		m_VertexBuffer->SetLayout(layout);
-
-		uint32_t index = 0;
-
-		for (const auto& element : layout)
 		{
-			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(
-				index,
-				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element.Type),
-				element.Normalised ? GL_TRUE : GL_FALSE,
-				layout.GetStride(),
-				(const void*)element.Offset
-			);
+			BufferLayout layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float4, "a_Colour" }
+			};
+
+			m_VertexBuffer->SetLayout(layout);
 		}
 
+		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+
 		// Create indices and send to index buffer (essentially an enumeration of the vertices, and their draw order)
-		unsigned int indices[3] = { 0, 1, 2 };
+		unsigned int indices[6] = { 0, 1, 2, 3, 4, 5 };
 		m_IndexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
 		
 		// shader source code
 		std::string vertexSrc = R"(
 			#version 330 core
 
 			layout(location = 0) in vec3 a_Position;
+			layout(location = 1) in vec4 a_Colour;
 
 			out vec3 v_Position;
+			out vec4 v_Colour;
 
 			void main()
 			{
 				v_Position = a_Position+0.5;
+				v_Colour = a_Colour;
 				gl_Position = vec4(a_Position, 1.0);
 			}
 		)";
@@ -106,10 +75,11 @@ namespace Zahra
 			layout(location = 0) out vec4 colour;
 			
 			in vec3 v_Position;
+			in vec4 v_Colour;
 
 			void main()
 			{
-				colour = vec4(v_Position, 1.0);
+				colour = v_Colour;
 			}
 		)";
 
@@ -130,18 +100,15 @@ namespace Zahra
 		while (m_Running)
 		{
 			/////////////////////////////////////////////////////////////
-			// TODO: ABSTRACT THIS STUFF
 			// 
 			// clear buffers (basically a fresh canvas)
 			glClearColor(0.0f, 0.0f, 0.0f, 1);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			// bind shader and vertices
+			// draw!
 			m_Shader->Bind();
-			glBindVertexArray(m_VertexArray);
-
-			// draw!!
-			glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, NULL);
+			m_VertexArray->Bind();
+			glDrawElements(GL_TRIANGLE_FAN, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, NULL);
 			//
 			/////////////////////////////////////////////////////////////
 
