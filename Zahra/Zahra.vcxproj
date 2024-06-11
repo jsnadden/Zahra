@@ -143,6 +143,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Zahra\Renderer\Renderer.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
@@ -161,7 +163,9 @@
     <ClInclude Include="src\Zahra\LayerStack.h" />
     <ClInclude Include="src\Zahra\Log.h" />
     <ClInclude Include="src\Zahra\MouseButtonCodes.h" />
+    <ClInclude Include="src\Zahra\Renderer\Buffer.h" />
     <ClInclude Include="src\Zahra\Renderer\GraphicsContext.h" />
+    <ClInclude Include="src\Zahra\Renderer\Shader.h" />
     <ClInclude Include="src\Zahra\Window.h" />
     <ClInclude Include="src\zpch.h" />
     <ClInclude Include="vendor\glm\glm\common.hpp" />
@@ -582,6 +586,8 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Zahra\Renderer\Renderer.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
@@ -591,6 +597,8 @@
     <ClCompile Include="src\Zahra\Layer.cpp" />
     <ClCompile Include="src\Zahra\LayerStack.cpp" />
     <ClCompile Include="src\Zahra\Log.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\Shader.cpp" />
     <ClCompile Include="src\zpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

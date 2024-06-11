@@ -37,13 +37,13 @@ namespace Zahra
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
 
-		Z_CORE_INFO("Creating window {0} ({1},{2})", props.Title, props.Width, props.Height);
+		Z_CORE_INFO("Creating window {0} ({1}x{2})", props.Title, props.Width, props.Height);
 
 
 		if (!s_GLFWInitialised)
 		{
 			int success = glfwInit();
-			Z_CORE_ASSERT(success, "Failed to initialise GLFW!");
+			Z_CORE_ASSERT(success, "Failed to initialise GLFW");
 
 			glfwSetErrorCallback(GLFWErrorCallback);
 
