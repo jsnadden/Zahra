@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Zahra/Base.h"
+#include "Zahra/Core/Base.h"
 #include "Zahra/Events/Event.h"
 #include "Zahra/Events/ApplicationEvent.h"
-#include "Zahra/Window.h"
-#include "Zahra/LayerStack.h"
+#include "Zahra/Core/Window.h"
+#include "Zahra/Core/LayerStack.h"
 
 #include "Zahra/ImGui/ImGuiLayer.h"
 
@@ -12,7 +12,7 @@
 #include "Zahra/Renderer/Buffer.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/VertexArray.h"
-#include  "Zahra/Renderer/Renderer.h"
+#include "Zahra/Renderer/Renderer.h"
 
 namespace Zahra
 {

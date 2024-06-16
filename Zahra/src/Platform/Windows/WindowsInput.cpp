@@ -1,6 +1,6 @@
 #include "zpch.h"
 #include "WindowsInput.h"
-#include "Zahra/Application.h"
+#include "Zahra/Core/Application.h"
 #include <GLFW/glfw3.h>
 
 namespace Zahra

@@ -2,16 +2,16 @@
 
 // This is for use by client apps
 
-#include "Zahra/Application.h"
-#include "Zahra/Layer.h"
-#include "Zahra/Log.h"
+#include "Zahra/Core/Application.h"
+#include "Zahra/Core/Layer.h"
+#include "Zahra/Core/Log.h"
 
-#include "Zahra/Input.h"
-#include "Zahra/KeyCodes.h"
-#include "Zahra/MouseButtonCodes.h"
+#include "Zahra/Core/Input.h"
+#include "Zahra/Core/KeyCodes.h"
+#include "Zahra/Core/MouseButtonCodes.h"
 
 #include "Zahra/ImGui/ImGuiLayer.h"
 
 //------------ENTRY-POINT--------------
-#include "Zahra/EntryPoint.h"
+#include "Zahra/Core/EntryPoint.h"
 //-------------------------------------

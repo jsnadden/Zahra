@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Window.h"
+#include "Zahra/Core/Window.h"
 #include "Zahra/Renderer/GraphicsContext.h"
 
 #include <GLFW/glfw3.h>

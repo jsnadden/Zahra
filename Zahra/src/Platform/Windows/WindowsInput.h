@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Input.h"
+#include "Zahra/Core/Input.h"
 
 namespace Zahra
 {

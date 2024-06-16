@@ -1,6 +1,6 @@
 #include "zpch.h"
 #include "Application.h"
-#include "Zahra/Input.h"
+#include "Zahra/Core/Input.h"
 
 #include <glad/glad.h>
 
