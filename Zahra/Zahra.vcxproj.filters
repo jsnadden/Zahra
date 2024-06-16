@@ -1386,6 +1386,7 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1445,5 +1446,6 @@
     <ClCompile Include="src\zpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\Camera.cpp" />
   </ItemGroup>
 </Project>

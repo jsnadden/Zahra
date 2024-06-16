@@ -165,6 +165,7 @@
     <ClInclude Include="src\Zahra\Core\Log.h" />
     <ClInclude Include="src\Zahra\Core\MouseButtonCodes.h" />
     <ClInclude Include="src\Zahra\Renderer\Buffer.h" />
+    <ClInclude Include="src\Zahra\Renderer\Camera.h" />
     <ClInclude Include="src\Zahra\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Zahra\Renderer\RenderCommand.h" />
     <ClInclude Include="src\Zahra\Renderer\Renderer.h" />
@@ -604,6 +605,7 @@
     <ClCompile Include="src\Zahra\Core\LayerStack.cpp" />
     <ClCompile Include="src\Zahra\Core\Log.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\Camera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RenderCommand.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp" />

@@ -13,6 +13,7 @@
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/VertexArray.h"
 #include "Zahra/Renderer/Renderer.h"
+#include "Zahra/Renderer/Camera.h"
 
 namespace Zahra
 {
@@ -45,8 +46,10 @@ namespace Zahra
 
 		std::shared_ptr<Shader> m_Shader;
 		std::shared_ptr<VertexArray> m_VertexArray;
+		OrthographicCamera m_Camera;
 
 		static Application* s_Instance;
+
 	};
 
 	// To be defined by client app

@@ -9,7 +9,7 @@ namespace Zahra
 	Application* Application::s_Instance = nullptr;
 
 
-	Application::Application()
+	Application::Application() : m_Camera(-3.2f, 3.2f, -1.8f, 1.8f)
 	{
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
@@ -26,12 +26,12 @@ namespace Zahra
 		m_VertexArray.reset(VertexArray::Create());
 
 		float vertices[6 * 7] = {
-			 0.56f,  0.00f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			 0.28f,  0.87f, 0.0f, 0.7f, 0.7f, 0.0f, 1.0f,
-			-0.28f,  0.87f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-			-0.56f,  0.00f, 0.0f, 0.0f, 0.7f, 0.7f, 1.0f,
-			-0.28f, -0.87f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-			 0.28f, -0.87f, 0.0f, 0.7f, 0.0f, 0.7f, 1.0f
+			 1.00f,  0.00f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			 0.50f,  0.87f, 0.0f, 0.7f, 0.7f, 0.0f, 1.0f,
+			-0.50f,  0.87f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+			-1.00f,  0.00f, 0.0f, 0.0f, 0.7f, 0.7f, 1.0f,
+			-0.50f, -0.87f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+			 0.50f, -0.87f, 0.0f, 0.7f, 0.0f, 0.7f, 1.0f
 		};
 		std::shared_ptr<VertexBuffer> vertexBuffer;
 		vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
@@ -58,6 +58,8 @@ namespace Zahra
 			layout(location = 0) in vec3 a_Position;
 			layout(location = 1) in vec4 a_Colour;
 
+			uniform mat4 u_PVMatrix;
+
 			out vec3 v_Position;
 			out vec4 v_Colour;
 
@@ -65,7 +67,7 @@ namespace Zahra
 			{
 				v_Position = a_Position+0.5;
 				v_Colour = a_Colour;
-				gl_Position = vec4(a_Position, 1.0);
+				gl_Position = u_PVMatrix * vec4(a_Position, 1.0);
 			}
 		)";
 		std::string fragmentSrc = R"(
@@ -103,10 +105,10 @@ namespace Zahra
 			RenderCommand::SetClearColour({ 1.0f, 0.0f, 1.0f, 1.0f });
 			RenderCommand::Clear();
 			//
-			Renderer::BeginScene();
 
-			m_Shader->Bind();
-			Renderer::Submit(m_VertexArray);
+			Renderer::BeginScene(m_Camera);
+
+			Renderer::Submit(m_Shader, m_VertexArray);
 
 			Renderer::EndScene();
 			//Renderer::Flush();
