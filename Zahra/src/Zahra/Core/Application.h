@@ -5,15 +5,18 @@
 #include "Zahra/Events/ApplicationEvent.h"
 #include "Zahra/Core/Window.h"
 #include "Zahra/Core/LayerStack.h"
+//#include "Zahra/Core/Timestep.h"
 
 #include "Zahra/ImGui/ImGuiLayer.h"
 
-// temporarily including all of this, while we're rendering directly in the run loop
-#include "Zahra/Renderer/Buffer.h"
-#include "Zahra/Renderer/Shader.h"
-#include "Zahra/Renderer/VertexArray.h"
-#include "Zahra/Renderer/Renderer.h"
-#include "Zahra/Renderer/Camera.h"
+
+///////////////////////////////////////////////////
+// TODO: We're using a GLFW include to compute
+// timesteps for now, but those calculations
+// should eventually become platform-independent
+#include <../vendor/GLFW/include/GLFW/glfw3.h>
+///////////////////////////////////////////////////
+
 
 namespace Zahra
 {
@@ -37,19 +40,15 @@ namespace Zahra
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 
+		static Application* s_Instance;
+
 		std::unique_ptr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
 
 		bool m_Running = true;
+		float m_PreviousFrameTime;
 
 		LayerStack m_LayerStack;
-
-		std::shared_ptr<Shader> m_Shader;
-		std::shared_ptr<VertexArray> m_VertexArray;
-		OrthographicCamera m_Camera;
-
-		static Application* s_Instance;
-
 	};
 
 	// To be defined by client app

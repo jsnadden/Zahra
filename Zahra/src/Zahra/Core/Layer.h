@@ -2,6 +2,7 @@
 
 #include "Zahra/Core/Base.h"
 #include "Zahra/Events/Event.h"
+//#include "Zahra/Core/Timestep.h"
 
 namespace Zahra
 {
@@ -13,7 +14,7 @@ namespace Zahra
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(float dt) {}
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 

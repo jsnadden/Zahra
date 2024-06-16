@@ -16,6 +16,9 @@
     <Filter Include="src\Zahra">
       <UniqueIdentifier>{12A64FB4-7E10-042B-C74E-B5D033F8E17F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Zahra\Core">
+      <UniqueIdentifier>{AA657D23-9633-7129-7FC7-E14F6B344D8E}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Zahra\Events">
       <UniqueIdentifier>{B6898FFD-A282-AE4F-CBB4-93D4B70C8E5B}</UniqueIdentifier>
     </Filter>
@@ -70,13 +73,34 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Application.h">
-      <Filter>src\Zahra</Filter>
+      <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Base.h">
-      <Filter>src\Zahra</Filter>
+      <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\EntryPoint.h">
-      <Filter>src\Zahra</Filter>
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Input.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\KeyCodes.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Layer.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\LayerStack.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Log.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\MouseButtonCodes.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Window.h">
+      <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Events\ApplicationEvent.h">
       <Filter>src\Zahra\Events</Filter>
@@ -93,25 +117,10 @@
     <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h">
       <Filter>src\Zahra\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Core\Input.h">
-      <Filter>src\Zahra</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Core\KeyCodes.h">
-      <Filter>src\Zahra</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Core\Layer.h">
-      <Filter>src\Zahra</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Core\LayerStack.h">
-      <Filter>src\Zahra</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Core\Log.h">
-      <Filter>src\Zahra</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Core\MouseButtonCodes.h">
-      <Filter>src\Zahra</Filter>
-    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Buffer.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\Camera.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\GraphicsContext.h">
@@ -131,9 +140,6 @@
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\VertexArray.h">
       <Filter>src\Zahra\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Core\Window.h">
-      <Filter>src\Zahra</Filter>
     </ClInclude>
     <ClInclude Include="src\zpch.h">
       <Filter>src</Filter>
@@ -1386,7 +1392,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1408,7 +1413,16 @@
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Core\Application.cpp">
-      <Filter>src\Zahra</Filter>
+      <Filter>src\Zahra\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Core\Layer.cpp">
+      <Filter>src\Zahra\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Core\LayerStack.cpp">
+      <Filter>src\Zahra\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Core\Log.cpp">
+      <Filter>src\Zahra\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\ImGui\ImGuiBuild.cpp">
       <Filter>src\Zahra\ImGui</Filter>
@@ -1416,16 +1430,10 @@
     <ClCompile Include="src\Zahra\ImGui\ImGuiLayer.cpp">
       <Filter>src\Zahra\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Core\Layer.cpp">
-      <Filter>src\Zahra</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Zahra\Core\LayerStack.cpp">
-      <Filter>src\Zahra</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Zahra\Core\Log.cpp">
-      <Filter>src\Zahra</Filter>
-    </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Buffer.cpp">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\Camera.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\RenderCommand.cpp">
@@ -1446,6 +1454,5 @@
     <ClCompile Include="src\zpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Camera.cpp" />
   </ItemGroup>
 </Project>
