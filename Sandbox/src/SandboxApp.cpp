@@ -59,12 +59,14 @@ public:
 			#version 330 core
 
 			layout(location = 0) out vec4 colour;
+
+			uniform vec4 u_Colour;
 			
 			in vec4 v_Colour;
 
 			void main()
 			{
-				colour = v_Colour;
+				colour = u_Colour;
 			}
 		)";
 
@@ -75,6 +77,7 @@ public:
 	void OnUpdate(float dt) override
 	{
 		//Z_TRACE("Framerate: {0}fps", 1/dt);
+
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CAMERA
@@ -111,8 +114,9 @@ public:
 		// Movement
 		hex_bearing += dt * hex_angular_velocity;
 		glm::mat4 hex_rotation = glm::rotate(glm::mat4(1.0f), hex_bearing, glm::vec3(.0f, .0f, 1.0f));
-		hex_position += dt * hex_speed * hex_rotation * glm::vec4(1.0f,.0f,.0f,.0f);
+		hex_position += dt * hex_speed * hex_rotation * glm::vec4(.0f,1.0f,.0f,.0f);
 		glm::mat4 hex_transform = glm::translate(glm::mat4(1.0f), hex_position) * hex_rotation;
+		hex_transform = glm::scale(hex_transform, glm::vec3(.5, .5, .5));
 
 		//
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,7 +126,26 @@ public:
 
 		Zahra::Renderer::BeginScene(m_Camera);
 
-		Zahra::Renderer::Submit(m_Shader, m_VertexArray, hex_transform);
+		glm::vec4 turquoiseColour(  .114f, .820f, .69f, 1.0f );
+		glm::vec4    goldColour( .878f, .718f, .172f, 1.0f );
+
+		int N = 4;
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < N; j++)
+			{
+				glm::vec3 pos(.75f * (i + j - N), .433f * (i - j), 0);
+
+				if ((i + j) % 2 == 0)
+					m_Shader->UploadUniformFloat4("u_Colour", turquoiseColour);
+				else
+					m_Shader->UploadUniformFloat4("u_Colour", goldColour);
+
+				Zahra::Renderer::Submit(m_Shader, m_VertexArray, glm::scale(glm::translate(glm::mat4(1.0f), pos), glm::vec3(.5f)));
+			}
+		}
+
+		
 
 		Zahra::Renderer::EndScene();
 	}
