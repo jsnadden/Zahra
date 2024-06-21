@@ -1,10 +1,19 @@
 #include <Zahra.h>
+
+#include "Platform/OpenGL/OpenGLShader.h"
+
+
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "imgui/imgui.h"
 
 class ExampleLayer : public Zahra::Layer
 {
 public:
-	ExampleLayer() : Layer("Example_Layer"), m_Camera(-3.2f, 3.2f, -1.8f, 1.8f) {}
+	ExampleLayer()
+		: Layer("Example_Layer"),
+		m_Camera(-3.2f, 3.2f, -1.8f, 1.8f)
+	{}
 
 	void OnAttach() override
 	{
@@ -12,12 +21,12 @@ public:
 		m_VertexArray.reset(Zahra::VertexArray::Create());
 
 		float vertices[6 * 7] = {
-			 1.00f,  0.00f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			 0.50f,  0.87f, 0.0f, 0.7f, 0.7f, 0.0f, 1.0f,
-			-0.50f,  0.87f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-			-1.00f,  0.00f, 0.0f, 0.0f, 0.7f, 0.7f, 1.0f,
-			-0.50f, -0.87f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-			 0.50f, -0.87f, 0.0f, 0.7f, 0.0f, 0.7f, 1.0f
+			 0.50f,  0.00f, 0.0f, .114f, .820f, .69f,  1.0f,
+			 0.00f,  0.87f, 0.0f, .114f, .820f, .69f,  1.0f,
+			-0.50f,  0.00f, 0.0f, .114f, .820f, .69f,  1.0f,
+			 0.50f,  0.00f, 0.0f, .878f, .718f, .172f, 1.0f,
+			 0.00f, -0.87f, 0.0f, .878f, .718f, .172f, 1.0f,
+			-0.50f,  0.00f, 0.0f, .878f, .718f, .172f, 1.0f
 		};
 		std::shared_ptr<Zahra::VertexBuffer> vertexBuffer;
 		vertexBuffer.reset(Zahra::VertexBuffer::Create(vertices, sizeof(vertices)));
@@ -33,7 +42,7 @@ public:
 
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 
-		unsigned int indices[12] = { 0,1,2,0,2,3,0,3,4,0,4,5 };
+		unsigned int indices[12] = { 0,1,2,3,4,5 };
 		std::shared_ptr<Zahra::IndexBuffer> indexBuffer;
 		indexBuffer.reset(Zahra::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
 		m_VertexArray->SetIndexBuffer(indexBuffer);
@@ -70,7 +79,7 @@ public:
 			}
 		)";
 
-		m_Shader.reset(new Zahra::Shader(vertexSrc, fragmentSrc));
+		m_Shader.reset(Zahra::Shader::Create(vertexSrc, fragmentSrc));
 
 	}
 
@@ -78,70 +87,48 @@ public:
 	{
 		//Z_TRACE("Framerate: {0}fps", 1/dt);
 
-
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CAMERA
 
 		// Inertia
-		camera_velocity = 0.8f * camera_velocity;
+		camera_velocity *= .89f;
+		camera_angular_velocity *= .89f;
 
 		// Acceleration
-		if (Zahra::Input::GetMouseY() < 100)  camera_velocity += glm::vec4( 0,  1, 0, 1);
-		if (Zahra::Input::GetMouseY() > 620)  camera_velocity += glm::vec4( 0, -1, 0, 1);
-		if (Zahra::Input::GetMouseX() > 1080) camera_velocity += glm::vec4( 1,  0, 0, 1);
-		if (Zahra::Input::GetMouseX() < 200)  camera_velocity += glm::vec4(-1,  0, 0, 1);
+		int dir = 1.0f;
 
-		if (Zahra::Input::IsKeyPressed(Z_KEY_SPACE)) m_Camera.SetPosition(hex_position);
+		if (Zahra::Input::GetMouseY() < 100 || Zahra::Input::IsKeyPressed(Z_KEY_W))  { dir =  1.0f; camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(0, 1, 0, 1); }
+		if (Zahra::Input::GetMouseY() > 620 || Zahra::Input::IsKeyPressed(Z_KEY_S))  { dir = -1.0f; camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(0, -1, 0, 1); }
+		if (Zahra::Input::GetMouseX() > 1080 || Zahra::Input::IsKeyPressed(Z_KEY_D))  camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4( 1,  0, 0, 1);
+		if (Zahra::Input::GetMouseX() < 200  || Zahra::Input::IsKeyPressed(Z_KEY_A))  camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(-1,  0, 0, 1);
+
+		if (Zahra::Input::IsKeyPressed(Z_KEY_SPACE)) m_Camera.SetPosition(glm::vec3(.0f));
+		if (Zahra::Input::IsKeyPressed(Z_KEY_Q)) camera_angular_velocity += 1.0f;
+		if (Zahra::Input::IsKeyPressed(Z_KEY_E)) camera_angular_velocity -= 1.0f;
 		
 		// Movement
-		m_Camera.SetPosition(m_Camera.GetPosition() + .8f * dt * camera_velocity);
-
+		m_Camera.SetRotation(m_Camera.GetRotation() + dir * .5f * dt * camera_angular_velocity);
+		m_Camera.SetPosition(m_Camera.GetPosition() + 1.0f * dt * camera_velocity);
 		//
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// HEXAGON
-
-		// Reset velocity
-		hex_speed = .0f;
-		hex_angular_velocity = .0f;
-
-		// Acceleration
-		forward = 1;
-		if (Zahra::Input::IsKeyPressed(Z_KEY_W)) hex_speed =  1.5f;
-		if (Zahra::Input::IsKeyPressed(Z_KEY_S)) { hex_speed = -1.5f; forward = -1; }
-		if (Zahra::Input::IsKeyPressed(Z_KEY_A)) hex_angular_velocity =  forward * 2.5f;
-		if (Zahra::Input::IsKeyPressed(Z_KEY_D)) hex_angular_velocity = forward * -2.5f;
 		
-		// Movement
-		hex_bearing += dt * hex_angular_velocity;
-		glm::mat4 hex_rotation = glm::rotate(glm::mat4(1.0f), hex_bearing, glm::vec3(.0f, .0f, 1.0f));
-		hex_position += dt * hex_speed * hex_rotation * glm::vec4(.0f,1.0f,.0f,.0f);
-		glm::mat4 hex_transform = glm::translate(glm::mat4(1.0f), hex_position) * hex_rotation;
-		hex_transform = glm::scale(hex_transform, glm::vec3(.5, .5, .5));
 
-		//
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		Zahra::RenderCommand::SetClearColour({ .01f, 0.005f, .05f, 1.0f });
+		Zahra::RenderCommand::SetClearColour(glm::make_vec4(m_colour2));
 		Zahra::RenderCommand::Clear();
 
 		Zahra::Renderer::BeginScene(m_Camera);
 
-		glm::vec4 turquoiseColour(  .114f, .820f, .69f, 1.0f );
-		glm::vec4    goldColour( .878f, .718f, .172f, 1.0f );
+		std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_Shader)->Bind();
+		std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_Shader)->UploadUniformFloat4("u_Colour", glm::make_vec4(m_colour1));
 
-		int N = 4;
+		int N = 30;
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < N; j++)
 			{
-				glm::vec3 pos(.75f * (i + j - N), .433f * (i - j), 0);
-
-				if ((i + j) % 2 == 0)
-					m_Shader->UploadUniformFloat4("u_Colour", turquoiseColour);
-				else
-					m_Shader->UploadUniformFloat4("u_Colour", goldColour);
-
-				Zahra::Renderer::Submit(m_Shader, m_VertexArray, glm::scale(glm::translate(glm::mat4(1.0f), pos), glm::vec3(.5f)));
+				glm::vec3 position(i -.5f * j - .25f * N, .866f * j - .5f * N, 0);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(.8f));
+				Zahra::Renderer::Submit(m_Shader, m_VertexArray, transform);
 			}
 		}
 
@@ -165,6 +152,10 @@ public:
 
 	void OnImGuiRender() override
 	{
+		ImGui::Begin("Colour Scheme");
+		ImGui::ColorEdit3("Tiles", m_colour1);
+		ImGui::ColorEdit3("Background", m_colour2);
+		ImGui::End();
 	}
 
 	private:
@@ -173,14 +164,12 @@ public:
 	Zahra::OrthographicCamera m_Camera;
 
 	glm::vec3 camera_velocity = glm::vec3(.0f);
+	float camera_angular_velocity = .0f;
 
-	glm::vec3 hex_position = glm::vec3(.0f);
-	int forward = 1;
-	float hex_bearing = .0f;
-	float hex_speed = .0f;
-	float hex_angular_velocity = .0f;
+	float m_colour1[4] = { .114f, .820f, .69f, 1.0f };
+	float m_colour2[4] = { .878f, .718f, .172f, 1.0f };
+
 };
-
 
 
 
@@ -194,6 +183,8 @@ public:
 		: Zahra::Application()
 	{
 		PushLayer(new ExampleLayer());
+
+		
 	}
 
 	~Sandbox()

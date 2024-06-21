@@ -1,6 +1,8 @@
 #include "zpch.h"
 #include "Renderer.h"
 
+#include "Platform/OpenGL/OpenGLShader.h"
+
 namespace Zahra
 {
 
@@ -19,10 +21,11 @@ namespace Zahra
 	void Renderer::Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform)
 	{
 		// TODO: instead this should stick a rendercommand into a queue
+		//		also this needs to become renderapi agnostic eventually
 
 		shader->Bind();
-		shader->UploadUniformMat4("u_PVMatrix", m_SceneData->PVMatrix);
-		shader->UploadUniformMat4("u_Transform", transform);
+		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_PVMatrix", m_SceneData->PVMatrix);
+		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_Transform", transform);
 		
 
 		vertexArray->Bind();
