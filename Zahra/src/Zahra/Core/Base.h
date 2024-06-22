@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #ifndef Z_PLATFORM_WINDOWS
 	#error "Currently only windows is supported."
 #endif
@@ -19,3 +21,15 @@
 #define BIT(x) (1 << x)
 
 #define Z_BIND_EVENT_FN(f) std::bind(&f, this, std::placeholders::_1)
+
+namespace Zahra
+{
+	// for now we'll use these std smart pointers, but we can swap these out later for our own implementations
+
+	template<typename T>
+	using Scope = std::unique_ptr<T>;
+
+	template<typename T>
+	using Ref = std::shared_ptr<T>;
+
+}

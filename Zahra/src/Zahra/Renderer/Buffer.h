@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Zahra/Core/Base.h"
+
 namespace Zahra
 {
 
@@ -46,7 +48,7 @@ namespace Zahra
 		bool Normalised;
 
 		BufferElement() 
-			//: Name("default"), Type(ShaderDataType::None), Size(0), Offset(0), Normalised(false)
+			: Name(" "), Type(ShaderDataType::None), Size(0), Offset(0), Normalised(false)
 		{}
 
 		BufferElement(ShaderDataType type, const std::string& name, bool normalised = false)
@@ -134,7 +136,7 @@ namespace Zahra
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
 
-		static VertexBuffer* Create(float* vertices, uint32_t size);
+		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
 	};
 
 	class IndexBuffer
@@ -147,7 +149,7 @@ namespace Zahra
 
 		virtual uint32_t GetCount() const = 0;
 
-		static IndexBuffer* Create(uint32_t* indices, uint32_t count);
+		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
 	};
 
 }

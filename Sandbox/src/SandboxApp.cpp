@@ -18,60 +18,86 @@ public:
 	void OnAttach() override
 	{
 
-		m_VertexArray.reset(Zahra::VertexArray::Create());
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// DIAMONDS
 
-		float vertices[6 * 7] = {
-			 0.50f,  0.00f, 0.0f, .114f, .820f, .69f,  1.0f,
-			 0.00f,  0.87f, 0.0f, .114f, .820f, .69f,  1.0f,
-			-0.50f,  0.00f, 0.0f, .114f, .820f, .69f,  1.0f,
-			 0.50f,  0.00f, 0.0f, .878f, .718f, .172f, 1.0f,
-			 0.00f, -0.87f, 0.0f, .878f, .718f, .172f, 1.0f,
-			-0.50f,  0.00f, 0.0f, .878f, .718f, .172f, 1.0f
+		m_diamondVA = Zahra::VertexArray::Create();
+
+		float diamondVertices[6 * 3] = {
+			 0.50f,  0.00f, 0.0f,
+			 0.00f,  0.87f, 0.0f,
+			-0.50f,  0.00f, 0.0f,
+			 0.50f,  0.00f, 0.0f,
+			 0.00f, -0.87f, 0.0f,
+			-0.50f,  0.00f, 0.0f
 		};
-		std::shared_ptr<Zahra::VertexBuffer> vertexBuffer;
-		vertexBuffer.reset(Zahra::VertexBuffer::Create(vertices, sizeof(vertices)));
+		Zahra::Ref<Zahra::VertexBuffer> diamondVB = Zahra::VertexBuffer::Create(diamondVertices, sizeof(diamondVertices));
+
+		{
+			Zahra::BufferLayout layout = {
+				{ Zahra::ShaderDataType::Float3, "a_Position" }
+			};
+
+			diamondVB->SetLayout(layout);
+		}
+
+		m_diamondVA->AddVertexBuffer(diamondVB);
+
+		unsigned int diamondIndices[12] = { 0,1,2,3,4,5 };
+		Zahra::Ref<Zahra::IndexBuffer> diamondIB = Zahra::IndexBuffer::Create(diamondIndices, sizeof(diamondIndices) / sizeof(uint32_t));
+		m_diamondVA->SetIndexBuffer(diamondIB);
+
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// SQUARES
+
+		m_squareVA = Zahra::VertexArray::Create();
+
+		float squareVertices[4 * 5] = {
+			 0.50f,  0.50f, 0.0f,  1.0f,  1.0f,
+			-0.50f,  0.50f, 0.0f,  0.0f,  1.0f,
+			-0.50f, -0.50f, 0.0f,  0.0f,  0.0f,
+			 0.50f, -0.50f, 0.0f,  1.0f,  0.0f
+		};
+		Zahra::Ref<Zahra::VertexBuffer> squareVB = Zahra::VertexBuffer::Create(squareVertices, sizeof(squareVertices));
 
 		{
 			Zahra::BufferLayout layout = {
 				{ Zahra::ShaderDataType::Float3, "a_Position" },
-				{ Zahra::ShaderDataType::Float4, "a_Colour" }
+				{ Zahra::ShaderDataType::Float2, "a_TextureCoord" }
 			};
 
-			vertexBuffer->SetLayout(layout);
+			squareVB->SetLayout(layout);
 		}
 
-		m_VertexArray->AddVertexBuffer(vertexBuffer);
+		m_squareVA->AddVertexBuffer(squareVB);
 
-		unsigned int indices[12] = { 0,1,2,3,4,5 };
-		std::shared_ptr<Zahra::IndexBuffer> indexBuffer;
-		indexBuffer.reset(Zahra::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
-		m_VertexArray->SetIndexBuffer(indexBuffer);
+		unsigned int squareIndices[6] = { 0, 1, 2, 0, 2, 3 };
+		Zahra::Ref<Zahra::IndexBuffer> squareIB = Zahra::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t));
+		m_squareVA->SetIndexBuffer(squareIB);
 
-		std::string vertexSrc = R"(
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// FLAT COLOUR SHADER
+
+		std::string FlatColourVertexSrc = R"(
 			#version 330 core
 
 			layout(location = 0) in vec3 a_Position;
-			layout(location = 1) in vec4 a_Colour;
 
 			uniform mat4 u_PVMatrix;
 			uniform mat4 u_Transform;
 
-			out vec4 v_Colour;
-
 			void main()
 			{
-				v_Colour = a_Colour;
 				gl_Position = u_PVMatrix * u_Transform * vec4(a_Position, 1.0);
 			}
 		)";
-		std::string fragmentSrc = R"(
+		std::string FlatColourFragmentSrc = R"(
 			#version 330 core
 
 			layout(location = 0) out vec4 colour;
 
 			uniform vec4 u_Colour;
-			
-			in vec4 v_Colour;
 
 			void main()
 			{
@@ -79,7 +105,46 @@ public:
 			}
 		)";
 
-		m_Shader.reset(Zahra::Shader::Create(vertexSrc, fragmentSrc));
+		m_FlatColourShader = Zahra::Shader::Create(FlatColourVertexSrc, FlatColourFragmentSrc);
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// TEXTURE SHADER
+
+		std::string TextureVertexSrc = R"(
+			#version 330 core
+
+			layout(location = 0) in vec3 a_Position;
+			layout(location = 1) in vec2 a_TextureCoord;
+
+			uniform mat4 u_PVMatrix;
+			uniform mat4 u_Transform;
+			
+			out vec2 v_TextureCoord;
+
+			void main()
+			{
+				v_TextureCoord = a_TextureCoord;
+				gl_Position = u_PVMatrix * u_Transform * vec4(a_Position, 1.0);
+			}
+		)";
+		std::string TextureFragmentSrc = R"(
+			#version 330 core
+
+			layout(location = 0) out vec4 colour;
+
+			in vec2 v_TextureCoord;
+
+			uniform sampler2D u_Texture;
+
+			void main()
+			{
+				colour = texture(u_Texture, v_TextureCoord);
+			}
+		)";
+
+		m_Texture = Zahra::Texture2D::Create("C:/dev/Zahra/Sandbox/assets/textures/cat.png");
+
+		m_TextureShader = Zahra::Shader::Create(TextureVertexSrc, TextureFragmentSrc);
 
 	}
 
@@ -95,12 +160,12 @@ public:
 		camera_angular_velocity *= .89f;
 
 		// Acceleration
-		int dir = 1.0f;
+		int dir = 1;
 
-		if (Zahra::Input::GetMouseY() < 100 || Zahra::Input::IsKeyPressed(Z_KEY_W))  { dir =  1.0f; camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(0, 1, 0, 1); }
-		if (Zahra::Input::GetMouseY() > 620 || Zahra::Input::IsKeyPressed(Z_KEY_S))  { dir = -1.0f; camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(0, -1, 0, 1); }
-		if (Zahra::Input::GetMouseX() > 1080 || Zahra::Input::IsKeyPressed(Z_KEY_D))  camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4( 1,  0, 0, 1);
-		if (Zahra::Input::GetMouseX() < 200  || Zahra::Input::IsKeyPressed(Z_KEY_A))  camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(-1,  0, 0, 1);
+		if (Zahra::Input::IsKeyPressed(Z_KEY_W))  { dir =  1; camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(0, 1, 0, 1); }
+		if (Zahra::Input::IsKeyPressed(Z_KEY_S))  { dir = -1; camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(0, -1, 0, 1); }
+		if (Zahra::Input::IsKeyPressed(Z_KEY_D))  camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4( 1,  0, 0, 1);
+		if (Zahra::Input::IsKeyPressed(Z_KEY_A))  camera_velocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(-1,  0, 0, 1);
 
 		if (Zahra::Input::IsKeyPressed(Z_KEY_SPACE)) m_Camera.SetPosition(glm::vec3(.0f));
 		if (Zahra::Input::IsKeyPressed(Z_KEY_Q)) camera_angular_velocity += 1.0f;
@@ -109,32 +174,48 @@ public:
 		// Movement
 		m_Camera.SetRotation(m_Camera.GetRotation() + dir * .5f * dt * camera_angular_velocity);
 		m_Camera.SetPosition(m_Camera.GetPosition() + 1.0f * dt * camera_velocity);
-		//
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		
 		
 
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// RENDERING
 		Zahra::RenderCommand::SetClearColour(glm::make_vec4(m_colour2));
 		Zahra::RenderCommand::Clear();
 
 		Zahra::Renderer::BeginScene(m_Camera);
 
-		std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_Shader)->Bind();
-		std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_Shader)->UploadUniformFloat4("u_Colour", glm::make_vec4(m_colour1));
-
-		int N = 30;
-		for (int i = 0; i < N; i++)
+		
+		// diamonds
 		{
-			for (int j = 0; j < N; j++)
+			std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_FlatColourShader)->Bind();
+			std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_FlatColourShader)->UploadUniformFloat4("u_Colour", glm::make_vec4(m_colour1));
+
+			int N = 30;
+			for (int i = 0; i < N; i++)
 			{
-				glm::vec3 position(i -.5f * j - .25f * N, .866f * j - .5f * N, 0);
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(.8f));
-				Zahra::Renderer::Submit(m_Shader, m_VertexArray, transform);
+				for (int j = 0; j < N; j++)
+				{
+					glm::vec3 position(i - .5f * j - .25f * N, .866f * j - .5f * N, 0);
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(.8f));
+					Zahra::Renderer::Submit(m_FlatColourShader, m_diamondVA, transform);
+				}
 			}
 		}
 
 		
+		// textured square
+		{
+			std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_TextureShader)->Bind();
+
+			m_Texture->Bind();
+			std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
+
+			Zahra::Renderer::Submit(m_TextureShader, m_squareVA, glm::scale(glm::mat4(1.0f), glm::vec3(m_squareSize)));
+		}
 
 		Zahra::Renderer::EndScene();
+
 	}
 
 	void OnEvent(Zahra::Event& event) override
@@ -155,19 +236,25 @@ public:
 		ImGui::Begin("Colour Scheme");
 		ImGui::ColorEdit3("Tiles", m_colour1);
 		ImGui::ColorEdit3("Background", m_colour2);
+		ImGui::SliderFloat("Square size", &m_squareSize, .1f, 10.0f, "%.3f", 32);
 		ImGui::End();
 	}
 
 	private:
-	std::shared_ptr<Zahra::Shader> m_Shader;
-	std::shared_ptr<Zahra::VertexArray> m_VertexArray;
+	Zahra::Ref<Zahra::Shader> m_FlatColourShader;
+	Zahra::Ref<Zahra::Shader> m_TextureShader;
+	Zahra::Ref<Zahra::VertexArray> m_diamondVA;
+	Zahra::Ref<Zahra::VertexArray> m_squareVA;
 	Zahra::OrthographicCamera m_Camera;
+	Zahra::Ref<Zahra::Texture2D> m_Texture;
 
 	glm::vec3 camera_velocity = glm::vec3(.0f);
 	float camera_angular_velocity = .0f;
 
 	float m_colour1[4] = { .114f, .820f, .69f, 1.0f };
 	float m_colour2[4] = { .878f, .718f, .172f, 1.0f };
+
+	float m_squareSize = 1.0f;
 
 };
 

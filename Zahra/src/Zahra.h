@@ -19,6 +19,7 @@
 #include "Zahra/Renderer/RenderCommand.h"
 #include "Zahra/Renderer/Buffer.h"
 #include "Zahra/Renderer/Shader.h"
+#include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/VertexArray.h"
 #include "Zahra/Renderer/Camera.h"
 

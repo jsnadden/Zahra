@@ -18,6 +18,7 @@ IncludeDir["GLFW"] = "Zahra/vendor/GLFW/include"
 IncludeDir["Glad"] = "Zahra/vendor/Glad/include"
 IncludeDir["imgui"] = "Zahra/vendor/imgui"
 IncludeDir["glm"] = "Zahra/vendor/glm"
+IncludeDir["stb_image"] = "Zahra/vendor/stb_image"
 
 group "Dependencies"
 	include "Zahra/vendor/GLFW"
@@ -32,6 +33,8 @@ project "Zahra"
 	cppdialect "C++17"
 	staticruntime "on"
 
+	externalwarnings "Off"
+
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
@@ -43,7 +46,9 @@ project "Zahra"
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
-		"%{prj.name}/vendor/glm/glm/**.inl"
+		"%{prj.name}/vendor/glm/glm/**.inl",
+		"%{prj.name}/vendor/stb_image/**.h",
+		"%{prj.name}/vendor/stb_image/**.cpp"
 	}
 
 	defines 
@@ -58,7 +63,8 @@ project "Zahra"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.imgui}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.stb_image}"
 	}
 
 	links
@@ -97,6 +103,8 @@ project "Sandbox"
 	language "C++"
 	cppdialect "C++17"
 	staticruntime "on"
+
+	externalwarnings "Off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
