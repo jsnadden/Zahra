@@ -2,10 +2,9 @@
 
 #include "Platform/OpenGL/OpenGLShader.h"
 
-
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "imgui/imgui.h"
+#include "ImGui/imgui.h"
 
 class ExampleLayer : public Zahra::Layer
 {

@@ -16,14 +16,14 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "Zahra/vendor/GLFW/include"
 IncludeDir["Glad"] = "Zahra/vendor/Glad/include"
-IncludeDir["imgui"] = "Zahra/vendor/imgui"
+IncludeDir["ImGui"] = "Zahra/vendor/ImGui"
 IncludeDir["glm"] = "Zahra/vendor/glm"
 IncludeDir["stb_image"] = "Zahra/vendor/stb_image"
 
 group "Dependencies"
 	include "Zahra/vendor/GLFW"
 	include "Zahra/vendor/Glad"
-	include "Zahra/vendor/imgui"
+	include "Zahra/vendor/ImGui"
 group ""
 
 project "Zahra"
@@ -33,7 +33,7 @@ project "Zahra"
 	cppdialect "C++17"
 	staticruntime "on"
 
-	externalwarnings "Off"
+	--externalwarnings "Off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -62,7 +62,7 @@ project "Zahra"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.imgui}",
+		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb_image}"
 	}
@@ -71,7 +71,7 @@ project "Zahra"
 	{
 		"GLFW",
 		"Glad",
-		"imgui",
+		"ImGui",
 		"opengl32.lib"
 	}
 
@@ -104,7 +104,7 @@ project "Sandbox"
 	cppdialect "C++17"
 	staticruntime "on"
 
-	externalwarnings "Off"
+	--externalwarnings "Off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -122,7 +122,7 @@ project "Sandbox"
 		"Zahra/vendor/spdlog/include",
 		"Zahra/src",
 		"Zahra/vendor",
-		"%{IncludeDir.imgui}",
+		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}"
 	}
 
