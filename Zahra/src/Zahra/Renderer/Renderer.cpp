@@ -8,6 +8,11 @@ namespace Zahra
 
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
 
+	void Renderer::Init()
+	{
+		RenderCommand::Init();
+	}
+
 	void Renderer::BeginScene(Camera& camera)
 	{
 		m_SceneData->PVMatrix = camera.GetPVMatrix();

@@ -8,6 +8,10 @@ namespace Zahra
 	class RenderCommand
 	{
 	public:
+		inline static void Init()
+		{
+			s_rendererAPI->Init();
+		}
 
 		inline static void SetClearColour(const glm::vec4& colour)
 		{

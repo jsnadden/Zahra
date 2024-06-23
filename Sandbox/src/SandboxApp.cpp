@@ -109,7 +109,7 @@ public:
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// TEXTURE SHADER
 
-		std::string TextureVertexSrc = R"(
+		/*std::string TextureVertexSrc = R"(
 			#version 330 core
 
 			layout(location = 0) in vec3 a_Position;
@@ -139,11 +139,11 @@ public:
 			{
 				colour = texture(u_Texture, v_TextureCoord);
 			}
-		)";
+		)";*/
 
 		m_Texture = Zahra::Texture2D::Create("C:/dev/Zahra/Sandbox/assets/textures/cat.png");
 
-		m_TextureShader = Zahra::Shader::Create(TextureVertexSrc, TextureFragmentSrc);
+		m_TextureShader = Zahra::Shader::Create("C:/dev/Zahra/Sandbox/assets/shaders/texture_shader.glsl");
 
 	}
 
@@ -195,7 +195,7 @@ public:
 			{
 				for (int j = 0; j < N; j++)
 				{
-					glm::vec3 position(i - .5f * j - .25f * N, .866f * j - .5f * N, 0);
+					glm::vec3 position(i - .5f * j - .25f * N, .866f * j - .5f * N + .25f, 0);
 					glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(.8f));
 					Zahra::Renderer::Submit(m_FlatColourShader, m_diamondVA, transform);
 				}

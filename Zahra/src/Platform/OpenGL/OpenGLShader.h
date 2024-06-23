@@ -4,11 +4,15 @@
 
 #include <glm/glm.hpp>
 
+// TODO: this can/should be removed, and instead just include glad.h here, but for now we're doing some casting in sandbox
+typedef unsigned int GLenum;
+
 namespace Zahra
 {
 	class OpenGLShader : public Shader
 	{
 	public:
+		OpenGLShader(const std::string& filepath);
 		OpenGLShader(const std::string& vertexSrc, const std::string& fragmentSrc);
 		virtual ~OpenGLShader();
 
@@ -30,6 +34,10 @@ namespace Zahra
 
 	private:
 		uint32_t m_RendererID;
+
+		std::string ReadFile(const std::string& filepath);
+		std::unordered_map<GLenum, std::string> ParseShaderSrc(std::string& shaderSrc);
+		void Compile(const std::unordered_map<GLenum, std::string>& shaderSrcs);
 
 	};
 }

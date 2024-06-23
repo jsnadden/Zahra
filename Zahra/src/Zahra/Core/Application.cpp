@@ -1,8 +1,7 @@
 #include "zpch.h"
 #include "Application.h"
 #include "Zahra/Core/Input.h"
-
-#include <glad/glad.h>
+#include "Zahra/Renderer/Renderer.h"
 
 namespace Zahra
 {
@@ -16,6 +15,8 @@ namespace Zahra
 
 		m_Window = Scope<Window>(Window::Create());
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
+
+		Renderer::Init();
 
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverlay(m_ImGuiLayer);
