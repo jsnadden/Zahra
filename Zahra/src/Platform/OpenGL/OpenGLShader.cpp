@@ -25,17 +25,23 @@ namespace Zahra
 
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 	{
-		
-		std::string srcString= ReadFile(filepath);
-		auto shaderSrcs = ParseShaderSrc(srcString);
-		Compile(shaderSrcs);
+		std::string sourceString= ReadFile(filepath);
+		auto shaderSources = ParseShaderSrc(sourceString);
+		Compile(shaderSources);
+
+		auto lastSlash = filepath.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+		auto lastDot = filepath.rfind(".");
+		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
+		m_Name = filepath.substr(lastSlash, count);
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& vertexSrc, const std::string& fragmentSrc)
+	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource)
+		: m_Name(name)
 	{
 		std::unordered_map<GLenum, std::string> shaderSrcs;
-		shaderSrcs[GL_VERTEX_SHADER] = vertexSrc;
-		shaderSrcs[GL_FRAGMENT_SHADER] = fragmentSrc;
+		shaderSrcs[GL_VERTEX_SHADER] = vertexSource;
+		shaderSrcs[GL_FRAGMENT_SHADER] = fragmentSource;
 
 		Compile(shaderSrcs);
 	}
@@ -49,7 +55,7 @@ namespace Zahra
 	{
 		std::string fileContents;
 
-		std::ifstream in(filepath, std::ios::in, std::ios::binary);
+		std::ifstream in(filepath, std::ios::in | std::ios::binary);
 
 		if (in)
 		{
@@ -70,42 +76,45 @@ namespace Zahra
 
 	}
 
-	std::unordered_map<GLenum, std::string> OpenGLShader::ParseShaderSrc(std::string& shaderSrc)
+	std::unordered_map<GLenum, std::string> OpenGLShader::ParseShaderSrc(std::string& shaderSource)
 	{
-		std::unordered_map<GLenum, std::string> shaderSrcs;
+		std::unordered_map<GLenum, std::string> shaderSources;
 
 		const char* typeToken = "#type";
 
 		size_t typeTokenLength = strlen(typeToken);
-		size_t pos = shaderSrc.find(typeToken, 0);
+		size_t pos = shaderSource.find(typeToken, 0);
 
 		// TODO: make this a little more flexible, ignoring whitespace etc.
 		while (pos != std::string::npos)
 		{
-			size_t eol = shaderSrc.find_first_of("\r\n", pos);
+			size_t eol = shaderSource.find_first_of("\r\n", pos);
 			Z_CORE_ASSERT(eol != std::string::npos, "Syntax error.");
 
 			size_t begin = pos + typeTokenLength + 1;
 
-			std::string type = shaderSrc.substr(begin, eol - begin);
+			std::string type = shaderSource.substr(begin, eol - begin);
 			Z_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel", "Invalid shader type specified.");
 
-			size_t nextLinePos = shaderSrc.find_first_not_of("\r\n", eol);
-			pos = shaderSrc.find(typeToken, nextLinePos);
+			size_t nextLinePos = shaderSource.find_first_not_of("\r\n", eol);
+			pos = shaderSource.find(typeToken, nextLinePos);
 
-			shaderSrcs[ShaderTypeFromString(type)] = shaderSrc.substr(nextLinePos,
-				pos - (nextLinePos == std::string::npos ? shaderSrc.size() - 1 : nextLinePos));
+			shaderSources[ShaderTypeFromString(type)] = shaderSource.substr(nextLinePos,
+				pos - (nextLinePos == std::string::npos ? shaderSource.size() - 1 : nextLinePos));
 		}
 
-		return shaderSrcs;
+		return shaderSources;
 	}
 
-	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSrcs)
+	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
 	{
 		GLuint program = glCreateProgram();
-		std::vector<GLenum> glShaderIDs(shaderSrcs.size());
 
-		for (auto keyvalue : shaderSrcs)
+		Z_CORE_ASSERT(shaderSources.size() <= 2, "Currently only supports 2 shaders");
+		std::array<GLenum, 2> glShaderIDs;
+		int shaderIndex = 0;
+
+		for (auto keyvalue : shaderSources)
 		{
 			GLenum type = keyvalue.first;
 			const std::string& source = keyvalue.second;
@@ -135,7 +144,7 @@ namespace Zahra
 			}
 
 			glAttachShader(program, shader);
-			glShaderIDs.push_back(shader);
+			glShaderIDs[shaderIndex++] = shader;
 		}
 		
 		glLinkProgram(program);

@@ -1,13 +1,14 @@
 #pragma once
 
 #include <iostream>
+#include <stdio.h>
+#include <sstream>
 #include <memory>
 #include <functional>
 #include <algorithm>
 #include <utility>
-#include <sstream>
-#include <stdio.h>
 
+#include <array>
 #include <string>
 #include <vector>
 #include <map>
