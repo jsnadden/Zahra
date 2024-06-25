@@ -16,7 +16,7 @@ namespace Zahra
 		m_Window = Scope<Window>(Window::Create());
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
 
-		Renderer::Init();
+		Renderer3D::Init();
 
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverlay(m_ImGuiLayer);
@@ -55,7 +55,7 @@ namespace Zahra
 	void Application::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>(Z_BIND_EVENT_FN(Application::OnWindowClose));
+		dispatcher.Dispatch<WindowClosedEvent>(Z_BIND_EVENT_FN(Application::OnWindowClose));
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
@@ -77,7 +77,7 @@ namespace Zahra
 		overlay->OnAttach();
 	}
 
-	bool Application::OnWindowClose(WindowCloseEvent& e)
+	bool Application::OnWindowClose(WindowClosedEvent& e)
 	{
 		m_Running = false;
 		

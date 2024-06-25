@@ -9,7 +9,7 @@ namespace Zahra
 	
     Ref<VertexArray> VertexArray::Create()
 	{
-        switch (Renderer::GetAPI())
+        switch (Renderer3D::GetAPI())
         {
         case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
         case RendererAPI::API::OpenGL:    return std::make_shared<OpenGLVertexArray>();

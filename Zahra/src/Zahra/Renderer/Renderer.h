@@ -7,7 +7,7 @@
 
 namespace Zahra
 {
-	class Renderer
+	class Renderer3D
 	{
 	public:
 		static void Init();

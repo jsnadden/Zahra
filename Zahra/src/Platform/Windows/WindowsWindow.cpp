@@ -68,7 +68,7 @@ namespace Zahra
 				data.Width = width;
 				data.Height = height;
 
-				WindowResizeEvent event(width, height);
+				WindowResizedEvent event(width, height);
 				data.EventCallback(event);
 			}
 		);
@@ -78,7 +78,7 @@ namespace Zahra
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				WindowCloseEvent event;
+				WindowClosedEvent event;
 				data.EventCallback(event);
 			}
 		);

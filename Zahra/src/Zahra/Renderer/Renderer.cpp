@@ -6,24 +6,24 @@
 namespace Zahra
 {
 
-	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
+	Renderer3D::SceneData* Renderer3D::m_SceneData = new Renderer3D::SceneData;
 
-	void Renderer::Init()
+	void Renderer3D::Init()
 	{
 		RenderCommand::Init();
 	}
 
-	void Renderer::BeginScene(Camera& camera)
+	void Renderer3D::BeginScene(Camera& camera)
 	{
 		m_SceneData->PVMatrix = camera.GetPVMatrix();
 	}
 
-	void Renderer::EndScene()
+	void Renderer3D::EndScene()
 	{
 
 	}
 
-	void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform)
+	void Renderer3D::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform)
 	{
 		// TODO: instead this should stick a rendercommand into a queue
 		//		also this needs to become renderapi agnostic eventually

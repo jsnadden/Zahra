@@ -37,7 +37,7 @@ namespace Zahra
 		inline Window& GetWindow() { return *m_Window; }
 
 	private:
-		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowClose(WindowClosedEvent& e);
 
 		static Application* s_Instance;
 

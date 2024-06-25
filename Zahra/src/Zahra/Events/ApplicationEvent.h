@@ -5,11 +5,11 @@
 namespace Zahra
 {
 
-	class WindowResizeEvent : public Event
+	class WindowResizedEvent : public Event
 	{
 	public:
 
-		WindowResizeEvent(unsigned int width, unsigned int height)
+		WindowResizedEvent(unsigned int width, unsigned int height)
 		: m_Width(width), m_Height(height) {}
 
 		inline unsigned int GetWidth() const { return m_Width; }
@@ -18,7 +18,7 @@ namespace Zahra
 		std::string ToString() const override
 		{
 			std::stringstream stream;
-			stream << "WindowResizeEvent: " << m_Width << ", " << m_Height;
+			stream << "WindowResizedEvent: " << m_Width << ", " << m_Height;
 			return stream.str();
 		}
 
@@ -33,11 +33,11 @@ namespace Zahra
 
 	};
 
-	class WindowCloseEvent : public Event
+	class WindowClosedEvent : public Event
 	{
 	public:
 
-		WindowCloseEvent() = default;
+		WindowClosedEvent() = default;
 
 		EVENT_CLASS_TYPE(WindowClose)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)

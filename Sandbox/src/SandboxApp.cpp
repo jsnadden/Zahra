@@ -6,12 +6,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "ImGui/imgui.h"
 
+
 class ExampleLayer : public Zahra::Layer
 {
 public:
 	ExampleLayer()
 		: Layer("Example_Layer"),
-		m_Camera(-3.2f, 3.2f, -1.8f, 1.8f)
+		m_CameraController(1280.0f / 720.0f, true)
 	{}
 
 	void OnAttach() override
@@ -106,7 +107,7 @@ public:
 
 		m_FlatColourShader = Zahra::Shader::Create("FlatColourShader", FlatColourVertexSrc, FlatColourFragmentSrc);
 
-		m_Texture = Zahra::Texture2D::Create("C:/dev/Zahra/Sandbox/assets/textures/cat.png");
+		m_Texture = Zahra::Texture2D::Create("C:/dev/Zahra/Sandbox/assets/textures/yajirobe.png");
 		m_Texture->Bind();
 
 		auto textureShader = m_ShaderLibrary.Load("TextureShader", "C:/dev/Zahra/Sandbox/assets/shaders/texture_shader.glsl");
@@ -117,68 +118,34 @@ public:
 
 	void OnUpdate(float dt) override
 	{
-		//Z_TRACE("Framerate: {0}fps", 1/dt);
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CAMERA
-
-		// Inertia
-		m_CameraVelocity *= .89f;
-		m_CameraAngularVelocity *= .89f;
-
-		// Acceleration
-		int dir = 1;
-
-		if (Zahra::Input::IsKeyPressed(Z_KEY_W))  { dir =  1; m_CameraVelocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(0, 1, 0, 1); }
-		if (Zahra::Input::IsKeyPressed(Z_KEY_S))  { dir = -1; m_CameraVelocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(0, -1, 0, 1); }
-		if (Zahra::Input::IsKeyPressed(Z_KEY_D))  m_CameraVelocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4( 1,  0, 0, 1);
-		if (Zahra::Input::IsKeyPressed(Z_KEY_A))  m_CameraVelocity += glm::rotate(glm::mat4(1.0f), m_Camera.GetRotation(), glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(-1,  0, 0, 1);
-
-		if (Zahra::Input::IsKeyPressed(Z_KEY_SPACE)) m_Camera.SetPosition(glm::vec3(.0f));
-		if (Zahra::Input::IsKeyPressed(Z_KEY_Q)) m_CameraAngularVelocity += 1.0f;
-		if (Zahra::Input::IsKeyPressed(Z_KEY_E)) m_CameraAngularVelocity -= 1.0f;
-		
-		// Movement
-		m_Camera.SetRotation(m_Camera.GetRotation() + dir * .5f * dt * m_CameraAngularVelocity);
-		m_Camera.SetPosition(m_Camera.GetPosition() + 1.0f * dt * m_CameraVelocity);
-		
-		
-
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// RENDERING
 		Zahra::RenderCommand::SetClearColour(glm::make_vec4(m_Colour2));
 		Zahra::RenderCommand::Clear();
 
-		Zahra::Renderer::BeginScene(m_Camera);
+		Zahra::Renderer3D::BeginScene(m_CameraController.GetCamera());
 
+		m_CameraController.OnUpdate(dt);
 		
-		// diamonds
-		{
-			std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_FlatColourShader)->Bind();
-			std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_FlatColourShader)->UploadUniformFloat4("u_Colour", glm::make_vec4(m_Colour1));
+		//////////////////////////////////////////////////////////////////////////////////////////////////
+		// DIAMONDS
+		std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_FlatColourShader)->Bind();
+		std::dynamic_pointer_cast<Zahra::OpenGLShader>(m_FlatColourShader)->UploadUniformFloat4("u_Colour", glm::make_vec4(m_Colour1));
 
-			int N = 30;
-			for (int i = 0; i < N; i++)
+		int N = 30;
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < N; j++)
 			{
-				for (int j = 0; j < N; j++)
-				{
-					glm::vec3 position(i - .5f * j - .25f * N, .866f * j - .5f * N + .25f, 0);
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(.8f));
-					Zahra::Renderer::Submit(m_FlatColourShader, m_DiamondVertexArray, transform);
-				}
+				glm::vec3 position(i - .5f * j - .25f * N, .866f * j - .5f * N + .25f, 0);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(.8f));
+				Zahra::Renderer3D::Submit(m_FlatColourShader, m_DiamondVertexArray, transform);
 			}
 		}
+		//////////////////////////////////////////////////////////////////////////////////////////////////
+		// TEXTURE
+		Zahra::Renderer3D::Submit(m_ShaderLibrary.Get("TextureShader"), m_SquareVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(m_SquareSize)));
+		//////////////////////////////////////////////////////////////////////////////////////////////////
 
-		
-		// textured square
-		{
-			
-
-			Zahra::Renderer::Submit(m_ShaderLibrary.Get("TextureShader"), m_SquareVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(m_SquareSize)));
-		}
-
-		Zahra::Renderer::EndScene();
+		Zahra::Renderer3D::EndScene();
 
 	}
 
@@ -186,6 +153,8 @@ public:
 	{
 		Zahra::EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<Zahra::KeyPressedEvent>(Z_BIND_EVENT_FN(ExampleLayer::OnKeyPressedEvent));
+
+		m_CameraController.OnEvent(event);
 	}
 
 	bool OnKeyPressedEvent(Zahra::KeyPressedEvent& event)
@@ -214,9 +183,7 @@ private:
 	
 	Zahra::Ref<Zahra::Texture2D> m_Texture;
 
-	Zahra::OrthographicCamera m_Camera;
-	glm::vec3 m_CameraVelocity = glm::vec3(.0f);
-	float m_CameraAngularVelocity = .0f;
+	Zahra::OrthographicCameraController m_CameraController;
 
 	float m_Colour1[4] = { .114f, .820f, .69f, 1.0f };
 	float m_Colour2[4] = { .878f, .718f, .172f, 1.0f };

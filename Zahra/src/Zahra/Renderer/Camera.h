@@ -18,10 +18,12 @@ namespace Zahra {
 		OrthographicCamera(float left, float right, float bottom, float top);
 
 		void SetPosition(const glm::vec3& position);
-		void SetRotation(float rotation);
-
 		const glm::vec3& GetPosition() const { return m_Position; }
+
+		void SetRotation(float rotation);
 		float GetRotation() const { return m_Rotation; }
+
+		void SetProjection(float left, float right, float bottom, float top);
 
 		const glm::mat4& GetProjectionMatrix() const override { return m_ProjectionMatrix; }
 		const glm::mat4& GetViewMatrix() const override { return m_ViewMatrix; }
