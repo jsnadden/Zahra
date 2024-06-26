@@ -15,6 +15,7 @@
 
 //------------RENDERING----------------
 #include "Zahra/Renderer/Renderer.h"
+#include "Zahra/Renderer/Renderer2D.h"
 #include "Zahra/Renderer/RenderCommand.h"
 #include "Zahra/Renderer/Buffer.h"
 #include "Zahra/Renderer/Shader.h"

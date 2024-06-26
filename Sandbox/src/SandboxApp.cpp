@@ -104,10 +104,10 @@ public:
 
 		m_FlatColourShader = Zahra::Shader::Create("FlatColourShader", FlatColourVertexSrc, FlatColourFragmentSrc);
 
-		m_Texture = Zahra::Texture2D::Create("C:/dev/Zahra/Sandbox/assets/textures/cat.png");
+		m_Texture = Zahra::Texture2D::Create("Sandbox/assets/textures/cat.png");
 		m_Texture->Bind();
 
-		auto textureShader = m_ShaderLibrary.Load("TextureShader", "C:/dev/Zahra/Sandbox/assets/shaders/texture_shader.glsl");
+		auto textureShader = m_ShaderLibrary.Load("TextureShader", "Sandbox/assets/shaders/texture_shader.glsl");
 		std::dynamic_pointer_cast<Zahra::OpenGLShader>(textureShader)->Bind();
 		std::dynamic_pointer_cast<Zahra::OpenGLShader>(textureShader)->UploadUniformInt("u_Texture", 0);
 
