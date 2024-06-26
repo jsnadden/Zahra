@@ -10,28 +10,33 @@ namespace Zahra
 	public:
 		inline static void Init()
 		{
-			s_rendererAPI->Init();
+			s_RendererAPI->Init();
 		}
 
 		inline static void SetClearColour(const glm::vec4& colour)
 		{
-			s_rendererAPI->SetClearColour(colour);
+			s_RendererAPI->SetClearColour(colour);
 		}
 
 		inline static void Clear()
 		{
-			s_rendererAPI->Clear();
+			s_RendererAPI->Clear();
 		}
 
 		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray)
 		{
-			s_rendererAPI->DrawIndexed(vertexArray);
+			s_RendererAPI->DrawIndexed(vertexArray);
+		}
+
+		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+		{
+			s_RendererAPI->SetViewport(x, y, width, height);
 		}
 
 
 	private:
 
-		static RendererAPI* s_rendererAPI;
+		static Scope<RendererAPI> s_RendererAPI;
 
 	};
 

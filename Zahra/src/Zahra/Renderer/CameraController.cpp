@@ -22,13 +22,15 @@ namespace Zahra
 		// Reset camera
 		if (Zahra::Input::IsKeyPressed(Z_KEY_SPACE))
 		{
+			m_Velocity *= .0f;
+			m_AngularVelocity *= .0f;
+
 			m_Camera.SetPosition(glm::vec3(.0f));
 			m_Camera.SetRotation(.0f);
 
 			m_ZoomLevel = 1.0f;
 			m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		}
-
 
 		// Cache camera data
 		m_Position = m_Camera.GetPosition();

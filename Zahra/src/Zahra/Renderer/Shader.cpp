@@ -11,7 +11,7 @@ namespace Zahra
 
     Ref<Shader> Shader::Create(const std::string& filepath)
     {
-        switch (Renderer3D::GetAPI())
+        switch (Renderer::GetAPI())
         {
         case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
         case RendererAPI::API::OpenGL:    return std::make_shared<OpenGLShader>(filepath);
@@ -24,7 +24,7 @@ namespace Zahra
 
     Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource)
     {
-        switch (Renderer3D::GetAPI())
+        switch (Renderer::GetAPI())
         {
         case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
         case RendererAPI::API::OpenGL:    return std::make_shared<OpenGLShader>(name, vertexSource, fragmentSource);

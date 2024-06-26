@@ -80,8 +80,7 @@ project "Zahra"
 
 		defines
 		{
-			"Z_PLATFORM_WINDOWS",
-			"Z_BUILD_DLL",
+			--"Z_BUILD_DLL", aint dynamically linking no more
 			"GLFW_INCLUDE_NONE"
 		}
 	
@@ -133,11 +132,6 @@ project "Sandbox"
 
 	filter "system:windows"
 		systemversion "latest"
-
-		defines
-		{
-			"Z_PLATFORM_WINDOWS"
-		}
 
 	filter "configurations:Debug"
 		defines "Z_DEBUG"

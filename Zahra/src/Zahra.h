@@ -9,7 +9,6 @@
 #include "Zahra/Core/Input.h"
 #include "Zahra/Core/KeyCodes.h"
 #include "Zahra/Core/MouseButtonCodes.h"
-#include "Zahra/CameraController.h"
 
 //------------GUI----------------------
 #include "Zahra/ImGui/ImGuiLayer.h"
@@ -22,6 +21,5 @@
 #include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/VertexArray.h"
 #include "Zahra/Renderer/Camera.h"
+#include "Zahra/Renderer/CameraController.h"
 
-//------------ENTRY-POINT--------------
-#include "Zahra/Core/EntryPoint.h"

@@ -16,7 +16,7 @@ namespace Zahra
 		m_Window = Scope<Window>(Window::Create());
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
 
-		Renderer3D::Init();
+		Renderer::Init();
 
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverlay(m_ImGuiLayer);
@@ -37,9 +37,12 @@ namespace Zahra
 			float dt = ThisFrameTime - m_PreviousFrameTime;
 			m_PreviousFrameTime = ThisFrameTime;
 
-			// Update layers
-			for (Layer* layer : m_LayerStack)
-				layer->OnUpdate(dt);
+			if (!m_Minimised)
+			{
+				// Update layers
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(dt);
+			}
 			
 			// Render ImGui layers
 			m_ImGuiLayer->Begin();
@@ -55,7 +58,8 @@ namespace Zahra
 	void Application::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowClosedEvent>(Z_BIND_EVENT_FN(Application::OnWindowClose));
+		dispatcher.Dispatch<WindowClosedEvent>(Z_BIND_EVENT_FN(Application::OnWindowClosed));
+		dispatcher.Dispatch<WindowResizedEvent>(Z_BIND_EVENT_FN(Application::OnWindowResized));
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
@@ -77,11 +81,26 @@ namespace Zahra
 		overlay->OnAttach();
 	}
 
-	bool Application::OnWindowClose(WindowClosedEvent& e)
+	bool Application::OnWindowClosed(WindowClosedEvent& e)
 	{
 		m_Running = false;
 		
 		return true;
+	}
+
+	bool Application::OnWindowResized(WindowResizedEvent& e)
+	{
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		{
+			m_Minimised = true;
+			return false;
+		}
+		
+		m_Minimised = false;
+
+		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+
+		return false;
 	}
 
 

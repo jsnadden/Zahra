@@ -1,13 +1,10 @@
 #include <Zahra.h>
+#include <Zahra/Core/EntryPoint.h>
 
-#include "Platform/OpenGL/OpenGLShader.h"
-
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include "ImGui/imgui.h"
+#include "Sandbox2D.h"
 
 
-class ExampleLayer : public Zahra::Layer
+/*class ExampleLayer : public Zahra::Layer
 {
 public:
 	ExampleLayer()
@@ -107,7 +104,7 @@ public:
 
 		m_FlatColourShader = Zahra::Shader::Create("FlatColourShader", FlatColourVertexSrc, FlatColourFragmentSrc);
 
-		m_Texture = Zahra::Texture2D::Create("C:/dev/Zahra/Sandbox/assets/textures/yajirobe.png");
+		m_Texture = Zahra::Texture2D::Create("C:/dev/Zahra/Sandbox/assets/textures/cat.png");
 		m_Texture->Bind();
 
 		auto textureShader = m_ShaderLibrary.Load("TextureShader", "C:/dev/Zahra/Sandbox/assets/shaders/texture_shader.glsl");
@@ -121,7 +118,7 @@ public:
 		Zahra::RenderCommand::SetClearColour(glm::make_vec4(m_Colour2));
 		Zahra::RenderCommand::Clear();
 
-		Zahra::Renderer3D::BeginScene(m_CameraController.GetCamera());
+		Zahra::Renderer::BeginScene(m_CameraController.GetCamera());
 
 		m_CameraController.OnUpdate(dt);
 		
@@ -137,15 +134,15 @@ public:
 			{
 				glm::vec3 position(i - .5f * j - .25f * N, .866f * j - .5f * N + .25f, 0);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(.8f));
-				Zahra::Renderer3D::Submit(m_FlatColourShader, m_DiamondVertexArray, transform);
+				Zahra::Renderer::Submit(m_FlatColourShader, m_DiamondVertexArray, transform);
 			}
 		}
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 		// TEXTURE
-		Zahra::Renderer3D::Submit(m_ShaderLibrary.Get("TextureShader"), m_SquareVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(m_SquareSize)));
+		Zahra::Renderer::Submit(m_ShaderLibrary.Get("TextureShader"), m_SquareVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(m_SquareSize)));
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 
-		Zahra::Renderer3D::EndScene();
+		Zahra::Renderer::EndScene();
 
 	}
 
@@ -155,6 +152,7 @@ public:
 		dispatcher.Dispatch<Zahra::KeyPressedEvent>(Z_BIND_EVENT_FN(ExampleLayer::OnKeyPressedEvent));
 
 		m_CameraController.OnEvent(event);
+
 	}
 
 	bool OnKeyPressedEvent(Zahra::KeyPressedEvent& event)
@@ -190,10 +188,7 @@ private:
 	float m_SquareSize = 1.0f;
 
 };
-
-
-
-
+*/
 
 class Sandbox : public Zahra::Application
 {
@@ -202,9 +197,8 @@ public:
 	Sandbox()
 		: Zahra::Application()
 	{
-		PushLayer(new ExampleLayer());
-
-		
+		//PushLayer(new ExampleLayer());
+		PushLayer(new Sandbox2DLayer());
 	}
 
 	~Sandbox()

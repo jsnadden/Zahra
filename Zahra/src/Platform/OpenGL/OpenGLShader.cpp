@@ -99,8 +99,8 @@ namespace Zahra
 			size_t nextLinePos = shaderSource.find_first_not_of("\r\n", eol);
 			pos = shaderSource.find(typeToken, nextLinePos);
 
-			shaderSources[ShaderTypeFromString(type)] = shaderSource.substr(nextLinePos,
-				pos - (nextLinePos == std::string::npos ? shaderSource.size() - 1 : nextLinePos));
+			shaderSources[ShaderTypeFromString(type)] = (pos == std::string::npos) ?
+				shaderSource.substr(nextLinePos) : shaderSource.substr(nextLinePos, pos - nextLinePos);
 		}
 
 		return shaderSources;

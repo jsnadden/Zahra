@@ -37,7 +37,8 @@ namespace Zahra
 		inline Window& GetWindow() { return *m_Window; }
 
 	private:
-		bool OnWindowClose(WindowClosedEvent& e);
+		bool OnWindowClosed(WindowClosedEvent& e);
+		bool OnWindowResized(WindowResizedEvent& e);
 
 		static Application* s_Instance;
 
@@ -45,6 +46,8 @@ namespace Zahra
 		ImGuiLayer* m_ImGuiLayer;
 
 		bool m_Running = true;
+		bool m_Minimised = false;
+
 		float m_PreviousFrameTime;
 
 		LayerStack m_LayerStack;

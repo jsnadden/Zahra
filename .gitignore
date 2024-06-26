@@ -1,7 +1,8 @@
 ﻿
 # binaries
-bin/
 bin-int/
+**/bin/
+!vendor/bin/premake/
 
 # vs files
 .vs/

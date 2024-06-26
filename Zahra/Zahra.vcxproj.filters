@@ -135,6 +135,9 @@
     <ClInclude Include="src\Zahra\Renderer\Camera.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\CameraController.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\GraphicsContext.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
@@ -1410,9 +1413,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\CameraController.h">
-      <Filter>src</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1463,6 +1463,9 @@
     <ClCompile Include="src\Zahra\Renderer\Camera.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\CameraController.cpp">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\RenderCommand.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
@@ -1486,9 +1489,6 @@
     </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Zahra\CameraController.cpp">
-      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

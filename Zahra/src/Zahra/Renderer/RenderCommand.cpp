@@ -6,6 +6,6 @@
 namespace Zahra
 {
 	// hard coding opengl, until we implement other apis
-	RendererAPI* RenderCommand::s_rendererAPI = new OpenGLRendererAPI();
+	Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<OpenGLRendererAPI>();
 
 }

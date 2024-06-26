@@ -7,10 +7,12 @@
 
 namespace Zahra
 {
-	class Renderer3D
+	class Renderer
 	{
 	public:
 		static void Init();
+
+		static void OnWindowResize(uint32_t width, uint32_t height);
 
 		static void BeginScene(Camera& camera);
 		static void EndScene();
@@ -25,7 +27,7 @@ namespace Zahra
 			glm::mat4 PVMatrix;
 		};
 
-		static SceneData* m_SceneData;
+		static Scope<SceneData> s_SceneData;
 	};
 
 };
