@@ -14,7 +14,7 @@ namespace Zahra
         switch (Renderer::GetAPI())
         {
         case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
-        case RendererAPI::API::OpenGL:    return std::make_shared<OpenGLShader>(filepath);
+        case RendererAPI::API::OpenGL:    return CreateRef<OpenGLShader>(filepath);
         case RendererAPI::API::Direct3D:  Z_CORE_ASSERT(false, "RendererAPI::API::Direct3D is not currently supported"); return nullptr;
         case RendererAPI::API::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan is not currently supported"); return nullptr;
         }
@@ -27,7 +27,7 @@ namespace Zahra
         switch (Renderer::GetAPI())
         {
         case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
-        case RendererAPI::API::OpenGL:    return std::make_shared<OpenGLShader>(name, vertexSource, fragmentSource);
+        case RendererAPI::API::OpenGL:    return CreateRef<OpenGLShader>(name, vertexSource, fragmentSource);
         case RendererAPI::API::Direct3D:  Z_CORE_ASSERT(false, "RendererAPI::API::Direct3D is not currently supported"); return nullptr;
         case RendererAPI::API::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan is not currently supported"); return nullptr;
         }

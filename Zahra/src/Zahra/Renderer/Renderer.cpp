@@ -3,8 +3,6 @@
 
 #include "Renderer2D.h"
 
-// TODO: remove this dependency
-#include "Platform/OpenGL/OpenGLShader.h"
 
 namespace Zahra
 {
@@ -38,8 +36,8 @@ namespace Zahra
 		//		also this needs to become renderapi agnostic eventually
 
 		shader->Bind();
-		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_PVMatrix", s_SceneData->PVMatrix);
-		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_Transform", transform);
+		shader->SetMat4("u_PVMatrix", s_SceneData->PVMatrix);
+		shader->SetMat4("u_Transform", transform);
 		
 
 		vertexArray->Bind();

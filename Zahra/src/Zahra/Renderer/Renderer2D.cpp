@@ -6,8 +6,7 @@
 #include "Shader.h"
 #include "RenderCommand.h"
 
-// TODO: remove this dependency
-#include "Platform/OpenGL/OpenGLShader.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Zahra
 {
@@ -15,7 +14,8 @@ namespace Zahra
 	struct Renderer2DData
 	{
 		Ref<VertexArray> QuadVertexArray;
-		Ref<Shader> FlatColourShader;
+		Ref<Shader> TextureShader;
+		Ref<Texture2D> WhiteTexture;
 	};
 
 	static Renderer2DData* s_Data;
@@ -28,25 +28,34 @@ namespace Zahra
 		s_Data->QuadVertexArray = VertexArray::Create();
 		{
 			// VERTEX BUFFER
-			float squareVertices[4 * 3] = {
-				 0.50f,  0.50f, 0.0f,
-				-0.50f,  0.50f, 0.0f,
-				-0.50f, -0.50f, 0.0f,
-				 0.50f, -0.50f, 0.0f
+			float quadVertices[4 * 5] = {
+				 0.50f,  0.50f, 0.0f, 1.0f, 1.0f,
+				-0.50f,  0.50f, 0.0f, 0.0f, 1.0f,
+				-0.50f, -0.50f, 0.0f, 0.0f, 0.0f,
+				 0.50f, -0.50f, 0.0f, 1.0f, 0.0f
 			};
-			Ref<VertexBuffer> squareVB = VertexBuffer::Create(squareVertices, sizeof(squareVertices));
-			squareVB->SetLayout({ { ShaderDataType::Float3, "a_Position" } });
-			s_Data->QuadVertexArray->AddVertexBuffer(squareVB);
+			Ref<VertexBuffer> quadVertexBuffer = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
+			quadVertexBuffer->SetLayout({
+				{ ShaderDataType::Float3, "a_Position"},
+				{ ShaderDataType::Float2, "a_TextureCoord"}
+			});
+			s_Data->QuadVertexArray->AddVertexBuffer(quadVertexBuffer);
 
 			// INDEX BUFFER
-			unsigned int squareIndices[6] = { 0, 1, 2, 0, 2, 3 };
-			Ref<IndexBuffer> squareIB = IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t));
-			s_Data->QuadVertexArray->SetIndexBuffer(squareIB);
+			unsigned int quadIndices[6] = { 0, 1, 2, 0, 2, 3 };
+			Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, sizeof(quadIndices) / sizeof(uint32_t));
+			s_Data->QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
 		}
 
-		// SHADER   // TODO: this class is in Zahra, but the shader is an asset in sandbox... EW!
-		s_Data->FlatColourShader = Shader::Create("C:/dev/Zahra/Sandbox/assets/shaders/flatcolour.glsl");
+		// DEFAULT TEXTURE
+		s_Data->WhiteTexture = Texture2D::Create(1, 1);
+		uint32_t flatWhite = 0xffffffff;
+		s_Data->WhiteTexture->SetData(&flatWhite, sizeof(uint32_t));
 
+		// SHADER
+		s_Data->TextureShader = Shader::Create("C:/dev/Zahra/Zahra/src/Zahra/Renderer/TEMPORARYshaders/texture.glsl");
+		s_Data->TextureShader->Bind();
+		s_Data->TextureShader->SetInt("u_Texture", 0);
 	}
 
 	void Renderer2D::Shutdown()
@@ -56,8 +65,8 @@ namespace Zahra
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColourShader)->Bind();
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColourShader)->UploadUniformMat4("u_PVMatrix", camera.GetPVMatrix());
+		s_Data->TextureShader->Bind();
+		s_Data->TextureShader->SetMat4("u_PVMatrix", camera.GetPVMatrix());
 		
 	}
 
@@ -65,18 +74,50 @@ namespace Zahra
 	{
 
 	}
-
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const glm::vec4& colour)
+	
+	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const Ref<Texture> texture, const glm::vec4& colour, float rotation)
 	{
-		glm::mat4 transform = glm::mat4(1.0f); // TODO get transform from position and dimensions
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(.0f, .0f, 1.0f))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(dimensions, 1.0f));
 
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColourShader)->Bind(); 
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColourShader)->UploadUniformMat4("u_Transform", transform);
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColourShader)->UploadUniformFloat4("u_Colour", colour);
+		s_Data->TextureShader->SetMat4("u_Transform", transform);
+		s_Data->TextureShader->SetFloat4("u_Colour", colour);
+
+		texture->Bind();
+		
+		s_Data->QuadVertexArray->Bind();
+		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+	}
+
+	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const Ref<Texture> texture, const glm::vec4& colour, float rotation)
+	{
+		DrawQuad(glm::vec3(position, .0f), dimensions, texture, colour, rotation);
+	}
+
+	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const glm::vec4& colour, float rotation)
+	{
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(.0f, .0f, 1.0f))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(dimensions, 1.0f));
+
+		s_Data->TextureShader->SetMat4("u_Transform", transform);
+		s_Data->TextureShader->SetFloat4("u_Colour", colour);
+
+		s_Data->WhiteTexture->Bind();
 
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
 	}
+
+	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const glm::vec4& colour, float rotation)
+	{
+		DrawQuad(glm::vec3(position, 0.0f), dimensions, colour, rotation);
+	}
+
+	
+
+
 
 }
 

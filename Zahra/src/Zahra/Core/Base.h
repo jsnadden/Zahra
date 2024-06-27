@@ -63,7 +63,7 @@
 
 namespace Zahra
 {
-	// for now we'll use these std smart pointers, but we can swap these out later for our own implementations
+	// TODO: swap out the std smart pointers for our own implementations
 
 	template<typename T>
 	using Scope = std::unique_ptr<T>;
