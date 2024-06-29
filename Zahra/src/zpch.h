@@ -16,6 +16,7 @@
 #include <unordered_set>
 
 #include "Zahra/Core/Log.h"
+#include "Zahra/Debug/Profiling.h"
 
 
 #ifdef Z_PLATFORM_WINDOWS

@@ -25,6 +25,8 @@ namespace Zahra
 
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 	{
+		Z_PROFILE_FUNCTION();
+
 		std::string sourceString= ReadFile(filepath);
 		auto shaderSources = ParseShaderSrc(sourceString);
 		Compile(shaderSources);
@@ -39,6 +41,8 @@ namespace Zahra
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource)
 		: m_Name(name)
 	{
+		Z_PROFILE_FUNCTION();
+
 		std::unordered_map<GLenum, std::string> shaderSrcs;
 		shaderSrcs[GL_VERTEX_SHADER] = vertexSource;
 		shaderSrcs[GL_FRAGMENT_SHADER] = fragmentSource;
@@ -48,11 +52,15 @@ namespace Zahra
 
 	OpenGLShader::~OpenGLShader()
 	{
+		Z_PROFILE_FUNCTION();
+
 		glDeleteProgram(m_RendererID);
 	}
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath)
 	{
+		Z_PROFILE_FUNCTION();
+
 		std::string fileContents;
 
 		std::ifstream in(filepath, std::ios::in | std::ios::binary);
@@ -78,6 +86,8 @@ namespace Zahra
 
 	std::unordered_map<GLenum, std::string> OpenGLShader::ParseShaderSrc(std::string& shaderSource)
 	{
+		Z_PROFILE_FUNCTION();
+
 		std::unordered_map<GLenum, std::string> shaderSources;
 
 		const char* typeToken = "#type";
@@ -108,6 +118,8 @@ namespace Zahra
 
 	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
 	{
+		Z_PROFILE_FUNCTION();
+
 		GLuint program = glCreateProgram();
 
 		Z_CORE_ASSERT(shaderSources.size() <= 2, "Currently only supports 2 shaders");
@@ -175,11 +187,15 @@ namespace Zahra
 
 	void OpenGLShader::Bind() const
 	{
+		Z_PROFILE_FUNCTION();
+
 		glUseProgram(m_RendererID);
 	}
 
 	void OpenGLShader::Unbind() const
 	{
+		Z_PROFILE_FUNCTION();
+
 		glUseProgram(NULL);
 	}
 

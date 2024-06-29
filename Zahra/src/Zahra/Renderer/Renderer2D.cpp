@@ -22,6 +22,8 @@ namespace Zahra
 
 	void Renderer2D::Init()
 	{
+		Z_PROFILE_FUNCTION();
+
 		s_Data = new Renderer2DData;
 
 		// VERTEX ARRAY
@@ -60,11 +62,15 @@ namespace Zahra
 
 	void Renderer2D::Shutdown()
 	{
+		Z_PROFILE_FUNCTION();
+
 		delete s_Data;
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
+		Z_PROFILE_FUNCTION();
+
 		s_Data->TextureShader->Bind();
 		s_Data->TextureShader->SetMat4("u_PVMatrix", camera.GetPVMatrix());
 		
@@ -72,37 +78,43 @@ namespace Zahra
 
 	void Renderer2D::EndScene()
 	{
+		Z_PROFILE_FUNCTION();
+
 
 	}
-	
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const Ref<Texture> texture, const glm::vec4& colour, float rotation)
+
+	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const Ref<Texture> texture, const glm::vec4& tint, float tiling)
 	{
+		Z_PROFILE_FUNCTION();
+
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(.0f, .0f, 1.0f))
 			* glm::scale(glm::mat4(1.0f), glm::vec3(dimensions, 1.0f));
 
 		s_Data->TextureShader->SetMat4("u_Transform", transform);
-		s_Data->TextureShader->SetFloat4("u_Colour", colour);
+		s_Data->TextureShader->SetFloat4("u_Colour", tint);
+		s_Data->TextureShader->SetFloat("u_Tiling", tiling);
 
 		texture->Bind();
-		
+
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const Ref<Texture> texture, const glm::vec4& colour, float rotation)
+	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const Ref<Texture> texture, const glm::vec4& tint, float tiling)
 	{
-		DrawQuad(glm::vec3(position, .0f), dimensions, texture, colour, rotation);
+		DrawQuad(glm::vec3(position, .0f), dimensions, texture, tint, tiling);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const glm::vec4& colour, float rotation)
+	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const glm::vec4& colour)
 	{
+		Z_PROFILE_FUNCTION();
+
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(.0f, .0f, 1.0f))
 			* glm::scale(glm::mat4(1.0f), glm::vec3(dimensions, 1.0f));
 
 		s_Data->TextureShader->SetMat4("u_Transform", transform);
 		s_Data->TextureShader->SetFloat4("u_Colour", colour);
+		s_Data->TextureShader->SetFloat("u_Tiling", 1.0f);
 
 		s_Data->WhiteTexture->Bind();
 
@@ -110,9 +122,55 @@ namespace Zahra
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const glm::vec4& colour, float rotation)
+	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const glm::vec4& colour)
 	{
-		DrawQuad(glm::vec3(position, 0.0f), dimensions, colour, rotation);
+		DrawQuad(glm::vec3(position, 0.0f), dimensions, colour);
+	}
+	
+	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& dimensions, float rotation, const Ref<Texture> texture, const glm::vec4& tint, float tiling)
+	{
+		Z_PROFILE_FUNCTION();
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(.0f, .0f, 1.0f))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(dimensions, 1.0f));
+
+		s_Data->TextureShader->SetMat4("u_Transform", transform);
+		s_Data->TextureShader->SetFloat4("u_Colour", tint);
+		s_Data->TextureShader->SetFloat("u_Tiling", tiling);
+
+		texture->Bind();
+
+		s_Data->QuadVertexArray->Bind();
+		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& dimensions, float rotation, const Ref<Texture> texture, const glm::vec4& tint, float tiling)
+	{
+		DrawRotatedQuad(glm::vec3(position, .0f), dimensions, rotation, texture, tint, tiling);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& dimensions, float rotation, const glm::vec4& colour)
+	{
+		Z_PROFILE_FUNCTION();
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(.0f, .0f, 1.0f))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(dimensions, 1.0f));
+
+		s_Data->TextureShader->SetMat4("u_Transform", transform);
+		s_Data->TextureShader->SetFloat4("u_Colour", colour);
+		s_Data->TextureShader->SetFloat("u_Tiling", 1.0f);
+
+		s_Data->WhiteTexture->Bind();
+
+		s_Data->QuadVertexArray->Bind();
+		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& dimensions, float rotation, const glm::vec4& colour)
+	{
+		DrawRotatedQuad(glm::vec3(position, 0.0f), dimensions, rotation, colour);
 	}
 
 	

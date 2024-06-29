@@ -16,9 +16,11 @@ namespace Zahra
 		Z_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
-	Window* Window::Create(const WindowProperties& props)
+	Scope<Window> Window::Create(const WindowProperties& props)
 	{
-		return new WindowsWindow(props);
+		Z_PROFILE_FUNCTION();
+
+		return CreateScope<WindowsWindow>(props);
 	}
 
 	WindowsWindow::WindowsWindow(const WindowProperties& props)
@@ -33,6 +35,8 @@ namespace Zahra
 
 	void WindowsWindow::Init(const WindowProperties& props)
 	{
+		Z_PROFILE_FUNCTION();
+
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
@@ -42,6 +46,7 @@ namespace Zahra
 
 		if (!s_GLFWInitialised)
 		{
+			Z_PROFILE_SCOPE("glfwInit");
 			int success = glfwInit();
 			Z_CORE_ASSERT(success, "Failed to initialise GLFW");
 
@@ -50,7 +55,10 @@ namespace Zahra
 			s_GLFWInitialised = true;
 		}
 
-		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		{
+			Z_PROFILE_SCOPE("glfwCreateWindow");
+			m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		}
 
 		m_Context = CreateScope<OpenGLContext>(m_Window);
 
@@ -173,11 +181,15 @@ namespace Zahra
 
 	void WindowsWindow::Shutdown()
 	{
+		Z_PROFILE_FUNCTION();
+
 		glfwDestroyWindow(m_Window);
 	}
 
 	void WindowsWindow::OnUpdate()
 	{
+		Z_PROFILE_FUNCTION();
+
 		glfwPollEvents();
 
 		m_Context->SwapBuffers();
@@ -185,6 +197,8 @@ namespace Zahra
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
+		Z_PROFILE_FUNCTION();
+
 		if (enabled)
 			glfwSwapInterval(1);
 		else

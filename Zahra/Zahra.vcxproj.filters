@@ -19,6 +19,9 @@
     <Filter Include="src\Zahra\Core">
       <UniqueIdentifier>{AA657D23-9633-7129-7FC7-E14F6B344D8E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Zahra\Debug">
+      <UniqueIdentifier>{08763693-7401-A457-7D12-274CE91C0058}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Zahra\Events">
       <UniqueIdentifier>{B6898FFD-A282-AE4F-CBB4-93D4B70C8E5B}</UniqueIdentifier>
     </Filter>
@@ -114,6 +117,9 @@
     <ClInclude Include="src\Zahra\Core\Window.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Debug\Profiling.h">
+      <Filter>src\Zahra\Debug</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Events\ApplicationEvent.h">
       <Filter>src\Zahra\Events</Filter>
     </ClInclude>
@@ -145,6 +151,9 @@
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Renderer.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\Renderer2D.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h">
@@ -1413,9 +1422,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Renderer2D.h">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1475,6 +1481,9 @@
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\Renderer2D.cpp">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
@@ -1492,9 +1501,6 @@
     </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Renderer2D.cpp">
-      <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

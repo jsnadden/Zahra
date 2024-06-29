@@ -32,6 +32,8 @@ namespace Zahra {
 
 	void OrthographicCamera::RecalculateMatrices()
 	{
+		Z_PROFILE_FUNCTION();
+
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_Position) *
 			glm::rotate(glm::mat4(1.0f), m_Rotation, glm::vec3(0, 0, 1));
 

@@ -15,6 +15,8 @@ namespace Zahra
 
 	void OpenGLContext::Init()
 	{
+		Z_PROFILE_FUNCTION();
+
 		glfwMakeContextCurrent(m_windowHandle);
 
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -36,6 +38,8 @@ namespace Zahra
 
 	void OpenGLContext::SwapBuffers()
 	{
+		Z_PROFILE_FUNCTION();
+
 		glfwSwapBuffers(m_windowHandle);
 	}
 }

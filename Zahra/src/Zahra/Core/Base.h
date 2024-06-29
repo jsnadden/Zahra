@@ -43,8 +43,6 @@
 	#error "Unknown platform!"
 #endif
 
-
-
 #ifdef Z_DEBUG
 	#define Z_ENABLE_ASSERTS
 #endif

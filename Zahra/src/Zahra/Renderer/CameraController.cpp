@@ -19,6 +19,8 @@ namespace Zahra
 
 	void OrthographicCameraController::OnUpdate(float dt)
 	{
+		Z_PROFILE_FUNCTION();
+
 		// Reset camera
 		if (Zahra::Input::IsKeyPressed(Z_KEY_SPACE))
 		{
@@ -91,6 +93,8 @@ namespace Zahra
 
 	bool OrthographicCameraController::OnMouseScrolled(MouseScrolledEvent& event)
 	{
+		Z_PROFILE_FUNCTION();
+
 		m_ZoomLevel *= glm::exp(glm::log(.8f) * event.GetOffsetY());
 		m_ZoomLevel = std::clamp(m_ZoomLevel, .05f, 20.0f);
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
@@ -99,6 +103,8 @@ namespace Zahra
 
 	bool OrthographicCameraController::OnWindowResized(WindowResizedEvent& event)
 	{
+		Z_PROFILE_FUNCTION();
+
 		m_AspectRatio = ( (float)event.GetWidth() ) / ( (float)event.GetHeight() );
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		return false;

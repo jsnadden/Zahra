@@ -25,10 +25,8 @@ layout(location = 0) out vec4 colour;
 in vec2 v_TextureCoord;
 
 uniform sampler2D u_Texture;
-uniform vec4 u_Colour;
-uniform float u_Tiling;
 
 void main()
 {
-	colour = texture(u_Texture, v_TextureCoord * u_Tiling) * u_Colour;
+	colour = texture(u_Texture, v_TextureCoord);
 }

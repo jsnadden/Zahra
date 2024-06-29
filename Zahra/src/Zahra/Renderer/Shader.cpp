@@ -41,18 +41,24 @@ namespace Zahra
 
     void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
     {
+        Z_PROFILE_FUNCTION();
+
         Z_CORE_ASSERT(!Exists(name), "Shader with this name already exists.");
         m_Shaders[name] = shader;
     }
 
     void ShaderLibrary::Add(const Ref<Shader>& shader)
     {
+        Z_PROFILE_FUNCTION();
+
         auto& name = shader->GetName();
         Add(name, shader);
     }
 
     Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
     {
+        Z_PROFILE_FUNCTION();
+
         auto shader = Shader::Create(filepath);
         Add(shader);
         return shader;
@@ -60,6 +66,8 @@ namespace Zahra
 
     Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
     {
+        Z_PROFILE_FUNCTION();
+
         auto shader = Shader::Create(filepath);
         Add(name, shader);
         return shader;
@@ -67,12 +75,16 @@ namespace Zahra
 
     Ref<Shader> ShaderLibrary::Get(const std::string& name)
     {
+        Z_PROFILE_FUNCTION();
+
         Z_CORE_ASSERT(Exists(name), "No shader with this name exists.");
         return m_Shaders[name];
     }
 
     bool ShaderLibrary::Exists(const std::string& name) const
     {
+        Z_PROFILE_FUNCTION();
+
         return m_Shaders.find(name) != m_Shaders.end();
     }
 

@@ -6,13 +6,19 @@
 namespace Zahra
 {
 
-	OpenGLTexture2D::OpenGLTexture2D(std::string path)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 		: m_Path(path)
 	{
+		Z_PROFILE_FUNCTION();
+
 		int width, height, channels;
 
 		stbi_set_flip_vertically_on_load(true);
-		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		stbi_uc* data = nullptr;
+		{
+			Z_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
+			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		}
 		Z_CORE_ASSERT(data, "Failed to load image.");
 
 		m_Width = width;
@@ -58,6 +64,8 @@ namespace Zahra
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 		: m_Width(width), m_Height(height)
 	{
+		Z_PROFILE_FUNCTION();
+
 		//TODO: make this stuff configurable
 
 		m_InternalFormat = GL_RGBA8;
@@ -80,6 +88,8 @@ namespace Zahra
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
+		Z_PROFILE_FUNCTION();
+
 		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3; // TODO: generalise this if we use formats other than rgb/rgba
 		Z_CORE_ASSERT(size == m_Width * m_Height * bpp, "Incomplete texture data.")
 
@@ -88,6 +98,8 @@ namespace Zahra
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
+		Z_PROFILE_FUNCTION();
+
 		glBindTextureUnit(slot, m_RendererID);
 	}
 

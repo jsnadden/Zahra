@@ -10,7 +10,10 @@
 #include "Zahra/Core/KeyCodes.h"
 #include "Zahra/Core/MouseButtonCodes.h"
 
-//------------GUI----------------------
+//------------DEBUG--------------------
+#include "Zahra/Debug/Profiling.h"
+
+//------------IMGUI--------------------
 #include "Zahra/ImGui/ImGuiLayer.h"
 
 //------------RENDERING----------------
