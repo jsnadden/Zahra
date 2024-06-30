@@ -24,6 +24,8 @@ void Sandbox2DLayer::OnUpdate(float dt)
 {
 	Z_PROFILE_FUNCTION();
 
+	//Z_INFO("Frame took {0}s", dt);
+
 	{
 		Z_PROFILE_SCOPE("Camera update");
 
@@ -52,7 +54,6 @@ void Sandbox2DLayer::OnUpdate(float dt)
 			Zahra::Renderer2D::DrawQuad(.1f * pos, .1f * dims, m_Texture, glm::rotate(glm::mat4(1), i, glm::vec3(1,1,1)) * tint);
 		}
 			
-			//Zahra::Renderer2D::DrawQuad({ .0f, .0f, .1f }, { 526.0f / 841.0f, 1.0f }, m_Texture, glm::make_vec4(m_Colour3), 1.0f);
 		
 		Zahra::Renderer2D::EndScene();
 	}

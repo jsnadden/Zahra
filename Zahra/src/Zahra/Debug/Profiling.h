@@ -129,7 +129,7 @@ namespace Zahra
 	};
 
 }
-#define Z_PROFILING_ENABLED = 1
+//#define Z_PROFILING_ENABLED
 #ifdef Z_PROFILING_ENABLED
 	#define Z_PROFILE_BEGIN_SESSION(name, filepath) ::Zahra::Instrumentor::Get().BeginSession(name, filepath)
 	#define Z_PROFILE_END_SESSION() ::Zahra::Instrumentor::Get().EndSession()
