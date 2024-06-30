@@ -1,1 +1,0 @@
-{"otherData": {}, "traceEvents":[{"cat":"function","dur":868,"name":"void __cdecl Zahra::ImGuiLayer::OnDetach(void)","ph":"X","pid":0,"tid":0,"ts":324301183028},{"cat":"function","dur":52075,"name":"void __cdecl Zahra::WindowsWindow::Shutdown(void)","ph":"X","pid":0,"tid":0,"ts":324301183968}]}

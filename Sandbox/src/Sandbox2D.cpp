@@ -43,10 +43,16 @@ void Sandbox2DLayer::OnUpdate(float dt)
 		Zahra::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
 		glm::vec2 dims = glm::make_vec2(m_SquareDimensions);
-		glm::vec2 pos = glm::make_vec2(m_SquarePosition) - .5f * dims;
+		glm::vec4 tint = glm::make_vec4(m_SquareColour);
 
-		Zahra::Renderer2D::DrawQuad(pos, dims, glm::make_vec4(m_SquareColour));
-		//Zahra::Renderer2D::DrawQuad({ .0f, .0f, .1f }, { 526.0f / 841.0f, 1.0f }, m_Texture, glm::make_vec4(m_Colour3), 1.0f);
+		int n = 10;
+		for (float i = .0f; i < n*n; i++)
+		{	
+			glm::vec2 pos = glm::make_vec2(m_SquarePosition) + 2.0f * glm::vec2((int)i % n - n/2, (int)(i/n) - n/2);
+			Zahra::Renderer2D::DrawQuad(.1f * pos, .1f * dims, m_Texture, glm::rotate(glm::mat4(1), i, glm::vec3(1,1,1)) * tint);
+		}
+			
+			//Zahra::Renderer2D::DrawQuad({ .0f, .0f, .1f }, { 526.0f / 841.0f, 1.0f }, m_Texture, glm::make_vec4(m_Colour3), 1.0f);
 		
 		Zahra::Renderer2D::EndScene();
 	}
@@ -66,11 +72,10 @@ void Sandbox2DLayer::OnImGuiRender()
 
 	ImGui::ColorEdit3("Background colour", m_ClearColour);
 
-	ImGui::ColorEdit4("Square colour", m_SquareColour);
-	ImGui::SliderFloat2("Square position", m_SquarePosition, -5.0f, 5.0f);
-	ImGui::SliderFloat2("Square dimensions", m_SquareDimensions, .01f, 10.0f, "%.3f", 32);
+	ImGui::ColorEdit4("Quad tint", m_SquareColour);
+	ImGui::SliderFloat2("Quad position", m_SquarePosition, -5.0f, 5.0f);
+	ImGui::SliderFloat2("Quad dimensions", m_SquareDimensions, .01f, 10.0f, "%.3f", 32);
 
-	ImGui::ColorEdit4("Texture tint", m_TextureTint);
 
 	ImGui::End();
 

@@ -1,4 +1,6 @@
-﻿
+﻿# profiling data
+profiling/
+
 # binaries
 bin-int/
 **/bin/
