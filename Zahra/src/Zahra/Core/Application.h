@@ -43,6 +43,7 @@ namespace Zahra
 		static Application* s_Instance;
 
 		Scope<Window> m_Window;
+
 		ImGuiLayer* m_ImGuiLayer;
 
 		bool m_Running = true;

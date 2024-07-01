@@ -71,10 +71,10 @@ namespace Zahra
 				case ShaderDataType::Float3: return 3;
 				case ShaderDataType::Float4: return 4;
 
-				// unsure if the following are correct:
-				case ShaderDataType::Mat2:   return 4;
-				case ShaderDataType::Mat3:   return 9;
-				case ShaderDataType::Mat4:   return 16;
+				// mats are just vecs of vecs
+				case ShaderDataType::Mat2:   return 2;
+				case ShaderDataType::Mat3:   return 3;
+				case ShaderDataType::Mat4:   return 4;
 			}
 
 			Z_CORE_ASSERT(false, "Invalid ShaderDataType");

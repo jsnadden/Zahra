@@ -24,7 +24,7 @@ void Sandbox2DLayer::OnUpdate(float dt)
 {
 	Z_PROFILE_FUNCTION();
 
-	//Z_INFO("Frame took {0}s", dt);
+	m_FPS = 1.0f / dt;
 
 	{
 		Z_PROFILE_SCOPE("Camera update");
@@ -32,6 +32,8 @@ void Sandbox2DLayer::OnUpdate(float dt)
 		m_CameraController.OnUpdate(dt);
 	}
 	
+	Zahra::Renderer2D::ResetStats();
+
 	{
 		Z_PROFILE_SCOPE("Renderer clear");
 
@@ -44,20 +46,28 @@ void Sandbox2DLayer::OnUpdate(float dt)
 
 		Zahra::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-		glm::vec2 dims = glm::make_vec2(m_SquareDimensions);
-		glm::vec4 tint = glm::make_vec4(m_SquareColour);
+		glm::vec2 dims = glm::make_vec2(m_QuadDimensions);
+		glm::vec4 tint = glm::make_vec4(m_QuadColour);
+		glm::vec2 pos  = glm::make_vec2(m_QuadPosition);
 
-		int n = 10;
-		for (float i = .0f; i < n*n; i++)
+		int n = 20;
+
+		Zahra::Renderer2D::DrawQuad({ 0.0f, 0.0f, -.1f }, 9.0f * dims, m_Texture);
+		
+		for (int i = 0; i < n*n; i++)
 		{	
-			glm::vec2 pos = glm::make_vec2(m_SquarePosition) + 2.0f * glm::vec2((int)i % n - n/2, (int)(i/n) - n/2);
-			Zahra::Renderer2D::DrawQuad(.1f * pos, .1f * dims, m_Texture, glm::rotate(glm::mat4(1), i, glm::vec3(1,1,1)) * tint);
+			glm::vec2 gridpoint(i % n, glm::floor((float)i / n));
+
+			Zahra::Renderer2D::DrawQuad(
+				pos + (10.0f / (float)n) * (gridpoint - glm::vec2(((float)n - 1) / 2, // POSITION
+				((float)n - 1) / 2)) * dims, dims * glm::vec2(10.0f / (float)n, 10.0f / (float)n), // DIMENSIONS
+				tint * glm::vec4((1 / (float)n) * gridpoint, .4f, .8f) // COLOUR
+			);
 		}
-			
 		
 		Zahra::Renderer2D::EndScene();
 	}
-	
+
 }
 
 void Sandbox2DLayer::OnEvent(Zahra::Event& event)
@@ -73,10 +83,16 @@ void Sandbox2DLayer::OnImGuiRender()
 
 	ImGui::ColorEdit3("Background colour", m_ClearColour);
 
-	ImGui::ColorEdit4("Quad tint", m_SquareColour);
-	ImGui::SliderFloat2("Quad position", m_SquarePosition, -5.0f, 5.0f);
-	ImGui::SliderFloat2("Quad dimensions", m_SquareDimensions, .01f, 10.0f, "%.3f", 32);
+	ImGui::SliderFloat2("Quad position", m_QuadPosition, -5.0f, 5.0f);
+	ImGui::SliderFloat2("Quad dimensions", m_QuadDimensions, .01f, 10.0f, "%.3f", 32);
+	ImGui::SliderFloat("Quad rotation", &m_QuadRotation, -3.14f, 3.14f);
+	ImGui::ColorEdit4("Quad tint", m_QuadColour);
 
+	ImGui::Dummy({ 1,20 });
+	
+	ImGui::Text("FPS: %i", (int)m_FPS);
+	ImGui::Text("Quads: %u", Zahra::Renderer2D::GetStats().QuadCount);
+	ImGui::Text("Draw calls: %u", Zahra::Renderer2D::GetStats().DrawCalls);
 
 	ImGui::End();
 

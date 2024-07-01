@@ -67,6 +67,13 @@ namespace Zahra
 		ImGui::DestroyContext();
 	}
 
+	void ImGuiLayer::OnEvent(Event& e)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		e.Handled |= e.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse;
+		e.Handled |= e.IsInCategory(EventCategoryKeyboard) && io.WantCaptureKeyboard;
+	}
+
 	void ImGuiLayer::Begin()
 	{
 		Z_PROFILE_FUNCTION();
@@ -101,11 +108,8 @@ namespace Zahra
 
 	void ImGuiLayer::OnImGuiRender()
 	{
-		static bool show = true;
-		//ImGui::ShowDemoWindow(&show);
+		
 	}
-
-
 
 
 }

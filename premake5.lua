@@ -33,8 +33,6 @@ project "Zahra"
 	cppdialect "C++17"
 	staticruntime "on"
 
-	--externalwarnings "Off"
-
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
@@ -53,7 +51,8 @@ project "Zahra"
 
 	defines 
 	{
-		"_CRT_SECURE_NO_WARNINGS"
+		"_CRT_SECURE_NO_WARNINGS",
+		"GLFW_INCLUDE_NONE"
 	}
 
 	includedirs
@@ -77,12 +76,6 @@ project "Zahra"
 
 	filter "system:windows"
 		systemversion "latest"
-
-		defines
-		{
-			--"Z_BUILD_DLL", aint dynamically linking no more
-			"GLFW_INCLUDE_NONE"
-		}
 	
 	filter "configurations:Debug"
 		defines "Z_DEBUG"
@@ -102,8 +95,6 @@ project "Sandbox"
 	language "C++"
 	cppdialect "C++17"
 	staticruntime "on"
-
-	--externalwarnings "Off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")

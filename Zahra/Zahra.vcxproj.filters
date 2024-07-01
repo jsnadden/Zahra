@@ -132,9 +132,6 @@
     <ClInclude Include="src\Zahra\Events\MouseEvent.h">
       <Filter>src\Zahra\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h">
-      <Filter>src\Zahra\ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Buffer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
@@ -1422,6 +1419,7 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
