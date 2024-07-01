@@ -58,10 +58,11 @@ void Sandbox2DLayer::OnUpdate(float dt)
 		{	
 			glm::vec2 gridpoint(i % n, glm::floor((float)i / n));
 
-			Zahra::Renderer2D::DrawQuad(
-				pos + (10.0f / (float)n) * (gridpoint - glm::vec2(((float)n - 1) / 2, // POSITION
-				((float)n - 1) / 2)) * dims, dims * glm::vec2(10.0f / (float)n, 10.0f / (float)n), // DIMENSIONS
-				tint * glm::vec4((1 / (float)n) * gridpoint, .4f, .8f) // COLOUR
+			Zahra::Renderer2D::DrawRotatedQuad(
+				pos + (10.0f / (float)n) * (gridpoint - glm::vec2(((float)n - 1) / 2,				// POSITION
+				((float)n - 1) / 2)) * dims, dims * glm::vec2(10.0f / (float)n, 10.0f / (float)n),  // DIMENSIONS
+				m_QuadRotation,																		// ROTATION
+				tint * glm::vec4((1 / (float)n) * gridpoint, .4f, .8f)								// COLOUR
 			);
 		}
 		
@@ -80,6 +81,8 @@ void Sandbox2DLayer::OnImGuiRender()
 	Z_PROFILE_FUNCTION();
 
 	ImGui::Begin("Scene Parameters");
+
+	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 	ImGui::ColorEdit3("Background colour", m_ClearColour);
 

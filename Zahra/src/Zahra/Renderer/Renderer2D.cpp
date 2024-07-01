@@ -98,7 +98,8 @@ namespace Zahra
 		s_Data.TextureSlots[0]->SetData(&flatWhite, sizeof(uint32_t));
 
 		// SHADER
-		s_Data.TextureShader = Shader::Create("C:/dev/Zahra/Zahra/src/Zahra/Renderer/TEMPORARYshaders/texture.glsl");
+											// TODO: this vvvv should not be opengl specific!!!
+		s_Data.TextureShader = Shader::Create("C:/dev/Zahra/Zahra/src/Platform/OpenGL/shaders/texture.glsl");
 		s_Data.TextureShader->Bind();
 		int textureSamplers[s_Data.MaxTextureSlots];
 		for (int i = 0; i < s_Data.MaxTextureSlots; i++) textureSamplers[i] = i;
