@@ -15,9 +15,12 @@ public:
 	void OnEvent(Zahra::Event& event) override;
 	void OnImGuiRender() override;
 
+	bool OnKeyPressedEvent(Zahra::KeyPressedEvent& event);
 
 private:
 	Zahra::OrthographicCameraController m_CameraController;
+
+	Zahra::Ref<Zahra::Framebuffer> m_Framebuffer;
 
 	float m_ClearColour[4] = { .114f, .820f, .69f, 1.0f };
 
@@ -28,5 +31,9 @@ private:
 	float m_QuadColour[4] = { .878f, .718f, .172f, 1.0f };
 
 	float m_FPS = .0f;
+
+
+	bool m_ImguiWindowsVisible = true;
+	bool m_ImguiDockingEnabled = true;
 };
 

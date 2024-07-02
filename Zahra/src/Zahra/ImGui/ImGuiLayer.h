@@ -23,7 +23,7 @@ namespace Zahra
 		virtual void OnImGuiRender() override;
 
 	private:
-		float m_Time = 0.0f;
+		//float m_Time = 0.0f;
 
 	};
 }

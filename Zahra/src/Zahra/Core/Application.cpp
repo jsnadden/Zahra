@@ -83,10 +83,14 @@ namespace Zahra
 		overlay->OnAttach();
 	}
 
-	bool Application::OnWindowClosed(WindowClosedEvent& e)
+	void Application::Exit()
 	{
 		m_Running = false;
-		
+	}
+
+	bool Application::OnWindowClosed(WindowClosedEvent& e)
+	{
+		Exit();
 		return true;
 	}
 

@@ -32,9 +32,11 @@ namespace Zahra
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
 
-		inline static Application& Get() { return *s_Instance; }
+		static Application& Get() { return *s_Instance; }
 
-		inline Window& GetWindow() { return *m_Window; }
+		Window& GetWindow() { return *m_Window; }
+
+		void Exit();
 
 	private:
 		bool OnWindowClosed(WindowClosedEvent& e);
