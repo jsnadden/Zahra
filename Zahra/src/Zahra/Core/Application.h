@@ -38,6 +38,8 @@ namespace Zahra
 
 		void Exit();
 
+		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
+
 	private:
 		bool OnWindowClosed(WindowClosedEvent& e);
 		bool OnWindowResized(WindowResizedEvent& e);

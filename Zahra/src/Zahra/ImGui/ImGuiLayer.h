@@ -20,10 +20,10 @@ namespace Zahra
 		void Begin();
 		void End();
 
-		virtual void OnImGuiRender() override;
+		void BlockEvents(bool block) { m_BlockEvents = block; }
 
 	private:
-		//float m_Time = 0.0f;
+		bool m_BlockEvents = true;
 
 	};
 }

@@ -10,7 +10,7 @@ namespace Zahra
 	class OrthographicCameraController
 	{
 	public:
-		OrthographicCameraController(float aspectRatio, bool rotation = false);
+		OrthographicCameraController(float aspectRatio, bool rotation = false, float cameraInertia = 0.0f);
 
 		void OnUpdate(float dt);
 		void OnEvent(Event& event);
@@ -37,9 +37,9 @@ namespace Zahra
 		glm::vec3 m_Velocity;
 		float m_AngularVelocity;
 
-		float m_TranslationSpeed = 0.5f;
-		float m_RotationSpeed = 0.5f;
-		float m_Inertia = 0.89f;
+		float m_TranslationSpeed = 3.0f;
+		float m_RotationSpeed = 3.0f;
+		float m_Inertia;
 	};
 
 }

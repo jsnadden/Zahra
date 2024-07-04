@@ -8,10 +8,11 @@
 
 namespace Zahra
 {
-	OrthographicCameraController::OrthographicCameraController(float aspectRatio, bool enableRotation)
+	OrthographicCameraController::OrthographicCameraController(float aspectRatio, bool enableRotation, float cameraInertia)
 		: m_AspectRatio(aspectRatio), m_EnableRotation(enableRotation),
 		m_Velocity(0.0f), m_AngularVelocity(0.0f),
-		m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel)
+		m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel),
+		m_Inertia(cameraInertia)
 	{
 		m_Position = m_Camera.GetPosition();
 		m_Rotation = m_Camera.GetRotation();
