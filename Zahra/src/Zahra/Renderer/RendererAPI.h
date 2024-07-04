@@ -10,6 +10,7 @@ namespace Zahra
 	class RendererAPI
 	{
 	public:
+		virtual ~RendererAPI() = default;
 
 		enum class API
 		{

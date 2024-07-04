@@ -73,51 +73,55 @@ namespace Zahra
 		{
 			switch (element.Type)
 			{
-			case ShaderDataType::Bool:
-			case ShaderDataType::Int:
-			case ShaderDataType::Int2:
-			case ShaderDataType::Int3:
-			case ShaderDataType::Int4:
-			case ShaderDataType::Float:
-			case ShaderDataType::Float2:
-			case ShaderDataType::Float3:
-			case ShaderDataType::Float4:
-			{
-				glEnableVertexAttribArray(index);
-				glVertexAttribPointer(
-					index,
-					element.GetComponentCount(),
-					ShaderDataTypeToOpenGLBaseType(element.Type),
-					element.Normalised ? GL_TRUE : GL_FALSE,
-					layout.GetStride(),
-					(const void*)element.Offset
-				);
-				index++;
-				break;
-			}
-			case ShaderDataType::Mat2:
-			case ShaderDataType::Mat3:
-			case ShaderDataType::Mat4:
-			{
-				uint8_t count = element.GetComponentCount();
-
-				for (uint8_t i = 0; i < count; i++)
+				case ShaderDataType::Bool:
+				case ShaderDataType::Int:
+				case ShaderDataType::Int2:
+				case ShaderDataType::Int3:
+				case ShaderDataType::Int4:
+				case ShaderDataType::Float:
+				case ShaderDataType::Float2:
+				case ShaderDataType::Float3:
+				case ShaderDataType::Float4:
 				{
 					glEnableVertexAttribArray(index);
 					glVertexAttribPointer(
 						index,
-						count,
+						element.GetComponentCount(),
 						ShaderDataTypeToOpenGLBaseType(element.Type),
 						element.Normalised ? GL_TRUE : GL_FALSE,
 						layout.GetStride(),
-						(const void*)(sizeof(float) * count * i)
+						(const void*)element.Offset
 					);
 					index++;
+					break;
 				}
-				break;
-			}
-			default:
-				Z_CORE_ASSERT(false, "Unknown ShaderDataType")
+				case ShaderDataType::Mat2:
+				case ShaderDataType::Mat3:
+				case ShaderDataType::Mat4:
+				{
+					uint8_t count = element.GetComponentCount();
+
+					for (uint8_t i = 0; i < count; i++)
+					{
+						glEnableVertexAttribArray(index);
+						glVertexAttribPointer(
+							index,
+							count,
+							ShaderDataTypeToOpenGLBaseType(element.Type),
+							element.Normalised ? GL_TRUE : GL_FALSE,
+							layout.GetStride(),
+							(const void*)(sizeof(float) * count * i)
+						);
+						index++;
+					}
+					break;
+				}
+				default:
+				{
+					Z_CORE_ASSERT(false, "Unknown ShaderDataType");
+					break;
+				}
+					
 			}
 		}
 

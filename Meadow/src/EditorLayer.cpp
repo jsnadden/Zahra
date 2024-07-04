@@ -8,7 +8,7 @@ namespace Zahra
 {
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer"),
-		m_CameraController(1280.0f / 720.0f, true)
+		m_CameraController(1280.0f / 720.0f, false)
 	{
 	}
 
@@ -18,7 +18,7 @@ namespace Zahra
 
 		FramebufferSpecification framebufferSpec;
 		framebufferSpec.Width = 1280;
-		framebufferSpec.Height = 720;// TODO: don't hardcode the size here!!
+		framebufferSpec.Height = 720; // These will be overwritten by the ImGui viewport window
 
 		m_Framebuffer = Framebuffer::Create(framebufferSpec);
 	}
@@ -108,32 +108,6 @@ namespace Zahra
 					ImGui::EndMenu();
 				}
 
-				if (ImGui::BeginMenu("Edit"))
-				{
-					if (ImGui::MenuItem("???"));
-
-					ImGui::EndMenu();
-				}
-
-				if (ImGui::BeginMenu("View"))
-				{
-					if (ImGui::MenuItem("Toggle Window Visibility (F1)")) m_ImguiWindowsVisible = !m_ImguiWindowsVisible;
-					if (ImGui::MenuItem("Toggle Docking (F2)")) m_ImguiDockingEnabled = !m_ImguiDockingEnabled;
-
-					ImGui::EndMenu();
-				}
-
-				if (ImGui::BeginMenu("Juwia"))
-				{
-					if (ImGui::BeginMenu("Hewwick"))
-					{
-						if (ImGui::MenuItem("That's wight bitcheees!!")) 0;
-
-						ImGui::EndMenu();
-					}
-
-					ImGui::EndMenu();
-				}
 			}
 			ImGui::EndMainMenuBar();
 
@@ -141,74 +115,68 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// WINDOW DOCKSPACE
-		if (m_ImguiDockingEnabled)
+
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_None);
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// VIEWPORT
 		{
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
+			ImGui::Begin("Viewport");
 
-			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_None);
+			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+			if (m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y)
+			{
+				// Framebuffer requires a positive width and height
+				m_Framebuffer->Resize(viewportPanelSize.x >= 1 ? (uint32_t)viewportPanelSize.x : 1,
+					viewportPanelSize.y >= 1 ? (uint32_t)viewportPanelSize.y : 1);
 
+				m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+
+				m_CameraController.Resize(viewportPanelSize.x, viewportPanelSize.y);
+
+				//Z_CORE_WARN("Viewport resized: {0}x{1}", viewportPanelSize.x, viewportPanelSize.y);
+			}
+
+			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentRendererID();
+			ImGui::Image((void*)framebufferTextureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2( 0, 1 ), ImVec2( 1, 0 ));
+			
+			ImGui::End();
+			ImGui::PopStyleVar();
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// LEVEL VIEWER
+			// RENDERING DEMO CONTROLS WINDOW
 		{
-			ImGui::Begin("Level Viewer");
-			ImVec2 panelSize = ImGui::GetContentRegionAvail();
-			Z_WARN("Viewer size: {0}x{1}", panelSize.x, panelSize.y);
+			ImGui::Begin("Rendering Demo Controls");
 
-			uint32_t framebufferID = m_Framebuffer->GetColourAttachmentRendererID();
-			ImGui::Image((void*)framebufferID, ImVec2(1280.0f, 720.0f), ImVec2( 0, 1 ), ImVec2( 1, 0 ));
-			
+			ImGui::ColorEdit3("Background colour", m_ClearColour);
+
+			ImGui::SliderFloat2("Quad position", m_QuadPosition, -5.0f, 5.0f);
+			ImGui::SliderFloat2("Quad dimensions", m_QuadDimensions, .01f, 10.0f, "%.3f", 32);
+			ImGui::SliderFloat("Quad rotation", &m_QuadRotation, -3.14f, 3.14f);
+			ImGui::ColorEdit4("Quad tint", m_QuadColour);
+
 			ImGui::End();
 		}
 
-		if (m_ImguiWindowsVisible)
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// RENDERING STATS WINDOW
 		{
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			// RENDERING DEMO CONTROLS WINDOW
-			{
-				ImGui::Begin("Rendering Demo Controls");
+			ImGui::Begin("Renderer Stats");
 
-				ImGui::ColorEdit3("Background colour", m_ClearColour);
+			ImGui::Text("FPS: %i", (int)m_FPS);
+			ImGui::Text("Quads: %u", Renderer2D::GetStats().QuadCount);
+			ImGui::Text("Draw calls: %u", Renderer2D::GetStats().DrawCalls);
 
-				ImGui::SliderFloat2("Quad position", m_QuadPosition, -5.0f, 5.0f);
-				ImGui::SliderFloat2("Quad dimensions", m_QuadDimensions, .01f, 10.0f, "%.3f", 32);
-				ImGui::SliderFloat("Quad rotation", &m_QuadRotation, -3.14f, 3.14f);
-				ImGui::ColorEdit4("Quad tint", m_QuadColour);
-
-				ImGui::End();
-			}
-
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			// RENDERING STATS WINDOW
-			{
-				ImGui::Begin("Renderer Stats");
-
-				ImGui::Text("FPS: %i", (int)m_FPS);
-				ImGui::Text("Quads: %u", Renderer2D::GetStats().QuadCount);
-				ImGui::Text("Draw calls: %u", Renderer2D::GetStats().DrawCalls);
-
-				ImGui::End();
-			}
+			ImGui::End();
 		}
+
 	}
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& event)
 	{
-		if (Input::IsKeyPressed(Z_KEY_F1))
-		{
-			// toggle imgui window visibility
-			m_ImguiWindowsVisible = !m_ImguiWindowsVisible;
-
-			return true;
-		}
-
-		if (Input::IsKeyPressed(Z_KEY_F2))
-		{
-			// toggle imgui docking
-			m_ImguiDockingEnabled = !m_ImguiDockingEnabled;
-
-			return true;
-		}
+		
 
 		return false;
 	}

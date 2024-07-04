@@ -35,9 +35,10 @@ namespace Zahra
 
 		float m_FPS = .0f;
 
+		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
 
-		bool m_ImguiWindowsVisible = true;
-		bool m_ImguiDockingEnabled = true;
+
+
 	};
 }
 

@@ -15,6 +15,8 @@ namespace Zahra
 		void OnUpdate(float dt);
 		void OnEvent(Event& event);
 
+		void Resize(float width, float height);
+
 		OrthographicCamera& GetCamera() { return m_Camera; }
 		const OrthographicCamera& GetCamera() const { return m_Camera; }
 

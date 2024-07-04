@@ -91,12 +91,18 @@ namespace Zahra
 		dispatcher.Dispatch<WindowResizedEvent>(Z_BIND_EVENT_FN(OrthographicCameraController::OnWindowResized));
 	}
 
+	void OrthographicCameraController::Resize(float width, float height)
+	{
+		m_AspectRatio = width / height;
+		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+	}
+
 	bool OrthographicCameraController::OnMouseScrolled(MouseScrolledEvent& event)
 	{
 		Z_PROFILE_FUNCTION();
 
 		m_ZoomLevel *= glm::exp(glm::log(.8f) * event.GetOffsetY());
-		m_ZoomLevel = std::clamp(m_ZoomLevel, .05f, 20.0f);
+		m_ZoomLevel = std::clamp(m_ZoomLevel, .05f, 50.0f);
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		return false;
 	}
@@ -105,8 +111,7 @@ namespace Zahra
 	{
 		Z_PROFILE_FUNCTION();
 
-		m_AspectRatio = ( (float)event.GetWidth() ) / ( (float)event.GetHeight() );
-		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+		Resize((float)event.GetWidth(), (float)event.GetHeight());
 		return false;
 	}
 
