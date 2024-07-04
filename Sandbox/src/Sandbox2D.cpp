@@ -43,7 +43,7 @@ void Sandbox2DLayer::OnUpdate(float dt)
 	{
 		Z_PROFILE_SCOPE("Renderer clear");
 
-		m_Framebuffer->Bind();
+		//m_Framebuffer->Bind();
 
 		Zahra::RenderCommand::SetClearColour(glm::make_vec4(m_ClearColour));
 		Zahra::RenderCommand::Clear();
@@ -75,7 +75,7 @@ void Sandbox2DLayer::OnUpdate(float dt)
 		}
 		
 		Zahra::Renderer2D::EndScene();
-		m_Framebuffer->Unbind();
+		//m_Framebuffer->Unbind();
 	}
 
 }
@@ -92,108 +92,36 @@ void Sandbox2DLayer::OnImGuiRender()
 {
 	Z_PROFILE_FUNCTION();
 
-	
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// MAIN MENU
+		// RENDERING DEMO CONTROLS WINDOW
 	{
-		if (ImGui::BeginMainMenuBar())
-		{
-			if (ImGui::BeginMenu("File"))
-			{
-				if (ImGui::MenuItem("Exit")) Zahra::Application::Get().Exit();
+		ImGui::Begin("Rendering Demo Controls");
 
-				ImGui::EndMenu();
-			}
+		ImGui::ColorEdit3("Background colour", m_ClearColour);
 
-			if (ImGui::BeginMenu("Edit"))
-			{
-				if (ImGui::MenuItem("???"));
-
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("View"))
-			{
-				if (ImGui::MenuItem("Toggle Window Visibility (F1)")) m_ImguiWindowsVisible = !m_ImguiWindowsVisible;
-				if (ImGui::MenuItem("Toggle Docking (F2)")) m_ImguiDockingEnabled = !m_ImguiDockingEnabled;
-
-				ImGui::EndMenu();
-			}
-		}
-		ImGui::EndMainMenuBar();
-
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// WINDOW DOCKSPACE
-	if (m_ImguiDockingEnabled)
-	{
-		
-		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_None);
-
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// LEVEL VIEWER
-	{
-		ImGui::Begin("Level Viewer");
-
-		uint32_t framebufferID = m_Framebuffer->GetColourAttachmentRendererID();
-		ImGui::Image((void*)framebufferID, ImVec2(1280.0f, 720.0f));
+		ImGui::SliderFloat2("Quad position", m_QuadPosition, -5.0f, 5.0f);
+		ImGui::SliderFloat2("Quad dimensions", m_QuadDimensions, .01f, 10.0f, "%.3f", 32);
+		ImGui::SliderFloat("Quad rotation", &m_QuadRotation, -3.14f, 3.14f);
+		ImGui::ColorEdit4("Quad tint", m_QuadColour);
 
 		ImGui::End();
 	}
 
-	if (m_ImguiWindowsVisible)
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// RENDERING STATS WINDOW
 	{
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// RENDERING DEMO CONTROLS WINDOW
-		{
-			ImGui::Begin("Rendering Demo Controls");
+		ImGui::Begin("Renderer Stats");
 
-			ImGui::ColorEdit3("Background colour", m_ClearColour);
+		ImGui::Text("FPS: %i", (int)m_FPS);
+		ImGui::Text("Quads: %u", Zahra::Renderer2D::GetStats().QuadCount);
+		ImGui::Text("Draw calls: %u", Zahra::Renderer2D::GetStats().DrawCalls);
 
-			ImGui::SliderFloat2("Quad position", m_QuadPosition, -5.0f, 5.0f);
-			ImGui::SliderFloat2("Quad dimensions", m_QuadDimensions, .01f, 10.0f, "%.3f", 32);
-			ImGui::SliderFloat("Quad rotation", &m_QuadRotation, -3.14f, 3.14f);
-			ImGui::ColorEdit4("Quad tint", m_QuadColour);
-
-			ImGui::End();
-		}
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// RENDERING STATS WINDOW
-		{
-			ImGui::Begin("Renderer Stats");
-
-			ImGui::Text("FPS: %i", (int)m_FPS);
-			ImGui::Text("Quads: %u", Zahra::Renderer2D::GetStats().QuadCount);
-			ImGui::Text("Draw calls: %u", Zahra::Renderer2D::GetStats().DrawCalls);
-
-			ImGui::End();
-		}
+		ImGui::End();
 	}
 }
 
 bool Sandbox2DLayer::OnKeyPressedEvent(Zahra::KeyPressedEvent& event)
 {
-	if (Zahra::Input::IsKeyPressed(Z_KEY_F1))
-	{
-		// toggle imgui window visibility
-		m_ImguiWindowsVisible = !m_ImguiWindowsVisible;
-
-		return true;
-	}
-
-	if (Zahra::Input::IsKeyPressed(Z_KEY_F2))
-	{
-		// toggle imgui docking
-		m_ImguiDockingEnabled = !m_ImguiDockingEnabled;
-
-		return true;
-	}
-
 	return false;
 }
 

@@ -195,7 +195,7 @@ class Sandbox : public Zahra::Application
 public:
 
 	Sandbox()
-		: Zahra::Application()
+		: Zahra::Application("Sandbox App")
 	{
 		//PushLayer(new ExampleLayer());
 		PushLayer(new Sandbox2DLayer());

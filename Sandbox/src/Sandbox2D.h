@@ -33,7 +33,5 @@ private:
 	float m_FPS = .0f;
 
 
-	bool m_ImguiWindowsVisible = true;
-	bool m_ImguiDockingEnabled = true;
 };
 

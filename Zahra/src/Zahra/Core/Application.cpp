@@ -8,14 +8,15 @@ namespace Zahra
 	Application* Application::s_Instance = nullptr;
 
 
-	Application::Application()
+	Application::Application(const std::string& name)
 	{
 		Z_PROFILE_FUNCTION();
 
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
 
-		m_Window = Window::Create();
+		m_Window = Window::Create(WindowProperties(name));
+
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
 
 		Renderer::Init();

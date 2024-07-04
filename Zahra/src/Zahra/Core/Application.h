@@ -22,7 +22,7 @@ namespace Zahra
 	class Application
 	{
 	public:
-		Application();
+		Application(const std::string& name = "Zahra");
 		virtual ~Application();
 
 		void Run();
