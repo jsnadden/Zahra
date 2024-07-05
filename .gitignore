@@ -1,5 +1,6 @@
-﻿# profiling data
+﻿# engine output
 profiling/
+*.log
 
 # binaries
 bin-int/

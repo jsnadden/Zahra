@@ -13,8 +13,8 @@ namespace Zahra
 		MouseMovedEvent(float x, float y)
 		: m_MouseX(x), m_MouseY(y) {}
 
-		inline float GetMouseX() const { return m_MouseX; }
-		inline float GetMouseY() const { return m_MouseY; }
+		float GetMouseX() const { return m_MouseX; }
+		float GetMouseY() const { return m_MouseY; }
 
 		std::string ToString() const override
 		{
@@ -41,8 +41,8 @@ namespace Zahra
 		MouseScrolledEvent(float x, float y)
 			: m_OffsetX(x), m_OffsetY(y) {}
 
-		inline float GetOffsetX() const { return m_OffsetX; }
-		inline float GetOffsetY() const { return m_OffsetY; }
+		float GetOffsetX() const { return m_OffsetX; }
+		float GetOffsetY() const { return m_OffsetY; }
 
 		std::string ToString() const override
 		{
@@ -66,7 +66,7 @@ namespace Zahra
 	{
 	public:
 
-		inline MouseCode GetMouseButton() const { return m_Button; }
+		MouseCode GetMouseButton() const { return m_Button; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 

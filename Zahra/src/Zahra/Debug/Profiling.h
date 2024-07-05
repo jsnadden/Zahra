@@ -129,12 +129,33 @@ namespace Zahra
 	};
 
 }
-//#define Z_PROFILING_ENABLED
-#ifdef Z_PROFILING_ENABLED
+//#define Z_PROFILING_ENABLED 1
+#if Z_PROFILING_ENABLED
+	// Resolve which function signature macro will be used. Note that this only
+		// is resolved when the (pre)compiler starts, so the syntax highlighting
+		// could mark the wrong one in your editor!
+	#if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600)) || defined(__ghs__)
+	#define Z_FUNC_SIG __PRETTY_FUNCTION__
+	#elif defined(__DMC__) && (__DMC__ >= 0x810)
+	#define Z_FUNC_SIG __PRETTY_FUNCTION__
+	#elif defined(__FUNCSIG__)
+	#define Z_FUNC_SIG __FUNCSIG__
+	#elif (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 600)) || (defined(__IBMCPP__) && (__IBMCPP__ >= 500))
+	#define Z_FUNC_SIG __FUNCTION__
+	#elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x550)
+	#define Z_FUNC_SIG __FUNC__
+	#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)
+	#define Z_FUNC_SIG __func__
+	#elif defined(__cplusplus) && (__cplusplus >= 201103)
+	#define Z_FUNC_SIG __func__
+	#else
+	#define Z_FUNC_SIG "Z_FUNC_SIG unknown!"
+	#endif
+
 	#define Z_PROFILE_BEGIN_SESSION(name, filepath) ::Zahra::Instrumentor::Get().BeginSession(name, filepath)
 	#define Z_PROFILE_END_SESSION() ::Zahra::Instrumentor::Get().EndSession()
 	#define Z_PROFILE_SCOPE(name) ::Zahra::InstrumentationTimer timer##__LINE__(name)
-	#define Z_PROFILE_FUNCTION() Z_PROFILE_SCOPE(__FUNCSIG__)
+	#define Z_PROFILE_FUNCTION() Z_PROFILE_SCOPE(Z_FUNC_SIG)
 #else
 	#define Z_PROFILE_BEGIN_SESSION(name, filepath)
 	#define Z_PROFILE_END_SESSION()

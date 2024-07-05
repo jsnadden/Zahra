@@ -5,7 +5,7 @@
 #include "Zahra/Events/ApplicationEvent.h"
 #include "Zahra/Events/MouseEvent.h"
 #include "Zahra/Events/KeyEvent.h"
-
+#include "Zahra/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 
 namespace Zahra
@@ -58,6 +58,13 @@ namespace Zahra
 
 		{
 			Z_PROFILE_SCOPE("glfwCreateWindow");
+
+			#if defined(Z_DEBUG)
+				if (Renderer::GetAPI() == RendererAPI::API::OpenGL) glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+				// TODO: if (Renderer::GetAPI() == RendererAPI::API::Direct3D) DO SOMETHING;
+				// TODO: if (Renderer::GetAPI() == RendererAPI::API::Vulkan) DO SOMETHING;
+			#endif
+			
 			m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		}
 

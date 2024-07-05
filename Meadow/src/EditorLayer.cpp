@@ -35,6 +35,18 @@ namespace Zahra
 		m_FPS = 1.0f / dt;
 
 		{
+			Z_PROFILE_SCOPE("Resize framebuffer");
+
+			Zahra::FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f // framebuffer requires positive dimensions
+				&& (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+			{
+				m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				m_CameraController.Resize(m_ViewportSize.x, m_ViewportSize.y);
+			}
+		}
+
+		{
 			Z_PROFILE_SCOPE("Camera update");
 
 			if (m_ViewportFocused) m_CameraController.OnUpdate(dt);
@@ -128,17 +140,7 @@ namespace Zahra
 			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-			if ((m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y) && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
-			{
-				// Framebuffer requires a positive width and height
-				m_Framebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
-
-				m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-
-				m_CameraController.Resize(viewportPanelSize.x, viewportPanelSize.y);
-
-				//Z_CORE_WARN("Viewport resized: {0}x{1}", viewportPanelSize.x, viewportPanelSize.y);
-			}
+			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
 			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentRendererID();
 			ImGui::Image((void*)framebufferTextureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2( 0, 1 ), ImVec2( 1, 0 ));
