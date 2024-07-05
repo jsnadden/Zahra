@@ -128,11 +128,10 @@ namespace Zahra
 			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-			if (m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y)
+			if ((m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y) && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
 			{
 				// Framebuffer requires a positive width and height
-				m_Framebuffer->Resize(viewportPanelSize.x >= 1 ? (uint32_t)viewportPanelSize.x : 1,
-					viewportPanelSize.y >= 1 ? (uint32_t)viewportPanelSize.y : 1);
+				m_Framebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
 
 				m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 

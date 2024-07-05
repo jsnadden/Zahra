@@ -160,7 +160,7 @@
     <ClInclude Include="src\Zahra\Core\Layer.h" />
     <ClInclude Include="src\Zahra\Core\LayerStack.h" />
     <ClInclude Include="src\Zahra\Core\Log.h" />
-    <ClInclude Include="src\Zahra\Core\MouseButtonCodes.h" />
+    <ClInclude Include="src\Zahra\Core\MouseCodes.h" />
     <ClInclude Include="src\Zahra\Core\Timestep.h" />
     <ClInclude Include="src\Zahra\Core\Window.h" />
     <ClInclude Include="src\Zahra\Debug\Profiling.h" />

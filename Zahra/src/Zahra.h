@@ -8,7 +8,7 @@
 #include "Zahra/Core/Log.h"
 #include "Zahra/Core/Input.h"
 #include "Zahra/Core/KeyCodes.h"
-#include "Zahra/Core/MouseButtonCodes.h"
+#include "Zahra/Core/MouseCodes.h"
 
 //------------DEBUG--------------------
 #include "Zahra/Debug/Profiling.h"

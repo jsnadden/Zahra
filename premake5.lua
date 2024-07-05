@@ -80,7 +80,10 @@ project "Zahra"
 		systemversion "latest"
 	
 	filter "configurations:Debug"
-		defines "Z_DEBUG"
+		defines 
+		{
+			"Z_DEBUG"
+		}
 		symbols "on"
 
 	filter "configurations:Release"
@@ -129,7 +132,10 @@ project "Sandbox"
 		systemversion "latest"
 
 	filter "configurations:Debug"
-		defines "Z_DEBUG"
+		defines 
+		{
+			"Z_DEBUG"
+		}
 		symbols "on"
 
 	filter "configurations:Release"
@@ -178,7 +184,10 @@ project "Meadow"
 		systemversion "latest"
 
 	filter "configurations:Debug"
-		defines "Z_DEBUG"
+		defines 
+		{
+			"Z_DEBUG"
+		}
 		symbols "on"
 
 	filter "configurations:Release"

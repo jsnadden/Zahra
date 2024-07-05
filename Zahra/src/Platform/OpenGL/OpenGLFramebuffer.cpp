@@ -6,6 +6,8 @@
 namespace Zahra
 {
 
+	static const uint32_t s_MaxFramebufferDimension = 8192; // TODO: this should not be hardcoded - read it in from GPU capabilities!
+
 	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& spec)
 		: m_Specification(spec)
 	{
@@ -62,6 +64,12 @@ namespace Zahra
 
 	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height)
 	{
+		if (width == 0 || height == 0 || width > s_MaxFramebufferDimension || height > s_MaxFramebufferDimension)
+		{
+			Z_CORE_WARN("Attempted to resize Framebuffer to invalid value: {0}x{1}", width, height);
+			return;
+		}
+
 		m_Specification.Width = width;
 		m_Specification.Height = height;
 		Regenerate();

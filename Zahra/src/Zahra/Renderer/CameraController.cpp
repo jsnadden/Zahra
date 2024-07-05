@@ -23,7 +23,7 @@ namespace Zahra
 		Z_PROFILE_FUNCTION();
 
 		// Reset camera
-		if (Zahra::Input::IsKeyPressed(Z_KEY_SPACE))
+		if (Zahra::Input::IsKeyPressed(Key::Space))
 		{
 			m_Velocity *= .0f;
 			m_AngularVelocity *= .0f;
@@ -46,24 +46,24 @@ namespace Zahra
 		// Move camera
 		int dir = 1;
 
-		if (Input::IsKeyPressed(Z_KEY_W))
+		if (Input::IsKeyPressed(Key::W))
 		{
 			dir = 1;
 			m_Velocity += glm::rotate(glm::mat4(1.0f), m_Rotation,
 				glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(.0f, 1.0f, .0f, 1.0f);
 		}
-		if (Input::IsKeyPressed(Z_KEY_S))
+		if (Input::IsKeyPressed(Key::S))
 		{
 			dir = -1;
 			m_Velocity += glm::rotate(glm::mat4(1.0f), m_Rotation,
 				glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(.0f, -1.0f, .0f, 1.0f);
 		}
-		if (Input::IsKeyPressed(Z_KEY_D))
+		if (Input::IsKeyPressed(Key::D))
 		{
 			m_Velocity += glm::rotate(glm::mat4(1.0f), m_Rotation,
 				glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(1.0f, .0f, .0f, 1.0f);
 		}
-		if (Input::IsKeyPressed(Z_KEY_A))
+		if (Input::IsKeyPressed(Key::A))
 		{
 			m_Velocity += glm::rotate(glm::mat4(1.0f), m_Rotation,
 				glm::vec3(.0f, .0f, 1.0f)) * glm::vec4(-1.0f, .0f, .0f, 1.0f);
@@ -73,10 +73,10 @@ namespace Zahra
 
 		if (m_EnableRotation)
 		{
-			if (Input::IsKeyPressed(Z_KEY_Q))
+			if (Input::IsKeyPressed(Key::Q))
 				m_AngularVelocity += 1.0f;
 
-			if (Input::IsKeyPressed(Z_KEY_E))
+			if (Input::IsKeyPressed(Key::E))
 				m_AngularVelocity -= 1.0f;
 
 			m_Camera.SetRotation(m_Rotation + dir * m_RotationSpeed * dt * m_AngularVelocity);

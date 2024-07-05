@@ -1,6 +1,7 @@
 #pragma once
-
 #include "Event.h"
+
+#include "Zahra/Core/Input.h"
 
 namespace Zahra
 {
@@ -9,15 +10,15 @@ namespace Zahra
 	{
 	public:
 
-		inline int GetKeyCode() const { return m_KeyCode; }
+		inline KeyCode GetKeyCode() const { return m_KeyCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 
 	protected:
 
-		KeyEvent(int keycode) : m_KeyCode(keycode) {}
+		KeyEvent(KeyCode keycode) : m_KeyCode(keycode) {}
 
-		int m_KeyCode;
+		KeyCode m_KeyCode;
 
 	};
 
@@ -25,7 +26,7 @@ namespace Zahra
 	{
 	public:
 
-		KeyPressedEvent(int keycode, int repeatcount)
+		KeyPressedEvent(KeyCode keycode, int repeatcount)
 			: KeyEvent(keycode), m_RepeatCount(repeatcount) {}
 
 		inline int GetRepeatCount() const { return m_RepeatCount; }
@@ -49,7 +50,7 @@ namespace Zahra
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(int keycode)
+		KeyReleasedEvent(KeyCode keycode)
 			: KeyEvent(keycode) {}
 
 		std::string ToString() const override
@@ -68,7 +69,7 @@ namespace Zahra
 	{
 	public:
 
-		KeyTypedEvent(int keycode) : KeyEvent(keycode) {}
+		KeyTypedEvent(KeyCode keycode) : KeyEvent(keycode) {}
 
 
 		std::string ToString() const override

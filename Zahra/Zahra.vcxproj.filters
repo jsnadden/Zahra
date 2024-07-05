@@ -108,7 +108,7 @@
     <ClInclude Include="src\Zahra\Core\Log.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Core\MouseButtonCodes.h">
+    <ClInclude Include="src\Zahra\Core\MouseCodes.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Timestep.h">
@@ -1448,6 +1448,9 @@
     <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
+      <Filter>src\Platform\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
@@ -1508,6 +1511,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
   </ItemGroup>
 </Project>

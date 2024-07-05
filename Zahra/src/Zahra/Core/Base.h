@@ -2,6 +2,7 @@
 
 #include <memory>
 
+// TODO: these macros should be defined externally. Doing it like this means you have to make sure this is included carefully!
 // Platform detection using predefined macros
 #ifdef _WIN32
 	/* Windows x64/x86 */
@@ -47,6 +48,7 @@
 	#define Z_ENABLE_ASSERTS
 #endif
 
+// TODO: the assert macros should be capable of taking only a boolean input, without __VA_ARGS__.
 #ifdef Z_ENABLE_ASSERTS
 	#define Z_ASSERT(x, ...) { if(!(x)) { Z_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 	#define Z_CORE_ASSERT(x, ...) { if (!(x)) { Z_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
@@ -61,8 +63,6 @@
 
 namespace Zahra
 {
-	// TODO: swap out the std smart pointers for our own implementations
-
 	template<typename T>
 	using Scope = std::unique_ptr<T>;
 
@@ -72,6 +72,8 @@ namespace Zahra
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
 
+
+	// TODO: implement our own reference counting system, replacing shared_ptr
 	template<typename T>
 	using Ref = std::shared_ptr<T>;
 
