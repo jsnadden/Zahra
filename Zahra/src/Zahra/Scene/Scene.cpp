@@ -2,25 +2,27 @@
 #include "Scene.h"
 
 #include "Zahra/Renderer/Renderer2D.h"
+#include "Entity.h"
 
 namespace Zahra
 {
 	
 	Scene::Scene()
 	{
-		entt::entity entity = m_Registry.create();
+		
 	}
 
 	Scene::~Scene()
 	{
-
+		m_Registry.clear();
 	}
 
-	entt::entity Scene::CreateEntity()
+	Entity Scene::CreateEntity(const std::string& name)
 	{
-		// TODO: need to make our own wrapper Entity class, so that client apps aren't interfacing with entt directly
-		// (also makes it easier to swap out the specific ECS implementation for one of our own)
-		return m_Registry.create();
+		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<TransformComponent>();
+		auto& tag = entity.AddComponent<TagComponent>(name.empty() ? "anonymous_entity" : name);
+		return entity;
 	}
 
 	void Scene::OnUpdate(float dt)

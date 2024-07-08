@@ -1427,6 +1427,7 @@
     </ClInclude>
     <ClInclude Include="src\Zahra\Scene\Scene.h" />
     <ClInclude Include="src\Zahra\Scene\Components.h" />
+    <ClInclude Include="src\Zahra\Scene\Entity.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1514,5 +1515,6 @@
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Scene\Scene.cpp" />
+    <ClCompile Include="src\Zahra\Scene\Entity.cpp" />
   </ItemGroup>
 </Project>

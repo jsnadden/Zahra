@@ -23,9 +23,9 @@ namespace Zahra
 		m_Framebuffer = Framebuffer::Create(framebufferSpec);
 
 		m_ActiveScene = CreateRef<Scene>();
-		auto square = m_ActiveScene->CreateEntity();
-		m_ActiveScene->REG().emplace<TransformComponent>(square);
-		m_ActiveScene->REG().emplace<SpriteComponent>(square, glm::vec4(.0f, 1.0f, .0f, 1.0f ));
+
+		m_QuadEntity = m_ActiveScene->CreateEntity("quad1");
+		m_QuadEntity.AddComponent<SpriteComponent>();
 	}
 
 	void EditorLayer::OnDetach()
@@ -70,9 +70,8 @@ namespace Zahra
 
 				Renderer2D::BeginScene(m_CameraController.GetCamera());
 				{
-					auto g = m_ActiveScene->REG().group<SpriteComponent>(entt::get<TransformComponent>);
-					for (auto e : g) g.get<SpriteComponent>(e).Colour = glm::make_vec4(m_QuadColour);
-					for (auto e : g) g.get<TransformComponent>(e).Transform =
+					m_QuadEntity.GetComponents<SpriteComponent>().Colour = glm::make_vec4(m_QuadColour);
+					m_QuadEntity.GetComponents<TransformComponent>().Transform =
 						glm::translate(glm::mat4(1.0f), glm::make_vec3(m_QuadPosition))
 						* glm::rotate(glm::mat4(1.0f), m_QuadRotation, glm::vec3(.0f, .0f, 1.0f))
 						* glm::scale(glm::mat4(1.0f), glm::make_vec3(m_QuadDimensions));
