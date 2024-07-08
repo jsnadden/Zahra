@@ -28,3 +28,6 @@
 #include "Zahra/Renderer/Camera.h"
 #include "Zahra/Renderer/CameraController.h"
 
+//------------SCENE--------------------
+#include "Zahra/Scene/Scene.h"
+

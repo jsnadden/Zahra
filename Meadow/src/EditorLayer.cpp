@@ -21,6 +21,11 @@ namespace Zahra
 		framebufferSpec.Height = 720; // These will be overwritten by the ImGui viewport window
 
 		m_Framebuffer = Framebuffer::Create(framebufferSpec);
+
+		m_ActiveScene = CreateRef<Scene>();
+		auto square = m_ActiveScene->CreateEntity();
+		m_ActiveScene->REG().emplace<TransformComponent>(square);
+		m_ActiveScene->REG().emplace<SpriteComponent>(square, glm::vec4(.0f, 1.0f, .0f, 1.0f ));
 	}
 
 	void EditorLayer::OnDetach()
@@ -37,7 +42,7 @@ namespace Zahra
 		{
 			Z_PROFILE_SCOPE("Resize framebuffer");
 
-			Zahra::FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+			FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f // framebuffer requires positive dimensions
 				&& (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 			{
@@ -52,44 +57,33 @@ namespace Zahra
 			if (m_ViewportFocused) m_CameraController.OnUpdate(dt);
 		}
 
-		Renderer2D::ResetStats();
-
+		// Rendering (TODO: this should be inside the Scene's OnUpdate())
 		{
-			Z_PROFILE_SCOPE("Renderer clear");
+			Renderer2D::ResetStats();
 
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// DRAW TO FRAMEBUFFER
 			m_Framebuffer->Bind();
-
-			RenderCommand::SetClearColour(glm::make_vec4(m_ClearColour));
-			RenderCommand::Clear();
-		}
-
-		{
-			Z_PROFILE_SCOPE("Renderer draw");
-
-			Renderer2D::BeginScene(m_CameraController.GetCamera());
-
-			glm::vec2 dims = glm::make_vec2(m_QuadDimensions);
-			glm::vec4 tint = glm::make_vec4(m_QuadColour);
-			glm::vec2 pos = glm::make_vec2(m_QuadPosition);
-
-			int n = 20;
-
-			Renderer2D::DrawQuad({ 0.0f, 0.0f, -.1f }, 9.0f * dims, m_Texture);
-
-			for (int i = 0; i < n * n; i++)
 			{
-				glm::vec2 gridpoint(i % n, glm::floor((float)i / n));
+				RenderCommand::SetClearColour(glm::make_vec4(m_ClearColour));
+				RenderCommand::Clear();
 
-				Renderer2D::DrawRotatedQuad(
-					pos + (10.0f / (float)n) * (gridpoint - glm::vec2(((float)n - 1) / 2,				// POSITION
-						((float)n - 1) / 2)) * dims, dims * glm::vec2(10.0f / (float)n, 10.0f / (float)n),  // DIMENSIONS
-					m_QuadRotation,																		// ROTATION
-					tint * glm::vec4((1 / (float)n) * gridpoint, .4f, .8f)								// COLOUR
-				);
+				Renderer2D::BeginScene(m_CameraController.GetCamera());
+				{
+					auto g = m_ActiveScene->REG().group<SpriteComponent>(entt::get<TransformComponent>);
+					for (auto e : g) g.get<SpriteComponent>(e).Colour = glm::make_vec4(m_QuadColour);
+					for (auto e : g) g.get<TransformComponent>(e).Transform =
+						glm::translate(glm::mat4(1.0f), glm::make_vec3(m_QuadPosition))
+						* glm::rotate(glm::mat4(1.0f), m_QuadRotation, glm::vec3(.0f, .0f, 1.0f))
+						* glm::scale(glm::mat4(1.0f), glm::make_vec3(m_QuadDimensions));
+
+					m_ActiveScene->OnUpdate(dt);
+				}
+				Renderer2D::EndScene();
 			}
-
-			Renderer2D::EndScene();
 			m_Framebuffer->Unbind();
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		}
 
 	}
@@ -157,7 +151,7 @@ namespace Zahra
 			ImGui::ColorEdit3("Background colour", m_ClearColour);
 
 			ImGui::SliderFloat2("Quad position", m_QuadPosition, -5.0f, 5.0f);
-			ImGui::SliderFloat2("Quad dimensions", m_QuadDimensions, .01f, 10.0f, "%.3f", 32);
+			ImGui::SliderFloat2("Quad dimensions", m_QuadDimensions, .01f, 10.0f, "%.2f", 32);
 			ImGui::SliderFloat("Quad rotation", &m_QuadRotation, -3.14f, 3.14f);
 			ImGui::ColorEdit4("Quad tint", m_QuadColour);
 

@@ -19,6 +19,7 @@ IncludeDir["Glad"] = "Zahra/vendor/Glad/include"
 IncludeDir["ImGui"] = "Zahra/vendor/ImGui"
 IncludeDir["glm"] = "Zahra/vendor/glm"
 IncludeDir["stb_image"] = "Zahra/vendor/stb_image"
+IncludeDir["EnTT"] = "Zahra/vendor/EnTT"
 
 group "Dependencies"
 	include "Zahra/vendor/GLFW"
@@ -65,7 +66,8 @@ project "Zahra"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.stb_image}"
+		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.EnTT}"
 	}
 
 	links
@@ -172,7 +174,8 @@ project "Meadow"
 		"Zahra/src",
 		"Zahra/vendor",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.EnTT}"
 	}
 
 	links
