@@ -59,7 +59,7 @@
 
 #define BIT(x) (1 << x)
 
-#define Z_BIND_EVENT_FN(f) std::bind(&f, this, std::placeholders::_1)
+#define Z_BIND_EVENT_FN(f) [this](auto&&... args)->decltype(auto) { return this->f(std::forward<decltype(args)>(args)...); }
 
 namespace Zahra
 {

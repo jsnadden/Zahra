@@ -7,8 +7,8 @@
 namespace Zahra
 {
 	EditorLayer::EditorLayer()
-		: Layer("EditorLayer"),
-		m_CameraController(1280.0f / 720.0f)
+		: Layer("EditorLayer")
+		//m_CameraController(1280.0f / 720.0f)
 	{
 	}
 
@@ -26,6 +26,10 @@ namespace Zahra
 
 		m_QuadEntity = m_ActiveScene->CreateEntity("quad1");
 		m_QuadEntity.AddComponent<SpriteComponent>();
+
+		m_CameraEntity = m_ActiveScene->CreateEntity("camera1");
+		CameraComponent camera = m_CameraEntity.AddComponent<CameraComponent>(false);
+
 	}
 
 	void EditorLayer::OnDetach()
@@ -47,14 +51,17 @@ namespace Zahra
 				&& (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 			{
 				m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-				m_CameraController.Resize(m_ViewportSize.x, m_ViewportSize.y);
+				
+				//m_CameraController.Resize(m_ViewportSize.x, m_ViewportSize.y);
+				
+				m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 			}
 		}
 
 		{
 			Z_PROFILE_SCOPE("Camera update");
 
-			if (m_ViewportFocused) m_CameraController.OnUpdate(dt);
+			//if (m_ViewportFocused) m_CameraController.OnUpdate(dt);
 		}
 
 		// Rendering (TODO: this should be inside the Scene's OnUpdate())
@@ -68,17 +75,15 @@ namespace Zahra
 				RenderCommand::SetClearColour(glm::make_vec4(m_ClearColour));
 				RenderCommand::Clear();
 
-				Renderer2D::BeginScene(m_CameraController.GetCamera());
-				{
-					m_QuadEntity.GetComponents<SpriteComponent>().Colour = glm::make_vec4(m_QuadColour);
-					m_QuadEntity.GetComponents<TransformComponent>().Transform =
-						glm::translate(glm::mat4(1.0f), glm::make_vec3(m_QuadPosition))
-						* glm::rotate(glm::mat4(1.0f), m_QuadRotation, glm::vec3(.0f, .0f, 1.0f))
-						* glm::scale(glm::mat4(1.0f), glm::make_vec3(m_QuadDimensions));
+				m_QuadEntity.GetComponents<SpriteComponent>().Colour = glm::make_vec4(m_QuadColour);
+				m_QuadEntity.GetComponents<TransformComponent>().Transform =
+					glm::translate(glm::mat4(1.0f), glm::make_vec3(m_QuadPosition))
+					* glm::rotate(glm::mat4(1.0f), m_QuadRotation, glm::vec3(.0f, .0f, 1.0f))
+					* glm::scale(glm::mat4(1.0f), glm::make_vec3(m_QuadDimensions));
 
-					m_ActiveScene->OnUpdate(dt);
-				}
-				Renderer2D::EndScene();
+				m_CameraEntity.GetComponents<CameraComponent>().Camera.SetOrthographicSize(10.0f / m_Zoom);
+
+				m_ActiveScene->OnUpdate(dt);
 			}
 			m_Framebuffer->Unbind();
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,7 +94,7 @@ namespace Zahra
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		m_CameraController.OnEvent(event);
+		//m_CameraController.OnEvent(event);
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnKeyPressedEvent));
@@ -145,14 +150,23 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			// RENDERING DEMO CONTROLS WINDOW
 		{
-			ImGui::Begin("Rendering Demo Controls");
+			ImGui::Begin("Demo Controls");
 
-			ImGui::ColorEdit3("Background colour", m_ClearColour);
+			ImGui::Text("Background:");
+			ImGui::ColorEdit3("Colour", m_ClearColour);
 
-			ImGui::SliderFloat2("Quad position", m_QuadPosition, -5.0f, 5.0f);
-			ImGui::SliderFloat2("Quad dimensions", m_QuadDimensions, .01f, 10.0f, "%.2f", 32);
-			ImGui::SliderFloat("Quad rotation", &m_QuadRotation, -3.14f, 3.14f);
-			ImGui::ColorEdit4("Quad tint", m_QuadColour);
+			ImGui::Separator();
+
+			ImGui::Text("Quad:");
+			ImGui::SliderFloat2("Position (x,y)", m_QuadPosition, -5.0f, 5.0f);
+			ImGui::SliderFloat2("Size (w,h)", m_QuadDimensions, .01f, 10.0f, "%.2f", 32);
+			ImGui::SliderFloat("Rotation", &m_QuadRotation, -3.14f, 3.14f);
+			ImGui::ColorEdit4("Tint", m_QuadColour);
+
+			ImGui::Separator();
+
+			ImGui::Text("Camera:");
+			ImGui::SliderFloat("Zoom", &m_Zoom, .1f, 10.0f, "%.2f", 32);
 
 			ImGui::End();
 		}
@@ -165,6 +179,13 @@ namespace Zahra
 			ImGui::Text("FPS: %i", (int)m_FPS);
 			ImGui::Text("Quads: %u", Renderer2D::GetStats().QuadCount);
 			ImGui::Text("Draw calls: %u", Renderer2D::GetStats().DrawCalls);
+
+			if (m_QuadEntity)
+			{
+				ImGui::Separator();
+				ImGui::Text("ACTIVE ENTITIES:");
+				ImGui::Text(m_QuadEntity.GetComponents<TagComponent>().Tag.c_str());
+			}
 
 			ImGui::End();
 		}

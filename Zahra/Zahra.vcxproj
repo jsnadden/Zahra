@@ -184,6 +184,7 @@
     <ClInclude Include="src\Zahra\Renderer\Shader.h" />
     <ClInclude Include="src\Zahra\Renderer\Texture.h" />
     <ClInclude Include="src\Zahra\Renderer\VertexArray.h" />
+    <ClInclude Include="src\Zahra\Scene\SceneCamera.h" />
     <ClInclude Include="src\zpch.h" />
     <ClInclude Include="vendor\glm\glm\common.hpp" />
     <ClInclude Include="vendor\glm\glm\detail\_features.hpp" />
@@ -632,6 +633,7 @@
     <ClCompile Include="src\Zahra\Renderer\Shader.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Texture.cpp" />
     <ClCompile Include="src\Zahra\Renderer\VertexArray.cpp" />
+    <ClCompile Include="src\Zahra\Scene\SceneCamera.cpp" />
     <ClCompile Include="src\zpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

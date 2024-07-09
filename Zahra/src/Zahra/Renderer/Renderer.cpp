@@ -24,7 +24,7 @@ namespace Zahra
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
-	void Renderer::BeginScene(Camera& camera)
+	void Renderer::BeginScene(OrthographicCamera& camera)
 	{
 		Z_PROFILE_FUNCTION();
 

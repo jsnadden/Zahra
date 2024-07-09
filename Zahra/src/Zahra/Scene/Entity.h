@@ -47,8 +47,10 @@ namespace Zahra
 			return m_Scene->m_Registry.get<Types...>(m_EntityHandle);
 		}
 
+		operator bool() const { return m_EntityHandle != entt::null; }
+
 	private:
-		entt::entity m_EntityHandle{ 0 };
+		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr; // TODO: Should be a weak (aka non-owning) reference. Once again, need our own reference counting!
 	};
 

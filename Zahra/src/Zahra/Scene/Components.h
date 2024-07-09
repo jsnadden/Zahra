@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SceneCamera.h"
+
 #include <glm/glm.hpp>
 
 namespace Zahra
@@ -42,8 +44,23 @@ namespace Zahra
 		SpriteComponent(const glm::vec4& colour)
 			: Colour(colour) {}
 
+		// TODO: add textures, a "sprite type" enum etc.
+	};
 
+	struct CameraComponent
+	{
+		SceneCamera Camera;
+		bool FixedAspectRatio = false;
+
+		// TODO: this status should be held by a scene, not an entity!
+		bool active = true;
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent&) = default;
+		CameraComponent(bool fixedRatio)
+			: FixedAspectRatio(fixedRatio) {}
 
 	};
 
 }
+

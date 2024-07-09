@@ -4,15 +4,27 @@
 
 namespace Zahra {
 
+	// TODO: if the only use of Camera is the subclass SceneCamera, just fold this into that class
 	class Camera
 	{
 	public:
-		virtual const glm::mat4& GetProjectionMatrix() const = 0;
-		virtual const glm::mat4& GetViewMatrix() const = 0;
-		virtual const glm::mat4& GetPVMatrix() const = 0;
+		Camera() = default;
+		Camera(const glm::mat4& projection)
+			: m_Projection(projection) {}
+		
+		virtual ~Camera() = default;
+
+		const glm::mat4& GetProjection() const { return m_Projection; }
+		
+	protected:
+		glm::mat4 m_Projection = glm::mat4(1.0f);
+
+		bool active = true;
 	};
 
-	class OrthographicCamera : public Camera
+
+	// TODO: remove this
+	class OrthographicCamera
 	{
 	public:
 		OrthographicCamera(float left, float right, float bottom, float top);
@@ -25,9 +37,9 @@ namespace Zahra {
 
 		void SetProjection(float left, float right, float bottom, float top);
 
-		const glm::mat4& GetProjectionMatrix() const override { return m_ProjectionMatrix; }
-		const glm::mat4& GetViewMatrix() const override { return m_ViewMatrix; }
-		const glm::mat4& GetPVMatrix() const override { return m_PVMatrix; }
+		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
+		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		const glm::mat4& GetPVMatrix() const { return m_PVMatrix; }
 		
 	private:
 		void RecalculateMatrices();

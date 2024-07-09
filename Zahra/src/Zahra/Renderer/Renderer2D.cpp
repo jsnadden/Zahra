@@ -124,6 +124,17 @@ namespace Zahra
 		delete[] s_Data.QuadVertexBufferBase;
 	}
 
+	
+
+	void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
+	{
+		s_Data.TextureShader->Bind();
+		s_Data.TextureShader->SetMat4("u_PVMatrix", camera.GetProjection() * glm::inverse(transform));
+
+		NewBatch();
+	}
+
+	// TODO: remove this:
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
 		Z_PROFILE_FUNCTION();

@@ -23,7 +23,7 @@ namespace Zahra
 	private:
 
 		// Viewport
-		OrthographicCameraController m_CameraController;
+		//OrthographicCameraController m_CameraController;
 		Ref<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
@@ -33,11 +33,13 @@ namespace Zahra
 
 		// TEMP
 		Entity m_QuadEntity;
+		Entity m_CameraEntity;
 		Ref<Texture2D> m_Texture;
 		float m_QuadPosition[3] = { .0f, .0f, 1.0f };
 		float m_QuadDimensions[3] = { 1.0f, 1.0f, 1.0f };
 		float m_QuadRotation = .0f;
 		float m_QuadColour[4] = { .878f, .718f, .172f, 1.0f };
+		float m_Zoom = 1.0f;
 		float m_FPS = .0f;
 
 		

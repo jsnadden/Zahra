@@ -25,15 +25,56 @@ namespace Zahra
 		return entity;
 	}
 
+	
+
 	void Scene::OnUpdate(float dt)
 	{
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
+		SceneCamera* activeCamera = nullptr;
+		glm::mat4* cameraTransform = nullptr;
 
-		for (auto entity : group)
+		auto cameraEntities = m_Registry.view<TransformComponent, CameraComponent>();
+		for (auto entity : cameraEntities)
 		{
-			auto& [transform, sprite] = group.get<TransformComponent, SpriteComponent>(entity);
+			auto& [transform, camera] = cameraEntities.get<TransformComponent, CameraComponent>(entity);
+			if (camera.active)
+			{
+				activeCamera = &camera.Camera;
+				cameraTransform = &transform.Transform;
+				break;
+			}
+			
+		}
 
-			Renderer2D::DrawQuad(transform, sprite.Colour);
+		if (activeCamera)
+		{
+			auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
+
+			Renderer2D::BeginScene(activeCamera->GetProjection(), *cameraTransform);
+
+			for (auto entity : spriteEntities)
+			{
+				auto& [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
+
+				Renderer2D::DrawQuad(transform, sprite.Colour);
+			}
+
+			Renderer2D::EndScene();			
+		}
+	}
+
+	void Scene::OnViewportResize(float width, float height)
+	{
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
+
+		auto cameraEntities = m_Registry.view<CameraComponent>();
+		for (auto entity : cameraEntities)
+		{
+			auto& cameraComponent = cameraEntities.get<CameraComponent>(entity);
+			if (!cameraComponent.FixedAspectRatio)
+			{
+				cameraComponent.Camera.SetViewportSize(width, height);
+			}
 		}
 	}
 
