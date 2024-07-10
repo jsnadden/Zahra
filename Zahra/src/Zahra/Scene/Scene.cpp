@@ -3,6 +3,7 @@
 
 #include "Zahra/Renderer/Renderer2D.h"
 #include "Entity.h"
+#include "ScriptableEntity.h"
 
 namespace Zahra
 {
@@ -29,37 +30,61 @@ namespace Zahra
 
 	void Scene::OnUpdate(float dt)
 	{
-		SceneCamera* activeCamera = nullptr;
-		glm::mat4* cameraTransform = nullptr;
-
-		auto cameraEntities = m_Registry.view<TransformComponent, CameraComponent>();
-		for (auto entity : cameraEntities)
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// RUN SCRIPTS
 		{
-			auto& [transform, camera] = cameraEntities.get<TransformComponent, CameraComponent>(entity);
-			if (camera.active)
-			{
-				activeCamera = &camera.Camera;
-				cameraTransform = &transform.Transform;
-				break;
-			}
-			
-		}
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& scriptComponent)
+				{
+					if (!scriptComponent.Instance)
+					{
+						scriptComponent.InstantiateFunction();
+						scriptComponent.Instance->m_Entity = Entity{ entity, this };
+						if (scriptComponent.OnCreateFunction)
+							scriptComponent.OnCreateFunction(scriptComponent.Instance);
+					}
 
-		if (activeCamera)
+					if (scriptComponent.OnUpdateFunction)
+						scriptComponent.OnUpdateFunction(scriptComponent.Instance, dt);
+				});
+		}
+		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// RENDER SCENE
 		{
-			auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
+			SceneCamera* activeCamera = nullptr;
+			glm::mat4* cameraTransform = nullptr;
 
-			Renderer2D::BeginScene(activeCamera->GetProjection(), *cameraTransform);
-
-			for (auto entity : spriteEntities)
+			// TODO: destroy this, it's truly disgusting
+			auto cameraEntities = m_Registry.view<TransformComponent, CameraComponent>();
+			for (auto entity : cameraEntities)
 			{
-				auto& [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
+				auto& [transform, camera] = cameraEntities.get<TransformComponent, CameraComponent>(entity);
+				if (camera.active)
+				{
+					activeCamera = &camera.Camera;
+					cameraTransform = &transform.Transform;
+					break;
+				}
 
-				Renderer2D::DrawQuad(transform, sprite.Colour);
 			}
 
-			Renderer2D::EndScene();			
+			if (activeCamera)
+			{
+				auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
+
+				Renderer2D::BeginScene(activeCamera->GetProjection(), *cameraTransform);
+
+				for (auto entity : spriteEntities)
+				{
+					auto& [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
+
+					Renderer2D::DrawQuad(transform, sprite.Colour);
+				}
+
+				Renderer2D::EndScene();
+			}
 		}
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	}
 
 	void Scene::OnViewportResize(float width, float height)

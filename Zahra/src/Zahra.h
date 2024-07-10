@@ -32,4 +32,5 @@
 #include "Zahra/Scene/Scene.h"
 #include "Zahra/Scene/Components.h"
 #include "Zahra/Scene/Entity.h"
+#include "Zahra/Scene/ScriptableEntity.h"
 

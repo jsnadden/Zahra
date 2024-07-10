@@ -1429,6 +1429,7 @@
     <ClInclude Include="src\Zahra\Scene\Components.h" />
     <ClInclude Include="src\Zahra\Scene\Entity.h" />
     <ClInclude Include="src\Zahra\Scene\SceneCamera.h" />
+    <ClInclude Include="src\Zahra\Scene\ScriptableEntity.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">

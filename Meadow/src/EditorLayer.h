@@ -33,7 +33,9 @@ namespace Zahra
 
 		// TEMP
 		Entity m_QuadEntity;
-		Entity m_CameraEntity;
+		bool m_CameraToggle = false;
+		Entity m_FixedCamera;
+		Entity m_DynamicCamera;
 		Ref<Texture2D> m_Texture;
 		float m_QuadPosition[3] = { .0f, .0f, 1.0f };
 		float m_QuadDimensions[3] = { 1.0f, 1.0f, 1.0f };

@@ -27,9 +27,43 @@ namespace Zahra
 		m_QuadEntity = m_ActiveScene->CreateEntity("quad1");
 		m_QuadEntity.AddComponent<SpriteComponent>();
 
-		m_CameraEntity = m_ActiveScene->CreateEntity("camera1");
-		CameraComponent camera = m_CameraEntity.AddComponent<CameraComponent>(false);
+		m_FixedCamera = m_ActiveScene->CreateEntity("camera1");
+		m_FixedCamera.AddComponent<CameraComponent>(false);
 
+		// TODO: obviously this belongs elsewhere
+		class CameraController : public ScriptableEntity
+		{
+		public:
+			void OnCreate()
+			{
+				
+			}
+
+			void OnDestroy()
+			{
+
+			}
+
+			void OnUpdate(float dt)
+			{
+				auto& transform = GetComponents<TransformComponent>().Transform;
+				float speed = 3.0f;
+				
+				if (Input::IsKeyPressed(KeyCode::A))
+					transform[3][0] -= speed * dt;
+				if (Input::IsKeyPressed(KeyCode::D))
+					transform[3][0] += speed * dt;
+				if (Input::IsKeyPressed(KeyCode::W))
+					transform[3][1] += speed * dt;
+				if (Input::IsKeyPressed(KeyCode::S))
+					transform[3][1] -= speed * dt;
+			}
+		};
+
+		m_DynamicCamera = m_ActiveScene->CreateEntity("camera2");
+		m_DynamicCamera.AddComponent<CameraComponent>(false);
+		m_DynamicCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		m_DynamicCamera.GetComponents<CameraComponent>().active = false;
 	}
 
 	void EditorLayer::OnDetach()
@@ -39,37 +73,25 @@ namespace Zahra
 
 	void EditorLayer::OnUpdate(float dt)
 	{
-		Z_PROFILE_FUNCTION();
-
 		m_FPS = 1.0f / dt;
 
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// REACT TO RESIZED VIEWPORT
 		{
-			Z_PROFILE_SCOPE("Resize framebuffer");
-
 			FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f // framebuffer requires positive dimensions
 				&& (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 			{
 				m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-				
-				//m_CameraController.Resize(m_ViewportSize.x, m_ViewportSize.y);
-				
 				m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 			}
 		}
 
-		{
-			Z_PROFILE_SCOPE("Camera update");
-
-			//if (m_ViewportFocused) m_CameraController.OnUpdate(dt);
-		}
-
-		// Rendering (TODO: this should be inside the Scene's OnUpdate())
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// CAPTURE DRAW CALLS IN FRAMEBUFFER
 		{
 			Renderer2D::ResetStats();
-
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			// DRAW TO FRAMEBUFFER
+			
 			m_Framebuffer->Bind();
 			{
 				RenderCommand::SetClearColour(glm::make_vec4(m_ClearColour));
@@ -81,14 +103,16 @@ namespace Zahra
 					* glm::rotate(glm::mat4(1.0f), m_QuadRotation, glm::vec3(.0f, .0f, 1.0f))
 					* glm::scale(glm::mat4(1.0f), glm::make_vec3(m_QuadDimensions));
 
-				m_CameraEntity.GetComponents<CameraComponent>().Camera.SetOrthographicSize(10.0f / m_Zoom);
+				m_FixedCamera.GetComponents<CameraComponent>().active = m_CameraToggle;
+				m_DynamicCamera.GetComponents<CameraComponent>().active = !m_CameraToggle;
+				m_DynamicCamera.GetComponents<CameraComponent>().Camera.SetOrthographicSize(10.0f / m_Zoom);
 
 				m_ActiveScene->OnUpdate(dt);
 			}
 			m_Framebuffer->Unbind();
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+			
 		}
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	}
 
@@ -167,6 +191,7 @@ namespace Zahra
 
 			ImGui::Text("Camera:");
 			ImGui::SliderFloat("Zoom", &m_Zoom, .1f, 10.0f, "%.2f", 32);
+			ImGui::Checkbox("Use fixed camera", &m_CameraToggle);
 
 			ImGui::End();
 		}

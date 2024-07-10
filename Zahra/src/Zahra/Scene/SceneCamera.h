@@ -16,7 +16,7 @@ namespace Zahra
 		void SetOrthographic(float size, float nearClip, float farClip);
 
 		void SetOrthographicSize(float size);
-		float GetOrthographicSize() { return m_OrthographicSize; }
+		float GetOrthographicSize() const { return m_OrthographicSize; }
 
 		void SetViewportSize(float width, float height);
 

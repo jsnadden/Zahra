@@ -62,5 +62,34 @@ namespace Zahra
 
 	};
 
+	class ScriptableEntity;
+
+	struct NativeScriptComponent
+	{
+		// TODO: this should be private ultimately
+		ScriptableEntity* Instance = nullptr;
+
+		std::function<void()> InstantiateFunction;
+		std::function<void()> DestroyInstanceFunction;
+
+		std::function<void(ScriptableEntity*)> OnCreateFunction;
+		std::function<void(ScriptableEntity*)> OnDestroyFunction;
+		std::function<void(ScriptableEntity* , float)> OnUpdateFunction;
+
+		NativeScriptComponent() = default;
+		NativeScriptComponent(const NativeScriptComponent&) = default;
+
+		template <typename T>
+		void Bind()
+		{
+			InstantiateFunction = [&]() { Instance = new T(); }; // Note this requires a default constructor (no params)
+			DestroyInstanceFunction = [&]() { delete (T*)Instance; Instance = nullptr; };
+
+			OnCreateFunction = [](ScriptableEntity* instance) { ((T*)instance)->OnCreate(); };
+			OnDestroyFunction = [](ScriptableEntity* instance) { ((T*)instance)->OnDestroy(); };
+			OnUpdateFunction = [](ScriptableEntity* instance, float dt) { ((T*)instance)->OnUpdate(dt); };
+		}
+	};
+
 }
 
