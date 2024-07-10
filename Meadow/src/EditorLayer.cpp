@@ -24,30 +24,20 @@ namespace Zahra
 
 		m_ActiveScene = CreateRef<Scene>();
 
-		m_QuadEntity = m_ActiveScene->CreateEntity("quad1");
+		m_QuadEntity = m_ActiveScene->CreateEntity("a_quad");
 		m_QuadEntity.AddComponent<SpriteComponent>();
 
-		m_FixedCamera = m_ActiveScene->CreateEntity("camera1");
+		m_FixedCamera = m_ActiveScene->CreateEntity("fixed_camera");
 		m_FixedCamera.AddComponent<CameraComponent>(false);
 
 		// TODO: obviously this belongs elsewhere
 		class CameraController : public ScriptableEntity
 		{
 		public:
-			void OnCreate()
-			{
-				
-			}
-
-			void OnDestroy()
-			{
-
-			}
-
 			void OnUpdate(float dt)
 			{
 				auto& transform = GetComponents<TransformComponent>().Transform;
-				float speed = 3.0f;
+				float speed = 5.0f;
 				
 				if (Input::IsKeyPressed(KeyCode::A))
 					transform[3][0] -= speed * dt;
@@ -60,7 +50,7 @@ namespace Zahra
 			}
 		};
 
-		m_DynamicCamera = m_ActiveScene->CreateEntity("camera2");
+		m_DynamicCamera = m_ActiveScene->CreateEntity("dynamic_camera");
 		m_DynamicCamera.AddComponent<CameraComponent>(false);
 		m_DynamicCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_DynamicCamera.GetComponents<CameraComponent>().active = false;
@@ -205,12 +195,13 @@ namespace Zahra
 			ImGui::Text("Quads: %u", Renderer2D::GetStats().QuadCount);
 			ImGui::Text("Draw calls: %u", Renderer2D::GetStats().DrawCalls);
 
-			if (m_QuadEntity)
-			{
-				ImGui::Separator();
-				ImGui::Text("ACTIVE ENTITIES:");
-				ImGui::Text(m_QuadEntity.GetComponents<TagComponent>().Tag.c_str());
-			}
+			ImGui::Separator();
+			ImGui::Text("ACTIVE ENTITIES:");
+			
+			// TODO: get these from the scene, run a for loop
+			ImGui::Text(m_QuadEntity.GetComponents<TagComponent>().Tag.c_str());
+			ImGui::Text(m_FixedCamera.GetComponents<TagComponent>().Tag.c_str());
+			ImGui::Text(m_DynamicCamera.GetComponents<TagComponent>().Tag.c_str());
 
 			ImGui::End();
 		}

@@ -33,18 +33,17 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// RUN SCRIPTS
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& scriptComponent)
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 				{
-					if (!scriptComponent.Instance)
+					// TODO: move instantiation to Scene::OnScenePlay(), when that exists
+					if (!nsc.Instance)
 					{
-						scriptComponent.InstantiateFunction();
-						scriptComponent.Instance->m_Entity = Entity{ entity, this };
-						if (scriptComponent.OnCreateFunction)
-							scriptComponent.OnCreateFunction(scriptComponent.Instance);
+						nsc.Instance = nsc.InstantiateScript();
+						nsc.Instance->m_Entity = Entity{ entity, this };
+						nsc.Instance->OnCreate();
 					}
 
-					if (scriptComponent.OnUpdateFunction)
-						scriptComponent.OnUpdateFunction(scriptComponent.Instance, dt);
+					nsc.Instance->OnUpdate(dt);
 				});
 		}
 		
@@ -58,7 +57,7 @@ namespace Zahra
 			auto cameraEntities = m_Registry.view<TransformComponent, CameraComponent>();
 			for (auto entity : cameraEntities)
 			{
-				auto& [transform, camera] = cameraEntities.get<TransformComponent, CameraComponent>(entity);
+				auto [transform, camera] = cameraEntities.get<TransformComponent, CameraComponent>(entity);
 				if (camera.active)
 				{
 					activeCamera = &camera.Camera;
@@ -76,7 +75,7 @@ namespace Zahra
 
 				for (auto entity : spriteEntities)
 				{
-					auto& [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
+					auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
 
 					Renderer2D::DrawQuad(transform, sprite.Colour);
 				}
