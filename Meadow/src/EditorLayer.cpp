@@ -54,6 +54,8 @@ namespace Zahra
 		m_DynamicCamera.AddComponent<CameraComponent>(false);
 		m_DynamicCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_DynamicCamera.GetComponents<CameraComponent>().active = false;
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnDetach()
@@ -137,7 +139,6 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// WINDOW DOCKSPACE
-
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_None);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +163,12 @@ namespace Zahra
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			// RENDERING DEMO CONTROLS WINDOW
+		// SCENE HIERARCHY PANEL
+		m_SceneHierarchyPanel.OnImGuiRender();
+
+		// TODO: get rid of windows below (fold some functions into others)
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// RENDERING DEMO CONTROLS WINDOW
 		{
 			ImGui::Begin("Demo Controls");
 
@@ -194,14 +200,6 @@ namespace Zahra
 			ImGui::Text("FPS: %i", (int)m_FPS);
 			ImGui::Text("Quads: %u", Renderer2D::GetStats().QuadCount);
 			ImGui::Text("Draw calls: %u", Renderer2D::GetStats().DrawCalls);
-
-			ImGui::Separator();
-			ImGui::Text("ACTIVE ENTITIES:");
-			
-			// TODO: get these from the scene, run a for loop
-			ImGui::Text(m_QuadEntity.GetComponents<TagComponent>().Tag.c_str());
-			ImGui::Text(m_FixedCamera.GetComponents<TagComponent>().Tag.c_str());
-			ImGui::Text(m_DynamicCamera.GetComponents<TagComponent>().Tag.c_str());
 
 			ImGui::End();
 		}

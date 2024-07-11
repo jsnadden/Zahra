@@ -25,6 +25,7 @@ namespace Zahra
 		float m_ViewportWidth = 1.0f, m_ViewportHeight = 1.0f;
 
 		friend class Entity;
+		friend class SceneHierarchyPanel;
 	};
 
 }

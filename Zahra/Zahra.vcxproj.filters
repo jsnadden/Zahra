@@ -31,6 +31,9 @@
     <Filter Include="src\Zahra\Renderer">
       <UniqueIdentifier>{F8DD9396-E4C1-54EC-4D22-4F3F39253F6E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Zahra\Scene">
+      <UniqueIdentifier>{AFD84494-1B64-B258-2475-354D907F0E59}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
     </Filter>
@@ -111,6 +114,9 @@
     <ClInclude Include="src\Zahra\Core\MouseCodes.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Core\PlatformDetection.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Core\Timestep.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
@@ -170,6 +176,21 @@
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\VertexArray.h">
       <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Scene\Components.h">
+      <Filter>src\Zahra\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Scene\Entity.h">
+      <Filter>src\Zahra\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Scene\Scene.h">
+      <Filter>src\Zahra\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Scene\SceneCamera.h">
+      <Filter>src\Zahra\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Scene\ScriptableEntity.h">
+      <Filter>src\Zahra\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\zpch.h">
       <Filter>src</Filter>
@@ -1425,11 +1446,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Scene\Scene.h" />
-    <ClInclude Include="src\Zahra\Scene\Components.h" />
-    <ClInclude Include="src\Zahra\Scene\Entity.h" />
-    <ClInclude Include="src\Zahra\Scene\SceneCamera.h" />
-    <ClInclude Include="src\Zahra\Scene\ScriptableEntity.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1510,14 +1526,20 @@
     <ClCompile Include="src\Zahra\Renderer\VertexArray.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Scene\Entity.cpp">
+      <Filter>src\Zahra\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Scene\Scene.cpp">
+      <Filter>src\Zahra\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Scene\SceneCamera.cpp">
+      <Filter>src\Zahra\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\zpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Scene\Scene.cpp" />
-    <ClCompile Include="src\Zahra\Scene\Entity.cpp" />
-    <ClCompile Include="src\Zahra\Scene\SceneCamera.cpp" />
   </ItemGroup>
 </Project>

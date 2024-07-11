@@ -2,6 +2,7 @@
 
 #include <Zahra.h>
 
+#include "Panels/SceneHierarchyPanel.h"
 
 namespace Zahra
 {
@@ -22,14 +23,18 @@ namespace Zahra
 
 	private:
 
+		Ref<Scene> m_ActiveScene;
+
 		// Viewport
-		//OrthographicCameraController m_CameraController;
 		Ref<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 		float m_ClearColour[4] = { .114f, .820f, .69f, 1.0f };
+		
+		// Panels
+		SceneHierarchyPanel m_SceneHierarchyPanel;
 
-		Ref<Scene> m_ActiveScene;
+
 
 		// TEMP
 		Entity m_QuadEntity;
