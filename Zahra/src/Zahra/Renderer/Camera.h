@@ -18,8 +18,6 @@ namespace Zahra {
 		
 	protected:
 		glm::mat4 m_Projection = glm::mat4(1.0f);
-
-		bool active = true;
 	};
 
 

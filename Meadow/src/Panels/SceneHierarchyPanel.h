@@ -21,7 +21,9 @@ namespace Zahra
 		Entity m_Selected;
 
 		void DrawEntityNode(Entity entity);
+		void DrawComponents(Entity entity);
 
+		friend class PropertiesPanel;
 	};
 
 }

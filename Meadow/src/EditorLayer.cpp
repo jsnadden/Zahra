@@ -37,7 +37,9 @@ namespace Zahra
 			void OnUpdate(float dt)
 			{
 				auto& transform = GetComponents<TransformComponent>().Transform;
-				float speed = 5.0f;
+				auto& camera = GetComponents<CameraComponent>().Camera;
+				float speed = camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic
+					? .5f * camera.GetOrthographicSize() : 2.0f;
 				
 				if (Input::IsKeyPressed(KeyCode::A))
 					transform[3][0] -= speed * dt;
@@ -97,7 +99,6 @@ namespace Zahra
 
 				m_FixedCamera.GetComponents<CameraComponent>().active = m_CameraToggle;
 				m_DynamicCamera.GetComponents<CameraComponent>().active = !m_CameraToggle;
-				m_DynamicCamera.GetComponents<CameraComponent>().Camera.SetOrthographicSize(10.0f / m_Zoom);
 
 				m_ActiveScene->OnUpdate(dt);
 			}
@@ -163,7 +164,7 @@ namespace Zahra
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// SCENE HIERARCHY PANEL
+		// SCENE HIERARCHY & PROPERTIES PANELS
 		m_SceneHierarchyPanel.OnImGuiRender();
 
 		// TODO: get rid of windows below (fold some functions into others)
@@ -178,15 +179,11 @@ namespace Zahra
 			ImGui::Separator();
 
 			ImGui::Text("Quad:");
-			ImGui::SliderFloat2("Position (x,y)", m_QuadPosition, -5.0f, 5.0f);
-			ImGui::SliderFloat2("Size (w,h)", m_QuadDimensions, .01f, 10.0f, "%.2f", 32);
+			ImGui::SliderFloat3("Position", m_QuadPosition, -5.0f, 5.0f);
+			ImGui::SliderFloat2("Size", m_QuadDimensions, .01f, 10.0f, "%.2f", 32);
 			ImGui::SliderFloat("Rotation", &m_QuadRotation, -3.14f, 3.14f);
 			ImGui::ColorEdit4("Tint", m_QuadColour);
 
-			ImGui::Separator();
-
-			ImGui::Text("Camera:");
-			ImGui::SliderFloat("Zoom", &m_Zoom, .1f, 10.0f, "%.2f", 32);
 			ImGui::Checkbox("Use fixed camera", &m_CameraToggle);
 
 			ImGui::End();
