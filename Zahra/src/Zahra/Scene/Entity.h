@@ -28,13 +28,19 @@ namespace Zahra
 		{
 			Z_CORE_ASSERT(!HasComponents<T>(), "Entity already has a component of this type.");
 			
-			return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			T& component =  m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			
+			// TODO: find a better way of doing this!
+			m_Scene->OnComponentAdded<T>(*this, component);
+
+			return component;
 		}
 
 		template<typename T>
 		void RemoveComponent()
 		{
 			Z_CORE_ASSERT(HasComponents<T>(), "Entity does not have component of requested type.");
+			Z_CORE_ASSERT(!T::Essential, "Component cannot be removed.");
 
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
@@ -48,6 +54,7 @@ namespace Zahra
 		}
 
 		operator bool() const { return m_EntityHandle != entt::null; }
+		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
 
 		bool operator==(const Entity& other) const

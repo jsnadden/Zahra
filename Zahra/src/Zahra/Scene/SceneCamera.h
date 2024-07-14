@@ -16,7 +16,7 @@ namespace Zahra
 
 	struct PerspectiveCameraData
 	{
-		float VerticalFOV = 1.57f;
+		float VerticalFOV = glm::radians(60.0f);
 
 		float Near = .01f, Far = 1000.0f;
 	};

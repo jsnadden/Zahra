@@ -16,6 +16,12 @@ namespace Zahra
 			return m_Entity.GetComponents<Types...>();
 		}
 
+		template<typename ...Types>
+		bool HasComponents()
+		{
+			return m_Entity.HasComponents<Types...>();
+		}
+
 	protected:
 		virtual void OnCreate() {};
 		virtual void OnDestroy() {};

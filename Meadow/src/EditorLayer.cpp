@@ -8,14 +8,11 @@ namespace Zahra
 {
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer")
-		//m_CameraController(1280.0f / 720.0f)
 	{
 	}
 
 	void EditorLayer::OnAttach()
 	{
-		m_Texture = Texture2D::Create("C:/dev/Zahra/Sandbox/assets/textures/yajirobe.png");
-
 		FramebufferSpecification framebufferSpec;
 		framebufferSpec.Width = 1280;
 		framebufferSpec.Height = 720; // These will be overwritten by the ImGui viewport window
@@ -24,11 +21,11 @@ namespace Zahra
 
 		m_ActiveScene = CreateRef<Scene>();
 
-		m_QuadEntity = m_ActiveScene->CreateEntity("a_quad");
-		m_QuadEntity.AddComponent<SpriteComponent>();
-
-		m_FixedCamera = m_ActiveScene->CreateEntity("fixed_camera");
-		m_FixedCamera.AddComponent<CameraComponent>(false);
+		m_Quad = m_ActiveScene->CreateEntity("example quad");
+		m_Quad.AddComponent<SpriteComponent>();
+		m_Quad.GetComponents<SpriteComponent>().Colour = { .878f, .718f, .172f, 1.0f };
+		m_Quad.GetComponents<TransformComponent>().Translation = { .0f, .0f, -.5f };
+		m_Quad.GetComponents<TransformComponent>().Scale = { 1.0f, 1.0f, 1.0f };
 
 		// TODO: obviously this belongs elsewhere
 		class CameraController : public ScriptableEntity
@@ -36,26 +33,29 @@ namespace Zahra
 		public:
 			void OnUpdate(float dt)
 			{
-				auto& transform = GetComponents<TransformComponent>().Transform;
-				auto& camera = GetComponents<CameraComponent>().Camera;
-				float speed = camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic
-					? .5f * camera.GetOrthographicSize() : 2.0f;
-				
-				if (Input::IsKeyPressed(KeyCode::A))
-					transform[3][0] -= speed * dt;
-				if (Input::IsKeyPressed(KeyCode::D))
-					transform[3][0] += speed * dt;
-				if (Input::IsKeyPressed(KeyCode::W))
-					transform[3][1] += speed * dt;
-				if (Input::IsKeyPressed(KeyCode::S))
-					transform[3][1] -= speed * dt;
+				auto& position = GetComponents<TransformComponent>().Translation;
+				if (HasComponents<CameraComponent>())
+				{
+					auto& camera = GetComponents<CameraComponent>().Camera;
+					float speed = camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic
+						? .5f * camera.GetOrthographicSize() : 2.0f;
+
+					if (Input::IsKeyPressed(KeyCode::A))
+						position.x -= speed * dt;
+					if (Input::IsKeyPressed(KeyCode::D))
+						position.x += speed * dt;
+					if (Input::IsKeyPressed(KeyCode::W))
+						position.y += speed * dt;
+					if (Input::IsKeyPressed(KeyCode::S))
+						position.y -= speed * dt;
+				}
 			}
 		};
 
-		m_DynamicCamera = m_ActiveScene->CreateEntity("dynamic_camera");
-		m_DynamicCamera.AddComponent<CameraComponent>(false);
-		m_DynamicCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-		m_DynamicCamera.GetComponents<CameraComponent>().active = false;
+		m_Camera = m_ActiveScene->CreateEntity("example camera");
+		m_Camera.AddComponent<CameraComponent>();
+		m_Camera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		m_Camera.GetComponents<CameraComponent>().Active = true;
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
@@ -67,8 +67,6 @@ namespace Zahra
 
 	void EditorLayer::OnUpdate(float dt)
 	{
-		m_FPS = 1.0f / dt;
-
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// REACT TO RESIZED VIEWPORT
 		{
@@ -91,36 +89,22 @@ namespace Zahra
 				RenderCommand::SetClearColour(glm::make_vec4(m_ClearColour));
 				RenderCommand::Clear();
 
-				m_QuadEntity.GetComponents<SpriteComponent>().Colour = glm::make_vec4(m_QuadColour);
-				m_QuadEntity.GetComponents<TransformComponent>().Transform =
-					glm::translate(glm::mat4(1.0f), glm::make_vec3(m_QuadPosition))
-					* glm::rotate(glm::mat4(1.0f), m_QuadRotation, glm::vec3(.0f, .0f, 1.0f))
-					* glm::scale(glm::mat4(1.0f), glm::make_vec3(m_QuadDimensions));
-
-				m_FixedCamera.GetComponents<CameraComponent>().active = m_CameraToggle;
-				m_DynamicCamera.GetComponents<CameraComponent>().active = !m_CameraToggle;
-
 				m_ActiveScene->OnUpdate(dt);
 			}
 			m_Framebuffer->Unbind();
 			
 		}
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	}
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		//m_CameraController.OnEvent(event);
-
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnKeyPressedEvent));
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
-		Z_PROFILE_FUNCTION();
-
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// MAIN MENU
 		{
@@ -167,34 +151,11 @@ namespace Zahra
 		// SCENE HIERARCHY & PROPERTIES PANELS
 		m_SceneHierarchyPanel.OnImGuiRender();
 
-		// TODO: get rid of windows below (fold some functions into others)
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// RENDERING DEMO CONTROLS WINDOW
+		// STATS WINDOW
 		{
-			ImGui::Begin("Demo Controls");
+			ImGui::Begin("Stats");
 
-			ImGui::Text("Background:");
-			ImGui::ColorEdit3("Colour", m_ClearColour);
-
-			ImGui::Separator();
-
-			ImGui::Text("Quad:");
-			ImGui::SliderFloat3("Position", m_QuadPosition, -5.0f, 5.0f);
-			ImGui::SliderFloat2("Size", m_QuadDimensions, .01f, 10.0f, "%.2f", 32);
-			ImGui::SliderFloat("Rotation", &m_QuadRotation, -3.14f, 3.14f);
-			ImGui::ColorEdit4("Tint", m_QuadColour);
-
-			ImGui::Checkbox("Use fixed camera", &m_CameraToggle);
-
-			ImGui::End();
-		}
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// RENDERING STATS WINDOW
-		{
-			ImGui::Begin("Renderer Stats");
-
-			ImGui::Text("FPS: %i", (int)m_FPS);
 			ImGui::Text("Quads: %u", Renderer2D::GetStats().QuadCount);
 			ImGui::Text("Draw calls: %u", Renderer2D::GetStats().DrawCalls);
 
@@ -205,8 +166,6 @@ namespace Zahra
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& event)
 	{
-		
-
 		return false;
 	}
 

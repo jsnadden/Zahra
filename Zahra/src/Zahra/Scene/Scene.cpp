@@ -26,6 +26,11 @@ namespace Zahra
 		return entity;
 	}
 
+	void Scene::DestroyEntity(Entity entity)
+	{
+		m_Registry.destroy(entity);
+	}
+
 	
 
 	void Scene::OnUpdate(float dt)
@@ -51,17 +56,17 @@ namespace Zahra
 		// RENDER SCENE
 		{
 			SceneCamera* activeCamera = nullptr;
-			glm::mat4* cameraTransform = nullptr;
+			glm::mat4 cameraTransform;
 
 			// TODO: destroy this, it's truly disgusting
 			auto cameraEntities = m_Registry.view<TransformComponent, CameraComponent>();
 			for (auto entity : cameraEntities)
 			{
 				auto [transform, camera] = cameraEntities.get<TransformComponent, CameraComponent>(entity);
-				if (camera.active)
+				if (camera.Active)
 				{
 					activeCamera = &camera.Camera;
-					cameraTransform = &transform.Transform;
+					cameraTransform = transform.GetTransform();
 					break;
 				}
 
@@ -71,13 +76,13 @@ namespace Zahra
 			{
 				auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
 
-				Renderer2D::BeginScene(activeCamera->GetProjection(), *cameraTransform);
+				Renderer2D::BeginScene(activeCamera->GetProjection(), cameraTransform);
 
 				for (auto entity : spriteEntities)
 				{
 					auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
 
-					Renderer2D::DrawQuad(transform, sprite.Colour);
+					Renderer2D::DrawQuad(transform.GetTransform(), sprite.Colour);
 				}
 
 				Renderer2D::EndScene();
@@ -101,6 +106,34 @@ namespace Zahra
 			}
 		}
 	}
+
+	template<typename T>
+	void Scene::OnComponentAdded(Entity entity, T& component)
+	{
+		static_assert(false); // must specialise this for each component type in use
+	}
+
+	template <>
+	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
+	{}
+
+	template <>
+	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
+	{}
+
+	template <>
+	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
+	{
+		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	}
+
+	template <>
+	void Scene::OnComponentAdded<SpriteComponent>(Entity entity, SpriteComponent& component)
+	{}
+
+	template <>
+	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
+	{}
 
 }
 

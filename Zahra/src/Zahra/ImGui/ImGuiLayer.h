@@ -22,6 +22,8 @@ namespace Zahra
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
+		void SetColourTheme();
+
 	private:
 		bool m_BlockEvents = true;
 
