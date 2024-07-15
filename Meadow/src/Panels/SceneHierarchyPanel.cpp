@@ -16,7 +16,7 @@ namespace Zahra
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
-		ImGui::Begin("Scene Hierarchy");
+		ImGui::Begin("Scene Hierarchy", 0, ImGuiWindowFlags_NoCollapse);
 		{
 			// TODO: this top layer of the hierarchy should only include parentless entities
 			m_Context->m_Registry.view<entt::entity>().each([&](auto entityId)
@@ -51,7 +51,7 @@ namespace Zahra
 
 		ImGui::End();
 
-		ImGui::Begin("Properties");
+		ImGui::Begin("Properties", 0, ImGuiWindowFlags_NoCollapse);
 		{
 			if (m_Selected)
 			{
@@ -224,7 +224,6 @@ namespace Zahra
 					ImGui::ColorEdit4("Colour", glm::value_ptr(component.Colour));
 				});
 		
-
 	}
 
 	

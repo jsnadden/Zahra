@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include <ImGui/imgui.h>
+#include <ImGui/imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
 
 
@@ -124,13 +125,13 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// WINDOW DOCKSPACE
-		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_None);
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_NoWindowMenuButton);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// VIEWPORT
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
-			ImGui::Begin("Viewport");
+			ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoCollapse);
 
 			m_ViewportFocused = ImGui::IsWindowFocused();
 			m_ViewportHovered = ImGui::IsWindowHovered();
@@ -154,7 +155,7 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// STATS WINDOW
 		{
-			ImGui::Begin("Stats");
+			ImGui::Begin("Stats", NULL, ImGuiWindowFlags_NoCollapse);
 
 			ImGui::Text("Quads: %u", Renderer2D::GetStats().QuadCount);
 			ImGui::Text("Draw calls: %u", Renderer2D::GetStats().DrawCalls);
