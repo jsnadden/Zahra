@@ -4,6 +4,7 @@
 #include <ImGui/imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Zahra/Scene/SceneSerialiser.h"
 
 namespace Zahra
 {
@@ -22,43 +23,8 @@ namespace Zahra
 
 		m_ActiveScene = CreateRef<Scene>();
 
-		m_Quad = m_ActiveScene->CreateEntity("example quad");
-		m_Quad.AddComponent<SpriteComponent>();
-		m_Quad.GetComponents<SpriteComponent>().Colour = { .878f, .718f, .172f, 1.0f };
-		m_Quad.GetComponents<TransformComponent>().Translation = { .0f, .0f, -.5f };
-		m_Quad.GetComponents<TransformComponent>().Scale = { 1.0f, 1.0f, 1.0f };
-
-		// TODO: obviously this belongs elsewhere
-		class CameraController : public ScriptableEntity
-		{
-		public:
-			void OnUpdate(float dt)
-			{
-				auto& position = GetComponents<TransformComponent>().Translation;
-				if (HasComponents<CameraComponent>())
-				{
-					auto& camera = GetComponents<CameraComponent>().Camera;
-					float speed = camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic
-						? .5f * camera.GetOrthographicSize() : 2.0f;
-
-					if (Input::IsKeyPressed(KeyCode::A))
-						position.x -= speed * dt;
-					if (Input::IsKeyPressed(KeyCode::D))
-						position.x += speed * dt;
-					if (Input::IsKeyPressed(KeyCode::W))
-						position.y += speed * dt;
-					if (Input::IsKeyPressed(KeyCode::S))
-						position.y -= speed * dt;
-				}
-			}
-		};
-
-		m_Camera = m_ActiveScene->CreateEntity("example camera");
-		m_Camera.AddComponent<CameraComponent>();
-		m_Camera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-		m_Camera.GetComponents<CameraComponent>().Active = true;
-
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
 	}
 
 	void EditorLayer::OnDetach()
@@ -113,7 +79,28 @@ namespace Zahra
 			{
 				if (ImGui::BeginMenu("File"))
 				{
-					if (ImGui::MenuItem("Exit")) Application::Get().Exit();
+					// TODO: open save dialog as an imgui popup
+					if (ImGui::MenuItem("Save Scene"))
+					{
+						SceneSerialiser serialiser(m_ActiveScene);
+						serialiser.SerialiseYaml("assets/scenes/test.zscene");
+
+						// TODO: display success of serialisation
+					}
+
+					// TODO: open load dialog as an imgui popup
+					if (ImGui::MenuItem("Load Scene"))
+					{
+						// TODO: need to delete the current scene and create a new one
+						SceneSerialiser serialiser(m_ActiveScene);
+						serialiser.DeserialiseYaml("assets/scenes/test.zscene");
+					}
+
+					// TODO: check for unsaved content, warn user with an imgui popup (would you like to save?)
+					if (ImGui::MenuItem("Exit"))
+					{
+						Application::Get().Exit();
+					}
 
 					ImGui::EndMenu();
 				}

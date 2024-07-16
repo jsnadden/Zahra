@@ -61,6 +61,7 @@ namespace Zahra
 			: Colour(colour) {}
 
 		// TODO: add textures, a "sprite type" enum etc.
+		// TODO: don't forget to add stuff to the sceneserialiser methods!!
 
 		static const bool Essential = false;
 	};
@@ -70,7 +71,7 @@ namespace Zahra
 		SceneCamera Camera;
 		bool FixedAspectRatio = false;
 
-		// TODO: this status should be held by a scene, not an entity!
+		// TODO: this status should be held by a scene, not an entity! (maybe the scene can store the active camera's UUID?)
 		bool Active = true;
 
 		CameraComponent() = default;
@@ -104,6 +105,30 @@ namespace Zahra
 
 		static const bool Essential = false;
 	};
+
+	//class CameraController : public ScriptableEntity
+		//{
+		//public:
+		//	void OnUpdate(float dt)
+		//	{
+		//		auto& position = GetComponents<TransformComponent>().Translation;
+		//		if (HasComponents<CameraComponent>())
+		//		{
+		//			auto& camera = GetComponents<CameraComponent>().Camera;
+		//			float speed = camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic
+		//				? .5f * camera.GetOrthographicSize() : 2.0f;
+	    //
+		//			if (Input::IsKeyPressed(KeyCode::A))
+		//				position.x -= speed * dt;
+		//			if (Input::IsKeyPressed(KeyCode::D))
+		//				position.x += speed * dt;
+		//			if (Input::IsKeyPressed(KeyCode::W))
+		//				position.y += speed * dt;
+		//			if (Input::IsKeyPressed(KeyCode::S))
+		//				position.y -= speed * dt;
+		//		}
+		//	}
+		//};
 
 }
 

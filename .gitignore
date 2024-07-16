@@ -5,7 +5,7 @@ profiling/
 # binaries
 bin-int/
 **/bin/
-!vendor/bin/premake/
+!vendor/premake/bin/
 
 # vs files
 .vs/

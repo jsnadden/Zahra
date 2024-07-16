@@ -208,14 +208,14 @@ namespace Zahra
 
 					if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 					{
-						float fov = camera.GetPerspectiveFOV();
-						if (ImGui::DragFloat("FOV", &fov, .01f, .9f, 3.1f)) camera.SetPerspectiveFOV(fov);
+						float fov = glm::degrees(camera.GetPerspectiveFOV());
+						if (ImGui::DragFloat("FOV", &fov, .1f, 10.f, 170.f, "%.1f")) camera.SetPerspectiveFOV(glm::radians(fov));
 
 						float nearClip = camera.GetPerspectiveNearClip();
-						if (ImGui::DragFloat("Near", &nearClip, .01f, .01f, 1.0f)) camera.SetPerspectiveNearClip(nearClip);
+						if (ImGui::DragFloat("Near", &nearClip, .01f, .01f, 1.99f, "%.2f")) camera.SetPerspectiveNearClip(nearClip);
 
 						float farClip = camera.GetPerspectiveFarClip();
-						if (ImGui::DragFloat("Far", &farClip, 10.f, 10.f, 10000.f)) camera.SetPerspectiveFarClip(farClip);
+						if (ImGui::DragFloat("Far", &farClip, 1.f, 2.f, 10000.f, "%.0f")) camera.SetPerspectiveFarClip(farClip);
 					}
 				});
 		

@@ -13,3 +13,6 @@
 [submodule "Zahra/vendor/ImGui"]
 	path = Zahra/vendor/ImGui
 	url = https://github.com/TheCherno/imgui/
+[submodule "yaml-cpp"]
+	path = Zahra/vendor/yaml-cpp
+	url = https://github.com/TheCherno/yaml-cpp.git

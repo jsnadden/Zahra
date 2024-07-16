@@ -189,6 +189,9 @@
     <ClInclude Include="src\Zahra\Scene\SceneCamera.h">
       <Filter>src\Zahra\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Scene\SceneSerialiser.h">
+      <Filter>src\Zahra\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Scene\ScriptableEntity.h">
       <Filter>src\Zahra\Scene</Filter>
     </ClInclude>
@@ -1533,6 +1536,9 @@
       <Filter>src\Zahra\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Scene\SceneCamera.cpp">
+      <Filter>src\Zahra\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Scene\SceneSerialiser.cpp">
       <Filter>src\Zahra\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\zpch.cpp">

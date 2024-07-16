@@ -32,6 +32,7 @@ namespace Zahra
 		friend class Entity;
 		friend class SceneHierarchyPanel;
 		friend class PropertiesPanel;
+		friend class SceneSerialiser;
 	};
 
 }
