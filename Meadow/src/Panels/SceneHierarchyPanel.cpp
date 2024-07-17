@@ -11,6 +11,7 @@ namespace Zahra
 
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
+		m_Selected = {}; // can't reference an entity in a discarded scene!!
 		m_Context = context;
 	}
 

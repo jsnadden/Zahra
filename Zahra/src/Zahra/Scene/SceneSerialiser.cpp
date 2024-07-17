@@ -21,6 +21,7 @@ namespace YAML
 			node.push_back(rhs.x);
 			node.push_back(rhs.y);
 			node.push_back(rhs.z);
+			node.SetStyle(EmitterStyle::Flow);
 
 			return node;
 		}
@@ -48,6 +49,7 @@ namespace YAML
 			node.push_back(rhs.y);
 			node.push_back(rhs.z);
 			node.push_back(rhs.w);
+			node.SetStyle(EmitterStyle::Flow);
 
 			return node;
 		}
@@ -170,7 +172,7 @@ namespace Zahra
 
 	void SceneSerialiser::SerialiseYaml(const std::string& filepath)
 	{
-		std::string sceneName = "Untitled"; // TODO: give Scenes a name attribute
+		std::string sceneName = m_Scene->GetName();
 		Z_CORE_TRACE("Serialising scene '{0}'", sceneName);
 
 		YAML::Emitter out;
@@ -197,14 +199,11 @@ namespace Zahra
 
 	bool SceneSerialiser::DeserialiseYaml(const std::string& filepath)
 	{
-		std::ifstream stream(filepath);
-		std::stringstream sStream;
-		sStream << stream.rdbuf();
-
-		YAML::Node data = YAML::Load(sStream.str());
+		YAML::Node data = YAML::LoadFile(filepath);
 		if (!data["Scene"]) return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();
+		m_Scene->SetName(sceneName);
 		Z_CORE_TRACE("Deserialising scene '{0}'", sceneName);
 
 		auto entityNodes = data["Entities"];

@@ -25,23 +25,23 @@ namespace Zahra
 
 		Ref<Scene> m_ActiveScene;
 
+		// Save and open file dialogs
+		const char* m_FileTypesFilter = "Zahra Scene (*.zsc)\0*.zsc\0\0";
+		
+
 		// Viewport
 		Ref<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
-		float m_ClearColour[4] = { .0f, .0f, .0f, 1.0f };//{ .114f, .820f, .69f, 1.0f };
+		float m_ClearColour[4] = { .0f, .0f, .0f, 1.0f };
 		
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 
-
-
-		// TEMP
-		Entity m_Quad;
-		Entity m_Camera;
-
-		
-
+		void NewScene();
+		void OpenSceneFile();
+		void SaveSceneFile();
+		void SaveAsSceneFile();
 
 
 	};

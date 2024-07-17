@@ -150,7 +150,7 @@ namespace Zahra
 		// Borders
 		colours[ImGuiCol_Border] = ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f }; // Borders of menus and popups
 		colours[ImGuiCol_BorderShadow] = ImVec4{ 0.14f, 0.14f, 0.14f, 1.0f }; // Collapsed window edges
-		colours[ImGuiCol_Separator] = ImVec4{ 0.14f, 0.14f, 0.14f, 1.0f }; // Window edges
+		colours[ImGuiCol_Separator] = ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f }; // docked window edges, resizing bar, and separating bars in windows/menus etc.
 		colours[ImGuiCol_SeparatorHovered] = ImVec4{ 0.97f, 0.77f, 0.22f, 1.0f };
 		colours[ImGuiCol_SeparatorActive] = ImVec4{0.92f, 0.72f, 0.18f, 1.0f };
 

@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Zahra/Scene/SceneSerialiser.h"
+#include "Zahra/Utils/PlatformUtils.h"
 
 namespace Zahra
 {
@@ -79,22 +80,17 @@ namespace Zahra
 			{
 				if (ImGui::BeginMenu("File"))
 				{
-					// TODO: open save dialog as an imgui popup
-					if (ImGui::MenuItem("Save Scene"))
-					{
-						SceneSerialiser serialiser(m_ActiveScene);
-						serialiser.SerialiseYaml("assets/scenes/test.zscene");
+					if (ImGui::MenuItem("New", "Ctrl+N")) NewScene();
 
-						// TODO: display success of serialisation
-					}
+					if (ImGui::MenuItem("Open...", "Ctrl+O")) OpenSceneFile();
 
-					// TODO: open load dialog as an imgui popup
-					if (ImGui::MenuItem("Load Scene"))
-					{
-						// TODO: need to delete the current scene and create a new one
-						SceneSerialiser serialiser(m_ActiveScene);
-						serialiser.DeserialiseYaml("assets/scenes/test.zscene");
-					}
+					ImGui::Separator();
+
+					if (ImGui::MenuItem("Save", "Ctrl+S")) SaveSceneFile();
+
+					if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) SaveAsSceneFile();
+
+					ImGui::Separator();
 
 					// TODO: check for unsaved content, warn user with an imgui popup (would you like to save?)
 					if (ImGui::MenuItem("Exit"))
@@ -155,6 +151,52 @@ namespace Zahra
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& event)
 	{
 		return false;
+	}
+
+	void EditorLayer::NewScene()
+	{
+		m_ActiveScene = CreateRef<Scene>();
+		m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OpenSceneFile()
+	{
+		std::optional<std::string> filepath = FileDialogs::OpenFile(m_FileTypesFilter);
+		if (filepath)
+		{
+			NewScene();
+
+			std::string sceneName = filepath->substr(filepath->find_last_of("/\\") + 1);
+			m_ActiveScene->SetName(sceneName);
+
+			SceneSerialiser serialiser(m_ActiveScene);
+			serialiser.DeserialiseYaml(*filepath);
+		}
+
+		// TODO: report/display success of file open
+	}
+
+	void EditorLayer::SaveSceneFile()
+	{
+		
+
+		// TODO: report/display success of file save
+	}
+
+	void EditorLayer::SaveAsSceneFile()
+	{
+		std::optional<std::string> filepath = FileDialogs::SaveFile(m_FileTypesFilter);
+		if (filepath)
+		{
+			std::string sceneName = filepath->substr(filepath->find_last_of("/\\") + 1);
+			m_ActiveScene->SetName(sceneName);
+
+			SceneSerialiser serialiser(m_ActiveScene);
+			serialiser.SerialiseYaml(*filepath);
+		}
+
+		// TODO: report/display success of file save
 	}
 
 

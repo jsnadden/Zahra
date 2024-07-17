@@ -192,6 +192,7 @@
     <ClInclude Include="src\Zahra\Scene\SceneCamera.h" />
     <ClInclude Include="src\Zahra\Scene\SceneSerialiser.h" />
     <ClInclude Include="src\Zahra\Scene\ScriptableEntity.h" />
+    <ClInclude Include="src\Zahra\Utils\PlatformUtils.h" />
     <ClInclude Include="src\zpch.h" />
     <ClInclude Include="vendor\glm\glm\common.hpp" />
     <ClInclude Include="vendor\glm\glm\detail\_features.hpp" />
@@ -620,6 +621,7 @@
     <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Zahra\Core\Application.cpp" />
     <ClCompile Include="src\Zahra\Core\Layer.cpp" />

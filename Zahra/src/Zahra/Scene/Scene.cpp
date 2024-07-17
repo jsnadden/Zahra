@@ -10,7 +10,7 @@ namespace Zahra
 	
 	Scene::Scene()
 	{
-		
+		m_SceneName = "Untitled";
 	}
 
 	Scene::~Scene()
