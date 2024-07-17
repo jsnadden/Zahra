@@ -1,0 +1,9 @@
+Scene: test3.zsc
+Entities:
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0, 0, 0]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]

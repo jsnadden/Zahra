@@ -4,6 +4,8 @@
 
 #include "Panels/SceneHierarchyPanel.h"
 
+#include <optional>
+
 namespace Zahra
 {
 	class EditorLayer : public Layer
@@ -27,6 +29,7 @@ namespace Zahra
 
 		// Save and open file dialogs
 		const char* m_FileTypesFilter = "Zahra Scene (*.zsc)\0*.zsc\0\0";
+		std::optional<std::string> m_CurrentFilePath = std::nullopt;
 		
 
 		// Viewport

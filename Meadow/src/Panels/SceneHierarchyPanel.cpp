@@ -17,7 +17,9 @@ namespace Zahra
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
-		ImGui::Begin("Scene Hierarchy", 0, ImGuiWindowFlags_NoCollapse);
+		std::string windowName = "Scene Hierarchy: " + m_Context->GetName() + "###Scene Hierarchy";
+
+		ImGui::Begin(windowName.c_str(), 0, ImGuiWindowFlags_NoCollapse);
 		{
 			// TODO: this top layer of the hierarchy should only include parentless entities
 			m_Context->m_Registry.view<entt::entity>().each([&](auto entityId)

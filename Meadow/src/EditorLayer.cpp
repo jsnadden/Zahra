@@ -119,7 +119,8 @@ namespace Zahra
 			m_ViewportFocused = ImGui::IsWindowFocused();
 			m_ViewportHovered = ImGui::IsWindowHovered();
 
-			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
+			Application::Get().GetImGuiLayer()->BlockEvents(false);
+			//Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
@@ -150,6 +151,54 @@ namespace Zahra
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& event)
 	{
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Keyboard shortcuts
+		//if (event.GetRepeatCount() > 0) return false;
+
+		bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+		switch (event.GetKeyCode())
+		{
+			case KeyCode::S:
+			{
+				if (ctrl && shift)
+				{
+					SaveAsSceneFile();
+					return true;
+				}
+				else if (ctrl)
+				{
+					SaveSceneFile();
+					return true;
+				}
+
+				break;
+			}
+			case KeyCode::N:
+			{
+				if (ctrl) 
+				{
+					NewScene();
+					return true;
+				}
+
+				break;
+			}
+			case KeyCode::O:
+			{
+				if (ctrl) 
+				{
+					OpenSceneFile();
+					return true;
+				}
+
+				break;
+			}
+			default:
+				break;
+			}
+
 		return false;
 	}
 
@@ -158,6 +207,7 @@ namespace Zahra
 		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_CurrentFilePath = std::nullopt;
 	}
 
 	void EditorLayer::OpenSceneFile()
@@ -169,9 +219,10 @@ namespace Zahra
 
 			std::string sceneName = filepath->substr(filepath->find_last_of("/\\") + 1);
 			m_ActiveScene->SetName(sceneName);
+			m_CurrentFilePath = filepath;
 
 			SceneSerialiser serialiser(m_ActiveScene);
-			serialiser.DeserialiseYaml(*filepath);
+			serialiser.DeserialiseYaml(*m_CurrentFilePath);
 		}
 
 		// TODO: report/display success of file open
@@ -179,7 +230,15 @@ namespace Zahra
 
 	void EditorLayer::SaveSceneFile()
 	{
-		
+		if (!m_CurrentFilePath)
+		{
+			SaveAsSceneFile();
+		}
+		else
+		{
+			SceneSerialiser serialiser(m_ActiveScene);
+			serialiser.SerialiseYaml(*m_CurrentFilePath);
+		}
 
 		// TODO: report/display success of file save
 	}
@@ -191,9 +250,10 @@ namespace Zahra
 		{
 			std::string sceneName = filepath->substr(filepath->find_last_of("/\\") + 1);
 			m_ActiveScene->SetName(sceneName);
+			m_CurrentFilePath = filepath;
 
 			SceneSerialiser serialiser(m_ActiveScene);
-			serialiser.SerialiseYaml(*filepath);
+			serialiser.SerialiseYaml(*m_CurrentFilePath);
 		}
 
 		// TODO: report/display success of file save
