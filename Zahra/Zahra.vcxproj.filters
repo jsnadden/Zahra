@@ -34,8 +34,14 @@
     <Filter Include="src\Zahra\Scene">
       <UniqueIdentifier>{AFD84494-1B64-B258-2475-354D907F0E59}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Zahra\Utils">
+      <UniqueIdentifier>{F26C7294-5EF8-DF58-6709-634DD3133C59}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\ImGuizmo">
+      <UniqueIdentifier>{73BF7F4C-DF4A-ED10-E85B-700554664911}</UniqueIdentifier>
     </Filter>
     <Filter Include="vendor\glm">
       <UniqueIdentifier>{829FC5A8-6E57-07F6-D75E-E051C335A2E6}</UniqueIdentifier>
@@ -195,8 +201,14 @@
     <ClInclude Include="src\Zahra\Scene\ScriptableEntity.h">
       <Filter>src\Zahra\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Utils\PlatformUtils.h">
+      <Filter>src\Zahra\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="src\zpch.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\ImGuizmo\ImGuizmo.h">
+      <Filter>vendor\ImGuizmo</Filter>
     </ClInclude>
     <ClInclude Include="vendor\glm\glm\common.hpp">
       <Filter>vendor\glm\glm</Filter>
@@ -1449,7 +1461,7 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Utils\PlatformUtils.h" />
+    <ClInclude Include="src\Zahra\Maths\Maths.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1474,6 +1486,9 @@
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
+      <Filter>src\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsPlatformUtils.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
@@ -1545,9 +1560,12 @@
     <ClCompile Include="src\zpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="vendor\ImGuizmo\ImGuizmo.cpp">
+      <Filter>vendor\ImGuizmo</Filter>
+    </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Windows\WindowsPlatformUtils.cpp" />
+    <ClCompile Include="src\Zahra\Maths\Maths.cpp" />
   </ItemGroup>
 </Project>

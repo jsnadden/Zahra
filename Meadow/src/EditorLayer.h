@@ -30,13 +30,13 @@ namespace Zahra
 		// Save and open file dialogs
 		const char* m_FileTypesFilter = "Zahra Scene (*.zsc)\0*.zsc\0\0";
 		std::optional<std::string> m_CurrentFilePath = std::nullopt;
-		
 
 		// Viewport
 		Ref<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 		float m_ClearColour[4] = { .0f, .0f, .0f, 1.0f };
+		int m_GizmoType = -1;
 		
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;

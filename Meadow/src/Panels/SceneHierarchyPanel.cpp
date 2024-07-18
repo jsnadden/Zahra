@@ -165,7 +165,7 @@ namespace Zahra
 
 					glm::vec3& rotation = glm::degrees(component.EulerAngles);
 					StylePatterns::DrawVec3Controls("Euler Angles", rotation, .0f, 1.f);
-					component.EulerAngles = glm::radians(rotation);					
+					component.EulerAngles = glm::radians(rotation);
 				});
 		
 		StylePatterns::DrawComponent<CameraComponent>("Camera", entity, [](auto& component)

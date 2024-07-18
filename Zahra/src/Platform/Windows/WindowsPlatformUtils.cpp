@@ -39,17 +39,17 @@ namespace Zahra
 		// see above for details
 		OPENFILENAMEA openFileName;
 		CHAR fileBuffer[260] = { 0 };
-		CHAR currentDir[256] = { 0 };
 		ZeroMemory(&openFileName, sizeof(OPENFILENAME));
 		openFileName.lStructSize = sizeof(OPENFILENAME);
 		openFileName.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow());
 		openFileName.lpstrFile = fileBuffer;
 		openFileName.nMaxFile = sizeof(fileBuffer);
-		if (GetCurrentDirectoryA(256, currentDir)) openFileName.lpstrInitialDir = currentDir;
 		openFileName.lpstrFilter = filter;
 		openFileName.nFilterIndex = 1;
 		openFileName.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 		openFileName.lpstrDefExt = std::strchr(filter, '\0') + 1;// Sets the default extension by extracting it from the filter
+		CHAR currentDir[256] = { 0 };
+		if (GetCurrentDirectoryA(256, currentDir)) openFileName.lpstrInitialDir = currentDir;
 
 		if (GetSaveFileNameA(&openFileName) == TRUE)
 		{

@@ -19,7 +19,8 @@ project "Meadow"
 		"%{wks.location}/Zahra/src",
 		"%{wks.location}/Zahra/vendor",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.EnTT}"
+		"%{IncludeDir.EnTT}",
+		"%{IncludeDir.ImGuizmo}"
 	}
 
 	links

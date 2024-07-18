@@ -16,6 +16,8 @@ project "Zahra"
 		"src/**.cpp",
 		"vendor/glm/glm/**.hpp",
 		"vendor/glm/glm/**.inl",
+		"vendor/ImGuizmo/ImGuizmo.h",
+		"vendor/ImGuizmo/ImGuizmo.cpp",
 		"vendor/stb_image/**.h",
 		"vendor/stb_image/**.cpp"
 	}
@@ -36,7 +38,8 @@ project "Zahra"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.EnTT}",
-		"%{IncludeDir.yaml_cpp}"
+		"%{IncludeDir.yaml_cpp}",
+		"%{IncludeDir.ImGuizmo}"
 	}
 
 	links
@@ -47,6 +50,9 @@ project "Zahra"
 		"yaml-cpp",
 		"opengl32.lib"
 	}
+
+	filter "files:vendor/ImGuizmo/**.cpp"
+		flags{"NoPCH"}
 
 	filter "system:windows"
 		systemversion "latest"

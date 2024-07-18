@@ -2,10 +2,12 @@
 
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_internal.h>
+#include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Zahra/Scene/SceneSerialiser.h"
 #include "Zahra/Utils/PlatformUtils.h"
+#include "Zahra/Maths/Maths.h"
 
 namespace Zahra
 {
@@ -81,23 +83,31 @@ namespace Zahra
 				if (ImGui::BeginMenu("File"))
 				{
 					if (ImGui::MenuItem("New", "Ctrl+N")) NewScene();
-
 					if (ImGui::MenuItem("Open...", "Ctrl+O")) OpenSceneFile();
 
 					ImGui::Separator();
 
 					if (ImGui::MenuItem("Save", "Ctrl+S")) SaveSceneFile();
-
 					if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) SaveAsSceneFile();
 
 					ImGui::Separator();
 
-					// TODO: check for unsaved content, warn user with an imgui popup (would you like to save?)
+					// TODO: warning popup: unsaved changes
 					if (ImGui::MenuItem("Exit"))
 					{
 						Application::Get().Exit();
 					}
 
+					ImGui::EndMenu();
+				}
+
+				if (ImGui::BeginMenu("Tools"))
+				{
+					if (ImGui::MenuItem("Select", "Q")) m_GizmoType = -1;
+					if (ImGui::MenuItem("Translate", "W")) m_GizmoType = 0;
+					if (ImGui::MenuItem("Rotate", "E")) m_GizmoType = 1;
+					if (ImGui::MenuItem("Scale", "R")) m_GizmoType = 2;
+					
 					ImGui::EndMenu();
 				}
 
@@ -120,7 +130,6 @@ namespace Zahra
 			m_ViewportHovered = ImGui::IsWindowHovered();
 
 			Application::Get().GetImGuiLayer()->BlockEvents(false);
-			//Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
@@ -128,6 +137,38 @@ namespace Zahra
 			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentRendererID();
 			ImGui::Image((void*)framebufferTextureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2( 0, 1 ), ImVec2( 1, 0 ));
 			
+			// Transform Gizmos
+			Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
+			if (selection && m_GizmoType != -1)
+			{
+				auto cameraEntity = m_ActiveScene->GetActiveCamera();
+
+				if (cameraEntity)
+				{
+					ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras too!
+					ImGuizmo::SetDrawlist();
+
+					float windowWidth = (float)ImGui::GetWindowWidth();
+					float windowHeight = (float)ImGui::GetWindowHeight();
+					ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+
+					const auto& camera = cameraEntity.GetComponents<CameraComponent>().Camera;
+					glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponents<TransformComponent>().GetTransform());
+					const glm::mat4& cameraProjection = camera.GetProjection();
+
+					auto& tc = selection.GetComponents<TransformComponent>();
+					glm::mat4 transform = tc.GetTransform();
+
+					ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+						(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform));
+
+					if (ImGuizmo::IsUsing())
+						Maths::DecomposeTransform(transform, tc.Translation,tc.EulerAngles, tc.Scale);			
+										
+				}
+
+			}
+
 			ImGui::End();
 			ImGui::PopStyleVar();
 		}
@@ -157,6 +198,7 @@ namespace Zahra
 
 		bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		bool alt = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
 
 		switch (event.GetKeyCode())
 		{
@@ -193,6 +235,26 @@ namespace Zahra
 					return true;
 				}
 
+				break;
+			}
+			case KeyCode::Q:
+			{
+				m_GizmoType = -1;
+				break;
+			}
+			case KeyCode::W:
+			{
+				m_GizmoType = 0;
+				break;
+			}
+			case KeyCode::E:
+			{
+				m_GizmoType = 1;
+				break;
+			}
+			case KeyCode::R:
+			{
+				m_GizmoType = 2;
 				break;
 			}
 			default:

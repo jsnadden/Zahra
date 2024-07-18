@@ -1,47 +1,47 @@
-Scene: test4.zsc
+Scene: redcube.zsc
 Entities:
   - Entity: 23152837592538
     TagComponent:
       Tag: camera
     TransformComponent:
-      Translation: [0.150000006, 0.200000003, 2]
-      EulerAngles: [0, 0, 0]
+      Translation: [2.1500001, 2.6500001, 2.20000005]
+      EulerAngles: [-0.767944872, 0.733038306, -0.0698131695]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
         ProjectionType: 1
         OrthographicSize: 10
-        OrthographicNearClip: -4.5999999
-        OrthographicFarClip: 18.6299992
-        PerspectiveFOV: 1.04719758
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 0.486946851
         PerspectiveNearClip: 0.00999999978
         PerspectiveFarClip: 1000
       Active: true
       FixedAspectRatio: false
   - Entity: 23152837592538
     TagComponent:
-      Tag: red
+      Tag: left
     TransformComponent:
-      Translation: [0, 0, -0.899999976]
+      Translation: [0, 0, 0.5]
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 0, 0, 0.639215708]
+      Colour: [0.980392158, 0.34217608, 0.34217608, 1]
   - Entity: 23152837592538
     TagComponent:
-      Tag: green
+      Tag: right
     TransformComponent:
-      Translation: [0.699999988, 0, -0.600000024]
-      EulerAngles: [0, 0, 0]
+      Translation: [0.5, 0, 0]
+      EulerAngles: [0, 1.57079637, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.105882354, 0.874509811, 0.243137255, 0.623529434]
+      Colour: [0.588235319, 0.205305651, 0.205305651, 1]
   - Entity: 23152837592538
     TagComponent:
-      Tag: blue
+      Tag: top
     TransformComponent:
-      Translation: [0.349999994, 0.600000024, -0.449999988]
-      EulerAngles: [0, 0, 0]
-      Scale: [1.64999998, 1.60000002, 1]
+      Translation: [0, 0.5, 1.36539331e-08]
+      EulerAngles: [1.57079637, 0, 0]
+      Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.278431386, 0.164705887, 0.929411769, 0.384313732]
+      Colour: [0.784313738, 0.273740858, 0.273740858, 1]

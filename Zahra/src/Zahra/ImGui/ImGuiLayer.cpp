@@ -1,11 +1,13 @@
 #include "zpch.h"
 #include "ImGuiLayer.h"
 
-#include "imgui.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
-
 #include "Zahra/Core/Application.h"
+
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+
+#include <ImGuizmo.h>
 
 // SHOULD EVENTUALLY REMOVE
 #include <GLFW/glfw3.h>
@@ -79,6 +81,7 @@ namespace Zahra
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 	}
 
 	void ImGuiLayer::End()

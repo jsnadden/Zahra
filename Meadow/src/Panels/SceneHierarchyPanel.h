@@ -15,6 +15,9 @@ namespace Zahra
 
 		void OnImGuiRender();
 
+		// TODO: find a better way of doing this (e.g. listeners have callback functions OnSelectionChange())
+		Entity GetSelectedEntity() const { return m_Selected; }
+
 	private:
 		Ref<Scene> m_Context;
 

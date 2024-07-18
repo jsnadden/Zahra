@@ -32,7 +32,7 @@ Entities:
       Tag: camera
     TransformComponent:
       Translation: [-4.25, -0.100000001, 3.20000005]
-      EulerAngles: [0, 5.37561417, 0.383972436]
+      EulerAngles: [0, -1.04719758, 0]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
