@@ -18,7 +18,6 @@
 
 //------------RENDERING----------------
 #include "Zahra/Renderer/Renderer.h"
-#include "Zahra/Renderer/Renderer2D.h"
 #include "Zahra/Renderer/RenderCommand.h"
 #include "Zahra/Renderer/Buffer.h"
 #include "Zahra/Renderer/Shader.h"
@@ -26,7 +25,6 @@
 #include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/VertexArray.h"
 #include "Zahra/Renderer/Camera.h"
-#include "Zahra/Renderer/CameraController.h"
 
 //------------SCENE--------------------
 #include "Zahra/Scene/Scene.h"

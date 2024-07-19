@@ -153,9 +153,6 @@
     <ClInclude Include="src\Zahra\Renderer\Camera.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\CameraController.h">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
@@ -166,9 +163,6 @@
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Renderer.h">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Renderer2D.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h">
@@ -1518,9 +1512,6 @@
     <ClCompile Include="src\Zahra\Renderer\Camera.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\CameraController.cpp">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
@@ -1528,9 +1519,6 @@
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Renderer2D.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp">

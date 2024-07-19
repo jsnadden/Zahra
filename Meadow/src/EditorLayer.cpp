@@ -52,7 +52,7 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CAPTURE DRAW CALLS IN FRAMEBUFFER
 		{
-			Renderer2D::ResetStats();
+			Renderer::ResetStats();
 			
 			m_Framebuffer->Bind();
 			{
@@ -182,8 +182,8 @@ namespace Zahra
 		{
 			ImGui::Begin("Stats", NULL, ImGuiWindowFlags_NoCollapse);
 
-			ImGui::Text("Quads: %u", Renderer2D::GetStats().QuadCount);
-			ImGui::Text("Draw calls: %u", Renderer2D::GetStats().DrawCalls);
+			ImGui::Text("Quads: %u", Renderer::GetStats().QuadCount);
+			ImGui::Text("Draw calls: %u", Renderer::GetStats().DrawCalls);
 
 			ImGui::End();
 		}

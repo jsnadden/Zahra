@@ -1,7 +1,7 @@
 #include "zpch.h"
 #include "Scene.h"
 
-#include "Zahra/Renderer/Renderer2D.h"
+#include "Zahra/Renderer/Renderer.h"
 #include "Entity.h"
 #include "ScriptableEntity.h"
 
@@ -76,16 +76,16 @@ namespace Zahra
 			{
 				auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
 
-				Renderer2D::BeginScene(activeCamera->GetProjection(), cameraTransform);
+				Renderer::BeginScene(activeCamera->GetProjection(), cameraTransform);
 
 				for (auto entity : spriteEntities)
 				{
 					auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
 
-					Renderer2D::DrawQuad(transform.GetTransform(), sprite.Colour);
+					Renderer::DrawQuad(transform.GetTransform(), sprite.Colour);
 				}
 
-				Renderer2D::EndScene();
+				Renderer::EndScene();
 			}
 		}
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
