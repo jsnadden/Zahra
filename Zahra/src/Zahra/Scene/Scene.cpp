@@ -33,22 +33,40 @@ namespace Zahra
 
 	
 
-	void Scene::OnUpdate(float dt)
+
+
+	void Scene::OnUpdateEditor(float dt, EditorCamera& camera)
+	{
+		auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
+
+		Renderer::BeginScene(camera);
+
+		for (auto entity : spriteEntities)
+		{
+			auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
+
+			Renderer::DrawQuad(transform.GetTransform(), sprite.Colour);
+		}
+
+		Renderer::EndScene();
+	}
+
+	void Scene::OnUpdateRuntime(float dt)
 	{
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// RUN SCRIPTS
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nativeScript)
 				{
 					// TODO: move instantiation to Scene::OnScenePlay(), when that exists
-					if (!nsc.Instance)
+					if (!nativeScript.Instance)
 					{
-						nsc.Instance = nsc.InstantiateScript();
-						nsc.Instance->m_Entity = Entity{ entity, this };
-						nsc.Instance->OnCreate();
+						nativeScript.Instance = nativeScript.InstantiateScript();
+						nativeScript.Instance->m_Entity = Entity{ entity, this };
+						nativeScript.Instance->OnCreate();
 					}
 
-					nsc.Instance->OnUpdate(dt);
+					nativeScript.Instance->OnUpdate(dt);
 				});
 		}
 		

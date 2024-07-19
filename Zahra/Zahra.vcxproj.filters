@@ -1456,6 +1456,7 @@
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Maths\Maths.h" />
+    <ClInclude Include="src\Zahra\Renderer\EditorCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1509,9 +1510,6 @@
     <ClCompile Include="src\Zahra\Renderer\Buffer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Camera.cpp">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
@@ -1555,5 +1553,6 @@
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Maths\Maths.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp" />
   </ItemGroup>
 </Project>

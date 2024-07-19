@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Components.h"
+#include "Zahra/Renderer/EditorCamera.h"
 
 #include <entt.hpp>
 
@@ -17,7 +18,8 @@ namespace Zahra
 		Entity CreateEntity(const std::string& name = "anonymous_entity");
 		void DestroyEntity(Entity entity);
 
-		void OnUpdate(float dt);
+		void OnUpdateEditor(float dt, EditorCamera& camera);
+		void OnUpdateRuntime(float dt);
 
 		void OnViewportResize(float width, float height);
 

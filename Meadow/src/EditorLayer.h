@@ -20,16 +20,21 @@ namespace Zahra
 		void OnUpdate(float dt) override;
 		void OnEvent(Event& event) override;
 		void OnImGuiRender() override;
-
 		bool OnKeyPressedEvent(KeyPressedEvent& event);
 
 	private:
 
 		Ref<Scene> m_ActiveScene;
+		EditorCamera m_EditorCamera;
 
-		// Save and open file dialogs
+		// Saving/opening scene files
 		const char* m_FileTypesFilter = "Zahra Scene (*.zsc)\0*.zsc\0\0";
 		std::optional<std::string> m_CurrentFilePath = std::nullopt;
+
+		void NewScene();
+		void OpenSceneFile();
+		void SaveSceneFile();
+		void SaveAsSceneFile();
 
 		// Viewport
 		Ref<Framebuffer> m_Framebuffer;
@@ -37,14 +42,11 @@ namespace Zahra
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 		float m_ClearColour[4] = { .0f, .0f, .0f, 1.0f };
 		int m_GizmoType = -1;
-		
-		// Panels
-		SceneHierarchyPanel m_SceneHierarchyPanel;
 
-		void NewScene();
-		void OpenSceneFile();
-		void SaveSceneFile();
-		void SaveAsSceneFile();
+		void RenderGizmos();
+
+		// Editor panels
+		SceneHierarchyPanel m_SceneHierarchyPanel;
 
 
 	};

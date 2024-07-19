@@ -25,6 +25,7 @@
 #include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/VertexArray.h"
 #include "Zahra/Renderer/Camera.h"
+#include "Zahra/Renderer/EditorCamera.h"
 
 //------------SCENE--------------------
 #include "Zahra/Scene/Scene.h"

@@ -131,6 +131,14 @@ namespace Zahra
 		NewBatch();
 	}
 
+	void Renderer::BeginScene(const EditorCamera& camera)
+	{
+		s_Data.TextureShader->Bind();
+		s_Data.TextureShader->SetMat4("u_PVMatrix", camera.GetPVMatrix());
+
+		NewBatch();
+	}
+
 	void Renderer::EndScene()
 	{
 		Z_PROFILE_FUNCTION();
