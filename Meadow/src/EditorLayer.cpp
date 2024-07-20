@@ -9,6 +9,7 @@
 #include "Zahra/Utils/PlatformUtils.h"
 #include "Zahra/Maths/Maths.h"
 
+
 namespace Zahra
 {
 	EditorLayer::EditorLayer()
@@ -20,6 +21,7 @@ namespace Zahra
 	void EditorLayer::OnAttach()
 	{
 		FramebufferSpecification framebufferSpec;
+		framebufferSpec.AttachmentSpec = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::DEPTH24STENCIL8 };
 		framebufferSpec.Width = 1280;
 		framebufferSpec.Height = 720; // These will be overwritten by the ImGui viewport window
 
@@ -145,7 +147,7 @@ namespace Zahra
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
-			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentRendererID();
+			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentID();
 			ImGui::Image((void*)framebufferTextureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2( 0, 1 ), ImVec2( 1, 0 ));
 			
 			RenderGizmos();
@@ -308,43 +310,32 @@ namespace Zahra
 		Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selection && m_GizmoType != -1)
 		{
-			auto cameraEntity = m_ActiveScene->GetActiveCamera();
+			// Configure ImGuizmo
+			ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras too!
+			ImGuizmo::SetDrawlist();
+			float windowWidth = (float)ImGui::GetWindowWidth();
+			float windowHeight = (float)ImGui::GetWindowHeight();
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 
-			if (cameraEntity)
-			{
-				// Configure ImGuizmo
-				ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras too!
-				ImGuizmo::SetDrawlist();
-				float windowWidth = (float)ImGui::GetWindowWidth();
-				float windowHeight = (float)ImGui::GetWindowHeight();
-				ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+			// Editor camera
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
 
-				// Runtime camera
-				/*const auto& camera = cameraEntity.GetComponents<CameraComponent>().Camera;
-				glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponents<TransformComponent>().GetTransform());
-				const glm::mat4& cameraProjection = camera.GetProjection();*/
+			// Entity transform
+			auto& tc = selection.GetComponents<TransformComponent>();
+			glm::mat4 transform = tc.GetTransform();
 
-				// Editor camera
-				glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
-				const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			// Snapping
+			bool snap = Input::IsKeyPressed(Key::LeftControl);
+			float snapValue = (m_GizmoType == 1) ? 45.0f : 0.5f;
+			float snapVector[3] = { snapValue, snapValue, snapValue };
 
-				// Entity transform
-				auto& tc = selection.GetComponents<TransformComponent>();
-				glm::mat4 transform = tc.GetTransform();
+			// Pass data to ImGuizmo
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
+				ImGuizmo::LOCAL, glm::value_ptr(transform), NULL, snap ? snapVector : NULL);
 
-				// Snapping
-				bool snap = Input::IsKeyPressed(Key::LeftControl);
-				float snapValue = (m_GizmoType ==  1) ? 45.0f : 0.5f;
-				float snapVector[3] = { snapValue, snapValue, snapValue };
-
-				// Pass data to ImGuizmo
-				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
-					ImGuizmo::LOCAL, glm::value_ptr(transform), NULL, snap ? snapVector : NULL);
-
-				// Get feedback
-				if (ImGuizmo::IsUsing()) Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
-
-			}
+			// Get feedback
+			if (ImGuizmo::IsUsing()) Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
 
 		}
 	}

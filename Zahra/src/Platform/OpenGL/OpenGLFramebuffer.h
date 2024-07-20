@@ -10,7 +10,7 @@ namespace Zahra
 		OpenGLFramebuffer(const FramebufferSpecification& spec);
 		virtual ~OpenGLFramebuffer();
 
-		void Regenerate();
+		void Invalidate();
 		void ClearFramebuffer();
 
 		virtual void Bind() override;
@@ -18,14 +18,25 @@ namespace Zahra
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
-		virtual uint32_t GetColourAttachmentRendererID() const override { return m_ColourAttachment; }
+		virtual uint32_t GetColourAttachmentID(int index = 0) const override;
 
 		virtual const FramebufferSpecification& GetSpecification() const override { return m_Specification; }
 
 	private:
 		FramebufferSpecification m_Specification;
 		uint32_t m_RendererID = 0;
-		uint32_t m_ColourAttachment = 0, m_DepthAttachment = 0;
+
+		std::vector<FramebufferTextureSpecification> m_ColourAttachmentSpecs;
+		FramebufferTextureSpecification m_DepthAttachmentSpec = { FramebufferTextureFormat::None }; // by default, no depth buffer
+
+		std::vector<uint32_t> m_ColourAttachmentIDs;
+		uint32_t m_DepthAttachmentID = 0;
+
+		uint32_t TextureTarget(bool multisampled);
+		void CreateTextures(bool multisampled, uint32_t* outID, uint32_t count);
+		void BindTexture(bool multisampled, uint32_t id);
+		void AttachColourTexture(uint32_t id, int samples, uint32_t format, uint32_t width, uint32_t height, size_t index);
+		void AttachDepthTexture(uint32_t id, int samples, uint32_t format, uint32_t type, uint32_t width, uint32_t height);
 	};
 }
 

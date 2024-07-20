@@ -69,13 +69,10 @@ namespace Zahra
 			glm::vec2 delta = (mouse - m_LastMousePosition) * 0.003f;
 			m_LastMousePosition = mouse;
 
-			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+			if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
 				MousePan(delta);
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
-				MouseRotate(delta);
 			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
-				//MouseZoom(-delta.y);
-				MousePush(delta.y);
+				MouseRotate(delta);
 		}
 
 		UpdateView();

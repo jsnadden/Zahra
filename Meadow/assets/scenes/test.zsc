@@ -2,22 +2,13 @@ Scene: test.zsc
 Entities:
   - Entity: 23152837592538
     TagComponent:
-      Tag: magenta square
+      Tag: yellow square
     TransformComponent:
-      Translation: [-0.300000012, -1.35000002, 0]
-      EulerAngles: [0.767944872, 0.87266463, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.644787669, 0.134434476, 0.571880102, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: cyan square
-    TransformComponent:
-      Translation: [3.54999995, 2.0999999, 0]
+      Translation: [0, 0, -0.5]
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.323429883, 0.741312742, 0.639665484, 1]
+      Colour: [0.878000021, 0.717999995, 0.172000006, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: red line
@@ -29,28 +20,19 @@ Entities:
       Colour: [0.783783793, 0.0181571357, 0.0181571357, 1]
   - Entity: 23152837592538
     TagComponent:
-      Tag: camera
+      Tag: cyan square
     TransformComponent:
-      Translation: [-4.25, -0.100000001, 3.20000005]
-      EulerAngles: [0, -1.04719758, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 1
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 1.04719758
-        PerspectiveNearClip: 0.00999999978
-        PerspectiveFarClip: 1000
-      Active: true
-      FixedAspectRatio: false
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: yellow square
-    TransformComponent:
-      Translation: [0, 0, -0.5]
+      Translation: [3.54999995, 2.0999999, 0]
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.878000021, 0.717999995, 0.172000006, 1]
+      Colour: [0.323429883, 0.741312742, 0.639665484, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: magenta square
+    TransformComponent:
+      Translation: [-0.300000012, -1.35000002, 0]
+      EulerAngles: [0.767944872, 0.87266463, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.644787669, 0.134434476, 0.571880102, 1]
