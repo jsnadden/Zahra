@@ -61,7 +61,13 @@ namespace Zahra
 				{
 					case FramebufferTextureFormat::RGBA8:
 					{
-						AttachColourTexture(m_ColourAttachmentIDs[i], m_Specification.Samples, GL_RGBA8, m_Specification.Width, m_Specification.Height, i);
+						AttachColourTexture(m_ColourAttachmentIDs[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i);
+						break;
+					}
+
+					case FramebufferTextureFormat::RED_INTEGER:
+					{
+						AttachColourTexture(m_ColourAttachmentIDs[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i);
 						break;
 					}
 				}
@@ -116,11 +122,13 @@ namespace Zahra
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+		m_bound = true;
 	}
 
 	void OpenGLFramebuffer::Unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		m_bound = false;
 	}
 
 	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height)
@@ -142,6 +150,26 @@ namespace Zahra
 		return m_ColourAttachmentIDs[index];
 	}
 
+	void OpenGLFramebuffer::ClearColourAttachment(int attachmentIndex, int clearValue)
+	{
+		Z_CORE_ASSERT(attachmentIndex < m_ColourAttachmentIDs.size(), "Invalid colour attachment index");
+		
+		glClearTexImage(m_ColourAttachmentIDs[attachmentIndex], 0, GL_RED_INTEGER, GL_INT, &clearValue);
+	}
+
+	int OpenGLFramebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
+	{
+		Z_CORE_ASSERT(m_bound, "Framebuffer is not currently bound");
+		Z_CORE_ASSERT(attachmentIndex < m_ColourAttachmentIDs.size(), "Invalid colour attachment index");
+
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		int pixelData;
+		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData); // TODO: don't hardcode parameters
+		return pixelData;
+	}
+
+
+
 	uint32_t OpenGLFramebuffer::TextureTarget(bool multisampled)
 	{
 		return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
@@ -157,18 +185,18 @@ namespace Zahra
 		glBindTexture(TextureTarget(multisampled), id);
 	}
 
-	void OpenGLFramebuffer::AttachColourTexture(uint32_t id, int samples, uint32_t format, uint32_t width, uint32_t height, size_t index)
+	void OpenGLFramebuffer::AttachColourTexture(uint32_t id, int samples, uint32_t internalFormat, uint32_t format, uint32_t width, uint32_t height, size_t index)
 	{
 		bool multisampled = (samples > 1);
 		
 		if (multisampled)
 		{
-			glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
+			glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, width, height, GL_FALSE);
 			// TODO: why don't we set parameters here, like in the single sample case below?
 		}
 		else
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
 
 			// TODO: make these part of our texturespec struct
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

@@ -12,13 +12,16 @@
 namespace Zahra
 {
 
-	struct QuadVertex
+	// TODO: This struct needs to mirror both the bufferlayout and shader inputs, so if
+	// I was going to generalise this at all, I'd have to automate constructing all three in parallel
+	struct QuadVertexWithEntityID
 	{
 		glm::vec3 Position;
 		glm::vec4 Colour;
 		glm::vec2 TextureCoord;
 		float TextureIndex;
 		float TilingFactor;
+		int EntityID = -1;
 	};
 
 	struct RendererData
@@ -34,8 +37,8 @@ namespace Zahra
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<Shader> TextureShader;
 
-		QuadVertex* QuadVertexBufferBase = nullptr;
-		QuadVertex* QuadVertexBufferPtr = nullptr;
+		QuadVertexWithEntityID* QuadVertexBufferBase = nullptr;
+		QuadVertexWithEntityID* QuadVertexBufferPtr = nullptr;
 
 		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // start at 1, because slot 0 will be our default WhiteTexture
@@ -58,18 +61,19 @@ namespace Zahra
 		s_Data.QuadVertexArray = VertexArray::Create();
 		{
 			// VERTEX BUFFER
-			s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(QuadVertex));
+			s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(QuadVertexWithEntityID));
 			s_Data.QuadVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position"},
-				{ ShaderDataType::Float4, "a_Colour"},
-				{ ShaderDataType::Float2, "a_TextureCoord"},
-				{ ShaderDataType::Float, "a_TextureIndex"},
-				{ ShaderDataType::Float, "a_TilingFactor"}
+				{ ShaderDataType::Float3, "a_Position"	   },
+				{ ShaderDataType::Float4, "a_Colour"	   },
+				{ ShaderDataType::Float2, "a_TextureCoord" },
+				{ ShaderDataType::Float,  "a_TextureIndex" },
+				{ ShaderDataType::Float,  "a_TilingFactor" },
+				{ ShaderDataType::Int,	  "a_EntityID"	   }
 
 				});
 			s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
-			s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVerticesPerBuffer];
+			s_Data.QuadVertexBufferBase = new QuadVertexWithEntityID[s_Data.MaxVerticesPerBuffer];
 
 			// INDEX BUFFER
 			uint32_t* quadIndices = new uint32_t[s_Data.MaxIndicesPerBuffer];
@@ -99,8 +103,8 @@ namespace Zahra
 		s_Data.TextureSlots[0]->SetData(&flatWhite, sizeof(uint32_t));
 
 		// SHADER
-											// TODO: this vvvv should not be opengl specific!!!
-		s_Data.TextureShader = Shader::Create("C:/dev/Zahra/Zahra/src/Platform/OpenGL/shaders/texture.glsl");
+											// TODO: shouldn't hardcode a shader (path is relative to working dir /Meadow)
+		s_Data.TextureShader = Shader::Create("assets/shaders/editor_texture.glsl");
 		s_Data.TextureShader->Bind();
 		int textureSamplers[s_Data.MaxTextureSlots];
 		for (int i = 0; i < s_Data.MaxTextureSlots; i++) textureSamplers[i] = i;
@@ -183,9 +187,9 @@ namespace Zahra
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Rendering primitives
-
-	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& colour)
+	// PRIMITIVES
+	// TODO: remove the entityIds from drawquad
+	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int EntityID)
 	{
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
 		{
@@ -200,6 +204,7 @@ namespace Zahra
 			s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
 			s_Data.QuadVertexBufferPtr->TextureIndex = 0.0f;
 			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
+			s_Data.QuadVertexBufferPtr->EntityID = EntityID;
 
 			s_Data.QuadVertexBufferPtr++;
 		}
@@ -208,7 +213,7 @@ namespace Zahra
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer::DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling)
+	void Renderer::DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling, int EntityID)
 	{
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
 		{
@@ -251,6 +256,7 @@ namespace Zahra
 			s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
 			s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
+			s_Data.QuadVertexBufferPtr->EntityID = EntityID;
 
 			s_Data.QuadVertexBufferPtr++;
 		}
@@ -322,7 +328,16 @@ namespace Zahra
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Rendering stats
+	// SPRITES
+
+	void Renderer::DrawSprite(const glm::mat4& transform, SpriteComponent& sprite, int EntityID)
+	{
+		// TODO: incorporate possibility of textures, animation etc.
+		DrawQuad(transform, sprite.Colour, EntityID);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	// STATS
 
 	Renderer::Statistics Renderer::GetStats()
 	{

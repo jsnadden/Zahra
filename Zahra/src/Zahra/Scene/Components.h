@@ -52,13 +52,17 @@ namespace Zahra
 	struct SpriteComponent
 	{
 		glm::vec4 Colour{ 1.0f, 1.0f, 1.0f, 1.0f };
+		std::string textureFilepath = "";
+		bool Animated = false;
+
+		// TODO: add textures, animations etc.
 
 		SpriteComponent() = default;
 		SpriteComponent(const SpriteComponent&) = default;
 		SpriteComponent(const glm::vec4& colour)
 			: Colour(colour) {}
 
-		// TODO: add textures, a "sprite type" enum etc.
+		
 		// TODO: don't forget to add stuff to the sceneserialiser methods!!
 
 		static const bool Essential = false;

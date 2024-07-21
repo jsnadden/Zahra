@@ -67,7 +67,7 @@ namespace Zahra
 		glBindVertexArray(m_RendererID);
 		vertexBuffer->Bind();
 
-		uint32_t index = 0;
+		uint32_t bufferIndex = 0;
 		const auto& layout = vertexBuffer->GetLayout();
 		for (const auto& element : layout)
 		{
@@ -78,21 +78,33 @@ namespace Zahra
 				case ShaderDataType::Int2:
 				case ShaderDataType::Int3:
 				case ShaderDataType::Int4:
+				{
+					glEnableVertexAttribArray(bufferIndex);
+					glVertexAttribIPointer(
+						bufferIndex,
+						element.GetComponentCount(),
+						ShaderDataTypeToOpenGLBaseType(element.Type),
+						layout.GetStride(),
+						(const void*)element.Offset
+					);
+					bufferIndex++;
+					break;
+				}
 				case ShaderDataType::Float:
 				case ShaderDataType::Float2:
 				case ShaderDataType::Float3:
 				case ShaderDataType::Float4:
 				{
-					glEnableVertexAttribArray(index);
+					glEnableVertexAttribArray(bufferIndex);
 					glVertexAttribPointer(
-						index,
+						bufferIndex,
 						element.GetComponentCount(),
 						ShaderDataTypeToOpenGLBaseType(element.Type),
 						element.Normalised ? GL_TRUE : GL_FALSE,
 						layout.GetStride(),
 						(const void*)element.Offset
 					);
-					index++;
+					bufferIndex++;
 					break;
 				}
 				case ShaderDataType::Mat2:
@@ -103,16 +115,16 @@ namespace Zahra
 
 					for (uint8_t i = 0; i < count; i++)
 					{
-						glEnableVertexAttribArray(index);
+						glEnableVertexAttribArray(bufferIndex);
 						glVertexAttribPointer(
-							index,
+							bufferIndex,
 							count,
 							ShaderDataTypeToOpenGLBaseType(element.Type),
 							element.Normalised ? GL_TRUE : GL_FALSE,
 							layout.GetStride(),
 							(const void*)(sizeof(float) * count * i)
 						);
-						index++;
+						bufferIndex++;
 					}
 					break;
 				}

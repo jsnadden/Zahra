@@ -9,19 +9,15 @@
 #include "Zahra/Utils/PlatformUtils.h"
 #include "Zahra/Maths/Maths.h"
 
-
 namespace Zahra
 {
 	EditorLayer::EditorLayer()
-		: Layer("EditorLayer")
-	{
-		
-	}
+		: Layer("EditorLayer") {}
 
 	void EditorLayer::OnAttach()
 	{
 		FramebufferSpecification framebufferSpec;
-		framebufferSpec.AttachmentSpec = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::DEPTH24STENCIL8 };
+		framebufferSpec.AttachmentSpec = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::DEPTH24STENCIL8 };
 		framebufferSpec.Width = 1280;
 		framebufferSpec.Height = 720; // These will be overwritten by the ImGui viewport window
 
@@ -70,7 +66,11 @@ namespace Zahra
 				RenderCommand::SetClearColour(glm::make_vec4(m_ClearColour));
 				RenderCommand::Clear();
 
+				m_Framebuffer->ClearColourAttachment(1, -1);
+				
 				m_ActiveScene->OnUpdateEditor(dt, m_EditorCamera);
+
+				if (m_ViewportHovered) MousePickEntity();
 			}
 			m_Framebuffer->Unbind();
 			
@@ -138,18 +138,27 @@ namespace Zahra
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 			ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoCollapse);
+			auto viewportOffset = ImGui::GetCursorPos(); // offset from top left by the tab bar
 
 			m_ViewportFocused = ImGui::IsWindowFocused();
 			m_ViewportHovered = ImGui::IsWindowHovered();
 
-			Application::Get().GetImGuiLayer()->BlockEvents(false);
+			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportHovered || !m_ViewportFocused);
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
 			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentID();
-			ImGui::Image((void*)framebufferTextureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2( 0, 1 ), ImVec2( 1, 0 ));
+			ImGui::Image(reinterpret_cast<void*>(framebufferTextureID), ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2( 0, 1 ), ImVec2( 1, 0 ));
 			
+			ImVec2 topleft = ImGui::GetWindowPos();
+			topleft.x += viewportOffset.x;
+			topleft.y += viewportOffset.y;
+			ImVec2 bottomright = { topleft.x + m_ViewportSize.x, topleft.y + m_ViewportSize.y };
+
+			m_ViewportBounds[0] = { topleft.x, topleft.y };
+			m_ViewportBounds[1] = { bottomright.x, bottomright.y };
+
 			RenderGizmos();
 
 			ImGui::End();
@@ -167,6 +176,8 @@ namespace Zahra
 
 			ImGui::Text("Quads: %u", Renderer::GetStats().QuadCount);
 			ImGui::Text("Draw calls: %u", Renderer::GetStats().DrawCalls);
+			ImGui::Text("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
+				m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
 
 			ImGui::End();
 		}
@@ -305,6 +316,19 @@ namespace Zahra
 		// TODO: report/display success of file save
 	}
 
+	void EditorLayer::MousePickEntity()
+	{
+		ImVec2 mouse = ImGui::GetMousePos();
+		mouse.x -= m_ViewportBounds[0].x;
+		mouse.y -= m_ViewportBounds[0].y;
+		mouse.y = m_ViewportSize.y - mouse.y;
+
+		int hoveredID = m_Framebuffer->ReadPixel(1, (int)mouse.x, (int)mouse.y);
+
+		m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.get());
+
+	}
+
 	void EditorLayer::RenderGizmos()
 	{
 		Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -318,8 +342,8 @@ namespace Zahra
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 
 			// Editor camera
-			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			// Entity transform
 			auto& tc = selection.GetComponents<TransformComponent>();
@@ -329,13 +353,15 @@ namespace Zahra
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
 			float snapValue = (m_GizmoType == 1) ? 45.0f : 0.5f;
 			float snapVector[3] = { snapValue, snapValue, snapValue };
-
+			
 			// Pass data to ImGuizmo
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
-				ImGuizmo::LOCAL, glm::value_ptr(transform), NULL, snap ? snapVector : NULL);
+				ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
+			// TODO (BUG): it seems imguizmo is computing a slightly incorrect rotation value (consistently off by .81 deg), making it impossible to snap properly
 
-			// Get feedback
-			if (ImGuizmo::IsUsing()) Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
+			// Feedback manipulated transform
+			if (ImGuizmo::IsUsing())
+				Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
 
 		}
 	}

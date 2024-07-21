@@ -5,6 +5,8 @@
 #include "Texture.h"
 #include "EditorCamera.h"
 
+#include "Zahra/Scene/Components.h"
+
 namespace Zahra
 {
 	class Renderer
@@ -28,10 +30,10 @@ namespace Zahra
 
 	public:
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Rendering primitives
+		// PRIMITIVES
 
-		static void DrawQuad(const glm::mat4& transform, const glm::vec4& colour);
-		static void DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f);
+		static void DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int EntityID = -1);
+		static void DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f, int EntityID = -1);
 
 		static void DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const glm::vec4& colour);
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const glm::vec4& colour);
@@ -44,7 +46,12 @@ namespace Zahra
 		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& dimensions, float rotation, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Rendering stats
+		// SPRITES
+
+		static void DrawSprite(const glm::mat4& transform, SpriteComponent& sprite, int EntityID = -1);
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		// STATS
 
 		struct Statistics
 		{

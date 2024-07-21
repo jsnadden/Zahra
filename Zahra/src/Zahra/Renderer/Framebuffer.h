@@ -10,6 +10,7 @@ namespace Zahra
 		// Colour
 		RGBA8,
 		RGBA16F,
+		RED_INTEGER,
 
 		// Depth+Stencil
 		DEPTH24STENCIL8,
@@ -41,6 +42,7 @@ namespace Zahra
 			:TextureFormat(format) {}
 
 		FramebufferTextureFormat TextureFormat = FramebufferTextureFormat::None;
+		// TODO: specify a "clear" value (not sure how to do this without specifying a type... is void* safe? can this be templated?)
 		// TODO: filtering and wrapping
 	};
 
@@ -77,6 +79,10 @@ namespace Zahra
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
 		virtual uint32_t GetColourAttachmentID(int index = 0) const = 0;
+
+		virtual void ClearColourAttachment(int attachmentIndex, int clearValue) = 0;
+
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
 
 		// TODO: might implement the non-const getter later, but it would require some infrastructure
 		// virtual FramebufferSpecification& GetSpecification() = 0;

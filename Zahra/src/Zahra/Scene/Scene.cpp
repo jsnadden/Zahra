@@ -45,7 +45,7 @@ namespace Zahra
 		{
 			auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
 
-			Renderer::DrawQuad(transform.GetTransform(), sprite.Colour);
+			Renderer::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
 
 		Renderer::EndScene();
@@ -58,7 +58,7 @@ namespace Zahra
 		{
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nativeScript)
 				{
-					// TODO: move instantiation to Scene::OnScenePlay(), when that exists
+					// TODO: move instantiation to something like Scene::OnScenePlay()
 					if (!nativeScript.Instance)
 					{
 						nativeScript.Instance = nativeScript.InstantiateScript();
@@ -100,7 +100,7 @@ namespace Zahra
 				{
 					auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
 
-					Renderer::DrawQuad(transform.GetTransform(), sprite.Colour);
+					Renderer::DrawSprite(transform.GetTransform(), sprite);
 				}
 
 				Renderer::EndScene();

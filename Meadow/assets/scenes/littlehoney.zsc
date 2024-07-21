@@ -1,0 +1,281 @@
+Scene: littlehoney.zsc
+Entities:
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-1.77420497, -0.652929783, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-1.7884537, 0.314754635, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-1.78845417, 1.25901687, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1.48495185, 0.723120511, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.841698825, 0.194988161, 0.73432982, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0.646001101, 1.81540966, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.853281856, 0.14825359, 0.850560129, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2.36276388, 1.82920337, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.918918908, 0.230616704, 0.884371102, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2.71575904, 1.02593684, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.763273656, 0.0494178459, 0.853281856, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0.179395705, 1.13420606, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.930501938, 0.287413746, 0.913121402, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0.64974165, 0.204956323, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.880308867, 0.275308967, 0.877973318, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2.11834574, 0.0059120208, 0.271224499]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.823058844, 0.14166458, 0.853281856, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1.42864585, -0.663036346, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.876447856, 0.131974772, 0.75284797, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [5.09281874, -0.281614006, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [5.92745829, -0.5798136, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [6.5406332, 0.248497367, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [6.55765152, 1.24244595, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [8.08008575, 1.19477689, -0.449164987]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [8.24394894, 0.347887993, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [8.87408829, -0.397590399, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [9.69170666, 0.397576749, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [9.91316986, 1.17618525, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [11.4291134, 1.17618549, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [11.4120426, 0.19878149, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [11.7186012, -0.563241482, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [12.5021286, -0.480422735, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [14.2157049, 1.26976812, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [15.1068487, 1.20928264, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [15.6871405, 0.66511023, -5.96046874e-08]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [14.9203644, -0.0201618709, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [14.2157049, -0.826355636, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [15.2105112, -1.14882982, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [16.163641, -1.02790809, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]

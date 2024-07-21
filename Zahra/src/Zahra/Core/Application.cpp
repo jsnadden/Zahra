@@ -12,6 +12,8 @@ namespace Zahra
 	{
 		Z_PROFILE_FUNCTION();
 
+		Z_CORE_INFO("Current working directory {0}", std::filesystem::current_path().string());
+
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
 

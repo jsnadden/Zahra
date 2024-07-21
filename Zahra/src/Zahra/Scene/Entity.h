@@ -17,6 +17,9 @@ namespace Zahra
 		template<typename ...Types>
 		bool HasComponents(bool strict = true)
 		{
+			if (m_EntityHandle == entt::null)
+				return false;
+
 			if (strict)
 				return m_Scene->m_Registry.all_of<Types...>(m_EntityHandle);
 			else
