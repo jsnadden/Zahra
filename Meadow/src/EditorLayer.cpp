@@ -70,7 +70,7 @@ namespace Zahra
 				
 				m_ActiveScene->OnUpdateEditor(dt, m_EditorCamera);
 
-				if (m_ViewportHovered) MousePickEntity();
+				if (m_ViewportHovered) ReadHoveredEntity();
 			}
 			m_Framebuffer->Unbind();
 			
@@ -84,6 +84,7 @@ namespace Zahra
 		
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnKeyPressedEvent));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressedEvent));
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -138,10 +139,24 @@ namespace Zahra
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 			ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoCollapse);
-			auto viewportOffset = ImGui::GetCursorPos(); // offset from top left by the tab bar
+
+			ImVec2 topleft = ImGui::GetWindowContentRegionMin();
+			ImVec2 bottomright = ImGui::GetWindowContentRegionMax();
+			ImVec2 viewportOffset = ImGui::GetWindowPos();
+			m_ViewportBounds[0] = { topleft.x + viewportOffset.x, topleft.y + viewportOffset.y };
+			m_ViewportBounds[1] = { bottomright.x + viewportOffset.x, bottomright.y + viewportOffset.y };
 
 			m_ViewportFocused = ImGui::IsWindowFocused();
 			m_ViewportHovered = ImGui::IsWindowHovered();
+
+			
+			if (m_ViewportFocused)
+			{
+				// We want to use the alt key to toggle camera controls, but ImGui uses it for
+				// mouseless navigation, which will automatically defocus our viewport. To avoid
+				// that happening, we give this window ownership of the alt key
+				ImGui::SetKeyOwner(ImGuiMod_Alt, ImGui::GetItemID(), ImGuiInputFlags_LockThisFrame);
+			}
 
 			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportHovered || !m_ViewportFocused);
 
@@ -150,14 +165,6 @@ namespace Zahra
 
 			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentID();
 			ImGui::Image(reinterpret_cast<void*>(framebufferTextureID), ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2( 0, 1 ), ImVec2( 1, 0 ));
-			
-			ImVec2 topleft = ImGui::GetWindowPos();
-			topleft.x += viewportOffset.x;
-			topleft.y += viewportOffset.y;
-			ImVec2 bottomright = { topleft.x + m_ViewportSize.x, topleft.y + m_ViewportSize.y };
-
-			m_ViewportBounds[0] = { topleft.x, topleft.y };
-			m_ViewportBounds[1] = { bottomright.x, bottomright.y };
 
 			RenderGizmos();
 
@@ -252,11 +259,34 @@ namespace Zahra
 				m_GizmoType = 2;
 				break;
 			}
+			case KeyCode::Delete:
+			{
+				Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
+				if (selection) m_ActiveScene->DestroyEntity(selection);
+				break;
+			}
 			default:
 				break;
 			}
 
 		return false;
+	}
+
+	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
+	{
+		// block other mouse input when we're trying to use imguizmo, or move our camera around
+		if (ImGuizmo::IsOver() || m_EditorCamera.Controlled()) return false;
+
+		switch (event.GetMouseButton())
+		{
+			case MouseCode::ButtonLeft:
+			{
+				if (m_ViewportHovered) m_SceneHierarchyPanel.SelectEntity(m_HoveredEntity);
+				break;
+			}
+		}
+
+		return true;
 	}
 
 	void EditorLayer::NewScene()
@@ -316,7 +346,7 @@ namespace Zahra
 		// TODO: report/display success of file save
 	}
 
-	void EditorLayer::MousePickEntity()
+	void EditorLayer::ReadHoveredEntity()
 	{
 		ImVec2 mouse = ImGui::GetMousePos();
 		mouse.x -= m_ViewportBounds[0].x;
@@ -337,9 +367,7 @@ namespace Zahra
 			// Configure ImGuizmo
 			ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras too!
 			ImGuizmo::SetDrawlist();
-			float windowWidth = (float)ImGui::GetWindowWidth();
-			float windowHeight = (float)ImGui::GetWindowHeight();
-			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 			// Editor camera
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
@@ -354,14 +382,17 @@ namespace Zahra
 			float snapValue = (m_GizmoType == 1) ? 45.0f : 0.5f;
 			float snapVector[3] = { snapValue, snapValue, snapValue };
 			
-			// Pass data to ImGuizmo
-			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
-				ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
-			// TODO (BUG): it seems imguizmo is computing a slightly incorrect rotation value (consistently off by .81 deg), making it impossible to snap properly
+			if (m_ViewportHovered)
+			{
+				// Pass data to ImGuizmo
+				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
+					ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
+				// TODO (BUG): it seems imguizmo is computing a slightly incorrect rotation value (consistently off by .81 deg), making it impossible to snap properly
 
-			// Feedback manipulated transform
-			if (ImGuizmo::IsUsing())
-				Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
+				// Feedback manipulated transform
+				if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
+					Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
+			}
 
 		}
 	}

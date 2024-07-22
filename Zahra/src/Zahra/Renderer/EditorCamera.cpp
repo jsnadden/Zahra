@@ -65,6 +65,8 @@ namespace Zahra
 	{
 		if (Input::IsKeyPressed(Key::LeftAlt))
 		{
+			m_Controlled = true;
+
 			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			glm::vec2 delta = (mouse - m_LastMousePosition) * 0.003f;
 			m_LastMousePosition = mouse;
@@ -73,6 +75,10 @@ namespace Zahra
 				MousePan(delta);
 			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 				MouseRotate(delta);
+		}
+		else
+		{
+			m_Controlled = false;
 		}
 
 		UpdateView();

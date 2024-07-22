@@ -21,6 +21,7 @@ namespace Zahra
 		void OnEvent(Event& event) override;
 		void OnImGuiRender() override;
 		bool OnKeyPressedEvent(KeyPressedEvent& event);
+		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
 
 	private:
 
@@ -45,7 +46,7 @@ namespace Zahra
 		int m_GizmoType = -1;
 		Entity m_HoveredEntity;
 
-		void MousePickEntity();
+		void ReadHoveredEntity();
 		void RenderGizmos();
 
 		// Editor panels

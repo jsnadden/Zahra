@@ -38,6 +38,8 @@ namespace Zahra
 		void LockRotation(bool lock) { m_RotationLocked = lock; }
 		bool RotationLocked() { return m_RotationLocked; }
 
+		bool Controlled() { return m_Controlled; }
+
 		void ResetCamera();
 
 	private:
@@ -55,6 +57,7 @@ namespace Zahra
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
 
 		bool m_RotationLocked = false;
+		bool m_Controlled = false;
 
 		void UpdateProjection();
 		void UpdateView();
