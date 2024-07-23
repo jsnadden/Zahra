@@ -30,7 +30,7 @@ namespace Zahra
 
 		// Saving/opening scene files
 		const char* m_FileTypesFilter = "Zahra Scene (*.zsc)\0*.zsc\0\0";
-		std::optional<std::string> m_CurrentFilePath = std::nullopt;
+		std::string m_CurrentFilePath = "";
 
 		void NewScene();
 		void OpenSceneFile();

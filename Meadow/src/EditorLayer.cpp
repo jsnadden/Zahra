@@ -25,6 +25,14 @@ namespace Zahra
 
 		m_ActiveScene = CreateRef<Scene>();
 
+		auto commandLineArgs = Application::Get().GetCommandLineArgs();
+		if (commandLineArgs.Count > 1)
+		{
+			auto sceneFilePath = commandLineArgs[1];
+			SceneSerialiser serialiser(m_ActiveScene);
+			serialiser.DeserialiseYaml(sceneFilePath);
+		}
+
 		m_EditorCamera = EditorCamera(.5f, 1.78f, .1f, 1000.f);
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -294,22 +302,22 @@ namespace Zahra
 		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		m_CurrentFilePath = std::nullopt;
+		m_CurrentFilePath = "";
 	}
 
 	void EditorLayer::OpenSceneFile()
 	{
-		std::optional<std::string> filepath = FileDialogs::OpenFile(m_FileTypesFilter);
-		if (filepath)
+		std::string filepath = FileDialogs::OpenFile(m_FileTypesFilter);
+		if (!filepath.empty())
 		{
 			NewScene();
 
-			std::string sceneName = filepath->substr(filepath->find_last_of("/\\") + 1);
+			std::string sceneName = filepath.substr(filepath.find_last_of("/\\") + 1);
 			m_ActiveScene->SetName(sceneName);
 			m_CurrentFilePath = filepath;
 
 			SceneSerialiser serialiser(m_ActiveScene);
-			serialiser.DeserialiseYaml(*m_CurrentFilePath);
+			serialiser.DeserialiseYaml(filepath);
 		}
 
 		// TODO: report/display success of file open
@@ -317,14 +325,14 @@ namespace Zahra
 
 	void EditorLayer::SaveSceneFile()
 	{
-		if (!m_CurrentFilePath)
+		if (m_CurrentFilePath.empty())
 		{
 			SaveAsSceneFile();
 		}
 		else
 		{
 			SceneSerialiser serialiser(m_ActiveScene);
-			serialiser.SerialiseYaml(*m_CurrentFilePath);
+			serialiser.SerialiseYaml(m_CurrentFilePath);
 		}
 
 		// TODO: report/display success of file save
@@ -332,15 +340,15 @@ namespace Zahra
 
 	void EditorLayer::SaveAsSceneFile()
 	{
-		std::optional<std::string> filepath = FileDialogs::SaveFile(m_FileTypesFilter);
-		if (filepath)
+		std::string filepath = FileDialogs::SaveFile(m_FileTypesFilter);
+		if (!filepath.empty())
 		{
-			std::string sceneName = filepath->substr(filepath->find_last_of("/\\") + 1);
+			std::string sceneName = filepath.substr(filepath.find_last_of("/\\") + 1);
 			m_ActiveScene->SetName(sceneName);
 			m_CurrentFilePath = filepath;
 
 			SceneSerialiser serialiser(m_ActiveScene);
-			serialiser.SerialiseYaml(*m_CurrentFilePath);
+			serialiser.SerialiseYaml(m_CurrentFilePath);
 		}
 
 		// TODO: report/display success of file save
