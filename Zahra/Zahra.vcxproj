@@ -147,6 +147,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Zahra\Core\Assert.h" />
+    <ClInclude Include="src\Zahra\Core\Timer.h" />
     <ClInclude Include="src\Zahra\Renderer\EditorCamera.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />

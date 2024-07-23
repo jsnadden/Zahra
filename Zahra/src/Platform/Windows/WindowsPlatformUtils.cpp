@@ -10,7 +10,7 @@
 
 namespace Zahra
 {
-	std::optional<std::string> FileDialogs::OpenFile(const char* filter)
+	std::string FileDialogs::OpenFile(const char* filter)
 	{
 		// windows api for a file opening dialog (the A instructs windows to interpret the file as ascii encoded)
 		OPENFILENAMEA openFileName;
@@ -31,10 +31,10 @@ namespace Zahra
 			return openFileName.lpstrFile;
 		}
 
-		return std::nullopt;
+		return std::string();
 	}
 
-	std::optional<std::string> FileDialogs::SaveFile(const char* filter)
+	std::string FileDialogs::SaveFile(const char* filter)
 	{
 		// see above for details
 		OPENFILENAMEA openFileName;
@@ -56,7 +56,7 @@ namespace Zahra
 			return openFileName.lpstrFile;
 		}
 
-		return std::nullopt;
+		return std::string();
 	}
 
 

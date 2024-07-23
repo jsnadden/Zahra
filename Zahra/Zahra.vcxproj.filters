@@ -1457,6 +1457,8 @@
     </ClInclude>
     <ClInclude Include="src\Zahra\Maths\Maths.h" />
     <ClInclude Include="src\Zahra\Renderer\EditorCamera.h" />
+    <ClInclude Include="src\Zahra\Core\Assert.h" />
+    <ClInclude Include="src\Zahra\Core\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">

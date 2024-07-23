@@ -9,6 +9,7 @@
 #include "Zahra/Core/Input.h"
 #include "Zahra/Core/KeyCodes.h"
 #include "Zahra/Core/MouseCodes.h"
+#include "Zahra/Core/Assert.h"
 
 //------------DEBUG--------------------
 #include "Zahra/Debug/Profiling.h"

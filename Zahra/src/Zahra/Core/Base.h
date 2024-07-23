@@ -1,21 +1,27 @@
 #pragma once
 
-#include <memory>
-
 #include "PlatformDetection.h"
 
+#include <memory>
+
+
 #ifdef Z_DEBUG
+	#ifdef Z_PLATFORM_WINDOWS
+		#define Z_DEBUGBREAK() __debugbreak()
+	#elif defined(Z_PLATFORM_LINUX)
+		#include <signal.h>
+		#define Z_DEBUGBREAK() raise(SIGTRAP)
+	#else
+		#error "Platform doesn't support debugbreak yet!"
+	#endif
+	
 	#define Z_ENABLE_ASSERTS
+#else
+	#define Z_DEBUGBREAK()
 #endif
 
-// TODO: the assert macros should be capable of taking only a boolean input, without __VA_ARGS__.
-#ifdef Z_ENABLE_ASSERTS
-	#define Z_ASSERT(x, ...) { if(!(x)) { Z_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
-	#define Z_CORE_ASSERT(x, ...) { if (!(x)) { Z_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
-#else
-	#define Z_ASSERT(x, ...)
-	#define Z_CORE_ASSERT(x, ...)
-#endif
+#define Z_EXPAND_MACRO(x) x
+#define Z_STRINGIFY_MACRO(x) #x
 
 #define BIT(x) (1 << x)
 
@@ -44,3 +50,7 @@ namespace Zahra
 	}
 
 }
+
+
+#include "Zahra/Core/Log.h"
+#include "Zahra/Core/Assert.h"

@@ -19,10 +19,22 @@
 
 namespace Zahra
 {
+	struct ApplicationCommandLineArgs
+	{
+		int Count = 0;
+		char** Args = nullptr;
+
+		const char* operator[](int index) const
+		{
+			Z_CORE_ASSERT(index < Count);
+			return Args[index];
+		}
+	};
+
 	class Application
 	{
 	public:
-		Application(const std::string& name = "Zahra");
+		Application(const std::string& name = "Unnamed App", ApplicationCommandLineArgs args = ApplicationCommandLineArgs());
 		virtual ~Application();
 
 		void Run();
@@ -34,6 +46,8 @@ namespace Zahra
 
 		static Application& Get() { return *s_Instance; }
 
+		ApplicationCommandLineArgs GetCommandLineArgs() const { return m_CommandLineArgs; }
+
 		Window& GetWindow() { return *m_Window; }
 
 		void Exit();
@@ -41,6 +55,8 @@ namespace Zahra
 		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
 	private:
+		ApplicationCommandLineArgs m_CommandLineArgs;
+
 		bool OnWindowClosed(WindowClosedEvent& e);
 		bool OnWindowResized(WindowResizedEvent& e);
 
@@ -59,5 +75,5 @@ namespace Zahra
 	};
 
 	// To be defined by client app
-	Application* CreateApplication();
+	Application* CreateApplication(ApplicationCommandLineArgs args);
 }

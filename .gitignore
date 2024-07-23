@@ -14,3 +14,9 @@ bin-int/
 **.vcxproj.filters
 **.vcxproj.user
 **.csproj
+
+# directories
+
+Zahra/vendor/VulkanSDK
+Meadow/assets/cache
+scripts/__pycache__
