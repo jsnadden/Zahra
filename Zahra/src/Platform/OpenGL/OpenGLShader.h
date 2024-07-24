@@ -4,7 +4,6 @@
 
 #include <glm/glm.hpp>
 
-// TODO: this can/should be removed, and instead just include glad.h here, but for now we're doing some naughty casting in sandbox
 typedef unsigned int GLenum;
 
 namespace Zahra
@@ -37,10 +36,19 @@ namespace Zahra
 	private:
 		uint32_t m_RendererID;
 		std::string m_Name;
+		std::string m_Filepath;
+
+		std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRV;
+		std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;
+		std::unordered_map<GLenum, std::string> m_OpenGLSourceCode;
 
 		std::string ReadFile(const std::string& filepath);
 		std::unordered_map<GLenum, std::string> ParseShaderSrc(std::string& shaderSource);
-		void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
+		
+		void CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
+		void CompileOrGetOpenGLBinaries();
+		void CreateProgram();
+		void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
 
 	};
 }

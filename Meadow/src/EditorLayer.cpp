@@ -88,7 +88,7 @@ namespace Zahra
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		m_EditorCamera.OnEvent(event);
+		if (m_ViewportHovered) m_EditorCamera.OnEvent(event);
 		
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnKeyPressedEvent));
@@ -157,16 +157,15 @@ namespace Zahra
 			m_ViewportFocused = ImGui::IsWindowFocused();
 			m_ViewportHovered = ImGui::IsWindowHovered();
 
-			
-			if (m_ViewportFocused)
-			{
-				// We want to use the alt key to toggle camera controls, but ImGui uses it for
-				// mouseless navigation, which will automatically defocus our viewport. To avoid
-				// that happening, we give this window ownership of the alt key
-				ImGui::SetKeyOwner(ImGuiMod_Alt, ImGui::GetItemID(), ImGuiInputFlags_LockThisFrame);
-			}
+			//if (m_ViewportFocused)
+			//{
+			//	// We want to use the alt key to toggle camera controls, but ImGui uses it for
+			//	// mouseless navigation, which will automatically defocus our viewport. To avoid
+			//	// that happening, we give this window ownership of the alt key
+			//	ImGui::SetKeyOwner(ImGuiMod_Alt, ImGui::GetItemID(), ImGuiInputFlags_LockThisFrame);
+			//}
 
-			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportHovered || !m_ViewportFocused);
+			Application::Get().GetImGuiLayer()->BlockEvents(false);
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
@@ -249,22 +248,22 @@ namespace Zahra
 			}
 			case KeyCode::Q:
 			{
-				m_GizmoType = -1;
+				if (m_ViewportFocused) m_GizmoType = -1;
 				break;
 			}
 			case KeyCode::W:
 			{
-				m_GizmoType = 0;
+				if (m_ViewportFocused) m_GizmoType = 0;
 				break;
 			}
 			case KeyCode::E:
 			{
-				m_GizmoType = 1;
+				if (m_ViewportFocused) m_GizmoType = 1;
 				break;
 			}
 			case KeyCode::R:
 			{
-				m_GizmoType = 2;
+				if (m_ViewportFocused) m_GizmoType = 2;
 				break;
 			}
 			case KeyCode::Delete:

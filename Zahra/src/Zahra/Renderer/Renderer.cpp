@@ -3,10 +3,12 @@
 
 #include "VertexArray.h"
 #include "Buffer.h"
+#include "UniformBuffer.h"
 #include "Shader.h"
 #include "RenderCommand.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 namespace Zahra
@@ -47,6 +49,14 @@ namespace Zahra
 		glm::vec2 QuadTextureCoords[4];
 
 		Renderer::Statistics Stats;
+
+		struct CameraData
+		{
+			glm::mat4 ViewProjection;
+		};
+
+		CameraData CameraBuffer;
+		Ref<UniformBuffer> CameraUniformBuffer;
 	};
 
 	static RendererData s_Data;
@@ -57,6 +67,7 @@ namespace Zahra
 	{
 		RenderCommand::Init();
 		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// VERTEX ARRAY
 		s_Data.QuadVertexArray = VertexArray::Create();
 		{
@@ -97,19 +108,24 @@ namespace Zahra
 			delete[] quadIndices; // TODO: later we'll be adding these to a queue, in which case they'll need a dynamic lifetime, ideally managed by a reference counting system
 		}
 
-		// DEFAULT (1X1 WHITE) TEXTURE
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// TEXTURES
 		s_Data.TextureSlots[0] = Texture2D::Create(1, 1);
 		uint32_t flatWhite = 0xffffffff;
 		s_Data.TextureSlots[0]->SetData(&flatWhite, sizeof(uint32_t));
 
-		// SHADER
-											// TODO: shouldn't hardcode a shader (path is relative to working dir /Meadow)
-		s_Data.TextureShader = Shader::Create("assets/shaders/editor_texture.glsl");
-		s_Data.TextureShader->Bind();
 		int textureSamplers[s_Data.MaxTextureSlots];
 		for (int i = 0; i < s_Data.MaxTextureSlots; i++) textureSamplers[i] = i;
-		s_Data.TextureShader->SetIntArray("u_Textures", s_Data.MaxTextureSlots, textureSamplers);
 
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// SHADERS
+
+		s_Data.TextureShader = Shader::Create("assets/shaders/editor_texture.glsl"); // TODO: free ourselves from a hardcoded shader
+
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// DEFAULT QUAD
 		s_Data.QuadVertexPositions[0] = { -.5f, -.5f, .0f, 1.0f };
 		s_Data.QuadVertexPositions[1] = { .5f, -.5f, .0f, 1.0f };
@@ -120,6 +136,10 @@ namespace Zahra
 		s_Data.QuadTextureCoords[1] = { 1.0f, 0.0f };
 		s_Data.QuadTextureCoords[2] = { 1.0f, 1.0f };
 		s_Data.QuadTextureCoords[3] = { 0.0f, 1.0f };
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// CAMERA BUFFER
+		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(RendererData::CameraData), 0);
 	}
 
 	void Renderer::Shutdown()
@@ -129,16 +149,16 @@ namespace Zahra
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
-		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->SetMat4("u_PVMatrix", camera.GetProjection() * glm::inverse(transform));
+		s_Data.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(RendererData::CameraData));
 
 		NewBatch();
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
-		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->SetMat4("u_PVMatrix", camera.GetPVMatrix());
+		s_Data.CameraBuffer.ViewProjection = camera.GetPVMatrix();
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(RendererData::CameraData));
 
 		NewBatch();
 	}
@@ -161,6 +181,7 @@ namespace Zahra
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 			s_Data.TextureSlots[i]->Bind(i);
 
+		s_Data.TextureShader->Bind();
 		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 		s_Data.Stats.DrawCalls++;
 	}

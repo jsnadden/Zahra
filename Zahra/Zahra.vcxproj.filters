@@ -28,6 +28,9 @@
     <Filter Include="src\Zahra\ImGui">
       <UniqueIdentifier>{BCE09493-286C-0258-317D-854C9D875E58}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Zahra\Maths">
+      <UniqueIdentifier>{FE6BD793-6AF7-4458-7308-C84CDF12A158}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Zahra\Renderer">
       <UniqueIdentifier>{F8DD9396-E4C1-54EC-4D22-4F3F39253F6E}</UniqueIdentifier>
     </Filter>
@@ -84,6 +87,12 @@
     <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h">
       <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLUniformBuffer.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLUtils.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h">
       <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
@@ -94,6 +103,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Application.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Assert.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Base.h">
@@ -123,6 +135,9 @@
     <ClInclude Include="src\Zahra\Core\PlatformDetection.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Timer.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Core\Timestep.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
@@ -147,10 +162,16 @@
     <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h">
       <Filter>src\Zahra\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Maths\Maths.h">
+      <Filter>src\Zahra\Maths</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Buffer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Camera.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\EditorCamera.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h">
@@ -172,6 +193,9 @@
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Texture.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\UniformBuffer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\VertexArray.h">
@@ -1455,10 +1479,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Maths\Maths.h" />
-    <ClInclude Include="src\Zahra\Renderer\EditorCamera.h" />
-    <ClInclude Include="src\Zahra\Core\Assert.h" />
-    <ClInclude Include="src\Zahra\Core\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1477,6 +1497,9 @@
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLUniformBuffer.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp">
@@ -1509,7 +1532,13 @@
     <ClCompile Include="src\Zahra\ImGui\ImGuiLayer.cpp">
       <Filter>src\Zahra\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Maths\Maths.cpp">
+      <Filter>src\Zahra\Maths</Filter>
+    </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Buffer.cpp">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp">
@@ -1528,6 +1557,9 @@
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Texture.cpp">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\UniformBuffer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\VertexArray.cpp">
@@ -1554,7 +1586,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Maths\Maths.cpp" />
-    <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp" />
   </ItemGroup>
 </Project>

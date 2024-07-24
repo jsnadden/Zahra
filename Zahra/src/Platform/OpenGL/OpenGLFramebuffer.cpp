@@ -51,7 +51,7 @@ namespace Zahra
 		if (m_ColourAttachmentSpecs.size())
 		{
 			m_ColourAttachmentIDs.resize(m_ColourAttachmentSpecs.size());
-			CreateTextures(multisampled, m_ColourAttachmentIDs.data(), m_ColourAttachmentIDs.size());
+			CreateTextures(multisampled, m_ColourAttachmentIDs.data(), (uint32_t)m_ColourAttachmentIDs.size());
 			
 			for (size_t i = 0; i < m_ColourAttachmentIDs.size(); i++)
 			{

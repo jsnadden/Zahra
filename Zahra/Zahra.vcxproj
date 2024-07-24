@@ -77,21 +77,20 @@
       <PrecompiledHeaderFile>zpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;Z_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;C:\VulkanSDK\1.3.224.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;vendor\VulkanSDK\Lib\shaderc_sharedd.lib;vendor\VulkanSDK\Lib\spirv-cross-cored.lib;vendor\VulkanSDK\Lib\spirv-cross-glsld.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -100,16 +99,15 @@
       <PrecompiledHeaderFile>zpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;Z_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;C:\VulkanSDK\1.3.224.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -117,7 +115,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;C:\VulkanSDK\1.3.224.1\Lib\shaderc_shared.lib;C:\VulkanSDK\1.3.224.1\Lib\spirv-cross-core.lib;C:\VulkanSDK\1.3.224.1\Lib\spirv-cross-glsl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
@@ -126,16 +124,15 @@
       <PrecompiledHeaderFile>zpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;Z_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;C:\VulkanSDK\1.3.224.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -143,23 +140,23 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;C:\VulkanSDK\1.3.224.1\Lib\shaderc_shared.lib;C:\VulkanSDK\1.3.224.1\Lib\spirv-cross-core.lib;C:\VulkanSDK\1.3.224.1\Lib\spirv-cross-glsl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Zahra\Core\Assert.h" />
-    <ClInclude Include="src\Zahra\Core\Timer.h" />
-    <ClInclude Include="src\Zahra\Renderer\EditorCamera.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLUniformBuffer.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLUtils.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Zahra.h" />
     <ClInclude Include="src\Zahra\Core\Application.h" />
+    <ClInclude Include="src\Zahra\Core\Assert.h" />
     <ClInclude Include="src\Zahra\Core\Base.h" />
     <ClInclude Include="src\Zahra\Core\EntryPoint.h" />
     <ClInclude Include="src\Zahra\Core\Input.h" />
@@ -169,6 +166,7 @@
     <ClInclude Include="src\Zahra\Core\Log.h" />
     <ClInclude Include="src\Zahra\Core\MouseCodes.h" />
     <ClInclude Include="src\Zahra\Core\PlatformDetection.h" />
+    <ClInclude Include="src\Zahra\Core\Timer.h" />
     <ClInclude Include="src\Zahra\Core\Timestep.h" />
     <ClInclude Include="src\Zahra\Core\Window.h" />
     <ClInclude Include="src\Zahra\Debug\Profiling.h" />
@@ -180,6 +178,7 @@
     <ClInclude Include="src\Zahra\Maths\Maths.h" />
     <ClInclude Include="src\Zahra\Renderer\Buffer.h" />
     <ClInclude Include="src\Zahra\Renderer\Camera.h" />
+    <ClInclude Include="src\Zahra\Renderer\EditorCamera.h" />
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Zahra\Renderer\RenderCommand.h" />
@@ -187,6 +186,7 @@
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Zahra\Renderer\Shader.h" />
     <ClInclude Include="src\Zahra\Renderer\Texture.h" />
+    <ClInclude Include="src\Zahra\Renderer\UniformBuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\VertexArray.h" />
     <ClInclude Include="src\Zahra\Scene\Components.h" />
     <ClInclude Include="src\Zahra\Scene\Entity.h" />
@@ -616,13 +616,13 @@
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererAPI.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLUniformBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsPlatformUtils.cpp" />
@@ -635,12 +635,14 @@
     <ClCompile Include="src\Zahra\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Zahra\Maths\Maths.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RenderCommand.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Shader.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Texture.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\UniformBuffer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\Zahra\Scene\Entity.cpp" />
     <ClCompile Include="src\Zahra\Scene\Scene.cpp" />

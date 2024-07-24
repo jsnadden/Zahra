@@ -72,6 +72,8 @@ namespace Zahra
 
 	void SceneCamera::SetViewportSize(float width, float height)
 	{
+		Z_CORE_ASSERT(width > 0 && height > 0);
+
 		m_AspectRatio = width / height;
 
 		RecalculateProjection();
