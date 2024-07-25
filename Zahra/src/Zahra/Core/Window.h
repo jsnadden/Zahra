@@ -31,6 +31,12 @@ namespace Zahra
 		virtual uint32_t GetHeight() const = 0;
 
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
+
+		// TODO: add functions to get/set window position (and other
+		// statuses e.g. maximised), and hook this into some kind of
+		// AppConfig class (with serialisation to a config.ini, or 
+		// maybe .yaml?). I'm sick of repositioning the window!!
+
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool IsVSync() const = 0;
 

@@ -64,6 +64,7 @@ namespace Zahra
 					// TODO: if (Renderer::GetAPI() == RendererAPI::API::Vulkan) DO SOMETHING;
 				#endif
 			}
+
 			
 			// TODO: activate this if I end up making a custom title bar: glfwWindowHint(GLFW_TITLEBAR, false);
 			m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);

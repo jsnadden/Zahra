@@ -265,7 +265,7 @@ namespace Zahra
 		for (auto&& [stage, spirv] : m_OpenGLSPIRV)
 		{
 			GLuint shaderID = shaderIDs.emplace_back(glCreateShader(stage));
-			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
+			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), static_cast<GLsizei>(spirv.size() * sizeof(uint32_t)));
 			glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
 			glAttachShader(program, shaderID);
 		}
@@ -305,9 +305,9 @@ namespace Zahra
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
 		Z_CORE_TRACE("OpenGLShader::Reflect: {0} ({1})", OpenGLUtils::GLShaderStageToString(stage), m_Filepath);
-		Z_CORE_TRACE(" ---------------------------------------------------");
-		Z_CORE_TRACE(" |  {0} resource(s)", resources.sampled_images.size());
-		Z_CORE_TRACE(" |  {0} uniform buffer(s)", resources.uniform_buffers.size());
+		Z_CORE_TRACE("---------------------------------------------------");
+		Z_CORE_TRACE("  |  {0} resource(s)", resources.sampled_images.size());
+		Z_CORE_TRACE("  |  {0} uniform buffer(s)", resources.uniform_buffers.size());
 
 		for (const auto& resource : resources.uniform_buffers)
 		{
@@ -316,15 +316,18 @@ namespace Zahra
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			size_t memberCount = bufferType.member_types.size();
 
-			Z_CORE_TRACE(" ===================================================");
+			Z_CORE_TRACE("===================================================");
 			Z_CORE_TRACE("    Uniform buffer {0}", resource.name);
-			Z_CORE_TRACE(" ---------------------------------------------------");
-			Z_CORE_TRACE("    |   Size = {0}", bufferSize);
-			Z_CORE_TRACE("    |   Binding = {0}", binding);
-			Z_CORE_TRACE("    |   Members = {0}", memberCount);
+			Z_CORE_TRACE("---------------------------------------------------");
+			Z_CORE_TRACE("      |  Size = {0}", bufferSize);
+			Z_CORE_TRACE("      |  Binding = {0}", binding);
+			Z_CORE_TRACE("      |  Members = {0}", memberCount);
 		}
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// SET UNIFORMS
 
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{

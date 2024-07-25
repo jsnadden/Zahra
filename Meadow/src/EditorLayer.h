@@ -3,6 +3,7 @@
 #include <Zahra.h>
 
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
 
 #include <optional>
 
@@ -40,7 +41,7 @@ namespace Zahra
 		// Viewport
 		Ref<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
-		glm::vec2 m_ViewportBounds[2];
+		glm::vec2 m_ViewportBounds[2] = { {}, {} };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 		float m_ClearColour[4] = { .0f, .0f, .0f, 1.0f };
 		int m_GizmoType = -1;
@@ -51,6 +52,7 @@ namespace Zahra
 
 		// Editor panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		ContentBrowserPanel m_ContentBrowserPanel;
 
 
 	};
