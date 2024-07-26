@@ -31,6 +31,15 @@ namespace Zahra
 		m_Registry.destroy(entity);
 	}
 
+	Entity Scene::CopyEntity(Entity entity)
+	{
+		// TODO: implement this, using:
+		// https://github.com/skypjack/entt/wiki/Crash-Course:-entity-component-system#meet-the-runtime
+		// https://github.com/skypjack/entt/issues/694
+
+		return Entity();
+	}
+
 	
 
 

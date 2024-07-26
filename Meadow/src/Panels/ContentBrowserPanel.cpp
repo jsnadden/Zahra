@@ -14,8 +14,14 @@ namespace Zahra
 	ContentBrowserPanel::ContentBrowserPanel()
 		: m_CurrentPath(s_AssetsRoot)
 	{
-		m_DirectoryIconTexture = Texture2D::Create("resources/icons/browser/DirectoryIcon.png");
-		m_DefaultFileIconTexture = Texture2D::Create("resources/icons/browser/FileIcon.png");
+		m_RefreshTimer.Reset();
+
+		m_Icons["DirectoryThumb"] = Texture2D::Create("resources/icons/browser/DirectoryIcon.png");
+		m_Icons["DefaultFileThumb"] = Texture2D::Create("resources/icons/browser/FileIcon.png");
+		m_Icons["Back"] = Texture2D::Create("resources/icons/browser/back_arrow.png");
+		m_Icons["Forward"] = Texture2D::Create("resources/icons/browser/forward_arrow.png");
+		//m_Icons["Refresh"] = Texture2D::Create("resources/icons/browser/refresh.png");
+		//m_Icons["Drag"] = Texture2D::Create("resources/icons/browser/drag_indicator.png");
 	}
 
 	void ContentBrowserPanel::OnEvent(Event& event)
@@ -26,125 +32,158 @@ namespace Zahra
 
 	void ContentBrowserPanel::OnImGuiRender()
 	{
-		ValidateCurrentDirectory();
+		if (m_RefreshTimer.ElapsedMillis() > m_RefreshPeriod) Refresh();
 
-		// TODO: currently scanning directories per frame, maybe make this only refresh
-		// once per second(?), caching the entries (and obvs keep displaying per frame)
-
-		ImGui::Begin("ContentBrowserPanel", 0, ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin("Content Browser", 0, ImGuiWindowFlags_NoCollapse);
 
 		m_PanelHovered = ImGui::IsWindowHovered();
 		m_PanelFocused = ImGui::IsWindowFocused();
 
-		// TODO: add the following:
-		// 1) forward, back and refresh buttons (stacks!)
-		// 2) rightclick context menu on blank space to create a new directory (etc.?)
-
+		// TODO: rightclick context menu on blank space to create a new directory (etc.?)
+		
 		DisplayNavBar();
 		DisplayCurrentDirectory();
 		DisplayFileData();
 
 		ImGui::End();
+
 	}
 
 	
 	void ContentBrowserPanel::DisplayNavBar()
 	{
-		if (ImGui::Button("<-"))
+		float iconSize = 20.f;
+		std::string thumbSizeString = "Thumbnail size";
+		float thumbSizeStringLength = ImGui::CalcTextSize(thumbSizeString.c_str()).x;
+
+		if (ImGui::BeginTable("NavBar", 7, ImGuiTableColumnFlags_NoResize))
 		{
-			if (m_CurrentPath != s_AssetsRoot) m_CurrentPath = m_CurrentPath.parent_path();
-		}
 
-		ImGui::SameLine(ImGui::GetWindowWidth() - 200);
+			ImGui::TableSetupColumn("back", ImGuiTableColumnFlags_WidthFixed, 1.5f * iconSize);
+			ImGui::TableSetupColumn("forward", ImGuiTableColumnFlags_WidthFixed, 1.5f * iconSize);
+			ImGui::TableSetupColumn("spacer1", ImGuiTableColumnFlags_WidthFixed, 50.f);
+			ImGui::TableSetupColumn("currentdirname");
+			ImGui::TableSetupColumn("spacer2", ImGuiTableColumnFlags_WidthFixed, 50.f);
+			ImGui::TableSetupColumn("thumbsizetext", ImGuiTableColumnFlags_WidthFixed, thumbSizeStringLength + 4.f);
+			ImGui::TableSetupColumn("thumbsizeslider", ImGuiTableColumnFlags_WidthFixed, 100.f);
 
-		ImGui::Text("Icon size:");
+			ImGui::TableNextColumn();
+			if (ImGui::ImageButton((ImTextureID)m_Icons["Back"]->GetRendererID(), { iconSize, iconSize }, { 0,1 }, { 1,0 }))
+			{
+				GoBack();
+			}
 
-		ImGui::SameLine();
+			ImGui::TableNextColumn();
+			if (ImGui::ImageButton((ImTextureID)m_Icons["Forward"]->GetRendererID(), { iconSize, iconSize }, { 0,1 }, { 1,0 }))
+			{
+				GoForward();
+			}
 
-		if (ImGui::Button("small"))
-		{
-			m_ThumbnailSize = 64;
-		}
+			ImGui::TableNextColumn();
 
-		ImGui::SameLine();
+			ImGui::TableNextColumn();
+			{
+				std::string currentDirName = m_CurrentPath.string();
 
-		if (ImGui::Button("LARGE"))
-		{
-			m_ThumbnailSize = 128;
+				// this necessitates a max tag size of 255 ascii characters (plus null terminator)
+				char buffer[256];
+				memset(buffer, 0, sizeof(buffer));
+				strcpy_s(buffer, currentDirName.c_str());
+
+				ImGui::PushItemWidth(ImGui::GetColumnWidth());
+				ImGui::InputText("##direxplorer", buffer, sizeof(buffer)); // TODO: navigate to directory by inputting the path
+				ImGui::PopItemWidth();
+
+			}
+
+			ImGui::TableNextColumn();
+
+			ImGui::TableNextColumn();
+			{
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text(thumbSizeString.c_str());
+			}
+
+			ImGui::TableNextColumn();
+			{
+				ImGui::PushItemWidth(ImGui::GetColumnWidth());
+				ImGui::SliderInt("##ThumbnailSize", &m_ThumbnailSize, 64, 256);
+				ImGui::PopItemWidth();
+			}
+
+			ImGui::EndTable();
 		}
 
 		ImGui::Separator();
-
-	}
-
-	void ContentBrowserPanel::DisplayFileTree(std::filesystem::path filepath)
-	{
-		for (auto& item : std::filesystem::directory_iterator(filepath))
-		{
-			const std::filesystem::path& path = item.path().filename();
-			std::string pathString = path.string();
-
-			if (item.is_directory())
-			{
-				if (ImGui::TreeNodeEx(pathString.c_str(), ImGuiTreeNodeFlags_OpenOnArrow))
-				{
-					DisplayFileTree(filepath / path);
-
-					ImGui::TreePop();
-				}
-			}
-			else
-			{
-				if (ImGui::TreeNodeEx(pathString.c_str(), ImGuiTreeNodeFlags_Leaf))
-				{
-					ImGui::TreePop();
-				}
-			}
-
-		}
 	}
 
 	void ContentBrowserPanel::DisplayCurrentDirectory()
-	{
-	
-		int minPadding = 4;
-		int minColumnWidth = (int)m_ThumbnailSize + minPadding;
+	{	
+		ImGui::BeginChild("DisplayDirContents");
+
+		m_ChildHovered = ImGui::IsWindowHovered();
+		m_ChildFocused = ImGui::IsWindowFocused();
+
+		int buttonPadding = 2 * (int)ImGui::GetStyle().FramePadding.x;
+		int minColumnWidth = m_ThumbnailSize + buttonPadding;
 		float panelWidth = ImGui::GetContentRegionAvail().x;
 
-		int numColumns = ((int)panelWidth) / minColumnWidth;
+		int numColumns = std::max(((int)panelWidth) / minColumnWidth, 1);
 
-		ImGui::Columns(numColumns > 0 ? numColumns : 1, 0, false);
-
-		for (auto item : std::filesystem::directory_iterator(m_CurrentPath))
+		if (ImGui::BeginTable("DirThumbs", numColumns))
 		{
-			const std::filesystem::path& path = item.path();
-			std::filesystem::path relativePath = std::filesystem::relative(path, s_AssetsRoot);
-			std::string filenameString = relativePath.filename().string();
-
 			// TODO: add rightclick context menus for directory items: rename, access metadata etc.
 
-			if (item.is_directory())
+			for (auto dir : m_Subdirectories)
 			{
-				ImGui::ImageButton((ImTextureID)m_DirectoryIconTexture->GetRendererID(), { m_ThumbnailSize, m_ThumbnailSize }, { 0,1 }, { 1,0 });
-				
+				ImGui::TableNextColumn();
+
+				const std::filesystem::path& path = dir.Path;
+				std::string filenameString = path.filename().string();
+
+				ImGui::ImageButton(filenameString.c_str(), (ImTextureID)m_Icons["DirectoryThumb"]->GetRendererID(), {(float)m_ThumbnailSize, (float)m_ThumbnailSize}, {0,1}, {1,0});
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text(filenameString.c_str());
+					ImGui::EndTooltip();
+				}
+
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
-					m_CurrentPath /= path.filename();
+					m_ForwardStack.clear();
+					m_CurrentPath /= filenameString;
+					Refresh();
 				}
+
+				ImGui::Text(filenameString.c_str());
 			}
-			else
+
+			for (auto file : m_Files)
 			{
-				ImGui::ImageButton((ImTextureID)m_DefaultFileIconTexture->GetRendererID(), { m_ThumbnailSize, m_ThumbnailSize }, { 0,1 }, { 1,0 });
+				ImGui::TableNextColumn();
+
+				const std::filesystem::path& path = file.Path;
+				std::string filenameString = path.filename().string();
+
+				// TODO: check metadata for a specific thumbnail
+				ImGui::ImageButton((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text(filenameString.c_str());
+					ImGui::EndTooltip();
+				}
+
+				ImGui::Text(filenameString.c_str());
 			}
 
-			ImGui::TextWrapped(filenameString.c_str());
-
-			ImGui::NextColumn();
-
+			ImGui::EndTable();
 		}
 
-		ImGui::Columns(1);
-
+		ImGui::EndChild();
 	}
 
 	void ContentBrowserPanel::DisplayFileData()
@@ -160,22 +199,73 @@ namespace Zahra
 		}
 	}
 
+	void ContentBrowserPanel::ScanCurrentDirectory()
+	{
+		for (auto item : std::filesystem::directory_iterator(m_CurrentPath))
+		{
+			const std::filesystem::path& path = item.path();
+
+			if (item.is_directory())
+			{
+				m_Subdirectories.emplace_back(path);
+			}
+			else
+			{
+				m_Files.emplace_back(path, std::filesystem::file_size(path));
+			}
+		}
+	}
+
+	void ContentBrowserPanel::Refresh()
+	{
+		m_Subdirectories.clear();
+		m_Files.clear();
+
+		ValidateCurrentDirectory();
+		ScanCurrentDirectory();
+		m_RefreshTimer.Reset();
+	}
+
+	void ContentBrowserPanel::GoBack()
+	{
+		if (m_CurrentPath != s_AssetsRoot)
+		{
+			m_ForwardStack.push_back(m_CurrentPath);
+			m_CurrentPath = m_CurrentPath.parent_path();
+			Refresh();
+		}
+	}
+
+	void ContentBrowserPanel::GoForward()
+	{
+		if (!m_ForwardStack.empty())
+		{
+			m_CurrentPath = m_ForwardStack.back();
+			m_ForwardStack.pop_back();
+			Refresh();
+		}
+	}
+
 	bool ContentBrowserPanel::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
 	{
-		if (!m_PanelFocused) return false;
+		if (!m_ChildFocused && !m_PanelFocused) return false;
 
 		switch (event.GetMouseButton())
 		{
 			case MouseCode::Button3:
 			{
-				if (m_CurrentPath != s_AssetsRoot)
-				{
-					m_CurrentPath = m_CurrentPath.parent_path();
-					return true;
-				}
-
-				break;
+				GoBack();
+				return true;
 			}
+
+			case MouseCode::Button4:
+			{
+				GoForward();
+				return true;
+			}
+
+			default:
+				break;
 		}
 
 		return false;

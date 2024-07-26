@@ -17,6 +17,7 @@ namespace Zahra
 
 		Entity CreateEntity(const std::string& name = "anonymous_entity");
 		void DestroyEntity(Entity entity);
+		Entity CopyEntity(Entity entity);
 
 		void OnUpdateEditor(float dt, EditorCamera& camera);
 		void OnUpdateRuntime(float dt);

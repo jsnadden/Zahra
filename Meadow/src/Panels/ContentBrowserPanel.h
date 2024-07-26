@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Zahra/Core/Timer.h"
 #include "Zahra/Events/Event.h"
 #include "Zahra/Events/MouseEvent.h"
 #include "Zahra/Renderer/Texture.h"
@@ -9,6 +10,31 @@
 
 namespace Zahra
 {
+
+	struct DirectoryData
+	{
+		std::filesystem::path Path;
+
+		// add various metadata
+
+		DirectoryData(std::filesystem::path path)
+			: Path(path) {}
+	};
+
+	struct FileData
+	{
+		std::filesystem::path Path;
+		std::string Type;
+		uintmax_t Size;
+
+		// add various metadata (thumbnails etc.)
+
+		FileData(std::filesystem::path path, uint32_t size)
+			: Path(path), Size(size)
+		{
+			Type = path.extension().string();
+		}
+	};
 
 	class ContentBrowserPanel
 	{
@@ -20,22 +46,34 @@ namespace Zahra
 
 		void OnImGuiRender();
 
-		void DisplayNavBar();
-		void DisplayFileTree(std::filesystem::path filepath);
-		void DisplayCurrentDirectory();
-		void DisplayFileData();
-
 	private:
 		std::filesystem::path m_CurrentPath;
 
-		Ref<Texture2D> m_DirectoryIconTexture, m_DefaultFileIconTexture;
+		std::vector<DirectoryData> m_Subdirectories;
+		std::vector<FileData> m_Files;
 
-		float m_ThumbnailSize = 64;
+		std::vector<std::filesystem::path> m_ForwardStack;
 
-		bool m_PanelHovered = false;
-		bool m_PanelFocused = false;
+		Timer m_RefreshTimer;
+		float m_RefreshPeriod = 500.0f; // in milliseconds
+
+		std::map<std::string, Ref<Texture2D>> m_Icons;
+
+		int m_ThumbnailSize = 64;
+
+		bool m_PanelHovered = false, m_PanelFocused = false;
+		bool m_ChildHovered = false, m_ChildFocused = false;
+
+		void DisplayNavBar();
+		void DisplayCurrentDirectory();
+		void DisplayFileData();
+
+		void GoBack();
+		void GoForward();
 
 		void ValidateCurrentDirectory();
+		void ScanCurrentDirectory();
+		void Refresh();
 	};
 
 }
