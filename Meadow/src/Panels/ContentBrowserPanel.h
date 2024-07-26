@@ -1,5 +1,9 @@
 #pragma once
 
+#include "Zahra/Events/Event.h"
+#include "Zahra/Events/MouseEvent.h"
+#include "Zahra/Renderer/Texture.h"
+
 #include <filesystem>
 
 
@@ -11,16 +15,27 @@ namespace Zahra
 	public:
 		ContentBrowserPanel();
 
+		void OnEvent(Event& event);
+		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
+
 		void OnImGuiRender();
 
-		// TODO: choose one or the other (or something better?)
-		// one approach is to show the whole directory substructure as treenodes
-		void RecurseFileTreeNodes(std::filesystem::path filepath);
-		// another approach is to just show one directory at a time, with navigation buttons button
-		void NavigateDirs();
+		void DisplayNavBar();
+		void DisplayFileTree(std::filesystem::path filepath);
+		void DisplayCurrentDirectory();
+		void DisplayFileData();
 
 	private:
 		std::filesystem::path m_CurrentPath;
+
+		Ref<Texture2D> m_DirectoryIconTexture, m_DefaultFileIconTexture;
+
+		float m_ThumbnailSize = 64;
+
+		bool m_PanelHovered = false;
+		bool m_PanelFocused = false;
+
+		void ValidateCurrentDirectory();
 	};
 
 }

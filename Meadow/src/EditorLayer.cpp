@@ -89,6 +89,8 @@ namespace Zahra
 	void EditorLayer::OnEvent(Event& event)
 	{
 		if (m_ViewportHovered) m_EditorCamera.OnEvent(event);
+
+		m_ContentBrowserPanel.OnEvent(event);
 		
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnKeyPressedEvent));
@@ -191,12 +193,50 @@ namespace Zahra
 
 			ImGui::Text("Quads: %u", Renderer::GetStats().QuadCount);
 			ImGui::Text("Draw calls: %u", Renderer::GetStats().DrawCalls);
-			ImGui::Text("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
+			ImGui::TextWrapped("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
 				m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
 
 			ImGui::End();
 		}
 
+	}
+
+	void EditorLayer::RenderGizmos()
+	{
+		Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
+		if (selection && m_GizmoType != -1)
+		{
+			// Configure ImGuizmo
+			ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras too!
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+
+			// Editor camera
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
+			// Entity transform
+			auto& tc = selection.GetComponents<TransformComponent>();
+			glm::mat4 transform = tc.GetTransform();
+
+			// Snapping
+			bool snap = Input::IsKeyPressed(Key::LeftControl);
+			float snapValue = (m_GizmoType == 1) ? 45.0f : 0.5f;
+			float snapVector[3] = { snapValue, snapValue, snapValue };
+
+			if (m_ViewportHovered)
+			{
+				// Pass data to ImGuizmo
+				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
+					ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
+				// TODO (BUG): it seems imguizmo is computing a slightly incorrect rotation value (consistently off by .81 deg), making it impossible to snap properly
+
+				// Feedback manipulated transform
+				if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
+					Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
+			}
+
+		}
 	}
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& event)
@@ -269,8 +309,12 @@ namespace Zahra
 			}
 			case KeyCode::Delete:
 			{
-				Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
-				if (selection) m_ActiveScene->DestroyEntity(selection);
+				Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
+				if (selection)
+				{
+					m_ActiveScene->DestroyEntity(selection);
+					m_SceneHierarchyPanel.SelectEntity({});
+				}
 				break;
 			}
 			default:
@@ -367,42 +411,6 @@ namespace Zahra
 
 	}
 
-	void EditorLayer::RenderGizmos()
-	{
-		Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (selection && m_GizmoType != -1)
-		{
-			// Configure ImGuizmo
-			ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras too!
-			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
-
-			// Editor camera
-			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
-
-			// Entity transform
-			auto& tc = selection.GetComponents<TransformComponent>();
-			glm::mat4 transform = tc.GetTransform();
-
-			// Snapping
-			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = (m_GizmoType == 1) ? 45.0f : 0.5f;
-			float snapVector[3] = { snapValue, snapValue, snapValue };
-			
-			if (m_ViewportHovered)
-			{
-				// Pass data to ImGuizmo
-				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
-					ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
-				// TODO (BUG): it seems imguizmo is computing a slightly incorrect rotation value (consistently off by .81 deg), making it impossible to snap properly
-
-				// Feedback manipulated transform
-				if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
-					Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
-			}
-
-		}
-	}
+	
 }
 

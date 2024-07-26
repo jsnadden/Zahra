@@ -65,7 +65,7 @@ namespace Zahra
 		static const char* GetCacheDirectory()
 		{
 			// TODO: validate assets directory
-			return "assets/cache/shader/opengl";
+			return "resources/cache/shader/opengl";
 		}
 
 		static void CreateCacheDirectoryIfNeeded()
