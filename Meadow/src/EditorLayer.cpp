@@ -150,7 +150,7 @@ namespace Zahra
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 			ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoCollapse);
 
-			ImVec2 topleft = ImGui::GetWindowContentRegionMin();
+			ImVec2 topleft = ImGui::GetWindowContentRegionMin(); // TODO: replace these obsolete functions
 			ImVec2 bottomright = ImGui::GetWindowContentRegionMax();
 			ImVec2 viewportOffset = ImGui::GetWindowPos();
 			m_ViewportBounds[0] = { topleft.x + viewportOffset.x, topleft.y + viewportOffset.y };
@@ -159,15 +159,8 @@ namespace Zahra
 			m_ViewportFocused = ImGui::IsWindowFocused();
 			m_ViewportHovered = ImGui::IsWindowHovered();
 
-			//if (m_ViewportFocused)
-			//{
-			//	// We want to use the alt key to toggle camera controls, but ImGui uses it for
-			//	// mouseless navigation, which will automatically defocus our viewport. To avoid
-			//	// that happening, we give this window ownership of the alt key
-			//	ImGui::SetKeyOwner(ImGuiMod_Alt, ImGui::GetItemID(), ImGuiInputFlags_LockThisFrame);
-			//}
-
-			Application::Get().GetImGuiLayer()->BlockEvents(false);
+			// not sure if this is needed just yet...
+			//Application::Get().GetImGuiLayer()->BlockEvents(true);
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
@@ -205,11 +198,38 @@ namespace Zahra
 	{
 		Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selection && m_GizmoType != -1)
-		{
+		{			
 			// Configure ImGuizmo
-			ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras too!
+			ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras instead, and move to pure 2D
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+			ImGuizmo::SetGizmoSizeClipSpace(.15);
+
+			// Gizmo style
+			{
+				ImGuizmo::Style* style = &ImGuizmo::GetStyle();
+				style->TranslationLineThickness = 6.0f;
+				style->TranslationLineArrowSize = 12.0f;
+				style->RotationLineThickness = 6.0f;
+				style->RotationOuterLineThickness = 6.0f;
+				style->ScaleLineThickness = 6.0f;
+				style->ScaleLineCircleSize = 12.0f;
+				style->CenterCircleSize = 8.0f;
+
+				ImVec4* colors = style->Colors;
+				colors[ImGuizmo::DIRECTION_X]			= ImVec4(.80f, .10f, .15f, .80f);
+				colors[ImGuizmo::DIRECTION_Y]			= ImVec4(.20f, .70f, .20f, .80f);
+				colors[ImGuizmo::DIRECTION_Z]			= ImVec4(.10f, .25f, .80f, .80f);
+				colors[ImGuizmo::PLANE_X]				= ImVec4(.80f, .10f, .15f, .80f);
+				colors[ImGuizmo::PLANE_Y]				= ImVec4(.20f, .70f, .20f, .80f);
+				colors[ImGuizmo::PLANE_Z]				= ImVec4(.10f, .25f, .80f, .80f);
+				colors[ImGuizmo::SELECTION]				= ImVec4(.97f, .77f, .22f, .80f);
+				colors[ImGuizmo::ROTATION_USING_BORDER]	= ImVec4(.97f, .77f, .22f, .80f);
+				colors[ImGuizmo::ROTATION_USING_FILL]	= ImVec4(.97f, .77f, .22f, .80f);
+				colors[ImGuizmo::TEXT]					= ImVec4(.98f, .95f, .89f, .99f);
+				colors[ImGuizmo::TEXT_SHADOW]			= ImVec4(.10f, .10f, .10f, .99f);
+				colors[ImGuizmo::HATCHED_AXIS_LINES]	= ImVec4(.00f, .00f, .00f, .00f);
+			}
 
 			// Editor camera
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
@@ -224,17 +244,13 @@ namespace Zahra
 			float snapValue = (m_GizmoType == 120) ? 45.0f : 0.5f;
 			float snapVector[3] = { snapValue, snapValue, snapValue };
 
-			if (m_ViewportHovered)
-			{
-				// Pass data to ImGuizmo
-				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
-					ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
-				// TODO (BUG): it seems imguizmo is computing a slightly incorrect rotation value (consistently off by .81 deg), making it impossible to snap properly
-
-				// Feedback manipulated transform
-				if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
-					Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
-			}
+			// Pass data to ImGuizmo
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
+				ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
+			
+			// Feedback manipulated transform
+			if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
+				Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
 
 		}
 	}
@@ -327,8 +343,8 @@ namespace Zahra
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
 	{
 		// block other mouse input when we're trying to use imguizmo, or move our camera around
-		if (ImGuizmo::IsOver() || m_EditorCamera.Controlled()) return false;
-
+		if (m_EditorCamera.Controlled() || (ImGuizmo::IsOver() && m_SceneHierarchyPanel.GetSelectedEntity())) return false;
+		
 		switch (event.GetMouseButton())
 		{
 			case MouseCode::ButtonLeft:

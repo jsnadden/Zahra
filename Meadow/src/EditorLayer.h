@@ -54,7 +54,6 @@ namespace Zahra
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 
-
 	};
 }
 
