@@ -10,7 +10,7 @@ static const std::filesystem::path s_AssetsRoot = "assets";
 
 namespace Zahra
 {
-	
+
 	ContentBrowserPanel::ContentBrowserPanel()
 		: m_CurrentPath(s_AssetsRoot)
 	{
@@ -40,14 +40,14 @@ namespace Zahra
 		m_PanelFocused = ImGui::IsWindowFocused();
 
 		// TODO: rightclick context menu on blank space to create a new directory etc.
-		
+
 		DisplayNavBar();
 		DisplayCurrentDirectory();
 		DisplayFileData();
 
 		ImGui::End();
 	}
-	
+
 	void ContentBrowserPanel::DisplayNavBar()
 	{
 		float iconSize = 20.f;
@@ -116,7 +116,7 @@ namespace Zahra
 	}
 
 	void ContentBrowserPanel::DisplayCurrentDirectory()
-	{	
+	{
 		ImGui::BeginChild("DisplayDirContents");
 
 		m_ChildHovered = ImGui::IsWindowHovered();
@@ -140,7 +140,7 @@ namespace Zahra
 				std::string filenameString = path.filename().string();
 
 				ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-				ImGui::ImageButton(filenameString.c_str(), (ImTextureID)m_Icons["DirectoryThumb"]->GetRendererID(), {(float)m_ThumbnailSize, (float)m_ThumbnailSize}, {0,1}, {1,0});
+				ImGui::ImageButton(filenameString.c_str(), (ImTextureID)m_Icons["DirectoryThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
 				ImGui::PopStyleColor();
 
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
@@ -167,12 +167,16 @@ namespace Zahra
 				const std::filesystem::path& path = file.Path;
 				std::string filenameString = path.filename().string();
 
+				ImGui::PushID(filenameString.c_str());
+
 				// TODO: check extension and metadata to choose a specific thumbnail
 				ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
 				ImGui::ImageButton((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
 				ImGui::PopStyleColor();
 
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				bool dragged = DragFile(file);
+
+				if (!dragged && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 				{
 					ImGui::BeginTooltip();
 					ImGui::Text(filenameString.c_str());
@@ -180,6 +184,8 @@ namespace Zahra
 				}
 
 				ImGui::Text(filenameString.c_str());
+
+				ImGui::PopID();
 			}
 
 			ImGui::EndTable();
@@ -228,6 +234,34 @@ namespace Zahra
 		m_RefreshTimer.Reset();
 	}
 
+	bool ContentBrowserPanel::DragFile(FileData file)
+	{
+		std::string filename = file.Path.filename().string();
+
+		bool dragged = false;
+
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+		{
+			
+			switch (file.Type)
+			{
+				case (FileData::ContentType::Unknown):
+				{
+					// TODO: Unrecognised file types shouldn't have a payload or tooltip, but for now...
+					ImGui::SetDragDropPayload("ContentBrowserFileUnknownType", nullptr, 0);
+					ImGui::Image((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+					break;
+				}
+			}
+
+			dragged = true;
+
+			ImGui::EndDragDropSource();
+		}
+
+		return dragged;
+	}
+
 	void ContentBrowserPanel::GoBack()
 	{
 		if (m_CurrentPath != s_AssetsRoot)
@@ -254,20 +288,20 @@ namespace Zahra
 
 		switch (event.GetMouseButton())
 		{
-			case MouseCode::Button3:
-			{
-				GoBack();
-				return true;
-			}
+		case MouseCode::Button3:
+		{
+			GoBack();
+			return true;
+		}
 
-			case MouseCode::Button4:
-			{
-				GoForward();
-				return true;
-			}
+		case MouseCode::Button4:
+		{
+			GoForward();
+			return true;
+		}
 
-			default:
-				break;
+		default:
+			break;
 		}
 
 		return false;

@@ -21,10 +21,20 @@ namespace Zahra
 			: Path(path) {}
 	};
 
-	struct FileData
+	
+	struct FileData // TODO: add more types as they come up, also should move this to somewhere in Zahra (asset manager?)
 	{
+		enum class ContentType
+		{
+			Unknown = 0,
+			Image,
+			Audio,
+			Text,
+			Scene
+		};
+
 		std::filesystem::path Path;
-		std::string Type;
+		ContentType Type;
 		uintmax_t Size;
 
 		// add various metadata (thumbnails etc.)
@@ -32,7 +42,8 @@ namespace Zahra
 		FileData(std::filesystem::path path, uint32_t size)
 			: Path(path), Size(size)
 		{
-			Type = path.extension().string();
+			// TODO: Type should be based on path.extension(), but for now...
+			Type = ContentType::Unknown;
 		}
 	};
 
@@ -74,6 +85,9 @@ namespace Zahra
 		void ValidateCurrentDirectory();
 		void ScanCurrentDirectory();
 		void Refresh();
+
+		bool DragFile(FileData file);
+
 	};
 
 }

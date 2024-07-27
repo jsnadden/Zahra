@@ -159,8 +159,8 @@ namespace Zahra
 			m_ViewportFocused = ImGui::IsWindowFocused();
 			m_ViewportHovered = ImGui::IsWindowHovered();
 
-			// not sure if this is needed just yet...
-			//Application::Get().GetImGuiLayer()->BlockEvents(true);
+			// must set false!!
+			Application::Get().GetImGuiLayer()->BlockEvents(false);
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
