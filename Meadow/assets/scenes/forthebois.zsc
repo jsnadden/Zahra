@@ -4,34 +4,25 @@ Entities:
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [1.95699978, 0.920027256, 0.252097607]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
+      Translation: [15.5255823, -0.651216745, 0.158513188]
+      EulerAngles: [0, -0, -0.704307795]
+      Scale: [2.98958921, 0.885388553, 1]
     SpriteComponent:
-      Colour: [0.957528949, 0.292064816, 0.939543724, 1]
+      Colour: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [1.38579416, 0.211355686, 0.220623374]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
+      Translation: [15.1038418, 0.90397644, -0.683320045]
+      EulerAngles: [0, -0, -0.761434257]
+      Scale: [1.0263418, 3.00693274, 1]
     SpriteComponent:
-      Colour: [0.8567487, 0.136625871, 0.907335877, 1]
+      Colour: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [0.842483044, 1.05677545, -0.378845811]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.849420846, 0.249250904, 0.847103894, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-1.80100596, 0.314741284, 0.162810862]
+      Translation: [14.478653, 1.10224509, 0]
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
@@ -40,232 +31,7 @@ Entities:
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [-1.78845417, 1.25901687, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [1.48495185, 0.723120511, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.841698825, 0.194988161, 0.73432982, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [0.646001101, 1.81540966, -0.00575268269]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.853281856, 0.14825359, 0.850560129, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [2.36276388, 1.82920337, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.918918908, 0.230616704, 0.884371102, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [2.71575904, 1.02593684, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.763273656, 0.0494178459, 0.853281856, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [0.179395705, 1.13420606, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.930501938, 0.287413746, 0.913121402, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [0.64974165, 0.204956323, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.880308867, 0.275308967, 0.877973318, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [2.11834574, 0.0059120208, 0.271224499]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.823058844, 0.14166458, 0.853281856, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [1.42864585, -0.663036346, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [0.876447856, 0.131974772, 0.75284797, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [5.09281874, -0.281614006, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [5.92745829, -0.5798136, -0.154769957]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [4.64730263, 0.497621179, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-1.77420497, -0.652929783, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [5.9608016, 1.61527514, -0.181075871]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [8.24394894, 0.347887993, 1.11758709e-08]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [8.50049782, -0.52211082, 0.125664175]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [9.69170666, 0.397576749, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [9.3123827, 1.07952988, -0.241863132]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [8.67214584, 1.1263597, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [11.2430935, 0.198794618, -0.281193316]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [11.7186012, -0.563241482, -0.100148559]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [12.5347366, -0.741158545, 0.00927221775]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [11.6694431, 1.05757964, 0.122921824]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [12.5183897, 1.24215865, 0.100242019]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [9.3644619, -0.489639223, 0.193373859]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [5.19840574, 1.22901535, 0]
+      Translation: [14.3407049, 0.0848689526, -0.221846819]
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
@@ -283,7 +49,7 @@ Entities:
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [14.3487778, 0.168841869, -0.240573168]
+      Translation: [5.76085091, 1.14288855, 0.0711851418]
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
@@ -292,7 +58,7 @@ Entities:
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [14.478653, 1.10224509, 0]
+      Translation: [9.3644619, -0.489639223, 0.193373859]
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
@@ -301,17 +67,251 @@ Entities:
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [14.9270096, 0.485738069, -0.618224144]
-      EulerAngles: [0, -0, -0.761434317]
-      Scale: [0.815583408, 2.19760489, 1]
+      Translation: [12.5505199, 1.17182302, 0.0837491751]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
     SpriteComponent:
       Colour: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [15.151309, -0.373637855, 0.158513188]
-      EulerAngles: [0, -0, -0.704307854]
-      Scale: [1.96254146, 0.797985733, 1]
+      Translation: [11.6694431, 1.05757964, 0.122921824]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
     SpriteComponent:
       Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [12.5653276, -0.645538151, -0.0292304754]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [11.7186012, -0.563241482, -0.100148559]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [11.2430935, 0.198794618, -0.281193316]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [8.67214584, 1.1263597, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [9.3123827, 1.07952988, -0.241863132]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [9.69170666, 0.397576749, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [8.50049782, -0.52211082, 0.125664175]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [8.24394894, 0.347887993, 1.11758709e-08]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [6.43608284, 1.74640846, -0.15316087]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-1.77420497, -0.652929783, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [5.42883539, 0.280807137, 0.0819721222]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [6.44748497, -1.16138184, -0.00959688425]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [5.61815262, -0.533522308, 0.0935974121]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1.42864585, -0.663036346, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.876447856, 0.131974772, 0.75284797, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2.11834574, 0.0059120208, 0.271224499]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.823058844, 0.14166458, 0.853281856, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0.64974165, 0.204956323, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.880308867, 0.275308967, 0.877973318, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0.179395705, 1.13420606, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.930501938, 0.287413746, 0.913121402, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2.71575904, 1.02593684, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.763273656, 0.0494178459, 0.853281856, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2.36276388, 1.82920337, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.918918908, 0.230616704, 0.884371102, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0.646001101, 1.81540966, -0.00575268269]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.853281856, 0.14825359, 0.850560129, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1.48495185, 0.723120511, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.841698825, 0.194988161, 0.73432982, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-1.78845417, 1.25901687, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-1.80100596, 0.314741284, 0.162810862]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0.842483044, 1.05677545, -0.378845811]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.849420846, 0.249250904, 0.847103894, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1.38579416, 0.211355686, 0.220623374]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.8567487, 0.136625871, 0.907335877, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1.95699978, 0.920027256, 0.252097607]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Colour: [0.957528949, 0.292064816, 0.939543724, 1]

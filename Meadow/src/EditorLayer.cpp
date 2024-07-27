@@ -1,7 +1,7 @@
 #include "EditorLayer.h"
 
-#include <ImGui/imgui.h>
 #include <ImGui/imgui_internal.h>
+#include <ImGui/imgui.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -142,7 +142,7 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// WINDOW DOCKSPACE
-		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_NoWindowMenuButton);
+		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_NoWindowMenuButton);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// VIEWPORT
@@ -221,7 +221,7 @@ namespace Zahra
 
 			// Snapping
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = (m_GizmoType == 1) ? 45.0f : 0.5f;
+			float snapValue = (m_GizmoType == 120) ? 45.0f : 0.5f;
 			float snapVector[3] = { snapValue, snapValue, snapValue };
 
 			if (m_ViewportHovered)
@@ -294,17 +294,17 @@ namespace Zahra
 			}
 			case KeyCode::W:
 			{
-				if (m_ViewportFocused) m_GizmoType = 0;
+				if (m_ViewportFocused) m_GizmoType = 7;
 				break;
 			}
 			case KeyCode::E:
 			{
-				if (m_ViewportFocused) m_GizmoType = 1;
+				if (m_ViewportFocused) m_GizmoType = 120;
 				break;
 			}
 			case KeyCode::R:
 			{
-				if (m_ViewportFocused) m_GizmoType = 2;
+				if (m_ViewportFocused) m_GizmoType = 896;
 				break;
 			}
 			case KeyCode::Delete:

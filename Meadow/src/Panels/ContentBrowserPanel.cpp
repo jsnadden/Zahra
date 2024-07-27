@@ -16,8 +16,8 @@ namespace Zahra
 	{
 		m_RefreshTimer.Reset();
 
-		m_Icons["DirectoryThumb"] = Texture2D::Create("resources/icons/browser/DirectoryIcon.png");
-		m_Icons["DefaultFileThumb"] = Texture2D::Create("resources/icons/browser/FileIcon.png");
+		m_Icons["DirectoryThumb"] = Texture2D::Create("resources/icons/browser/folder.png");
+		m_Icons["DefaultFileThumb"] = Texture2D::Create("resources/icons/browser/blank_file.png");
 		m_Icons["Back"] = Texture2D::Create("resources/icons/browser/back_arrow.png");
 		m_Icons["Forward"] = Texture2D::Create("resources/icons/browser/forward_arrow.png");
 		//m_Icons["Refresh"] = Texture2D::Create("resources/icons/browser/refresh.png");
@@ -39,16 +39,14 @@ namespace Zahra
 		m_PanelHovered = ImGui::IsWindowHovered();
 		m_PanelFocused = ImGui::IsWindowFocused();
 
-		// TODO: rightclick context menu on blank space to create a new directory (etc.?)
+		// TODO: rightclick context menu on blank space to create a new directory etc.
 		
 		DisplayNavBar();
 		DisplayCurrentDirectory();
 		DisplayFileData();
 
 		ImGui::End();
-
 	}
-
 	
 	void ContentBrowserPanel::DisplayNavBar()
 	{
@@ -107,7 +105,7 @@ namespace Zahra
 			ImGui::TableNextColumn();
 			{
 				ImGui::PushItemWidth(ImGui::GetColumnWidth());
-				ImGui::SliderInt("##ThumbnailSize", &m_ThumbnailSize, 64, 256);
+				ImGui::SliderInt("##ThumbnailSize", &m_ThumbnailSize, 64, 256, "");
 				ImGui::PopItemWidth();
 			}
 
@@ -141,7 +139,9 @@ namespace Zahra
 				const std::filesystem::path& path = dir.Path;
 				std::string filenameString = path.filename().string();
 
+				ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
 				ImGui::ImageButton(filenameString.c_str(), (ImTextureID)m_Icons["DirectoryThumb"]->GetRendererID(), {(float)m_ThumbnailSize, (float)m_ThumbnailSize}, {0,1}, {1,0});
+				ImGui::PopStyleColor();
 
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 				{
@@ -167,8 +167,10 @@ namespace Zahra
 				const std::filesystem::path& path = file.Path;
 				std::string filenameString = path.filename().string();
 
-				// TODO: check metadata for a specific thumbnail
+				// TODO: check extension and metadata to choose a specific thumbnail
+				ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
 				ImGui::ImageButton((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+				ImGui::PopStyleColor();
 
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 				{
