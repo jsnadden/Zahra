@@ -224,7 +224,25 @@ namespace Zahra
 		
 		StylePatterns::DrawComponent<SpriteComponent>("Sprite", entity, [](auto& component)
 				{
-					ImGui::ColorEdit4("Colour", glm::value_ptr(component.Colour));
+				// TODO: beautify these controls
+					ImGui::ColorEdit4("Tint", glm::value_ptr(component.Tint));
+					
+					ImGui::Button("drop texture here");
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_IMAGE"))
+						{
+							char filepath[256];
+							strcpy_s(filepath, (const char*)payload->Data);
+
+							component.Texture = Texture2D::Create(filepath);
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+
+					ImGui::DragFloat("Texture tiling", &component.TextureTiling, .01f, .0f, 100.f, "%.2f");
 				});
 		
 	}

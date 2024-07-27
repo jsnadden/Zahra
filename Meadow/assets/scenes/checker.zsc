@@ -4,65 +4,11 @@ Entities:
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [3, 3, 0]
+      Translation: [1.5, 1.5, -0.00999999978]
       EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
+      Scale: [4, 4, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [2, 0, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [2, 2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [0, 2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [1, 1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [1, 3, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [3, 1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [0, 0, 0, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -71,4 +17,67 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [3, 1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1, 3, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1, 1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0, 2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2, 2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2, 0, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [3, 3, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]

@@ -170,6 +170,8 @@ namespace Zahra
 
 			RenderGizmos();
 
+			ReceiveDragDrop();
+
 			ImGui::End();
 			ImGui::PopStyleVar();
 		}
@@ -252,6 +254,21 @@ namespace Zahra
 			if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
 				Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
 
+		}
+	}
+
+	void EditorLayer::ReceiveDragDrop()
+	{
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_SCENE"))
+			{
+				char filepath[256];
+				strcpy_s(filepath, (const char*)payload->Data);
+				OpenSceneFile(filepath);
+			}
+
+			ImGui::EndDragDropTarget();
 		}
 	}
 
@@ -368,6 +385,11 @@ namespace Zahra
 	void EditorLayer::OpenSceneFile()
 	{
 		std::string filepath = FileDialogs::OpenFile(m_FileTypesFilter);
+		OpenSceneFile(filepath);
+	}
+
+	void EditorLayer::OpenSceneFile(std::string filepath)
+	{
 		if (!filepath.empty())
 		{
 			NewScene();

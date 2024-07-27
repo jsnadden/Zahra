@@ -42,8 +42,13 @@ namespace Zahra
 		FileData(std::filesystem::path path, uint32_t size)
 			: Path(path), Size(size)
 		{
-			// TODO: Type should be based on path.extension(), but for now...
-			Type = ContentType::Unknown;
+			// TODO: fill this out with other types (might be worth making this conversion a helper function)
+			if (path.extension().string() == ".zsc")
+				Type = ContentType::Scene;
+			else if (path.extension().string() == ".png") // TODO: other formats!!
+				Type = ContentType::Image;
+			else
+				Type = ContentType::Unknown;
 		}
 	};
 
@@ -82,6 +87,7 @@ namespace Zahra
 		void GoBack();
 		void GoForward();
 
+		// TODO: these functions should be run on a separate thread
 		void ValidateCurrentDirectory();
 		void ScanCurrentDirectory();
 		void Refresh();

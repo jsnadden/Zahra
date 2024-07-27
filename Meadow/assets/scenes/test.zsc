@@ -8,7 +8,7 @@ Entities:
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.878000021, 0.717999995, 0.172000006, 1]
+      Tint: [0.878000021, 0.717999995, 0.172000006, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: red line
@@ -17,7 +17,7 @@ Entities:
       EulerAngles: [0, 0, 2.1991148]
       Scale: [0.0500000007, 43.7000008, 1]
     SpriteComponent:
-      Colour: [0.783783793, 0.0181571357, 0.0181571357, 1]
+      Tint: [0.783783793, 0.0181571357, 0.0181571357, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: cyan square
@@ -26,7 +26,7 @@ Entities:
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.323429883, 0.741312742, 0.639665484, 1]
+      Tint: [0.323429883, 0.741312742, 0.639665484, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: magenta square
@@ -35,4 +35,4 @@ Entities:
       EulerAngles: [0.767944872, 0.87266463, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.644787669, 0.134434476, 0.571880102, 1]
+      Tint: [0.644787669, 0.134434476, 0.571880102, 1]

@@ -8,7 +8,7 @@ Entities:
       EulerAngles: [0, -0, -0.704307795]
       Scale: [2.98958921, 0.885388553, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -17,7 +17,7 @@ Entities:
       EulerAngles: [0, -0, -0.761434257]
       Scale: [1.0263418, 3.00693274, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -26,7 +26,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -35,7 +35,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -44,7 +44,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -53,7 +53,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -62,7 +62,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -71,7 +71,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -80,7 +80,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -89,7 +89,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -98,7 +98,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -107,7 +107,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -116,7 +116,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -125,7 +125,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -134,7 +134,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -143,7 +143,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -152,7 +152,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -161,7 +161,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -170,7 +170,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -179,7 +179,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -188,7 +188,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -197,7 +197,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -206,7 +206,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.876447856, 0.131974772, 0.75284797, 1]
+      Tint: [0.876447856, 0.131974772, 0.75284797, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -215,7 +215,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.823058844, 0.14166458, 0.853281856, 1]
+      Tint: [0.823058844, 0.14166458, 0.853281856, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -224,7 +224,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.880308867, 0.275308967, 0.877973318, 1]
+      Tint: [0.880308867, 0.275308967, 0.877973318, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -233,7 +233,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.930501938, 0.287413746, 0.913121402, 1]
+      Tint: [0.930501938, 0.287413746, 0.913121402, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -242,7 +242,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.763273656, 0.0494178459, 0.853281856, 1]
+      Tint: [0.763273656, 0.0494178459, 0.853281856, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -251,7 +251,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.918918908, 0.230616704, 0.884371102, 1]
+      Tint: [0.918918908, 0.230616704, 0.884371102, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -260,7 +260,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.853281856, 0.14825359, 0.850560129, 1]
+      Tint: [0.853281856, 0.14825359, 0.850560129, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -269,7 +269,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.841698825, 0.194988161, 0.73432982, 1]
+      Tint: [0.841698825, 0.194988161, 0.73432982, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -278,7 +278,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -287,7 +287,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [1, 1, 1, 1]
+      Tint: [1, 1, 1, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -296,7 +296,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.849420846, 0.249250904, 0.847103894, 1]
+      Tint: [0.849420846, 0.249250904, 0.847103894, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -305,7 +305,7 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.8567487, 0.136625871, 0.907335877, 1]
+      Tint: [0.8567487, 0.136625871, 0.907335877, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: New Entity
@@ -314,4 +314,4 @@ Entities:
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.957528949, 0.292064816, 0.939543724, 1]
+      Tint: [0.957528949, 0.292064816, 0.939543724, 1]

@@ -8,7 +8,7 @@ Entities:
       EulerAngles: [0, 1.57079637, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.588235319, 0.205305651, 0.205305651, 1]
+      Tint: [0.588235319, 0.205305651, 0.205305651, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: left
@@ -17,7 +17,7 @@ Entities:
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.980392158, 0.34217608, 0.34217608, 1]
+      Tint: [0.980392158, 0.34217608, 0.34217608, 1]
   - Entity: 23152837592538
     TagComponent:
       Tag: top
@@ -26,4 +26,4 @@ Entities:
       EulerAngles: [1.57079637, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Colour: [0.784313738, 0.273740858, 0.273740858, 1]
+      Tint: [0.784313738, 0.273740858, 0.273740858, 1]

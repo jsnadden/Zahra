@@ -157,6 +157,7 @@ namespace Zahra
 		colours[ImGuiCol_Separator]			= ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f }; // docked window edges, resizing bar, and separating bars in windows/menus etc.
 		colours[ImGuiCol_SeparatorHovered]	= ImVec4{ 0.97f, 0.77f, 0.22f, 1.0f };
 		colours[ImGuiCol_SeparatorActive]	= ImVec4{0.92f, 0.72f, 0.18f, 1.0f };
+		colours[ImGuiCol_DragDropTarget]	= ImVec4{0.92f, 0.72f, 0.18f, 1.0f };
 
 		// Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem
 		colours[ImGuiCol_Header]		= ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f };

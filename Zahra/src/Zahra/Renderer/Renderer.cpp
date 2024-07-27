@@ -19,7 +19,7 @@ namespace Zahra
 	struct QuadVertexWithEntityID
 	{
 		glm::vec3 Position;
-		glm::vec4 Colour;
+		glm::vec4 Tint;
 		glm::vec2 TextureCoord;
 		float TextureIndex;
 		float TilingFactor;
@@ -221,7 +221,7 @@ namespace Zahra
 		for (int i = 0; i < 4; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Colour = colour;
+			s_Data.QuadVertexBufferPtr->Tint = colour;
 			s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
 			s_Data.QuadVertexBufferPtr->TextureIndex = 0.0f;
 			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
@@ -273,7 +273,7 @@ namespace Zahra
 		for (int i = 0; i < 4; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Colour = tint;
+			s_Data.QuadVertexBufferPtr->Tint = tint;
 			s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
 			s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
@@ -353,8 +353,11 @@ namespace Zahra
 
 	void Renderer::DrawSprite(const glm::mat4& transform, SpriteComponent& sprite, int EntityID)
 	{
-		// TODO: incorporate possibility of textures, animation etc.
-		DrawQuad(transform, sprite.Colour, EntityID);
+		// TODO: deal with animation data
+		if (sprite.Texture)
+			DrawQuad(transform, sprite.Texture, sprite.Tint, sprite.TextureTiling, EntityID);
+		else
+			DrawQuad(transform, sprite.Tint, EntityID);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////

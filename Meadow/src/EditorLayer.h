@@ -33,8 +33,10 @@ namespace Zahra
 		const char* m_FileTypesFilter = "Zahra Scene (*.zsc)\0*.zsc\0\0";
 		std::string m_CurrentFilePath = "";
 
+		// TODO: refactor all of these to use std::filesystem::path instead of strings
 		void NewScene();
 		void OpenSceneFile();
+		void OpenSceneFile(std::string filepath);
 		void SaveSceneFile();
 		void SaveAsSceneFile();
 
@@ -49,6 +51,8 @@ namespace Zahra
 
 		void ReadHoveredEntity();
 		void RenderGizmos();
+
+		void ReceiveDragDrop();
 
 		// Editor panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;

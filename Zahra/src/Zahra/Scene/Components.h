@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SceneCamera.h"
+#include "Zahra/Renderer/Texture.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -51,16 +52,17 @@ namespace Zahra
 
 	struct SpriteComponent
 	{
-		glm::vec4 Colour{ 1.0f, 1.0f, 1.0f, 1.0f };
-		std::string textureFilepath = "";
+		glm::vec4 Tint{ 1.0f, 1.0f, 1.0f, 1.0f };
+		Ref<Texture2D> Texture = nullptr; // TODO: material system?
+		float TextureTiling = 1.0f;
 		bool Animated = false;
 
-		// TODO: add textures, animations etc.
+		// TODO: animation!!
 
 		SpriteComponent() = default;
 		SpriteComponent(const SpriteComponent&) = default;
-		SpriteComponent(const glm::vec4& colour)
-			: Colour(colour) {}
+		SpriteComponent(const glm::vec4& tint)
+			: Tint(tint) {}
 
 		
 		// TODO: don't forget to add stuff to the sceneserialiser methods!!

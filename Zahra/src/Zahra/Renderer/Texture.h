@@ -27,7 +27,7 @@ namespace Zahra
 	class Texture2D : public Texture
 	{
 	public:
-		static Ref<Texture2D> Create(const std::string& path);
+		static Ref<Texture2D> Create(const std::string& path); // TODO: make this (and the implementation) use std::filesystem::path instead
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
 
 	};

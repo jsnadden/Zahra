@@ -9,7 +9,7 @@
 #include <GLFW/glfw3native.h>
 
 namespace Zahra
-{
+{ // TODO: find a way to do this that doesn't lead to memory issues!!!
 	std::string FileDialogs::OpenFile(const char* filter)
 	{
 		// windows api for a file opening dialog (the A instructs windows to interpret the file as ascii encoded)

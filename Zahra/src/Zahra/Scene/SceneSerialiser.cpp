@@ -132,7 +132,8 @@ namespace Zahra
 			out << YAML::BeginMap;
 			{
 				auto& sprite = entity.GetComponents<SpriteComponent>();
-				out << YAML::Key << "Colour" << YAML::Value << sprite.Colour; // TODO: return when we have textures etc.
+				out << YAML::Key << "Tint" << YAML::Value << sprite.Tint;
+				// TODO: how to serialise a texture?!?!
 			}
 			out << YAML::EndMap;
 		}
@@ -237,7 +238,7 @@ namespace Zahra
 				{
 					auto& sprite = entity.AddComponent<SpriteComponent>();
 
-					sprite.Colour = spriteNode["Colour"].as<glm::vec4>();
+					sprite.Tint = spriteNode["Tint"].as<glm::vec4>();
 					// TODO: textures etc.
 				}
 

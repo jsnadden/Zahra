@@ -18,10 +18,9 @@ namespace Zahra
 
 		m_Icons["DirectoryThumb"] = Texture2D::Create("resources/icons/browser/folder.png");
 		m_Icons["DefaultFileThumb"] = Texture2D::Create("resources/icons/browser/blank_file.png");
+		m_Icons["BrokenImage"] = Texture2D::Create("resources/icons/browser/broken_image.png");
 		m_Icons["Back"] = Texture2D::Create("resources/icons/browser/back_arrow.png");
 		m_Icons["Forward"] = Texture2D::Create("resources/icons/browser/forward_arrow.png");
-		//m_Icons["Refresh"] = Texture2D::Create("resources/icons/browser/refresh.png");
-		//m_Icons["Drag"] = Texture2D::Create("resources/icons/browser/drag_indicator.png");
 	}
 
 	void ContentBrowserPanel::OnEvent(Event& event)
@@ -169,9 +168,22 @@ namespace Zahra
 
 				ImGui::PushID(filenameString.c_str());
 
-				// TODO: check extension and metadata to choose a specific thumbnail
+				// TODO: check extension and metadata to choose a specific thumbnail (e.g. add screenshot to SceneSerialiser)
 				ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-				ImGui::ImageButton((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+				switch (file.Type)
+				{
+					case FileData::ContentType::Image:
+					{
+						// TODO: get a thumbnail from file metadata!!
+						ImGui::ImageButton((ImTextureID)m_Icons["BrokenImage"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+						break;
+					}
+					default:
+					{
+						ImGui::ImageButton((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+						break;
+					}
+				}
 				ImGui::PopStyleColor();
 
 				bool dragged = DragFile(file);
@@ -236,22 +248,33 @@ namespace Zahra
 
 	bool ContentBrowserPanel::DragFile(FileData file)
 	{
+		std::string filepath = file.Path.string();
 		std::string filename = file.Path.filename().string();
 
 		bool dragged = false;
 
-		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_PayloadAutoExpire))
 		{
 			
 			switch (file.Type)
 			{
-				case (FileData::ContentType::Unknown):
+				case (FileData::ContentType::Scene):
 				{
-					// TODO: Unrecognised file types shouldn't have a payload or tooltip, but for now...
-					ImGui::SetDragDropPayload("ContentBrowserFileUnknownType", nullptr, 0);
-					ImGui::Image((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+					Z_ASSERT(filepath.length() < 256, "Currently only support filenames up to 256 characters (including extension + null terminator)");
+					ImGui::SetDragDropPayload("BROWSER_FILE_SCENE", (void *)filepath.c_str(), sizeof(char) * (filepath.length()+1), ImGuiCond_Always);
+					ImGui::Text(filename.c_str());
 					break;
 				}
+				case (FileData::ContentType::Image):
+				{
+					Z_ASSERT(filepath.length() < 256, "Currently only support filenames up to 256 characters (including extension + null terminator)");
+					ImGui::SetDragDropPayload("BROWSER_FILE_IMAGE", (void*)filepath.c_str(), sizeof(char) * (filepath.length() + 1), ImGuiCond_Always);
+					// TODO: get thumbnail from metadata
+					ImGui::Image((ImTextureID)m_Icons["BrokenImage"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+					break;
+				}
+				default:
+					break;
 			}
 
 			dragged = true;
