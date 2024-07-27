@@ -12,7 +12,7 @@
 	ignore = all
 [submodule "Zahra/vendor/ImGui"]
 	path = Zahra/vendor/ImGui
-	url = https://github.com/ocornut/imgui.git
+	url = https://github.com/jsnadden/ImGui.git
 [submodule "yaml-cpp"]
 	path = Zahra/vendor/yaml-cpp
 	url = https://github.com/TheCherno/yaml-cpp.git
