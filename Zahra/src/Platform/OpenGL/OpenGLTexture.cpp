@@ -9,16 +9,12 @@ namespace Zahra
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 		: m_Path(path)
 	{
-		Z_PROFILE_FUNCTION();
-
 		int width, height, channels;
 
 		stbi_set_flip_vertically_on_load(true);
 		stbi_uc* data = nullptr;
-		{
-			Z_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
-			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-		}
+		data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		
 		Z_CORE_ASSERT(data, "Failed to load image.");
 
 		m_Width = width;

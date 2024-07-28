@@ -37,6 +37,9 @@ namespace Zahra
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
+		m_Icons["Play"] = Texture2D::Create("Resources/Icons/Controls/play.png");
+		m_Icons["Stop"] = Texture2D::Create("Resources/Icons/Controls/stop.png");
+
 	}
 
 	void EditorLayer::OnDetach()
@@ -59,7 +62,7 @@ namespace Zahra
 			}
 		}
 
-		if (m_ViewportHovered)
+		if (m_ViewportHovered && m_SceneState == SceneState::Edit)
 		{
 			m_EditorCamera.OnUpdate(dt);
 		}
@@ -76,14 +79,21 @@ namespace Zahra
 
 				m_Framebuffer->ClearColourAttachment(1, -1);
 				
-				m_ActiveScene->OnUpdateEditor(dt, m_EditorCamera);
+				// UPDATE SCENE
+				if (m_SceneState == SceneState::Edit)
+				{
+					m_ActiveScene->OnUpdateEditor(dt, m_EditorCamera);
+				}
+				else
+				{
+					m_ActiveScene->OnUpdateRuntime(dt);
+				}
 
 				if (m_ViewportHovered) ReadHoveredEntity();
 			}
 			m_Framebuffer->Unbind();
 			
 		}
-
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -99,55 +109,103 @@ namespace Zahra
 
 	void EditorLayer::OnImGuiRender()
 	{
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// MAIN MENU
-		{
-			if (ImGui::BeginMainMenuBar())
-			{
-				if (ImGui::BeginMenu("File"))
-				{
-					if (ImGui::MenuItem("New", "Ctrl+N")) NewScene();
-					if (ImGui::MenuItem("Open...", "Ctrl+O")) OpenSceneFile();
+		UIMenuBar();
 
-					ImGui::Separator();
-
-					if (ImGui::MenuItem("Save", "Ctrl+S")) SaveSceneFile();
-					if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) SaveAsSceneFile();
-
-					ImGui::Separator();
-
-					// TODO: warning popup: unsaved changes
-					if (ImGui::MenuItem("Exit"))
-					{
-						Application::Get().Exit();
-					}
-
-					ImGui::EndMenu();
-				}
-
-				if (ImGui::BeginMenu("Tools"))
-				{
-					if (ImGui::MenuItem("Select", "Q")) m_GizmoType = -1;
-					if (ImGui::MenuItem("Translate", "W")) m_GizmoType = 0;
-					if (ImGui::MenuItem("Rotate", "E")) m_GizmoType = 1;
-					if (ImGui::MenuItem("Scale", "R")) m_GizmoType = 2;
-					
-					ImGui::EndMenu();
-				}
-
-			}
-			ImGui::EndMainMenuBar();
-
-		}
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// WINDOW DOCKSPACE
 		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_NoWindowMenuButton);
 
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// VIEWPORT
+		UIViewport();
+		UIControls();
+		UIStatsWindow();
+
+		m_SceneHierarchyPanel.OnImGuiRender();
+		m_ContentBrowserPanel.OnImGuiRender();
+	}
+
+	void EditorLayer::OnScenePlay()
+	{
+		// for now just
+		m_SceneState = SceneState::Play;
+	}
+
+	void EditorLayer::OnSceneStop()
+	{
+		// for now just
+		m_SceneState = SceneState::Edit;
+	}
+
+	void EditorLayer::UIMenuBar()
+	{
+		if (ImGui::BeginMainMenuBar())
+		{			
+
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("New", "Ctrl+N")) NewScene();
+				if (ImGui::MenuItem("Open...", "Ctrl+O")) OpenSceneFile();
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Save", "Ctrl+S")) SaveSceneFile();
+				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) SaveAsSceneFile();
+
+				ImGui::Separator();
+
+				// TODO: warning popup: unsaved changes
+				if (ImGui::MenuItem("Exit"))
+				{
+					Application::Get().Exit();
+				}
+
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Tools"))
+			{
+				if (ImGui::MenuItem("Select", "Q")) m_GizmoType = -1;
+				if (ImGui::MenuItem("Translate", "W")) m_GizmoType = 0;
+				if (ImGui::MenuItem("Rotate", "E")) m_GizmoType = 1;
+				if (ImGui::MenuItem("Scale", "R")) m_GizmoType = 2;
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMainMenuBar();
+		}
+
+	}
+
+	void EditorLayer::UIControls()
+	{
+		ImGui::Begin("Controls");
+
+		float iconSize = 35.f;
+
+		ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
+		if (m_SceneState == SceneState::Edit)
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
+			if (ImGui::ImageButton((ImTextureID)m_Icons["Play"]->GetRendererID(),
+				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			{
+				OnScenePlay();
+			}
+		}
+		else if (m_SceneState == SceneState::Play)
+		{
+			if (ImGui::ImageButton((ImTextureID)m_Icons["Stop"]->GetRendererID(),
+				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			{
+				OnSceneStop();
+			}
+		}
+		ImGui::PopStyleColor();
+
+		ImGui::End();
+	}
+
+	void EditorLayer::UIViewport()
+	{
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 			ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoCollapse);
 
 			ImVec2 topleft = ImGui::GetWindowContentRegionMin(); // TODO: replace these obsolete functions
@@ -166,37 +224,20 @@ namespace Zahra
 			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
 			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentID();
-			ImGui::Image(reinterpret_cast<void*>(framebufferTextureID), ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2( 0, 1 ), ImVec2( 1, 0 ));
+			ImGui::Image(reinterpret_cast<void*>(framebufferTextureID), ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
 
-			RenderGizmos();
-
-			ReceiveDragDrop();
+			if (m_SceneState == SceneState::Edit)
+			{
+				UIGizmos();
+				ReceiveDragDrop();
+			}
 
 			ImGui::End();
 			ImGui::PopStyleVar();
 		}
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// SCENE HIERARCHY & PROPERTIES PANELS
-		m_SceneHierarchyPanel.OnImGuiRender();
-		m_ContentBrowserPanel.OnImGuiRender();
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// STATS WINDOW
-		{
-			ImGui::Begin("Stats", NULL, ImGuiWindowFlags_NoCollapse);
-
-			ImGui::Text("Quads: %u", Renderer::GetStats().QuadCount);
-			ImGui::Text("Draw calls: %u", Renderer::GetStats().DrawCalls);
-			ImGui::TextWrapped("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
-				m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
-
-			ImGui::End();
-		}
-
 	}
 
-	void EditorLayer::RenderGizmos()
+	void EditorLayer::UIGizmos()
 	{
 		Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selection && m_GizmoType != -1)
@@ -255,6 +296,18 @@ namespace Zahra
 				Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
 
 		}
+	}
+
+	void EditorLayer::UIStatsWindow()
+	{
+		ImGui::Begin("Stats", NULL, ImGuiWindowFlags_NoCollapse);
+
+		ImGui::Text("Quads: %u", Renderer::GetStats().QuadCount);
+		ImGui::Text("Draw calls: %u", Renderer::GetStats().DrawCalls);
+		ImGui::TextWrapped("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
+			m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
+
+		ImGui::End();
 	}
 
 	void EditorLayer::ReceiveDragDrop()

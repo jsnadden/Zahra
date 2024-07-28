@@ -31,8 +31,8 @@ namespace Zahra
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 		// TODO: write a font library so that I don't have to rely on imgui's internal font vector
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("resources\\fonts\\inter\\Inter-Regular.ttf", 18.0f); // font 0
-		io.Fonts->AddFontFromFileTTF("resources\\fonts\\inter\\Inter-Bold.ttf", 18.0f); // font 1
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Inter\\Inter-Regular.ttf", 18.0f); // font 0
+		io.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Inter\\Inter-Bold.ttf", 18.0f); // font 1
 
 		ImGui::StyleColorsDark();
 
@@ -152,12 +152,14 @@ namespace Zahra
 		colours[ImGuiCol_TitleBgCollapsed]	= ImVec4{ 0.14f, 0.14f, 0.14f, 1.0f };
 
 		// Borders
+		colours[ImGuiCol_DragDropTarget]	= ImVec4{ 0.92f, 0.72f, 0.18f, 1.0f };
 		colours[ImGuiCol_Border]			= ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f }; // Borders of menus and popups
 		colours[ImGuiCol_BorderShadow]		= ImVec4{ 0.14f, 0.14f, 0.14f, 1.0f }; // Collapsed window edges
-		colours[ImGuiCol_Separator]			= ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f }; // docked window edges, resizing bar, and separating bars in windows/menus etc.
 		colours[ImGuiCol_SeparatorHovered]	= ImVec4{ 0.97f, 0.77f, 0.22f, 1.0f };
-		colours[ImGuiCol_SeparatorActive]	= ImVec4{0.92f, 0.72f, 0.18f, 1.0f };
-		colours[ImGuiCol_DragDropTarget]	= ImVec4{0.92f, 0.72f, 0.18f, 1.0f };
+		colours[ImGuiCol_SeparatorActive]	= ImVec4{ 0.92f, 0.72f, 0.18f, 1.0f };
+		colours[ImGuiCol_ResizeGrip]			= ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f };
+		colours[ImGuiCol_ResizeGripHovered]	= ImVec4{ 0.97f, 0.77f, 0.22f, 1.0f };
+		colours[ImGuiCol_ResizeGripActive]	= ImVec4{ 0.92f, 0.72f, 0.18f, 1.0f };
 
 		// Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem
 		colours[ImGuiCol_Header]		= ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f };

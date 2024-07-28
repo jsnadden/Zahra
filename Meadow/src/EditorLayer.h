@@ -29,9 +29,27 @@ namespace Zahra
 		Ref<Scene> m_ActiveScene;
 		EditorCamera m_EditorCamera;
 
+		std::map<std::string, Ref<Texture2D>> m_Icons;
+
+		enum class SceneState
+		{
+			Edit = 0, Play = 1
+		};
+
+		SceneState m_SceneState = SceneState::Edit;
+
+		void OnScenePlay();
+		void OnSceneStop();
+
 		// Saving/opening scene files
 		const char* m_FileTypesFilter = "Zahra Scene (*.zsc)\0*.zsc\0\0";
 		std::string m_CurrentFilePath = "";
+
+		void UIMenuBar();
+		void UIControls();
+		void UIViewport();
+		void UIGizmos();
+		void UIStatsWindow(); // TODO: this should really be a bar, not a whole freaking window
 
 		// TODO: refactor all of these to use std::filesystem::path instead of strings
 		void NewScene();
@@ -50,13 +68,14 @@ namespace Zahra
 		Entity m_HoveredEntity;
 
 		void ReadHoveredEntity();
-		void RenderGizmos();
 
 		void ReceiveDragDrop();
 
 		// Editor panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
+
+		
 
 	};
 }

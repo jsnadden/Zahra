@@ -6,7 +6,7 @@
 #include <ImGui/imgui.h>
 
 // TODO: later we'll get rid of this being hardcoded, in favour of a "projects" system
-static const std::filesystem::path s_AssetsRoot = "assets";
+static const std::filesystem::path s_AssetsRoot = "Assets";
 
 namespace Zahra
 {
@@ -16,11 +16,11 @@ namespace Zahra
 	{
 		m_RefreshTimer.Reset();
 
-		m_Icons["DirectoryThumb"] = Texture2D::Create("resources/icons/browser/folder.png");
-		m_Icons["DefaultFileThumb"] = Texture2D::Create("resources/icons/browser/blank_file.png");
-		m_Icons["BrokenImage"] = Texture2D::Create("resources/icons/browser/broken_image.png");
-		m_Icons["Back"] = Texture2D::Create("resources/icons/browser/back_arrow.png");
-		m_Icons["Forward"] = Texture2D::Create("resources/icons/browser/forward_arrow.png");
+		m_Icons["DirectoryThumb"] = Texture2D::Create("Resources/Icons/Browser/folder.png");
+		m_Icons["DefaultFileThumb"] = Texture2D::Create("Resources/Icons/Browser/blank_file.png");
+		m_Icons["BrokenImage"] = Texture2D::Create("Resources/Icons/Browser/broken_image.png");
+		m_Icons["Back"] = Texture2D::Create("Resources/Icons/Browser/back_arrow.png");
+		m_Icons["Forward"] = Texture2D::Create("Resources/Icons/Browser/forward_arrow.png");
 	}
 
 	void ContentBrowserPanel::OnEvent(Event& event)
@@ -42,72 +42,86 @@ namespace Zahra
 
 		DisplayNavBar();
 		DisplayCurrentDirectory();
-		DisplayFileData();
 
 		ImGui::End();
 	}
 
 	void ContentBrowserPanel::DisplayNavBar()
 	{
-		float iconSize = 20.f;
+		float iconSize = 25.f;
 		std::string thumbSizeString = "Thumbnail size";
 		float thumbSizeStringLength = ImGui::CalcTextSize(thumbSizeString.c_str()).x;
 
 		if (ImGui::BeginTable("NavBar", 7, ImGuiTableColumnFlags_NoResize))
 		{
-
-			ImGui::TableSetupColumn("back", ImGuiTableColumnFlags_WidthFixed, 1.5f * iconSize);
-			ImGui::TableSetupColumn("forward", ImGuiTableColumnFlags_WidthFixed, 1.5f * iconSize);
-			ImGui::TableSetupColumn("spacer1", ImGuiTableColumnFlags_WidthFixed, 50.f);
-			ImGui::TableSetupColumn("currentdirname");
-			ImGui::TableSetupColumn("spacer2", ImGuiTableColumnFlags_WidthFixed, 50.f);
-			ImGui::TableSetupColumn("thumbsizetext", ImGuiTableColumnFlags_WidthFixed, thumbSizeStringLength + 4.f);
-			ImGui::TableSetupColumn("thumbsizeslider", ImGuiTableColumnFlags_WidthFixed, 100.f);
+			// TABLE SETUP
+			{
+				ImGui::TableSetupColumn("back", ImGuiTableColumnFlags_WidthFixed, 1.5f * iconSize);
+				ImGui::TableSetupColumn("forward", ImGuiTableColumnFlags_WidthFixed, 1.5f * iconSize);
+				ImGui::TableSetupColumn("spacer1", ImGuiTableColumnFlags_WidthFixed, 204.f + thumbSizeStringLength - 3.0f * iconSize); // lolol I should automate this :')
+				ImGui::TableSetupColumn("selectioninfo");
+				ImGui::TableSetupColumn("spacer2", ImGuiTableColumnFlags_WidthFixed, 100.f);
+				ImGui::TableSetupColumn("thumbsizetext", ImGuiTableColumnFlags_WidthFixed, thumbSizeStringLength + 4.f);
+				ImGui::TableSetupColumn("thumbsizeslider", ImGuiTableColumnFlags_WidthFixed, 100.f);
+			}
 
 			ImGui::TableNextColumn();
-			if (ImGui::ImageButton((ImTextureID)m_Icons["Back"]->GetRendererID(), { iconSize, iconSize }, { 0,1 }, { 1,0 }))
+
+			// BACK BUTTON
+			ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
+			if (ImGui::ImageButton((ImTextureID)m_Icons["Back"]->GetRendererID(),
+				{ iconSize, iconSize }, { 0,1 }, { 1,0 }))
 			{
 				GoBack();
 			}
 
 			ImGui::TableNextColumn();
-			if (ImGui::ImageButton((ImTextureID)m_Icons["Forward"]->GetRendererID(), { iconSize, iconSize }, { 0,1 }, { 1,0 }))
+
+			// FORWARD BUTTON
+			if (ImGui::ImageButton((ImTextureID)m_Icons["Forward"]->GetRendererID(),
+				{ iconSize, iconSize }, { 0,1 }, { 1,0 }))
 			{
 				GoForward();
 			}
+			ImGui::PopStyleColor();
 
 			ImGui::TableNextColumn();
-
 			ImGui::TableNextColumn();
+
+			// DISPLAY DIRECTORY NAME
 			{
-				std::string currentDirName = m_CurrentPath.string();
+				std::string currentDirName = m_CurrentPath.filename().string();
 
-				// this necessitates a max tag size of 255 ascii characters (plus null terminator)
-				char buffer[256];
-				memset(buffer, 0, sizeof(buffer));
-				strcpy_s(buffer, currentDirName.c_str());
+				float stringWidth = ImGui::CalcTextSize(currentDirName.c_str()).x;
+				float indentation = .5f * (ImGui::GetColumnWidth() - stringWidth);
+				indentation = std::max(indentation, .0f);
 
-				ImGui::PushItemWidth(ImGui::GetColumnWidth());
-				ImGui::InputText("##direxplorer", buffer, sizeof(buffer)); // TODO: navigate to directory by inputting the path
-				ImGui::PopItemWidth();
+				ImGui::SameLine(indentation);
 
+				ImGuiIO& io = ImGui::GetIO();
+				auto boldFont = io.Fonts->Fonts[1];
+
+				ImGui::AlignTextToFramePadding();
+				ImGui::PushFont(boldFont);
+				ImGui::Text(currentDirName.c_str());
+				ImGui::PopFont();
 			}
 
 			ImGui::TableNextColumn();
-
 			ImGui::TableNextColumn();
+			
+			// RESIZE ICONS
 			{
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text(thumbSizeString.c_str());
-			}
-
-			ImGui::TableNextColumn();
-			{
+				
+				ImGui::TableNextColumn();
+				
 				ImGui::PushItemWidth(ImGui::GetColumnWidth());
 				ImGui::SliderInt("##ThumbnailSize", &m_ThumbnailSize, 64, 256, "");
 				ImGui::PopItemWidth();
 			}
-
+			
 			ImGui::EndTable();
 		}
 
@@ -139,7 +153,8 @@ namespace Zahra
 				std::string filenameString = path.filename().string();
 
 				ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-				ImGui::ImageButton(filenameString.c_str(), (ImTextureID)m_Icons["DirectoryThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
+				ImGui::ImageButton(filenameString.c_str(), (ImTextureID)m_Icons["DirectoryThumb"]->GetRendererID(),
+					{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
 				ImGui::PopStyleColor();
 
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
@@ -175,12 +190,14 @@ namespace Zahra
 					case FileData::ContentType::Image:
 					{
 						// TODO: get a thumbnail from file metadata!!
-						ImGui::ImageButton((ImTextureID)m_Icons["BrokenImage"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+						ImGui::ImageButton((ImTextureID)m_Icons["BrokenImage"]->GetRendererID(),
+							{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
 						break;
 					}
 					default:
 					{
-						ImGui::ImageButton((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+						ImGui::ImageButton((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(),
+							{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
 						break;
 					}
 				}
@@ -204,11 +221,6 @@ namespace Zahra
 		}
 
 		ImGui::EndChild();
-	}
-
-	void ContentBrowserPanel::DisplayFileData()
-	{
-		// TODO: display some data and metadata for the selected dir/file
 	}
 
 	void ContentBrowserPanel::ValidateCurrentDirectory()
@@ -270,11 +282,16 @@ namespace Zahra
 					Z_ASSERT(filepath.length() < 256, "Currently only support filenames up to 256 characters (including extension + null terminator)");
 					ImGui::SetDragDropPayload("BROWSER_FILE_IMAGE", (void*)filepath.c_str(), sizeof(char) * (filepath.length() + 1), ImGuiCond_Always);
 					// TODO: get thumbnail from metadata
-					ImGui::Image((ImTextureID)m_Icons["BrokenImage"]->GetRendererID(), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+					ImGui::Image((ImTextureID)m_Icons["BrokenImage"]->GetRendererID(),
+						{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
 					break;
 				}
 				default:
+				{
+					ImGui::Image((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(),
+						{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
 					break;
+				}
 			}
 
 			dragged = true;
@@ -307,7 +324,7 @@ namespace Zahra
 
 	bool ContentBrowserPanel::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
 	{
-		if (!m_ChildFocused && !m_PanelFocused) return false;
+		if (!m_ChildHovered && !m_PanelHovered) return false;
 
 		switch (event.GetMouseButton())
 		{

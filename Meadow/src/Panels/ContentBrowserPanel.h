@@ -45,7 +45,7 @@ namespace Zahra
 			// TODO: fill this out with other types (might be worth making this conversion a helper function)
 			if (path.extension().string() == ".zsc")
 				Type = ContentType::Scene;
-			else if (path.extension().string() == ".png") // TODO: other formats!!
+			else if (path.extension().string() == ".png") // TODO: include other formats!!
 				Type = ContentType::Image;
 			else
 				Type = ContentType::Unknown;
@@ -82,7 +82,6 @@ namespace Zahra
 
 		void DisplayNavBar();
 		void DisplayCurrentDirectory();
-		void DisplayFileData();
 
 		void GoBack();
 		void GoForward();
