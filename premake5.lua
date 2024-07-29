@@ -25,6 +25,7 @@ group "Dependencies"
 	include "Zahra/vendor/Glad"
 	include "Zahra/vendor/ImGui"
 	include "Zahra/vendor/yaml-cpp"
+	include "Zahra/vendor/Box2D"
 group ""
 
 include "Zahra"

@@ -98,7 +98,7 @@ namespace Zahra
 			Z_CORE_ASSERT(m_ColourAttachmentIDs.size() <= 4, "Currently only supports up to 4 colour attachments");
 
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-			glDrawBuffers(m_ColourAttachmentIDs.size(), buffers);
+			glDrawBuffers((GLsizei)m_ColourAttachmentIDs.size(), buffers);
 		}
 		else if (m_ColourAttachmentIDs.empty())
 		{
@@ -114,7 +114,7 @@ namespace Zahra
 	void OpenGLFramebuffer::ClearFramebuffer()
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
-		glDeleteTextures(m_ColourAttachmentIDs.size(), m_ColourAttachmentIDs.data());
+		glDeleteTextures((GLsizei)m_ColourAttachmentIDs.size(), m_ColourAttachmentIDs.data());
 		glDeleteTextures(1, &m_DepthAttachmentID);
 	}
 
@@ -206,7 +206,7 @@ namespace Zahra
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLenum)index, TextureTarget(multisampled), id, 0);
 
 	}
 

@@ -34,6 +34,7 @@ project "Zahra"
 		"src",
 		"vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Box2D}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
@@ -47,6 +48,7 @@ project "Zahra"
 	links
 	{
 		"GLFW",
+		"Box2D",
 		"Glad",
 		"ImGui",
 		"yaml-cpp",

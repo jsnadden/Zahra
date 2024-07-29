@@ -7,6 +7,11 @@
 	#include <spdlog/fmt/ostr.h>
 #pragma warning(pop)
 
+#ifndef GLM_ENABLE_EXPERIMENTAL
+	#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/string_cast.hpp>
+
 namespace Zahra
 {
 	class Log
@@ -22,6 +27,24 @@ namespace Zahra
 
 	};
 
+}
+
+template <typename OStream, glm::length_t L, typename T, glm::qualifier Q>
+inline OStream& operator<<(OStream& stream, const glm::vec<L, T, Q>& vector)
+{
+	return stream << glm::to_string(vector);
+}
+
+template <typename OStream, glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
+inline OStream& operator<<(OStream& stream, const glm::mat<C, R, T, Q>& matrix)
+{
+	return stream << glm::to_string(matrix);
+}
+
+template <typename OStream, typename T, glm::qualifier Q>
+inline OStream& operator<<(OStream& stream, const glm::qua<T, Q>& quaternion)
+{
+	return stream << glm::to_string(quaternion);
 }
 
 // Core logging macros

@@ -37,7 +37,7 @@ namespace Zahra
 		{
 			std::string Title;
 			uint32_t Width, Height;
-			bool VSync;
+			bool VSync = true;
 
 			EventCallbackFn EventCallback;
 		};

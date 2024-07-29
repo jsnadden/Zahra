@@ -4,6 +4,15 @@ Entities:
     TagComponent:
       Tag: New Entity
     TransformComponent:
+      Translation: [9.89999962, 0.349999994, -0.5]
+      EulerAngles: [0, 0, 0]
+      Scale: [9.30000019, 2.20000005, 1]
+    SpriteComponent:
+      Tint: [0.915057898, 0.717903197, 0.388634652, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
       Translation: [15.5255823, -0.651216745, 0.158513188]
       EulerAngles: [0, -0, -0.704307795]
       Scale: [2.98958921, 0.885388553, 1]
@@ -315,3 +324,21 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [0.957528949, 0.292064816, 0.939543724, 1]
+  - Entity: 23152837592538
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [13.6999998, 0.349999994, 7.94999981]
+      EulerAngles: [0, 0.401425719, 0]
+      Scale: [0.999999881, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 54.2099991
+        PerspectiveFOV: 1.04719758
+        PerspectiveNearClip: 0.00999999978
+        PerspectiveFarClip: 1000
+      Active: true
+      FixedAspectRatio: false
