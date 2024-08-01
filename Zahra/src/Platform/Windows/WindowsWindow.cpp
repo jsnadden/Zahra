@@ -8,6 +8,8 @@
 #include "Zahra/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 
+#include <shobjidl.h>
+
 namespace Zahra
 {
 	static bool s_GLFWInitialised = false;
@@ -56,6 +58,13 @@ namespace Zahra
 			s_GLFWInitialised = true;
 		}
 
+		// Initialise Windows COM library (used for open/save dialogs e.g.)
+		{
+			HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+			Z_CORE_ASSERT(SUCCEEDED(hr), "Windows COM library failed to initialise.");
+		}
+
+		
 		{
 			{
 				#if defined(Z_DEBUG)
@@ -67,6 +76,7 @@ namespace Zahra
 
 			
 			// TODO: activate this if I end up making a custom title bar: glfwWindowHint(GLFW_TITLEBAR, false);
+
 			m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 
 		}
@@ -195,6 +205,8 @@ namespace Zahra
 		Z_PROFILE_FUNCTION();
 
 		glfwDestroyWindow(m_Window);
+
+		CoUninitialize();
 	}
 
 	void WindowsWindow::OnUpdate()

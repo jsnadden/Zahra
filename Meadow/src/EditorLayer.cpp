@@ -432,27 +432,27 @@ namespace Zahra
 		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		m_CurrentFilePath = "";
+		m_CurrentFilePath.clear();
 	}
 
 	void EditorLayer::OpenSceneFile()
 	{
-		std::string filepath = FileDialogs::OpenFile(m_FileTypesFilter);
+		std::filesystem::path filepath = FileDialogs::OpenFile(m_FileTypesFilter[0], m_FileTypesFilter[1]);
 		OpenSceneFile(filepath);
 	}
 
-	void EditorLayer::OpenSceneFile(std::string filepath)
+	void EditorLayer::OpenSceneFile(std::filesystem::path filepath)
 	{
 		if (!filepath.empty())
 		{
 			NewScene();
 
-			std::string sceneName = filepath.substr(filepath.find_last_of("/\\") + 1);
+			std::string sceneName = filepath.filename().string();
 			m_ActiveScene->SetName(sceneName);
 			m_CurrentFilePath = filepath;
 
 			SceneSerialiser serialiser(m_ActiveScene);
-			serialiser.DeserialiseYaml(filepath);
+			serialiser.DeserialiseYaml(filepath.string());
 		}
 
 		// TODO: report/display success of file open
@@ -467,7 +467,7 @@ namespace Zahra
 		else
 		{
 			SceneSerialiser serialiser(m_ActiveScene);
-			serialiser.SerialiseYaml(m_CurrentFilePath);
+			serialiser.SerialiseYaml(m_CurrentFilePath.string());
 		}
 
 		// TODO: report/display success of file save
@@ -475,15 +475,15 @@ namespace Zahra
 
 	void EditorLayer::SaveAsSceneFile()
 	{
-		std::string filepath = FileDialogs::SaveFile(m_FileTypesFilter);
+		std::filesystem::path filepath = FileDialogs::SaveFile(m_FileTypesFilter[0], m_FileTypesFilter[1]);
 		if (!filepath.empty())
 		{
-			std::string sceneName = filepath.substr(filepath.find_last_of("/\\") + 1);
+			std::string sceneName = filepath.filename().string();
 			m_ActiveScene->SetName(sceneName);
 			m_CurrentFilePath = filepath;
 
 			SceneSerialiser serialiser(m_ActiveScene);
-			serialiser.SerialiseYaml(m_CurrentFilePath);
+			serialiser.SerialiseYaml(m_CurrentFilePath.string());
 		}
 
 		// TODO: report/display success of file save

@@ -42,8 +42,8 @@ namespace Zahra
 		void OnSceneStop();
 
 		// Saving/opening scene files
-		const char* m_FileTypesFilter = "Zahra Scene (*.zsc)\0*.zsc\0\0";
-		std::string m_CurrentFilePath = "";
+		const wchar_t* m_FileTypesFilter[2] = { L"Zahra Scene", L"*.zsc" };
+		std::filesystem::path m_CurrentFilePath;
 
 		void UIMenuBar();
 		void UIControls();
@@ -51,10 +51,9 @@ namespace Zahra
 		void UIGizmos();
 		void UIStatsWindow(); // TODO: this should really be a bar, not a whole freaking window
 
-		// TODO: refactor all of these to use std::filesystem::path instead of strings
 		void NewScene();
 		void OpenSceneFile();
-		void OpenSceneFile(std::string filepath);
+		void OpenSceneFile(std::filesystem::path filepath);
 		void SaveSceneFile();
 		void SaveAsSceneFile();
 
