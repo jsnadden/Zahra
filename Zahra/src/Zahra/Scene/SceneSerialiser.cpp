@@ -10,6 +10,30 @@
 
 namespace YAML
 {
+	template<>
+	struct convert<glm::vec2>
+	{
+		static Node encode(const glm::vec2& rhs)
+		{
+			Node node;
+
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.SetStyle(EmitterStyle::Flow);
+
+			return node;
+		}
+
+		static bool decode(const Node& node, glm::vec2& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 2) return false;
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+
+			return true;
+		}
+	};
 
 	template<>
 	struct convert<glm::vec3>
@@ -71,6 +95,12 @@ namespace YAML
 
 namespace Zahra
 {
+	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& vector)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << vector.x << vector.y << YAML::EndSeq;
+		return out;
+	}
 
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& vector)
 	{
@@ -133,7 +163,7 @@ namespace Zahra
 			{
 				auto& sprite = entity.GetComponents<SpriteComponent>();
 				out << YAML::Key << "Tint" << YAML::Value << sprite.Tint;
-				// TODO: how to serialise a texture?!?!
+				// TODO: once we have an assets manager I need to serialise attached textures!
 			}
 			out << YAML::EndMap;
 		}
@@ -148,7 +178,7 @@ namespace Zahra
 				out << YAML::Key << "Camera" << YAML::Value;
 				out << YAML::BeginMap;
 				{
-					out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
+					out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType(); // TODO: make a helper function to serialise this as a string instead
 
 					out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
 					out << YAML::Key << "OrthographicNearClip" << YAML::Value << camera.GetOrthographicNearClip();
@@ -167,8 +197,37 @@ namespace Zahra
 			out << YAML::EndMap;
 		}
 
-		out << YAML::EndMap;
+		if (entity.HasComponents<RigidBody2DComponent>())
+		{
+			out << YAML::Key << "RigidBody2DComponent";
+			out << YAML::BeginMap;
+			{
+				auto& body = entity.GetComponents<RigidBody2DComponent>();
+				out << YAML::Key << "Type" << YAML::Value << (int)body.Type; // TODO: make a helper function to serialise this as a string instead
+				out << YAML::Key << "FixedRotation" << YAML::Value << body.FixedRotation;
 
+			}
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponents<RectColliderComponent>())
+		{
+			out << YAML::Key << "RectColliderComponent";
+			out << YAML::BeginMap;
+			{
+				auto& collider = entity.GetComponents<RectColliderComponent>();
+				out << YAML::Key << "Offset" << YAML::Value << collider.Offset;
+				out << YAML::Key << "HalfExtent" << YAML::Value << collider.HalfExtent;
+				out << YAML::Key << "Density" << YAML::Value << collider.Density;
+				out << YAML::Key << "Friction" << YAML::Value << collider.Friction;
+				out << YAML::Key << "Restitution" << YAML::Value << collider.Restitution;
+				out << YAML::Key << "RestitutionThreshold" << YAML::Value << collider.RestitutionThreshold;
+
+			}
+			out << YAML::EndMap;
+		}
+
+		out << YAML::EndMap;
 	}
 
 	void SceneSerialiser::SerialiseYaml(const std::string& filepath)
@@ -264,6 +323,28 @@ namespace Zahra
 					);
 					camera.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraSubnode["ProjectionType"].as<int>());
 
+				}
+
+				auto rigidBody2DNode = entityNode["RigidBody2DComponent"];
+				if (rigidBody2DNode)
+				{
+					auto& body = entity.AddComponent<RigidBody2DComponent>();
+
+					body.Type = (RigidBody2DComponent::BodyType)rigidBody2DNode["Type"].as<int>();
+					body.FixedRotation = rigidBody2DNode["FixedRotation"].as<bool>();
+				}
+
+				auto rectColliderNode = entityNode["RectColliderComponent"];
+				if (rectColliderNode)
+				{
+					auto& collider = entity.AddComponent<RectColliderComponent>();
+
+					collider.Offset = rectColliderNode["Offset"].as<glm::vec2>();
+					collider.HalfExtent = rectColliderNode["HalfExtent"].as<glm::vec2>();
+					collider.Density = rectColliderNode["Density"].as<float>();
+					collider.Friction = rectColliderNode["Friction"].as<float>();
+					collider.Restitution = rectColliderNode["Restitution"].as<float>();
+					collider.RestitutionThreshold = rectColliderNode["RestitutionThreshold"].as<float>();
 				}
 
 			}

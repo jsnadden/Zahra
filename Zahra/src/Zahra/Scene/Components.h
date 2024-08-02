@@ -14,9 +14,12 @@
 
 namespace Zahra
 {
-	// Every component struct must have
-	// 1) default constructor/copy constructors
-	// 2) static const bool Essential = true/false (essential components can never be removed from an entity)
+	// For every component struct added, make sure to do the following:
+	// 1) the component MUST declare a default constructor/copy constructor
+	// 2) the component MUST declare static const bool Essential = true/false (essential components can never be removed from an entity)
+	// 3) add a specialisation of OnComponentAdded in Scene.cpp
+	// 4) add component properties UI code, and add/remove context menus, in SceneHierarchyPanel.cpp
+	// 5) add component serialisation code in SceneSerialiser.cpp
 
 	struct TagComponent
 	{
@@ -87,6 +90,39 @@ namespace Zahra
 		CameraComponent(bool fixedRatio)
 			: FixedAspectRatio(fixedRatio) {}
 
+
+		static const bool Essential = false;
+	};
+
+	// PHYSICS COMPONENTS
+
+	struct RigidBody2DComponent
+	{
+		enum class BodyType { Static = 0, Dynamic, Kinematic };
+		BodyType Type = BodyType::Static;
+		
+		// TODO: add other body attributes from b2Body e.g. b2ContactListener for callbacks on collision
+		bool FixedRotation = false;
+
+		RigidBody2DComponent() = default;
+		RigidBody2DComponent(const RigidBody2DComponent&) = default;
+
+		static const bool Essential = false;
+	};
+
+	struct RectColliderComponent // TODO: triangles and circles?
+	{
+		glm::vec2 Offset = { .0f, .0f };
+		glm::vec2 HalfExtent = { .5f, .5f };
+
+		// TODO: investigate physically reasonable default values
+		float Density = 1.0f;
+		float Friction = .5f;
+		float Restitution = .5f;
+		float RestitutionThreshold = .5f;
+
+		RectColliderComponent() = default;
+		RectColliderComponent(const RectColliderComponent&) = default;
 
 		static const bool Essential = false;
 	};

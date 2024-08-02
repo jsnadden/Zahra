@@ -121,15 +121,19 @@ namespace Zahra
 		m_ContentBrowserPanel.OnImGuiRender();
 	}
 
-	void EditorLayer::OnScenePlay()
+	void EditorLayer::OnPressPlay()
 	{
-		// for now just
+		// TODO: cache a copy of active scene
+
+		m_ActiveScene->OnRuntimePlay();
 		m_SceneState = SceneState::Play;
 	}
 
-	void EditorLayer::OnSceneStop()
+	void EditorLayer::OnPressStop()
 	{
-		// for now just
+		// TODO: delete active scene and load the cached one, to reset everything
+
+		m_ActiveScene->OnRuntimeStop();
 		m_SceneState = SceneState::Edit;
 	}
 
@@ -186,7 +190,7 @@ namespace Zahra
 			if (ImGui::ImageButton((ImTextureID)m_Icons["Play"]->GetRendererID(),
 				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
 			{
-				OnScenePlay();
+				OnPressPlay();
 			}
 		}
 		else if (m_SceneState == SceneState::Play)
@@ -194,7 +198,7 @@ namespace Zahra
 			if (ImGui::ImageButton((ImTextureID)m_Icons["Stop"]->GetRendererID(),
 				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
 			{
-				OnSceneStop();
+				OnPressStop();
 			}
 		}
 		ImGui::PopStyleColor();
@@ -466,6 +470,9 @@ namespace Zahra
 		}
 		else
 		{
+			std::string sceneName = m_CurrentFilePath.filename().string();
+			m_ActiveScene->SetName(sceneName);
+			
 			SceneSerialiser serialiser(m_ActiveScene);
 			serialiser.SerialiseYaml(m_CurrentFilePath.string());
 		}

@@ -5,6 +5,10 @@
 
 #include <entt.hpp>
 
+// forward declare Box2D classes
+class b2World;
+class b2Body;
+
 namespace Zahra
 {
 	class Entity;
@@ -17,10 +21,17 @@ namespace Zahra
 
 		Entity CreateEntity(const std::string& name = "anonymous_entity");
 		void DestroyEntity(Entity entity);
-		Entity CopyEntity(Entity entity);
+		Entity DuplicateEntity(Entity entity);
+
+		void OnRuntimePlay();
+		void OnRuntimeStop();
 
 		void OnUpdateEditor(float dt, EditorCamera& camera);
 		void OnUpdateRuntime(float dt);
+
+		// TODO: replace Box2D with a 3d physics engine (e.g. Nvidia PhysX)
+		void InitPhysicsWorld();
+		void UpdatePhysicsWorld();
 
 		void OnViewportResize(float width, float height);
 
@@ -31,6 +42,9 @@ namespace Zahra
 
 	private:
 		std::string m_SceneName;
+
+		std::unique_ptr<b2World>(m_PhysicsWorld);
+		std::map<entt::entity, b2Body*> m_PhysicsBodies; // TODO: replace entt::entity with internal uuids?
 
 		entt::basic_registry<entt::entity> m_Registry; // TODO: custom UUIDs (change the template param)
 		float m_ViewportWidth = 1.0f, m_ViewportHeight = 1.0f;

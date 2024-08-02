@@ -1,6 +1,6 @@
 #include "SceneHierarchyPanel.h"
 
-#include "StylePatterns.h"
+#include "EntityUIPatterns.h"
 
 namespace Zahra
 {
@@ -17,64 +17,74 @@ namespace Zahra
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// HIERARCHY PANEL
 		std::string windowName = "Scene Hierarchy: " + m_Context->GetName() + "###Scene Hierarchy";
 
 		ImGui::Begin(windowName.c_str(), 0, ImGuiWindowFlags_NoCollapse);
 		{
-			// TODO: this top layer of the hierarchy should only include parentless entities
-			m_Context->m_Registry.view<entt::entity>().each([&](auto entityId)
+			ImGui::BeginTable("SplitPanel", 2, ImGuiTableColumnFlags_NoResize);
 			{
-				Entity entity { entityId, m_Context.get() };
-				
-				DrawEntityNode(entity);
-				
-			});
-		}
-		
-		// deselect entity when left clicking on empty window space (IsWindowHovered, without setting flags, is blocked by other items)
-		if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
-		{
-			m_Selected = {};
-		}
+				ImGui::TableSetupColumn("EntityTree");
+				ImGui::TableSetupColumn("Space", ImGuiTableColumnFlags_WidthFixed, 20.f);
 
-		// right clicking on empty window space brings up this menu
-		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
-		{
-			if (ImGui::MenuItem("Create New Entity"))
+				ImGui::TableNextColumn();
+
+				// TODO: this top layer of the hierarchy should only include parentless entities
+				m_Context->m_Registry.view<entt::entity>().each([&](auto entityId)
+					{
+						Entity entity{ entityId, m_Context.get() };
+
+						DrawEntityNode(entity);
+
+					});
+
+				ImGui::TableNextColumn();
+			}
+			ImGui::EndTable();
+
+			// deselect entity when left clicking on empty window space (IsWindowHovered, without setting flags, is blocked by other items)
+			if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
 			{
-				m_Selected = m_Context->CreateEntity("New Entity");
+				m_Selected = {};
 			}
 
-			// TODO: menuitems to create specific scriptableentity types,
-				// or entities with specific component sets
-				// (e.g. a camera, an audio source, a prop/structure, or an npc)
+			// right clicking on empty window space brings up this menu
+			if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
+			{
+				if (ImGui::MenuItem("Create New Entity"))
+				{
+					m_Selected = m_Context->CreateEntity("New Entity");
+				}
 
-			ImGui::EndPopup();
+				// TODO: menuitems to create specific scriptableentity types,
+					// or entities with specific component sets
+					// (e.g. a camera, an audio source, a prop/structure, or an npc)
+
+				ImGui::EndPopup();
+			}
 		}
-
 		ImGui::End();
 
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// PROPERTIES PANEL
 		ImGui::Begin("Properties", 0, ImGuiWindowFlags_NoCollapse);
 		{
 			if (m_Selected)
 			{
 				DrawComponents(m_Selected);
 
+				// right click to add components
 				if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 				{
 					// TODO: keep adding to this list as we include new component types (e.g. scripts!!)
+					// WARNING: Don't forget to add a corresponding OnComponentAdded specialisation to Scene!!
 
-					if (ImGui::MenuItem("Camera", 0, false, !m_Selected.HasComponents<CameraComponent>()))
-					{
-						m_Selected.AddComponent<CameraComponent>();
-						ImGui::CloseCurrentPopup();
-					}
-
-					if (ImGui::MenuItem("Sprite", 0, false, !m_Selected.HasComponents<SpriteComponent>()))
-					{
-						m_Selected.AddComponent<SpriteComponent>();
-						ImGui::CloseCurrentPopup();
-					}
+					EntityUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
+					EntityUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
+					EntityUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
+					EntityUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);
 
 					ImGui::EndPopup();
 				}
@@ -127,6 +137,8 @@ namespace Zahra
 		
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
+		// TODO: beautify these controls
+
 		if (entity.HasComponents<TagComponent>())
 		{
 			std::string& tag = entity.GetComponents<TagComponent>().Tag;
@@ -150,7 +162,10 @@ namespace Zahra
 				ImGui::TableNextColumn();
 				{
 					ImGui::PushItemWidth(ImGui::GetColumnWidth());
-					if (ImGui::InputText("", buffer, sizeof(buffer))) tag = std::string(buffer);
+					if (ImGui::InputText("", buffer, sizeof(buffer)))
+					{
+						if (ImGui::IsWindowFocused()) tag = std::string(buffer);
+					}
 					ImGui::PopItemWidth();
 				}
 
@@ -158,17 +173,39 @@ namespace Zahra
 			}			
 		}
 
-		StylePatterns::DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
+		EntityUIPatterns::DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 				{
-					StylePatterns::DrawVec3Controls("Position", component.Translation);
-					StylePatterns::DrawVec3Controls("Dimensions", component.Scale, 1.0f, .05f, true);
+					EntityUIPatterns::DrawVec3Controls("Position", component.Translation);
+					EntityUIPatterns::DrawVec3Controls("Dimensions", component.Scale, 1.0f, .05f, true);
 
 					glm::vec3& rotation = glm::degrees(component.EulerAngles);
-					StylePatterns::DrawVec3Controls("Euler Angles", rotation, .0f, 1.f);
+					EntityUIPatterns::DrawVec3Controls("Euler Angles", rotation, .0f, 1.f);
 					component.EulerAngles = glm::radians(rotation);
 				});
 		
-		StylePatterns::DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
+		EntityUIPatterns::DrawComponent<SpriteComponent>("Sprite", entity, [](auto& component)
+			{
+				ImGui::ColorEdit4("Tint", glm::value_ptr(component.Tint));
+
+				ImGui::Button("drop texture here"); // TODO: make this something nicer, ideally displaying a name? NEED ASSET MANAGER!!!
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_IMAGE"))
+					{
+						char filepath[256];
+						strcpy_s(filepath, (const char*)payload->Data);
+
+						component.Texture = Texture2D::Create(filepath);
+					}
+
+					ImGui::EndDragDropTarget();
+				}
+
+				ImGui::DragFloat("Texture tiling", &component.TextureTiling, .01f, .0f, 100.f, "%.2f");
+			});
+
+		EntityUIPatterns::DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 				{
 					SceneCamera& camera = component.Camera;
 
@@ -222,28 +259,43 @@ namespace Zahra
 					}
 				});
 		
-		StylePatterns::DrawComponent<SpriteComponent>("Sprite", entity, [](auto& component)
+		EntityUIPatterns::DrawComponent<RigidBody2DComponent>("2D Rigid Body", entity, [](auto& component)
+			{
+				
+				const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
+				int currentBodyType = (int)component.Type;
+
+				if (ImGui::BeginCombo("Type", bodyTypeStrings[currentBodyType]))
 				{
-				// TODO: beautify these controls
-					ImGui::ColorEdit4("Tint", glm::value_ptr(component.Tint));
-					
-					ImGui::Button("drop texture here");
-
-					if (ImGui::BeginDragDropTarget())
+					for (int i = 0; i < 3; i++)
 					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_IMAGE"))
+						if (ImGui::Selectable(bodyTypeStrings[i], currentBodyType == i))
 						{
-							char filepath[256];
-							strcpy_s(filepath, (const char*)payload->Data);
-
-							component.Texture = Texture2D::Create(filepath);
+							currentBodyType = i;
+							component.Type = (RigidBody2DComponent::BodyType)i;
 						}
 
-						ImGui::EndDragDropTarget();
+						if (currentBodyType == i)
+							ImGui::SetItemDefaultFocus();
 					}
 
-					ImGui::DragFloat("Texture tiling", &component.TextureTiling, .01f, .0f, 100.f, "%.2f");
-				});
+					ImGui::EndCombo();
+				}
+
+				ImGui::Checkbox("Non-rotating", &component.FixedRotation);
+			});
+
+		EntityUIPatterns::DrawComponent<RectColliderComponent>("2D Rectangular Collider", entity, [](auto& component)
+			{
+				EntityUIPatterns::DrawVec2Controls("Offset", component.Offset);
+				EntityUIPatterns::DrawVec2Controls("Size", component.HalfExtent, 0.5f, .05f, true);
+
+				// TODO: investigate physically reasonable ranges
+				EntityUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
+				EntityUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
+				EntityUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
+				EntityUIPatterns::DrawFloatControl("Threshold", component.RestitutionThreshold, .01f, false, .0f);
+			});
 		
 	}
 

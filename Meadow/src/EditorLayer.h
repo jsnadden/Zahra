@@ -38,8 +38,8 @@ namespace Zahra
 
 		SceneState m_SceneState = SceneState::Edit;
 
-		void OnScenePlay();
-		void OnSceneStop();
+		void OnPressPlay();
+		void OnPressStop();
 
 		// Saving/opening scene files
 		const wchar_t* m_FileTypesFilter[2] = { L"Zahra Scene", L"*.zsc" };
