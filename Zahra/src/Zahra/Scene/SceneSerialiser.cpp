@@ -116,6 +116,57 @@ namespace Zahra
 		return out;
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// SERIALISATION HELPERS
+	static std::string CameraProjectionTypeToString(SceneCamera::ProjectionType type)
+	{
+		switch (type)
+		{
+		case SceneCamera::ProjectionType::Orthographic: return "Orthographic";
+		case SceneCamera::ProjectionType::Perspective: return "Perspective";
+		}
+		Z_CORE_ASSERT(false, "Invalid ProjectionType");
+		return "";
+	}
+
+	static SceneCamera::ProjectionType CameraProjectionTypeFromString(std::string str)
+	{
+		if (str == "Orthographic")
+			return SceneCamera::ProjectionType::Orthographic;
+		else if (str == "Perspective")
+			return SceneCamera::ProjectionType::Perspective;
+
+		Z_CORE_ASSERT(false, "Unrecognised input string");
+		return SceneCamera::ProjectionType::Orthographic;
+	}
+
+	static std::string RigidBody2DTypeToString(RigidBody2DComponent::BodyType type)
+	{
+		switch (type)
+		{
+		case RigidBody2DComponent::BodyType::Static: return "Static";
+		case RigidBody2DComponent::BodyType::Dynamic: return "Dynamic";
+		case RigidBody2DComponent::BodyType::Kinematic: return "Kinematic";
+		}
+		Z_CORE_ASSERT(false, "Invalid BodyType");
+		return "";
+	}
+
+	static RigidBody2DComponent::BodyType RigidBody2DTypeFromString(std::string str)
+	{
+		if (str == "Static")
+			return RigidBody2DComponent::BodyType::Static;
+		else if (str == "Dynamic")
+			return RigidBody2DComponent::BodyType::Dynamic;
+		else if (str == "Kinematic")
+			return RigidBody2DComponent::BodyType::Kinematic;
+
+		Z_CORE_ASSERT(false, "Unrecognised input string");
+		return RigidBody2DComponent::BodyType::Static;
+	}
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	SceneSerialiser::SceneSerialiser(const Ref<Scene>& scene)
 		: m_Scene(scene) {}
 
@@ -177,8 +228,8 @@ namespace Zahra
 				auto& camera = cameraComponent.Camera;
 				out << YAML::Key << "Camera" << YAML::Value;
 				out << YAML::BeginMap;
-				{
-					out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType(); // TODO: make a helper function to serialise this as a string instead
+				{	
+					out << YAML::Key << "ProjectionType" << YAML::Value << CameraProjectionTypeToString(camera.GetProjectionType());
 
 					out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
 					out << YAML::Key << "OrthographicNearClip" << YAML::Value << camera.GetOrthographicNearClip();
@@ -203,7 +254,7 @@ namespace Zahra
 			out << YAML::BeginMap;
 			{
 				auto& body = entity.GetComponents<RigidBody2DComponent>();
-				out << YAML::Key << "Type" << YAML::Value << (int)body.Type; // TODO: make a helper function to serialise this as a string instead
+				out << YAML::Key << "Type" << YAML::Value << RigidBody2DTypeToString(body.Type);
 				out << YAML::Key << "FixedRotation" << YAML::Value << body.FixedRotation;
 
 			}
@@ -321,7 +372,7 @@ namespace Zahra
 						cameraSubnode["PerspectiveNearClip"].as<float>(),
 						cameraSubnode["PerspectiveFarClip"].as<float>()
 					);
-					camera.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraSubnode["ProjectionType"].as<int>());
+					camera.Camera.SetProjectionType(CameraProjectionTypeFromString(cameraSubnode["ProjectionType"].as<std::string>()));
 
 				}
 
@@ -330,7 +381,7 @@ namespace Zahra
 				{
 					auto& body = entity.AddComponent<RigidBody2DComponent>();
 
-					body.Type = (RigidBody2DComponent::BodyType)rigidBody2DNode["Type"].as<int>();
+					body.Type = RigidBody2DTypeFromString(rigidBody2DNode["Type"].as<std::string>());
 					body.FixedRotation = rigidBody2DNode["FixedRotation"].as<bool>();
 				}
 
