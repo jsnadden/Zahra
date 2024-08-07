@@ -2,6 +2,7 @@
 
 #include "SceneCamera.h"
 #include "Zahra/Renderer/Texture.h"
+#include "Zahra/Core/GUID.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,6 +21,20 @@ namespace Zahra
 	// 3) add a specialisation of OnComponentAdded in Scene.cpp
 	// 4) add component properties UI code, and add/remove context menus, in SceneHierarchyPanel.cpp
 	// 5) add component serialisation code in SceneSerialiser.cpp
+	//
+	// [TODO: with reflection this stuff might simplify]
+
+	struct IDComponent
+	{
+		ZGUID ID;
+
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
+		IDComponent(const ZGUID& guid)
+			: ID(guid) {}
+
+		static const bool Essential = true;
+	};
 
 	struct TagComponent
 	{
@@ -27,7 +42,7 @@ namespace Zahra
 
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
-		TagComponent(const std::string& tag )
+		TagComponent(const std::string& tag)
 			: Tag(tag) {}
 
 		operator std::string& () { return Tag; }

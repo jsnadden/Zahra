@@ -159,6 +159,7 @@
     <ClInclude Include="src\Zahra\Core\Assert.h" />
     <ClInclude Include="src\Zahra\Core\Base.h" />
     <ClInclude Include="src\Zahra\Core\EntryPoint.h" />
+    <ClInclude Include="src\Zahra\Core\GUID.h" />
     <ClInclude Include="src\Zahra\Core\Input.h" />
     <ClInclude Include="src\Zahra\Core\KeyCodes.h" />
     <ClInclude Include="src\Zahra\Core\Layer.h" />
@@ -628,6 +629,7 @@
     <ClCompile Include="src\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Zahra\Core\Application.cpp" />
+    <ClCompile Include="src\Zahra\Core\GUID.cpp" />
     <ClCompile Include="src\Zahra\Core\Layer.cpp" />
     <ClCompile Include="src\Zahra\Core\LayerStack.cpp" />
     <ClCompile Include="src\Zahra\Core\Log.cpp" />

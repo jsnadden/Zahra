@@ -8,6 +8,7 @@
 
 #include <fstream>
 
+
 namespace YAML
 {
 	template<>
@@ -176,37 +177,42 @@ namespace Zahra
 		// how to do this without having to remember to add new
 		// stuff here for each new component type
 
-		uint64_t entityUUID = 23152837592538; // TODO: this should be the UUID for the entity
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// GUID
+		Z_CORE_ASSERT(entity.HasComponents<IDComponent>(), "All entities must have an IDComponent");
+		uint64_t entityUUID = (uint64_t)entity.GetComponents<IDComponent>().ID;
 
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << entityUUID;
 
-		if (entity.HasComponents<TagComponent>()) // by all rights, it damn well should!
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// TAG (COMPONENT NAME)
+		Z_CORE_ASSERT(entity.HasComponents<TagComponent>(), "All entities must have a TagComponent");
+		out << YAML::Key << "TagComponent";
+		out << YAML::BeginMap;
 		{
-			out << YAML::Key << "TagComponent";
-			out << YAML::BeginMap;
-			{
-				auto& tag = entity.GetComponents<TagComponent>().Tag;
-				Z_CORE_TRACE("Serialising entity with ID = {0}, name = {1}", entityUUID, tag);
+			auto& tag = entity.GetComponents<TagComponent>().Tag;
+			Z_CORE_TRACE("Serialising entity with ID = {0}, name = {1}", entityUUID, tag);
 
-				out << YAML::Key << "Tag" << YAML::Value << tag;
-			}
-			out << YAML::EndMap;
+			out << YAML::Key << "Tag" << YAML::Value << tag;
 		}
+		out << YAML::EndMap;
 
-		if (entity.HasComponents<TransformComponent>())
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// TRANSFORM
+		Z_CORE_ASSERT(entity.HasComponents<TransformComponent>(), "All entities must have a TransformComponent");
+		out << YAML::Key << "TransformComponent";
+		out << YAML::BeginMap;
 		{
-			out << YAML::Key << "TransformComponent";
-			out << YAML::BeginMap;
-			{
-				auto& transform = entity.GetComponents<TransformComponent>();
-				out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
-				out << YAML::Key << "EulerAngles" << YAML::Value << transform.EulerAngles;
-				out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
-			}
-			out << YAML::EndMap;
+			auto& transform = entity.GetComponents<TransformComponent>();
+			out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
+			out << YAML::Key << "EulerAngles" << YAML::Value << transform.EulerAngles;
+			out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
 		}
+		out << YAML::EndMap;
 
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// OTHER COMPONENTS
 		if (entity.HasComponents<SpriteComponent>())
 		{
 			out << YAML::Key << "SpriteComponent";
@@ -322,15 +328,15 @@ namespace Zahra
 		{
 			for (auto entityNode : entityNodes)
 			{
-				uint64_t uuid = entityNode["Entity"].as<uint64_t>(); // TODO: return to this when we have our UUID system in place
+				uint64_t uuid = entityNode["Entity"].as<uint64_t>();
 
-				std::string name;
+				std::string name = "unnamed_entity";
 				auto tagNode = entityNode["TagComponent"];
 				if (tagNode) name = tagNode["Tag"].as<std::string>();
 
 				Z_CORE_TRACE("Deserialising entity with ID = {0}, name = {1}", uuid, name);
 
-				Entity entity = m_Scene->CreateEntity(name); // TODO: ideally this would be an overloaded CreateEntity accepting a name AND a UUID
+				Entity entity = m_Scene->CreateEntity(uuid, name);
 
 				auto transformNode = entityNode["TransformComponent"];
 				if (transformNode)

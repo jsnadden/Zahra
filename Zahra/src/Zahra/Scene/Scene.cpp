@@ -24,11 +24,22 @@ namespace Zahra
 		m_Registry.clear();
 	}
 
+	// All entities will be created with an IDComponent, TagComponent and TransformComponent
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>();
+		entity.AddComponent<TagComponent>(name.empty() ? "unnamed_entity" : name);
 		entity.AddComponent<TransformComponent>();
-		auto& tag = entity.AddComponent<TagComponent>(name.empty() ? "anonymous_entity" : name);
+		return entity;
+	}
+
+	Entity Scene::CreateEntity(uint64_t guid, const std::string& name)
+	{
+		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>(guid);
+		entity.AddComponent<TagComponent>(name.empty() ? "unnamed_entity" : name);
+		entity.AddComponent<TransformComponent>();
 		return entity;
 	}
 
@@ -260,13 +271,17 @@ namespace Zahra
 	}
 	
 	// TODO: scrap the following nonsense. Currently only the cameracomponent utilises
-	// it, and otherwise it just leads to opaque compiler errors when forgotton
+	// it, and otherwise it just leads to opaque compiler errors when forgotten
 
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
-		static_assert(false); // must specialise this for each component type in use
+		static_assert(false);
 	}
+
+	template <>
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	{}
 
 	template <>
 	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)

@@ -1,24 +1,15 @@
 Scene: warrior.zsc
 Entities:
-  - Entity: 23152837592538
+  - Entity: 6774678113904311529
     TagComponent:
-      Tag: warrior
+      Tag: grass
     TransformComponent:
-      Translation: [0, 0.718417346, 2.5]
-      EulerAngles: [0, 0.785398245, 0]
-      Scale: [1.49999964, 1.6875, 0.999999881]
+      Translation: [0, 0, 0]
+      EulerAngles: [1.57079637, -0, 0]
+      Scale: [36.5999985, 35.6493721, 0.999990165]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
-    TagComponent:
-      Tag: wall2
-    TransformComponent:
-      Translation: [2.9987576, 1, -1.99999976]
-      EulerAngles: [-3.14159274, 1.5701983, -3.14159274]
-      Scale: [3.99999952, 2.5, 0.999999881]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 9534158750695785926
     TagComponent:
       Tag: wall1
     TransformComponent:
@@ -27,12 +18,21 @@ Entities:
       Scale: [5.5, 2.5, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 13462953152817718162
     TagComponent:
-      Tag: grass
+      Tag: wall2
     TransformComponent:
-      Translation: [0, 0, 0]
-      EulerAngles: [1.57079637, -0, 0]
-      Scale: [36.5999985, 35.6493721, 0.999990165]
+      Translation: [2.9987576, 1, -1.99999976]
+      EulerAngles: [-3.14159274, 1.5701983, -3.14159274]
+      Scale: [3.99999952, 2.5, 0.999999881]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+  - Entity: 10815946266352694818
+    TagComponent:
+      Tag: warrior
+    TransformComponent:
+      Translation: [0, 0.718417346, 2.5]
+      EulerAngles: [0, 0.785398245, 0]
+      Scale: [1.49999964, 1.6875, 0.999999881]
     SpriteComponent:
       Tint: [1, 1, 1, 1]

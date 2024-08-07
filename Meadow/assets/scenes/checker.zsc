@@ -1,17 +1,15 @@
 Scene: checker.zsc
 Entities:
-  - Entity: 23152837592538
+  - Entity: 7149676492262670363
     TagComponent:
       Tag: camera
     TransformComponent:
       Translation: [0, 0, 2.5999999]
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 0]
     CameraComponent:
       Camera:
-        ProjectionType: 1
+        ProjectionType: Perspective
         OrthographicSize: 10
         OrthographicNearClip: -1
         OrthographicFarClip: 1
@@ -20,7 +18,7 @@ Entities:
         PerspectiveFarClip: 1000
       Active: true
       FixedAspectRatio: false
-  - Entity: 23152837592538
+  - Entity: 10573866985179884234
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -29,7 +27,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 5565344200122472379
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -38,7 +36,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 0.702702701, 0.702702701, 1]
-  - Entity: 23152837592538
+  - Entity: 4832402026279183394
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -47,7 +45,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 10754612482539217752
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -56,7 +54,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 17083763726356592077
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -65,7 +63,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 11305942242498610870
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -74,7 +72,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 10112689817224802061
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -83,7 +81,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 14181737838236406542
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -92,7 +90,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 4377102402656268221
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -101,7 +99,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 2658300153683951054
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -110,7 +108,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 17098083789048078257
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -119,7 +117,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 7066612513354371975
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -128,7 +126,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 16646311279201764210
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -137,7 +135,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 9128154030627654672
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -146,7 +144,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 6812622339633384123
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -155,7 +153,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 8224432261910445321
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -164,7 +162,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 5755712873946324760
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -173,7 +171,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 8287554580932257829
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -182,7 +180,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 7422488240355159497
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -191,7 +189,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 4888133376951862979
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -200,7 +198,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 677533087851576464
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -209,7 +207,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 1296202349326099548
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -218,7 +216,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 6418171969837545567
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -227,7 +225,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 3654676241882100102
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -236,7 +234,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 12339453060700840381
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -245,7 +243,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 10564924191798874201
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -254,7 +252,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 16416223754978487693
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -263,7 +261,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 3303596898596010655
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -272,7 +270,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 15043435753061175669
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -281,7 +279,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 4590163452947386014
     TagComponent:
       Tag: New Entity
     TransformComponent:
@@ -290,7 +288,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-  - Entity: 23152837592538
+  - Entity: 9205702333088035384
     TagComponent:
       Tag: New Entity
     TransformComponent:

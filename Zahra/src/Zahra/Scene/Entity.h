@@ -56,6 +56,13 @@ namespace Zahra
 			return m_Scene->m_Registry.get<Types...>(m_EntityHandle);
 		}
 
+		ZGUID GetGUID()
+		{
+			Z_CORE_ASSERT(HasComponents<IDComponent>(), "Entity does not have an IDComponent.");
+
+			return GetComponents<IDComponent>().ID;
+		}
+
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }

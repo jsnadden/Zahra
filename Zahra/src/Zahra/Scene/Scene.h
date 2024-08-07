@@ -19,7 +19,8 @@ namespace Zahra
 		Scene();
 		~Scene();
 
-		Entity CreateEntity(const std::string& name = "anonymous_entity");
+		Entity CreateEntity(const std::string& name = "unnamed_entity");
+		Entity CreateEntity(uint64_t guid, const std::string& name = "unnamed_entity");
 		void DestroyEntity(Entity entity);
 		Entity DuplicateEntity(Entity entity);
 
