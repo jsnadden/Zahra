@@ -19,12 +19,14 @@ namespace Zahra
 		Scene();
 		~Scene();
 
+		static Ref<Scene> CopyScene(Ref<Scene> oldScene);
+
 		Entity CreateEntity(const std::string& name = "unnamed_entity");
 		Entity CreateEntity(uint64_t guid, const std::string& name = "unnamed_entity");
 		void DestroyEntity(Entity entity);
 		Entity DuplicateEntity(Entity entity);
 
-		void OnRuntimePlay();
+		void OnRuntimeStart();
 		void OnRuntimeStop();
 
 		void OnUpdateEditor(float dt, EditorCamera& camera);
@@ -43,7 +45,7 @@ namespace Zahra
 
 	private:
 		std::string m_SceneName;
-
+		
 		std::unique_ptr<b2World>(m_PhysicsWorld);
 		std::map<entt::entity, b2Body*> m_PhysicsBodies; // TODO: replace entt::entity with internal uuids?
 

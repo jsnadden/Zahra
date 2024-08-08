@@ -54,9 +54,9 @@ namespace Zahra
 		}
 
 		template <typename T>
-		void AddComponentMenuItem(const char* name, Entity entity)
+		void AddComponentMenuItem(const char* name, Entity entity, bool enabled)
 		{
-			if (ImGui::MenuItem(name, 0, false, !entity.HasComponents<T>()))
+			if (ImGui::MenuItem(name, 0, false, enabled && !entity.HasComponents<T>()))
 			{
 				entity.AddComponent<T>();
 				ImGui::CloseCurrentPopup();

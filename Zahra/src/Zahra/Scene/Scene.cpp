@@ -24,6 +24,51 @@ namespace Zahra
 		m_Registry.clear();
 	}
 
+	template<typename ComponentType>
+	static void CopyComponent(entt::registry& newReg, entt::registry& oldReg, std::unordered_map<ZGUID, entt::entity> guidToNewHandle)
+	{
+		auto componentView = oldReg.view<ComponentType>();
+		for (auto oldHandle : componentView)
+		{
+			ZGUID guid = oldReg.get<IDComponent>(oldHandle).ID;
+			entt::entity newHandle = guidToNewHandle[guid];
+
+			auto& oldComponent = oldReg.get<ComponentType>(oldHandle);
+			auto& newComponent = newReg.emplace_or_replace<ComponentType>(newHandle, oldComponent);
+		}
+
+	}
+
+	Ref<Scene> Scene::CopyScene(Ref<Scene> oldScene)
+	{
+		Ref<Scene> newScene = CreateRef<Scene>();
+
+		newScene->m_ViewportWidth = oldScene->m_ViewportWidth;
+		newScene->m_ViewportHeight = oldScene->m_ViewportHeight;
+
+		auto& oldRegistry = oldScene->m_Registry;
+		auto& newRegistry = newScene->m_Registry;
+
+		std::unordered_map<ZGUID, entt::entity> guidToNewHandle;
+
+		oldRegistry.view<entt::entity>().each([&](auto entityHandle)
+			{
+				Entity oldEntity = { entityHandle, oldScene.get() };
+				ZGUID guid = oldEntity.GetGUID();
+				guidToNewHandle[guid] = (entt::entity)newScene->CreateEntity(guid, oldEntity.GetComponents<TagComponent>().Tag);
+			});
+
+		// copy components // TODO: a component registry or reflection would be lovely
+		CopyComponent<TransformComponent>(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<SpriteComponent>(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<CameraComponent>(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<RigidBody2DComponent>(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<RectColliderComponent>(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<NativeScriptComponent>(newRegistry, oldRegistry, guidToNewHandle);
+
+		return newScene;
+	}
+
 	// All entities will be created with an IDComponent, TagComponent and TransformComponent
 	Entity Scene::CreateEntity(const std::string& name)
 	{
@@ -59,7 +104,7 @@ namespace Zahra
 		return Entity();
 	}
 
-	void Scene::OnRuntimePlay()
+	void Scene::OnRuntimeStart()
 	{
 		InitPhysicsWorld();
 

@@ -13,7 +13,7 @@ namespace Zahra
 
 		void SetContext(const Ref<Scene>& context);
 
-		void OnImGuiRender();
+		void OnImGuiRender(bool editing);
 
 		// TODO: find a better way of doing this (e.g. listeners have callback functions OnSelectionChange())
 		Entity GetSelectedEntity() const { return m_Selected; }

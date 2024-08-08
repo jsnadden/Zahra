@@ -27,19 +27,21 @@ namespace Zahra
 	private:
 
 		Ref<Scene> m_ActiveScene;
+		Ref<Scene> m_EditorScene;
+
 		EditorCamera m_EditorCamera;
 
 		std::map<std::string, Ref<Texture2D>> m_Icons;
 
-		enum class SceneState // TODO: move this to the scene class, add Paused?
+		enum class SceneState // TODO: add Paused?
 		{
 			Edit = 0, Play = 1
 		};
 
 		SceneState m_SceneState = SceneState::Edit;
 
-		void OnPressPlay();
-		void OnPressStop();
+		void ScenePlay();
+		void SceneStop();
 
 		// Saving/opening scene files
 		const wchar_t* m_FileTypesFilter[2] = { L"Zahra Scene", L"*.zsc" };

@@ -17,9 +17,8 @@ namespace Zahra
 		m_Context = context;
 	}
 
-	void SceneHierarchyPanel::OnImGuiRender()
+	void SceneHierarchyPanel::OnImGuiRender(bool editing)
 	{
-
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// HIERARCHY PANEL
 		std::string windowName = "Scene Hierarchy: " + m_Context->GetName() + "###Scene Hierarchy";
@@ -55,7 +54,7 @@ namespace Zahra
 			// right clicking on empty window space brings up this menu
 			if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 			{
-				if (ImGui::MenuItem("Create New Entity"))
+				if (ImGui::MenuItem("Create New Entity", nullptr, nullptr, editing))
 				{
 					m_Selected = m_Context->CreateEntity("New Entity");
 				}
@@ -86,10 +85,10 @@ namespace Zahra
 					// (another) TODO: eventually it might be better just to have a static "add
 					// component" button, and make this a full pop-up window (searchable?)
 
-					MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
-					MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
-					MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
-					MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected, editing);
+					MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected, editing);
+					MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected, editing);
+					MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected, editing);
 
 					ImGui::EndPopup();
 				}

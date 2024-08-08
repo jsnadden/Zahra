@@ -298,9 +298,9 @@ namespace Zahra
 		out << YAML::Value << sceneName;
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
-		m_Scene->m_Registry.view<entt::entity>().each([&](auto entityID)
+		m_Scene->m_Registry.view<entt::entity>().each([&](auto entityHandle)
 			{
-				Entity entity = { entityID, m_Scene.get() };
+				Entity entity = { entityHandle, m_Scene.get() };
 				if (!entity) return;
 
 				SerialiseEntity(out, entity);

@@ -23,13 +23,14 @@ namespace Zahra
 
 		m_Framebuffer = Framebuffer::Create(framebufferSpec);
 
-		m_ActiveScene = CreateRef<Scene>();
+		m_EditorScene = CreateRef<Scene>();
+		m_ActiveScene = m_EditorScene;
 
 		auto commandLineArgs = Application::Get().GetCommandLineArgs();
 		if (commandLineArgs.Count > 1)
 		{
 			auto sceneFilePath = commandLineArgs[1];
-			SceneSerialiser serialiser(m_ActiveScene);
+			SceneSerialiser serialiser(m_EditorScene);
 			serialiser.DeserialiseYaml(sceneFilePath);
 		}
 
@@ -117,24 +118,24 @@ namespace Zahra
 		UIControls();
 		UIStatsWindow();
 
-		m_SceneHierarchyPanel.OnImGuiRender();
+		m_SceneHierarchyPanel.OnImGuiRender(m_SceneState == SceneState::Edit);
 		m_ContentBrowserPanel.OnImGuiRender();
 	}
 
-	void EditorLayer::OnPressPlay()
+	void EditorLayer::ScenePlay()
 	{
-		// TODO: cache a copy of active scene
-
-		m_ActiveScene->OnRuntimePlay();
 		m_SceneState = SceneState::Play;
+
+		m_ActiveScene = Scene::CopyScene(m_EditorScene);
+		m_ActiveScene->OnRuntimeStart();
 	}
 
-	void EditorLayer::OnPressStop()
+	void EditorLayer::SceneStop()
 	{
-		// TODO: delete active scene and load the cached one, to reset everything
+		m_SceneState = SceneState::Edit;
 
 		m_ActiveScene->OnRuntimeStop();
-		m_SceneState = SceneState::Edit;
+		m_ActiveScene = m_EditorScene;
 	}
 
 	void EditorLayer::UIMenuBar()
@@ -190,7 +191,7 @@ namespace Zahra
 			if (ImGui::ImageButton((ImTextureID)m_Icons["Play"]->GetRendererID(),
 				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
 			{
-				OnPressPlay();
+				ScenePlay();
 			}
 		}
 		else if (m_SceneState == SceneState::Play)
@@ -198,7 +199,7 @@ namespace Zahra
 			if (ImGui::ImageButton((ImTextureID)m_Icons["Stop"]->GetRendererID(),
 				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
 			{
-				OnPressStop();
+				SceneStop();
 			}
 		}
 		ImGui::PopStyleColor();
@@ -402,7 +403,7 @@ namespace Zahra
 				Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
 				if (selection)
 				{
-					m_ActiveScene->DestroyEntity(selection);
+					m_ActiveScene->DestroyEntity(selection); // TODO: avoid deleting certain objects (e.g. those subject to Box2D)
 					m_SceneHierarchyPanel.SelectEntity({});
 				}
 				break;
@@ -433,10 +434,17 @@ namespace Zahra
 
 	void EditorLayer::NewScene()
 	{
-		m_ActiveScene = CreateRef<Scene>();
-		m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		m_CurrentFilePath.clear();
+		if (m_SceneState != SceneState::Edit) SceneStop();
+
+		{
+			m_EditorScene = CreateRef<Scene>();
+
+			m_EditorScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+			m_CurrentFilePath.clear();
+
+			m_ActiveScene = m_EditorScene;
+			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		}
 	}
 
 	void EditorLayer::OpenSceneFile()
@@ -447,16 +455,30 @@ namespace Zahra
 
 	void EditorLayer::OpenSceneFile(std::filesystem::path filepath)
 	{
-		if (!filepath.empty())
+		if (filepath.empty()) return;
+		
+		if (m_SceneState == SceneState::Edit) SceneStop();
+
+		if (filepath.extension().string() != ".zsc")
 		{
-			NewScene();
+			Z_WARN("Couldn't open {0} - scene files must have extension '.zsc'", filepath.filename().string());
+			return;
+		}
+
+		Ref<Scene> newScene = CreateRef<Scene>();
+		SceneSerialiser serialiser(newScene);
+		if (serialiser.DeserialiseYaml(filepath.string()))
+		{
+			m_EditorScene = newScene;
+
+			m_EditorScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 
 			std::string sceneName = filepath.filename().string();
-			m_ActiveScene->SetName(sceneName);
+			m_EditorScene->SetName(sceneName);
 			m_CurrentFilePath = filepath;
 
-			SceneSerialiser serialiser(m_ActiveScene);
-			serialiser.DeserialiseYaml(filepath.string());
+			m_ActiveScene = m_EditorScene;
+			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 		}
 
 		// TODO: report/display success of file open
@@ -471,9 +493,9 @@ namespace Zahra
 		else
 		{
 			std::string sceneName = m_CurrentFilePath.filename().string();
-			m_ActiveScene->SetName(sceneName);
+			m_EditorScene->SetName(sceneName);
 			
-			SceneSerialiser serialiser(m_ActiveScene);
+			SceneSerialiser serialiser(m_EditorScene);
 			serialiser.SerialiseYaml(m_CurrentFilePath.string());
 		}
 
@@ -486,10 +508,10 @@ namespace Zahra
 		if (!filepath.empty())
 		{
 			std::string sceneName = filepath.filename().string();
-			m_ActiveScene->SetName(sceneName);
+			m_EditorScene->SetName(sceneName);
 			m_CurrentFilePath = filepath;
 
-			SceneSerialiser serialiser(m_ActiveScene);
+			SceneSerialiser serialiser(m_EditorScene);
 			serialiser.SerialiseYaml(m_CurrentFilePath.string());
 		}
 
