@@ -1,6 +1,8 @@
 #include "SceneHierarchyPanel.h"
 
-#include "EntityUIPatterns.h"
+#include "MeadowUIPatterns.h"
+
+#include <iomanip>
 
 namespace Zahra
 {
@@ -80,11 +82,14 @@ namespace Zahra
 				{
 					// TODO: keep adding to this list as we include new component types (e.g. scripts!!)
 					// WARNING: Don't forget to add a corresponding OnComponentAdded specialisation to Scene!!
+					
+					// (another) TODO: eventually it might be better just to have a static "add
+					// component" button, and make this a full pop-up window (searchable?)
 
-					EntityUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
-					EntityUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
-					EntityUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
-					EntityUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);
 
 					ImGui::EndPopup();
 				}
@@ -113,7 +118,7 @@ namespace Zahra
 
 		if (ImGui::BeginPopupContextItem())
 		{
-			if (ImGui::MenuItem("Add child", 0, false, false)); // TODO: make this happen
+			if (ImGui::MenuItem("Add child", 0, false, false)) int i = 0; // TODO: make this happen
 			if (ImGui::MenuItem("Delete entity")) entityDeleted = true;
 
 			ImGui::EndPopup();
@@ -137,164 +142,139 @@ namespace Zahra
 		
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
-		// TODO: beautify these controls
+		Z_CORE_ASSERT(entity.HasComponents<TagComponent>(), "All entities must have a TagComponent")
 
-		if (entity.HasComponents<TagComponent>())
-		{
 			std::string& tag = entity.GetComponents<TagComponent>().Tag;
 
-			// this necessitates a max tag size of 255 ascii characters (plus null terminator)
-			char buffer[256];
-			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, tag.c_str());
+		// this necessitates a max tag size of 255 ascii characters (plus null terminator)
+		char buffer[256];
+		memset(buffer, 0, sizeof(buffer));
+		strcpy_s(buffer, tag.c_str());
 
-			if (ImGui::BeginTable("entitytag", 2))
+		if (ImGui::BeginTable("EntityID+Tag", 2))
+		{
+			ImGui::TableSetupColumn("label", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+			ImGui::TableSetupColumn("text");
+
+			ImGui::TableNextColumn();
 			{
-				ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-				ImGui::TableSetupColumn("text");
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Name");
+			}
 
-				ImGui::TableNextColumn();				
+			ImGui::TableNextColumn();
+			{
+				ImGui::PushItemWidth(ImGui::GetColumnWidth());
+				if (ImGui::InputText("", buffer, sizeof(buffer)))
 				{
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text("Name");
+					if (ImGui::IsWindowFocused()) tag = std::string(buffer);
 				}
-				
-				ImGui::TableNextColumn();
-				{
-					ImGui::PushItemWidth(ImGui::GetColumnWidth());
-					if (ImGui::InputText("", buffer, sizeof(buffer)))
-					{
-						if (ImGui::IsWindowFocused()) tag = std::string(buffer);
-					}
-					ImGui::PopItemWidth();
-				}
+				ImGui::PopItemWidth();
+			}
 
-				ImGui::EndTable();
-			}			
+			ImGui::TableNextColumn();
+			{
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("GUID");
+			}
+
+			ImGui::TableNextColumn();
+			{
+				std::stringstream stream;
+				stream << "0x" << std::uppercase << std::hex << (uint64_t)entity.GetGUID();
+
+				ImGui::PushItemWidth(ImGui::GetColumnWidth());
+				ImGui::Text(stream.str().c_str());
+				ImGui::PopItemWidth();
+			}
+
+			ImGui::EndTable();
 		}
 
-		EntityUIPatterns::DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<TransformComponent>("Transform Component", entity, [](auto& component)
 				{
-					EntityUIPatterns::DrawVec3Controls("Position", component.Translation);
-					EntityUIPatterns::DrawVec3Controls("Dimensions", component.Scale, 1.0f, .05f, true);
+					MeadowUIPatterns::DrawFloat3Controls("Position", component.Translation);
+					MeadowUIPatterns::DrawFloat3Controls("Dimensions", component.Scale, 1.0f, .05f, true);
 
 					glm::vec3& rotation = glm::degrees(component.EulerAngles);
-					EntityUIPatterns::DrawVec3Controls("Euler Angles", rotation, .0f, 1.f);
+					MeadowUIPatterns::DrawFloat3Controls("Euler Angles", rotation, .0f, 1.f);
 					component.EulerAngles = glm::radians(rotation);
 				});
 		
-		EntityUIPatterns::DrawComponent<SpriteComponent>("Sprite", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<SpriteComponent>("Sprite Component", entity, [](auto& component)
 			{
-				ImGui::ColorEdit4("Tint", glm::value_ptr(component.Tint));
+				//ImGui::ColorEdit4("Tint", glm::value_ptr(component.Tint));
 
-				ImGui::Button("drop texture here"); // TODO: make this something nicer, ideally displaying a name? NEED ASSET MANAGER!!!
+				MeadowUIPatterns::DrawRGBAControl("Tint Colour", component.Tint);
 
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_IMAGE"))
-					{
-						char filepath[256];
-						strcpy_s(filepath, (const char*)payload->Data);
+				MeadowUIPatterns::DrawTextureDrop("Sprite Sheet", component.Texture);
 
-						component.Texture = Texture2D::Create(filepath);
-					}
-
-					ImGui::EndDragDropTarget();
-				}
-
-				ImGui::DragFloat("Texture tiling", &component.TextureTiling, .01f, .0f, 100.f, "%.2f");
+				MeadowUIPatterns::DrawFloatControl("Tiling Factor", component.TextureTiling, .01f, false, .0f, 100.f);
 			});
 
-		EntityUIPatterns::DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<CameraComponent>("Camera Component", entity, [](auto& component)
 				{
 					SceneCamera& camera = component.Camera;
 
-					ImGui::Checkbox("Active", &component.Active);
+					MeadowUIPatterns::DrawBoolControl("Active", component.Active);
 
 					const char* projectionTypeStrings[] = { "Orthographic", "Perspective" };
-					int currentProjectionType = (int)camera.GetProjectionType();
+					SceneCamera::ProjectionType currentProjectionType = (SceneCamera::ProjectionType)MeadowUIPatterns::DrawComboControl("Projection Type", projectionTypeStrings, 2, (int)camera.GetProjectionType());
+					camera.SetProjectionType(currentProjectionType);
 
-					if (ImGui::BeginCombo("Type", projectionTypeStrings[currentProjectionType]))
-					{
-						for (int i = 0; i < 2; i++)
-						{
-							if (ImGui::Selectable(projectionTypeStrings[i], currentProjectionType == i))
-							{
-								currentProjectionType = i;
-								camera.SetProjectionType((SceneCamera::ProjectionType)i);
-							}
-
-							if (currentProjectionType == i)
-								ImGui::SetItemDefaultFocus();
-						}
-
-						ImGui::EndCombo();
-					}
-
-					if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+					if (currentProjectionType == SceneCamera::ProjectionType::Orthographic)
 					{
 						float size = camera.GetOrthographicSize();
-						if (ImGui::DragFloat("Size", &size, .05f, .5f, 50.0f, "%.2f", 32)) camera.SetOrthographicSize(size);
+						MeadowUIPatterns::DrawFloatControl("Size", size, .05f, true, .5f, 50.f);
+						camera.SetOrthographicSize(size);
 
 						float nearClip = camera.GetOrthographicNearClip();
-						if (ImGui::DragFloat("Near", &nearClip, .01f)) camera.SetOrthographicNearClip(nearClip);
+						MeadowUIPatterns::DrawFloatControl("Near-Clip Plane", nearClip, .01f);
+						camera.SetOrthographicNearClip(nearClip);
 
 						float farClip = camera.GetOrthographicFarClip();
-						if (ImGui::DragFloat("Far", &farClip, .01f)) camera.SetOrthographicFarClip(farClip);
-
-
-						ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
+						MeadowUIPatterns::DrawFloatControl("Far-Clip Plane", farClip, .01f);
+						camera.SetOrthographicFarClip(farClip);
+	
+						MeadowUIPatterns::DrawBoolControl("Fixed Aspect Ratio", component.FixedAspectRatio);
 					}
 
-					if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+					if (currentProjectionType == SceneCamera::ProjectionType::Perspective)
 					{
 						float fov = glm::degrees(camera.GetPerspectiveFOV());
-						if (ImGui::DragFloat("FOV", &fov, .1f, 10.f, 170.f, "%.1f")) camera.SetPerspectiveFOV(glm::radians(fov));
+						MeadowUIPatterns::DrawFloatControl("FOV", fov, .1f, false, 10.f, 170.f);
+						camera.SetPerspectiveFOV(glm::radians(fov));
 
 						float nearClip = camera.GetPerspectiveNearClip();
-						if (ImGui::DragFloat("Near", &nearClip, .01f, .01f, 1.99f, "%.2f")) camera.SetPerspectiveNearClip(nearClip);
+						MeadowUIPatterns::DrawFloatControl("Near-Clip Plane", nearClip, .01f, false, .01f, 1.99f);
+						camera.SetPerspectiveNearClip(nearClip);
 
 						float farClip = camera.GetPerspectiveFarClip();
-						if (ImGui::DragFloat("Far", &farClip, 1.f, 2.f, 10000.f, "%.0f")) camera.SetPerspectiveFarClip(farClip);
+						MeadowUIPatterns::DrawFloatControl("Far-Clip Plane", farClip, 1.f, false, 2.f, 10000.f);
+						camera.SetPerspectiveFarClip(farClip);
 					}
 				});
 		
-		EntityUIPatterns::DrawComponent<RigidBody2DComponent>("2D Rigid Body", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<RigidBody2DComponent>("2D Rigid Body Component", entity, [](auto& component)
 			{
 				
 				const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
-				int currentBodyType = (int)component.Type;
+				RigidBody2DComponent::BodyType currentBodyType = (RigidBody2DComponent::BodyType)MeadowUIPatterns::DrawComboControl("Body Type", bodyTypeStrings, 3, (int)component.Type);
+				component.Type = currentBodyType;
 
-				if (ImGui::BeginCombo("Type", bodyTypeStrings[currentBodyType]))
-				{
-					for (int i = 0; i < 3; i++)
-					{
-						if (ImGui::Selectable(bodyTypeStrings[i], currentBodyType == i))
-						{
-							currentBodyType = i;
-							component.Type = (RigidBody2DComponent::BodyType)i;
-						}
-
-						if (currentBodyType == i)
-							ImGui::SetItemDefaultFocus();
-					}
-
-					ImGui::EndCombo();
-				}
-
-				ImGui::Checkbox("Non-rotating", &component.FixedRotation);
+				MeadowUIPatterns::DrawBoolControl("Non-Rotating", component.FixedRotation);
 			});
 
-		EntityUIPatterns::DrawComponent<RectColliderComponent>("2D Rectangular Collider", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<RectColliderComponent>("2D Rectangular Collider Component", entity, [](auto& component)
 			{
-				EntityUIPatterns::DrawVec2Controls("Offset", component.Offset);
-				EntityUIPatterns::DrawVec2Controls("Size", component.HalfExtent, 0.5f, .05f, true);
+				MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
+				MeadowUIPatterns::DrawFloat2Controls("Size", component.HalfExtent, 0.5f, .05f, true);
 
 				// TODO: investigate physically reasonable ranges
-				EntityUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
-				EntityUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
-				EntityUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
-				EntityUIPatterns::DrawFloatControl("Threshold", component.RestitutionThreshold, .01f, false, .0f);
+				MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
 			});
 		
 	}
