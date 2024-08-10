@@ -52,9 +52,16 @@ namespace Zahra
 		entt::basic_registry<entt::entity> m_Registry; // TODO: custom UUIDs (change the template param)
 		float m_ViewportWidth = 1.0f, m_ViewportHeight = 1.0f;
 
-		// TODO: find a better way of doing this!
 		template<typename T>
-		void OnComponentAdded(Entity entity, T& component); // must specialise this for each component type in use.
+		void OnComponentAdded(T& component)
+		{}
+		
+		template <>
+		void Scene::OnComponentAdded<CameraComponent>(CameraComponent& component)
+		{
+			if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
+				component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		}
 
 		friend class Entity;
 		friend class SceneHierarchyPanel;

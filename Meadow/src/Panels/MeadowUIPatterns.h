@@ -29,7 +29,7 @@ namespace Zahra
 				bool removedComponent = false;
 				if (ImGui::BeginPopupContextItem())
 				{
-					if (ImGui::MenuItem("Remove component", 0, false, !T::Essential)) removedComponent = true;
+					if (ImGui::MenuItem("Remove component", 0, false, !std::is_same<T, TransformComponent>::value)) removedComponent = true;
 
 					ImGui::EndPopup();
 				}

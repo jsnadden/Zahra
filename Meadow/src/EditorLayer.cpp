@@ -457,7 +457,7 @@ namespace Zahra
 	{
 		if (filepath.empty()) return;
 		
-		if (m_SceneState == SceneState::Edit) SceneStop();
+		if (m_SceneState != SceneState::Edit) SceneStop();
 
 		if (filepath.extension().string() != ".zsc")
 		{

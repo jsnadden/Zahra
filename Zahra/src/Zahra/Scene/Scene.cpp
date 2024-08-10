@@ -17,6 +17,10 @@ namespace Zahra
 	Scene::Scene()
 	{
 		m_SceneName = "Untitled";
+		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<IDComponent>>();
+		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<TagComponent>>();
+		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<TransformComponent>>();
+		//m_Registry.on_construct<CameraComponent>().connect<&OnCameraComponentAdded>();
 	}
 
 	Scene::~Scene()
@@ -73,18 +77,14 @@ namespace Zahra
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
-		entity.AddComponent<IDComponent>();
-		entity.AddComponent<TagComponent>(name.empty() ? "unnamed_entity" : name);
-		entity.AddComponent<TransformComponent>();
+		entity.GetComponents<TagComponent>().Tag = name.empty() ? "unnamed_entity" : name;
 		return entity;
 	}
 
 	Entity Scene::CreateEntity(uint64_t guid, const std::string& name)
 	{
-		Entity entity = { m_Registry.create(), this };
-		entity.AddComponent<IDComponent>(guid);
-		entity.AddComponent<TagComponent>(name.empty() ? "unnamed_entity" : name);
-		entity.AddComponent<TransformComponent>();
+		Entity entity = Scene::CreateEntity(name);
+		entity.GetComponents<IDComponent>().ID = { guid };
 		return entity;
 	}
 
@@ -314,50 +314,6 @@ namespace Zahra
 
 		return {};
 	}
-	
-	// TODO: scrap the following nonsense. Currently only the cameracomponent utilises
-	// it, and otherwise it just leads to opaque compiler errors when forgotten
-
-	template<typename T>
-	void Scene::OnComponentAdded(Entity entity, T& component)
-	{
-		static_assert(false);
-	}
-
-	template <>
-	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
-	{
-		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
-			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-	}
-
-	template <>
-	void Scene::OnComponentAdded<SpriteComponent>(Entity entity, SpriteComponent& component)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<RectColliderComponent>(Entity entity, RectColliderComponent& component)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
-	{}
 
 }
 

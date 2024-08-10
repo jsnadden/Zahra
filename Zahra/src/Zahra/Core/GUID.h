@@ -4,7 +4,7 @@
 
 namespace Zahra
 {
-	class ZGUID  // TODO: use 128bit ids instead?
+	class ZGUID
 	{
 	public:
 		ZGUID();

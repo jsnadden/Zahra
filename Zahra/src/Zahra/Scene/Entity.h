@@ -33,7 +33,16 @@ namespace Zahra
 			
 			T& component =  m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			
-			// TODO: find a better way of doing this!
+			m_Scene->OnComponentAdded<T>(component);
+
+			return component;
+		}
+
+		template<typename T, typename ...Args>
+		T& AddOrReplaceComponent(Args&& ...args)
+		{
+			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
+
 			m_Scene->OnComponentAdded<T>(*this, component);
 
 			return component;
@@ -43,7 +52,7 @@ namespace Zahra
 		void RemoveComponent()
 		{
 			Z_CORE_ASSERT(HasComponents<T>(), "Entity does not have component of requested type.");
-			Z_CORE_ASSERT(!T::Essential, "Component cannot be removed.");
+			//Z_CORE_ASSERT(!T::Essential, "Component cannot be removed.");
 
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}

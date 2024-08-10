@@ -17,12 +17,10 @@ namespace Zahra
 {
 	// For every component struct added, make sure to do the following:
 	// 1) the component MUST declare a default constructor/copy constructor
-	// 2) the component MUST declare static const bool Essential = true/false (essential components can never be removed from an entity)
-	// 3) add a specialisation of OnComponentAdded in Scene.cpp
-	// 4) add component properties UI code, and add/remove context menus, in SceneHierarchyPanel.cpp
-	// 5) add component serialisation code in SceneSerialiser.cpp
+	// 2) add component properties UI code, and add/remove context menus, in SceneHierarchyPanel.cpp
+	// 3) add component serialisation code in SceneSerialiser.cpp
 	//
-	// [TODO: with reflection this stuff might simplify]
+	// [TODO: reflection should automate 2) and 3)]
 
 	struct IDComponent
 	{
@@ -33,7 +31,6 @@ namespace Zahra
 		IDComponent(const ZGUID& guid)
 			: ID(guid) {}
 
-		static const bool Essential = true;
 	};
 
 	struct TagComponent
@@ -48,7 +45,6 @@ namespace Zahra
 		operator std::string& () { return Tag; }
 		operator const std::string& () const { return Tag; }
 
-		static const bool Essential = true;
 	};
 
 	struct TransformComponent
@@ -69,7 +65,6 @@ namespace Zahra
 				 * glm::scale(glm::mat4(1.0f), Scale);
 		}
 
-		static const bool Essential = true;
 	};
 
 	struct SpriteComponent
@@ -86,10 +81,6 @@ namespace Zahra
 		SpriteComponent(const glm::vec4& tint)
 			: Tint(tint) {}
 
-		
-		// TODO: don't forget to add stuff to the sceneserialiser methods!!
-
-		static const bool Essential = false;
 	};
 
 	struct CameraComponent
@@ -105,8 +96,6 @@ namespace Zahra
 		CameraComponent(bool fixedRatio)
 			: FixedAspectRatio(fixedRatio) {}
 
-
-		static const bool Essential = false;
 	};
 
 	// PHYSICS COMPONENTS
@@ -122,7 +111,6 @@ namespace Zahra
 		RigidBody2DComponent() = default;
 		RigidBody2DComponent(const RigidBody2DComponent&) = default;
 
-		static const bool Essential = false;
 	};
 
 	struct RectColliderComponent // TODO: triangles and circles?
@@ -139,7 +127,6 @@ namespace Zahra
 		RectColliderComponent() = default;
 		RectColliderComponent(const RectColliderComponent&) = default;
 
-		static const bool Essential = false;
 	};
 
 	class ScriptableEntity;
@@ -162,7 +149,6 @@ namespace Zahra
 			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 		}
 
-		static const bool Essential = false;
 	};
 
 	//class CameraController : public ScriptableEntity
