@@ -40,6 +40,7 @@ namespace Zahra
 
 		m_Icons["Play"] = Texture2D::Create("Resources/Icons/Controls/play.png");
 		m_Icons["Stop"] = Texture2D::Create("Resources/Icons/Controls/stop.png");
+		m_Icons["Replay"] = Texture2D::Create("Resources/Icons/Controls/replay.png");
 
 	}
 
@@ -90,7 +91,10 @@ namespace Zahra
 					m_ActiveScene->OnUpdateRuntime(dt);
 				}
 
-				if (m_ViewportHovered) ReadHoveredEntity();
+				if (m_ViewportHovered)
+				{
+					ReadHoveredEntity();
+				}
 			}
 			m_Framebuffer->Unbind();
 			
@@ -118,7 +122,7 @@ namespace Zahra
 		UIControls();
 		UIStatsWindow();
 
-		m_SceneHierarchyPanel.OnImGuiRender(m_SceneState == SceneState::Edit);
+		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 	}
 
@@ -128,6 +132,8 @@ namespace Zahra
 
 		m_ActiveScene = Scene::CopyScene(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::SceneStop()
@@ -136,6 +142,8 @@ namespace Zahra
 
 		m_ActiveScene->OnRuntimeStop();
 		m_ActiveScene = m_EditorScene;
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::UIMenuBar()
@@ -200,6 +208,15 @@ namespace Zahra
 				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
 			{
 				SceneStop();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::ImageButton((ImTextureID)m_Icons["Replay"]->GetRendererID(),
+				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			{
+				SceneStop();
+				ScenePlay();
 			}
 		}
 		ImGui::PopStyleColor();

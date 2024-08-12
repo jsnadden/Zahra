@@ -13,14 +13,15 @@
 
 namespace Zahra
 {
-	
+
 	Scene::Scene()
 	{
 		m_SceneName = "Untitled";
+
 		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<IDComponent>>();
 		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<TagComponent>>();
 		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<TransformComponent>>();
-		//m_Registry.on_construct<CameraComponent>().connect<&OnCameraComponentAdded>();
+		m_Registry.on_construct<CameraComponent>().connect<&Scene::InitCameraComponent>(this);
 	}
 
 	Scene::~Scene()
@@ -31,6 +32,7 @@ namespace Zahra
 	template<typename ComponentType>
 	static void CopyComponent(entt::registry& newReg, entt::registry& oldReg, std::unordered_map<ZGUID, entt::entity> guidToNewHandle)
 	{
+
 		auto componentView = oldReg.view<ComponentType>();
 		for (auto oldHandle : componentView)
 		{
@@ -38,7 +40,7 @@ namespace Zahra
 			entt::entity newHandle = guidToNewHandle[guid];
 
 			auto& oldComponent = oldReg.get<ComponentType>(oldHandle);
-			auto& newComponent = newReg.emplace_or_replace<ComponentType>(newHandle, oldComponent);
+			newReg.emplace_or_replace<ComponentType>(newHandle, oldComponent);
 		}
 
 	}
@@ -55,6 +57,9 @@ namespace Zahra
 
 		std::unordered_map<ZGUID, entt::entity> guidToNewHandle;
 
+		// TODO: figure out how to simplify this using entt (meta or snapshot)
+
+		// copy entities
 		oldRegistry.view<entt::entity>().each([&](auto entityHandle)
 			{
 				Entity oldEntity = { entityHandle, oldScene.get() };
@@ -62,11 +67,11 @@ namespace Zahra
 				guidToNewHandle[guid] = (entt::entity)newScene->CreateEntity(guid, oldEntity.GetComponents<TagComponent>().Tag);
 			});
 
-		// copy components // TODO: a component registry or reflection would be lovely
-		CopyComponent<TransformComponent>(newRegistry, oldRegistry, guidToNewHandle);
-		CopyComponent<SpriteComponent>(newRegistry, oldRegistry, guidToNewHandle);
-		CopyComponent<CameraComponent>(newRegistry, oldRegistry, guidToNewHandle);
-		CopyComponent<RigidBody2DComponent>(newRegistry, oldRegistry, guidToNewHandle);
+		// copy components
+		CopyComponent<TransformComponent>	(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<SpriteComponent>		(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<CameraComponent>		(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<RigidBody2DComponent>	(newRegistry, oldRegistry, guidToNewHandle);
 		CopyComponent<RectColliderComponent>(newRegistry, oldRegistry, guidToNewHandle);
 		CopyComponent<NativeScriptComponent>(newRegistry, oldRegistry, guidToNewHandle);
 
@@ -97,11 +102,20 @@ namespace Zahra
 	Entity Scene::DuplicateEntity(Entity entity)
 	{
 		// TODO: implement this, using:
-		// https://github.com/skypjack/entt/wiki/Crash-Course:-entity-component-system#meet-the-runtime
+		// https://github.com/skypjack/entt/discussions/684#discussion-3299774
 		// https://github.com/skypjack/entt/issues/694
-		// add "(copy)" to the tag?
 
-		return Entity();
+		std::string newTag = entity.GetComponents<TagComponent>().Tag + " copy";
+		Entity copy = CreateEntity(newTag);
+
+		// TODO: copy components
+		/*for (auto&& [id, storage] : m_Registry.storage()) {
+			if (storage.contains((entt::entity)entity)) {
+				storage.push(copy, storage.value(entity));
+			}
+		}*/
+
+		return copy;
 	}
 
 	void Scene::OnRuntimeStart()
@@ -211,7 +225,7 @@ namespace Zahra
 				{
 					auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
 
-					Renderer::DrawSprite(transform.GetTransform(), sprite);
+					Renderer::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 				}
 
 				Renderer::EndScene();

@@ -1,24 +1,23 @@
 Scene: physics_test.zsc
 Entities:
-  - Entity: 11664687835891534900
+  - Entity: 16706009162972386994
     TagComponent:
-      Tag: Box1
+      Tag: Camera
     TransformComponent:
-      Translation: [-0.233143926, 5.61061716, 0]
-      EulerAngles: [0, -0, 0.785572648]
-      Scale: [0.999981999, 0.999981999, 1]
-    SpriteComponent:
-      Tint: [0.99227798, 0.743250728, 0.283507973, 1]
-    RigidBody2DComponent:
-      Type: Dynamic
-      FixedRotation: false
-    RectColliderComponent:
-      Offset: [0, 0]
-      HalfExtent: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.5
-      RestitutionThreshold: 0.5
+      Translation: [0, 0, 9.5]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: Perspective
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 1.04719758
+        PerspectiveNearClip: 0.00999999978
+        PerspectiveFarClip: 1000
+      Active: true
+      FixedAspectRatio: false
   - Entity: 17875914245172890649
     TagComponent:
       Tag: Platform
@@ -38,21 +37,22 @@ Entities:
       Friction: 0.5
       Restitution: 0.5
       RestitutionThreshold: 0.5
-  - Entity: 16706009162972386994
+  - Entity: 11664687835891534900
     TagComponent:
-      Tag: Camera
+      Tag: Box1
     TransformComponent:
-      Translation: [0, 0, 9.5]
-      EulerAngles: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: Perspective
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 1.04719758
-        PerspectiveNearClip: 0.00999999978
-        PerspectiveFarClip: 1000
-      Active: true
-      FixedAspectRatio: false
+      Translation: [-0.233143926, 5.61061716, 0]
+      EulerAngles: [0, -0, 1.20869851]
+      Scale: [0.999982238, 0.999982238, 1]
+    SpriteComponent:
+      Tint: [0.99227798, 0.743250728, 0.283507973, 1]
+    RigidBody2DComponent:
+      Type: Dynamic
+      FixedRotation: false
+    RectColliderComponent:
+      Offset: [0, 0]
+      HalfExtent: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.5
+      RestitutionThreshold: 0.5

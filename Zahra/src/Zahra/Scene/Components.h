@@ -91,6 +91,11 @@ namespace Zahra
 		// TODO: this status should be held by a scene, not an entity! (maybe the scene can store the active camera's UUID?)
 		bool Active = true;
 
+		void Test()
+		{
+			Z_CORE_INFO("created camera");
+		}
+
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
 		CameraComponent(bool fixedRatio)

@@ -17,7 +17,7 @@ namespace Zahra
 		m_Context = context;
 	}
 
-	void SceneHierarchyPanel::OnImGuiRender(bool editing)
+	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// HIERARCHY PANEL
@@ -32,6 +32,7 @@ namespace Zahra
 
 				ImGui::TableNextColumn();
 
+				// TODO: find a way to get a predictable (adjustable?) ordering of the entities
 				// TODO: this top layer of the hierarchy should only include parentless entities
 				m_Context->m_Registry.view<entt::entity>().each([&](auto entityId)
 					{
@@ -54,7 +55,7 @@ namespace Zahra
 			// right clicking on empty window space brings up this menu
 			if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 			{
-				if (ImGui::MenuItem("Create New Entity", nullptr, nullptr, editing))
+				if (ImGui::MenuItem("Create New Entity"))
 				{
 					m_Selected = m_Context->CreateEntity("New Entity");
 				}
@@ -85,10 +86,10 @@ namespace Zahra
 					// (another) TODO: eventually it might be better just to have a static "add
 					// component" button, and make this a full pop-up window (searchable?)
 
-					MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected, editing);
-					MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected, editing);
-					MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected, editing);
-					MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected, editing);
+					MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);
 
 					ImGui::EndPopup();
 				}
@@ -118,6 +119,7 @@ namespace Zahra
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Add child", 0, false, false)) int i = 0; // TODO: make this happen
+			if (ImGui::MenuItem("Duplicate entity")) m_Context->DuplicateEntity(entity);
 			if (ImGui::MenuItem("Delete entity")) entityDeleted = true;
 
 			ImGui::EndPopup();
