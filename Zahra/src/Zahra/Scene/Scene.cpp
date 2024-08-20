@@ -30,19 +30,27 @@ namespace Zahra
 	}
 
 	template<typename ComponentType>
-	static void CopyComponent(entt::registry& newReg, entt::registry& oldReg, std::unordered_map<ZGUID, entt::entity> guidToNewHandle)
+	static void CopyComponent(entt::registry& srcReg, entt::registry& destReg, std::unordered_map<ZGUID, entt::entity> guidToNewHandle)
 	{
 
-		auto componentView = oldReg.view<ComponentType>();
+		auto componentView = destReg.view<ComponentType>();
 		for (auto oldHandle : componentView)
 		{
-			ZGUID guid = oldReg.get<IDComponent>(oldHandle).ID;
+			ZGUID guid = destReg.get<IDComponent>(oldHandle).ID;
 			entt::entity newHandle = guidToNewHandle[guid];
 
-			auto& oldComponent = oldReg.get<ComponentType>(oldHandle);
-			newReg.emplace_or_replace<ComponentType>(newHandle, oldComponent);
+			auto& oldComponent = destReg.get<ComponentType>(oldHandle);
+			srcReg.emplace_or_replace<ComponentType>(newHandle, oldComponent);
 		}
 
+	}
+
+	template <typename ComponentType>
+	static void CopyComponentIfExists(Entity srcEnt, Entity destEnt)
+	{
+		if (!srcEnt.HasComponents<ComponentType>()) return;
+		
+		destEnt.AddOrReplaceComponent<ComponentType>(srcEnt.GetComponents<ComponentType>());
 	}
 
 	Ref<Scene> Scene::CopyScene(Ref<Scene> oldScene)
@@ -101,19 +109,19 @@ namespace Zahra
 
 	Entity Scene::DuplicateEntity(Entity entity)
 	{
-		// TODO: implement this, using:
+		// TODO: rewrite this, using:
 		// https://github.com/skypjack/entt/discussions/684#discussion-3299774
 		// https://github.com/skypjack/entt/issues/694
 
-		std::string newTag = entity.GetComponents<TagComponent>().Tag + " copy";
+		std::string newTag = entity.GetName() + " copy";
 		Entity copy = CreateEntity(newTag);
 
-		// TODO: copy components
-		/*for (auto&& [id, storage] : m_Registry.storage()) {
-			if (storage.contains((entt::entity)entity)) {
-				storage.push(copy, storage.value(entity));
-			}
-		}*/
+		CopyComponentIfExists<TransformComponent>	(entity, copy);
+		CopyComponentIfExists<SpriteComponent>		(entity, copy);
+		CopyComponentIfExists<CameraComponent>		(entity, copy);
+		CopyComponentIfExists<RigidBody2DComponent>	(entity, copy);
+		CopyComponentIfExists<RectColliderComponent>(entity, copy);
+		CopyComponentIfExists<NativeScriptComponent>(entity, copy);
 
 		return copy;
 	}

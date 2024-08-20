@@ -12,7 +12,7 @@ namespace Zahra
 	namespace MeadowUIPatterns
 	{
 		template <typename T, typename UIFunction>
-		void DrawComponent(const std::string& name, Entity entity, UIFunction ComponentInterface)
+		void DrawComponent(const std::string& name, Entity entity, UIFunction ComponentInterface, bool removeable = true)
 		{
 			if (entity.HasComponents<T>())
 			{
@@ -29,7 +29,7 @@ namespace Zahra
 				bool removedComponent = false;
 				if (ImGui::BeginPopupContextItem())
 				{
-					if (ImGui::MenuItem("Remove component", 0, false, !std::is_same<T, TransformComponent>::value)) removedComponent = true;
+					if (ImGui::MenuItem("Remove component", 0, false, removeable)) removedComponent = true;
 
 					ImGui::EndPopup();
 				}
@@ -54,9 +54,9 @@ namespace Zahra
 		}
 
 		template <typename T>
-		void AddComponentMenuItem(const char* name, Entity entity)
+		void AddComponentMenuItem(const char* name, Entity entity, bool active = true)
 		{
-			if (ImGui::MenuItem(name, 0, false, !entity.HasComponents<T>()))
+			if (ImGui::MenuItem(name, 0, false, active && !entity.HasComponents<T>()))
 			{
 				entity.AddComponent<T>();
 				ImGui::CloseCurrentPopup();

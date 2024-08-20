@@ -248,10 +248,18 @@ namespace Zahra
 			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentID();
 			ImGui::Image(reinterpret_cast<void*>(framebufferTextureID), ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
 
-			if (m_SceneState == SceneState::Edit)
+			if (m_SceneState == SceneState::Edit) UIGizmos();
+
+			if (ImGui::BeginDragDropTarget())
 			{
-				UIGizmos();
-				ReceiveDragDrop();
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_SCENE"))
+				{
+					char filepath[256];
+					strcpy_s(filepath, (const char*)payload->Data);
+					OpenSceneFile(filepath);
+				}
+
+				ImGui::EndDragDropTarget();
 			}
 
 			ImGui::End();
@@ -332,21 +340,6 @@ namespace Zahra
 		ImGui::End();
 	}
 
-	void EditorLayer::ReceiveDragDrop()
-	{
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_SCENE"))
-			{
-				char filepath[256];
-				strcpy_s(filepath, (const char*)payload->Data);
-				OpenSceneFile(filepath);
-			}
-
-			ImGui::EndDragDropTarget();
-		}
-	}
-
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& event)
 	{
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -417,12 +410,31 @@ namespace Zahra
 			}
 			case KeyCode::Delete:
 			{
-				Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
-				if (selection)
+				if (m_SceneState == SceneState::Edit)
 				{
-					m_ActiveScene->DestroyEntity(selection); // TODO: avoid deleting certain objects (e.g. those subject to Box2D)
-					m_SceneHierarchyPanel.SelectEntity({});
+					Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
+					if (selection)
+					{
+						m_ActiveScene->DestroyEntity(selection);
+						m_SceneHierarchyPanel.SelectEntity({});
+					}
+					return true;
 				}
+				break;
+			}
+			case KeyCode::D:
+			{
+				if (ctrl && m_SceneState == SceneState::Edit)
+				{
+					Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
+					if (selection)
+					{
+						Entity copy = m_EditorScene->DuplicateEntity(selection);
+						m_SceneHierarchyPanel.SelectEntity(copy);
+					}
+					return true;
+				}
+
 				break;
 			}
 			default:

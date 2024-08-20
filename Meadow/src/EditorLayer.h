@@ -70,8 +70,6 @@ namespace Zahra
 
 		void ReadHoveredEntity();
 
-		void ReceiveDragDrop();
-
 		// Editor panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;

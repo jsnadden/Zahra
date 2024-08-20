@@ -69,6 +69,13 @@ namespace Zahra
 			return GetComponents<IDComponent>().ID;
 		}
 
+		const std::string& GetName()
+		{
+			Z_CORE_ASSERT(HasComponents<TagComponent>(), "Entity does not have a TagComponent.");
+
+			return GetComponents<TagComponent>().Tag;
+		}
+
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }

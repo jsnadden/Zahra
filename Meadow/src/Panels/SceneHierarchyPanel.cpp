@@ -24,6 +24,7 @@ namespace Zahra
 		std::string windowName = "Scene Hierarchy: " + m_Context->GetName() + "###Scene Hierarchy";
 
 		ImGui::Begin(windowName.c_str(), 0, ImGuiWindowFlags_NoCollapse);
+		if (m_Context)
 		{
 			ImGui::BeginTable("SplitPanel", 2, ImGuiTableColumnFlags_NoResize);
 			{
@@ -98,6 +99,8 @@ namespace Zahra
 		ImGui::End();
 	}
 
+	// TODO: address issues with deleting or otherwise manipulating entities/components with physics, during runtime!
+
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
 		std::string& tag = entity.GetComponents<TagComponent>().Tag;
@@ -119,7 +122,7 @@ namespace Zahra
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Add child", 0, false, false)) int i = 0; // TODO: make this happen
-			if (ImGui::MenuItem("Duplicate entity")) m_Context->DuplicateEntity(entity);
+			if (ImGui::MenuItem("Duplicate entity")) m_Selected = m_Context->DuplicateEntity(entity);
 			if (ImGui::MenuItem("Delete entity")) entityDeleted = true;
 
 			ImGui::EndPopup();
@@ -200,7 +203,7 @@ namespace Zahra
 					glm::vec3& rotation = glm::degrees(component.EulerAngles);
 					MeadowUIPatterns::DrawFloat3Controls("Euler Angles", rotation, .0f, 1.f);
 					component.EulerAngles = glm::radians(rotation);
-				});
+				}, false);
 		
 		MeadowUIPatterns::DrawComponent<SpriteComponent>("Sprite Component", entity, [](auto& component)
 			{
