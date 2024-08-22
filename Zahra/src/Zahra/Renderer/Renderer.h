@@ -18,11 +18,13 @@ namespace Zahra
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
-		static void Flush();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
 		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+
+		static float GetLineThickness();
+		static void SetLineThickness(float thickness);
 
 	private:
 		static void SubmitBatch();
@@ -34,16 +36,9 @@ namespace Zahra
 
 		static void DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int EntityID = -1);
 		static void DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f, int EntityID = -1);
-
-		static void DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const glm::vec4& colour);
-		static void DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const glm::vec4& colour);
-		static void DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f);
-		static void DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f);
-
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec2& dimensions, float rotation, const glm::vec4& colour);
-		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& dimensions, float rotation, const glm::vec4& colour);
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec2& dimensions, float rotation, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f);
-		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& dimensions, float rotation, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f);
+		static void DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int EntityID = -1);
+		static void DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour);
+		static void DrawRect(const glm::mat4& transform, const glm::vec4& colour);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// SPRITES

@@ -128,6 +128,8 @@ namespace Zahra
 
 	void EditorLayer::ScenePlay()
 	{
+		m_HoveredEntity = {};
+
 		m_SceneState = SceneState::Play;
 
 		m_ActiveScene = Scene::CopyScene(m_EditorScene);
@@ -138,6 +140,8 @@ namespace Zahra
 
 	void EditorLayer::SceneStop()
 	{
+		m_HoveredEntity = {};
+
 		m_SceneState = SceneState::Edit;
 
 		m_ActiveScene->OnRuntimeStop();
@@ -330,7 +334,7 @@ namespace Zahra
 
 	void EditorLayer::UIStatsWindow()
 	{
-		ImGui::Begin("Stats", NULL, ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin("Misc. shit", NULL, ImGuiWindowFlags_NoCollapse);
 
 		ImGui::Text("Quads: %u", Renderer::GetStats().QuadCount);
 		ImGui::Text("Draw calls: %u", Renderer::GetStats().DrawCalls);
@@ -487,6 +491,8 @@ namespace Zahra
 		if (filepath.empty()) return;
 		
 		if (m_SceneState != SceneState::Edit) SceneStop();
+
+		m_HoveredEntity = {};
 
 		if (filepath.extension().string() != ".zsc")
 		{

@@ -1,0 +1,35 @@
+Scene: venn.zsc
+Entities:
+  - Entity: 1497682144358513147
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-0.232839525, -0.145818189, 0.034395501]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Colour: [0, 0, 1, 0.588235319]
+      Thickness: 1
+      Fade: 0.00499999989
+  - Entity: 2613402778669797055
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0.313843787, -0.155546665, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Colour: [0, 1, 0, 0.588235319]
+      Thickness: 1
+      Fade: 0.00499999989
+  - Entity: 1420216807140126748
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0.0740512758, 0.290226936, -0.024462359]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Colour: [1, 0, 0, 0.588235319]
+      Thickness: 1
+      Fade: 0.00499999989

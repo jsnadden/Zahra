@@ -10,6 +10,7 @@
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_circle_shape.h>
 
 namespace Zahra
 {
@@ -76,12 +77,14 @@ namespace Zahra
 			});
 
 		// copy components
-		CopyComponent<TransformComponent>	(newRegistry, oldRegistry, guidToNewHandle);
-		CopyComponent<SpriteComponent>		(newRegistry, oldRegistry, guidToNewHandle);
-		CopyComponent<CameraComponent>		(newRegistry, oldRegistry, guidToNewHandle);
-		CopyComponent<RigidBody2DComponent>	(newRegistry, oldRegistry, guidToNewHandle);
-		CopyComponent<RectColliderComponent>(newRegistry, oldRegistry, guidToNewHandle);
-		CopyComponent<NativeScriptComponent>(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<TransformComponent>		(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<SpriteComponent>			(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<CircleComponent>			(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<CameraComponent>			(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<RigidBody2DComponent>		(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<RectColliderComponent>	(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<CircleColliderComponent>	(newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent<NativeScriptComponent>	(newRegistry, oldRegistry, guidToNewHandle);
 
 		return newScene;
 	}
@@ -116,12 +119,14 @@ namespace Zahra
 		std::string newTag = entity.GetName() + " copy";
 		Entity copy = CreateEntity(newTag);
 
-		CopyComponentIfExists<TransformComponent>	(entity, copy);
-		CopyComponentIfExists<SpriteComponent>		(entity, copy);
-		CopyComponentIfExists<CameraComponent>		(entity, copy);
-		CopyComponentIfExists<RigidBody2DComponent>	(entity, copy);
-		CopyComponentIfExists<RectColliderComponent>(entity, copy);
-		CopyComponentIfExists<NativeScriptComponent>(entity, copy);
+		CopyComponentIfExists<TransformComponent>		(entity, copy);
+		CopyComponentIfExists<SpriteComponent>			(entity, copy);
+		CopyComponentIfExists<CircleComponent>			(entity, copy);
+		CopyComponentIfExists<CameraComponent>			(entity, copy);
+		CopyComponentIfExists<RigidBody2DComponent>		(entity, copy);
+		CopyComponentIfExists<RectColliderComponent>	(entity, copy);
+		CopyComponentIfExists<CircleColliderComponent>	(entity, copy);
+		CopyComponentIfExists<NativeScriptComponent>	(entity, copy);
 
 		return copy;
 	}
@@ -153,6 +158,7 @@ namespace Zahra
 	void Scene::OnUpdateEditor(float dt, EditorCamera& camera)
 	{
 		auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
+		auto circleEntities = m_Registry.view<TransformComponent, CircleComponent>();
 
 		Renderer::BeginScene(camera);
 
@@ -161,6 +167,13 @@ namespace Zahra
 			auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
 
 			Renderer::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+		}
+
+		for (auto entity : circleEntities)
+		{
+			auto [transform, circle] = circleEntities.get<TransformComponent, CircleComponent>(entity);
+
+			Renderer::DrawCircle(transform.GetTransform(), circle.Colour, circle.Thickness, circle.Fade, (int)entity);
 		}
 
 		Renderer::EndScene();
@@ -225,7 +238,9 @@ namespace Zahra
 
 			if (activeCamera)
 			{
+				// TODO: this stuff should be in its own method, since it has an identical twin in OnUpdateEditor
 				auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
+				auto circleEntities = m_Registry.view<TransformComponent, CircleComponent>();
 
 				Renderer::BeginScene(activeCamera->GetProjection(), cameraTransform);
 
@@ -235,6 +250,15 @@ namespace Zahra
 
 					Renderer::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 				}
+
+				for (auto entity : circleEntities)
+				{
+					auto [transform, circle] = circleEntities.get<TransformComponent, CircleComponent>(entity);
+
+					Renderer::DrawCircle(transform.GetTransform(), circle.Colour, circle.Thickness, circle.Fade, (int)entity);
+				}
+
+				// TODO: draw colliders, with appropriate offsets/scaling
 
 				Renderer::EndScene();
 			}
@@ -280,15 +304,30 @@ namespace Zahra
 			m_PhysicsBodies[e] = m_PhysicsWorld->CreateBody(&bodyDef);
 			m_PhysicsBodies[e]->SetFixedRotation(bodyComp.FixedRotation);
 
-			// it makes sense to have bodies with no colliders, but not the other way
-			// around. Also the collider could be of different types. Therefore it
-			// makes sense to ask for these components optionally, and secondarily.
 			if (entity.HasComponents<RectColliderComponent>())
 			{
 				auto& collider = entity.GetComponents<RectColliderComponent>();
 
 				b2PolygonShape shape;
 				shape.SetAsBox(transformComp.Scale.x * collider.HalfExtent.x, transformComp.Scale.y * collider.HalfExtent.y);
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &shape;
+				fixtureDef.density = collider.Density;
+				fixtureDef.friction = collider.Friction;
+				fixtureDef.restitution = collider.Restitution;
+				fixtureDef.restitutionThreshold = collider.RestitutionThreshold;
+
+				m_PhysicsBodies[e]->CreateFixture(&fixtureDef);
+			}
+
+			if (entity.HasComponents<CircleColliderComponent>())
+			{
+				auto& collider = entity.GetComponents<CircleColliderComponent>();
+
+				b2CircleShape shape;
+				shape.m_p.Set(collider.Offset.x, collider.Offset.y);
+				shape.m_radius = collider.Radius;
 
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &shape;

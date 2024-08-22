@@ -41,8 +41,8 @@ void main()
 #type fragment
 #version 450 core
 
-layout(location = 0) out vec4 colour;
-layout(location = 1) out int entityID;
+layout(location = 0) out vec4 o_Colour;
+layout(location = 1) out int o_EntityID;
 
 struct VertexOutput
 {
@@ -96,7 +96,7 @@ void main()
 		case 30: textureColour *= texture(u_Textures[30], Input.TextureCoord * Input.TilingFactor); break;
 		case 31: textureColour *= texture(u_Textures[31], Input.TextureCoord * Input.TilingFactor); break;
 	}
-	colour = textureColour;
+	o_Colour = textureColour;
 
-	entityID = v_EntityID; 
+	o_EntityID = v_EntityID; 
 }

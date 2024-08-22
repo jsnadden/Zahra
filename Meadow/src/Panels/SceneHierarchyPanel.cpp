@@ -88,9 +88,11 @@ namespace Zahra
 					// component" button, and make this a full pop-up window (searchable?)
 
 					MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<CircleComponent>("Circle", m_Selected);
 					MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
 					MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
 					MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);
+					MeadowUIPatterns::AddComponentMenuItem<CircleColliderComponent>("2D Circular Collider", m_Selected);
 
 					ImGui::EndPopup();
 				}
@@ -207,13 +209,16 @@ namespace Zahra
 		
 		MeadowUIPatterns::DrawComponent<SpriteComponent>("Sprite Component", entity, [](auto& component)
 			{
-				//ImGui::ColorEdit4("Tint", glm::value_ptr(component.Tint));
-
 				MeadowUIPatterns::DrawRGBAControl("Tint Colour", component.Tint);
-
 				MeadowUIPatterns::DrawTextureDrop("Sprite Sheet", component.Texture);
-
 				MeadowUIPatterns::DrawFloatControl("Tiling Factor", component.TextureTiling, .01f, false, .0f, 100.f);
+			});
+
+		MeadowUIPatterns::DrawComponent<CircleComponent>("Circle Component", entity, [](auto& component)
+			{
+				MeadowUIPatterns::DrawRGBAControl("Colour", component.Colour);
+				MeadowUIPatterns::DrawFloatControl("Thickness", component.Thickness, .01f, true, .01f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Fade", component.Fade, .001f, true, .001f, 10.f, "%.3f");
 			});
 
 		MeadowUIPatterns::DrawComponent<CameraComponent>("Camera Component", entity, [](auto& component)
@@ -273,6 +278,18 @@ namespace Zahra
 			{
 				MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
 				MeadowUIPatterns::DrawFloat2Controls("Size", component.HalfExtent, 0.5f, .05f, true);
+
+				// TODO: investigate physically reasonable ranges
+				MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
+			});
+
+		MeadowUIPatterns::DrawComponent<CircleColliderComponent>("2D Circular Collider Component", entity, [](auto& component)
+			{
+				MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
+				MeadowUIPatterns::DrawFloatControl("Radius", component.Radius, .01f, true, .01f, 100.f);
 
 				// TODO: investigate physically reasonable ranges
 				MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);

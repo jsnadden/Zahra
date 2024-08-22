@@ -16,7 +16,7 @@ namespace Zahra
 
 	// TODO: This struct needs to mirror both the bufferlayout and shader inputs, so if
 	// I was going to generalise this at all, I'd have to automate constructing all three in parallel
-	struct QuadVertexWithEntityID
+	struct QuadVertex
 	{
 		glm::vec3 Position;
 		glm::vec4 Tint;
@@ -26,21 +26,42 @@ namespace Zahra
 		int EntityID = -1;
 	};
 
+	struct CircleVertex
+	{
+		glm::vec3 WorldPosition;
+		glm::vec2 LocalPosition;
+		glm::vec4 Colour;
+		float Thickness;
+		float Fade;
+		int EntityID = -1;
+	};
+
+	struct LineVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Colour;
+	};
+
 	struct RendererData
 	{
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// RENDERER PARAMETERS
+
 		static const uint32_t MaxQuadsPerBuffer = 10000;
 		static const uint32_t MaxVerticesPerBuffer = MaxQuadsPerBuffer * 4;
 		static const uint32_t MaxIndicesPerBuffer = MaxQuadsPerBuffer * 6;
 		static const uint32_t MaxTextureSlots = 32; // TODO: query the actual value via the graphics API
 
-		uint32_t QuadIndexCount = 0;
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// QUADS
 
-		Ref<VertexArray> QuadVertexArray;
-		Ref<VertexBuffer> QuadVertexBuffer;
-		Ref<Shader> TextureShader;
+		Ref<VertexArray>	QuadVertexArray;
+		Ref<VertexBuffer>	QuadVertexBuffer;
+		Ref<Shader>			QuadShader;
 
-		QuadVertexWithEntityID* QuadVertexBufferBase = nullptr;
-		QuadVertexWithEntityID* QuadVertexBufferPtr = nullptr;
+		uint32_t			QuadIndexCount = 0;
+		QuadVertex*			QuadVertexBufferBase = nullptr;
+		QuadVertex*			QuadVertexBufferPtr = nullptr;
 
 		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // start at 1, because slot 0 will be our default WhiteTexture
@@ -48,7 +69,32 @@ namespace Zahra
 		glm::vec4 QuadVertexPositions[4];
 		glm::vec2 QuadTextureCoords[4];
 
-		Renderer::Statistics Stats;
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// CIRCLES
+
+		Ref<VertexArray>	CircleVertexArray;
+		Ref<VertexBuffer>	CircleVertexBuffer;
+		Ref<Shader>			CircleShader;
+
+		uint32_t			CircleIndexCount = 0;
+		CircleVertex*		CircleVertexBufferBase = nullptr;
+		CircleVertex*		CircleVertexBufferPtr = nullptr;
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// LINES
+
+		Ref<VertexArray>	LineVertexArray;
+		Ref<VertexBuffer>	LineVertexBuffer;
+		Ref<Shader>			LineShader;
+
+		uint32_t			LineVertexCount = 0;
+		LineVertex*			LineVertexBufferBase = nullptr;
+		LineVertex*			LineVertexBufferPtr = nullptr;
+
+		float LineThickness = 2.f;
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// CAMERA
 
 		struct CameraData
 		{
@@ -57,10 +103,14 @@ namespace Zahra
 
 		CameraData CameraBuffer;
 		Ref<UniformBuffer> CameraUniformBuffer;
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// MISC.
+
+		Renderer::Statistics Stats;
 	};
 
 	static RendererData s_Data;
-
 
 
 	void Renderer::Init()
@@ -68,46 +118,78 @@ namespace Zahra
 		RenderCommand::Init();
 		
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// VERTEX ARRAY
+		//	QUAD VERTEX ARRAY
 		s_Data.QuadVertexArray = VertexArray::Create();
+		
+		// VERTEX BUFFER
+		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(QuadVertex));
+		s_Data.QuadVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "a_Position"	   },
+			{ ShaderDataType::Float4, "a_Colour"	   },
+			{ ShaderDataType::Float2, "a_TextureCoord" },
+			{ ShaderDataType::Float,  "a_TextureIndex" },
+			{ ShaderDataType::Float,  "a_TilingFactor" },
+			{ ShaderDataType::Int,	  "a_EntityID"	   }
+			});
+		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
+
+		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVerticesPerBuffer];
+
+		// INDEX BUFFER
+		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndicesPerBuffer];
+
+		uint32_t offset = 0;
+		for (uint32_t i = 0; i < s_Data.MaxIndicesPerBuffer; i += 6)
 		{
-			// VERTEX BUFFER
-			s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(QuadVertexWithEntityID));
-			s_Data.QuadVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position"	   },
-				{ ShaderDataType::Float4, "a_Colour"	   },
-				{ ShaderDataType::Float2, "a_TextureCoord" },
-				{ ShaderDataType::Float,  "a_TextureIndex" },
-				{ ShaderDataType::Float,  "a_TilingFactor" },
-				{ ShaderDataType::Int,	  "a_EntityID"	   }
+			quadIndices[i + 0] = offset + 0;
+			quadIndices[i + 1] = offset + 1;
+			quadIndices[i + 2] = offset + 2;
 
-				});
-			s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
+			quadIndices[i + 3] = offset + 2;
+			quadIndices[i + 4] = offset + 3;
+			quadIndices[i + 5] = offset + 0;
 
-			s_Data.QuadVertexBufferBase = new QuadVertexWithEntityID[s_Data.MaxVerticesPerBuffer];
-
-			// INDEX BUFFER
-			uint32_t* quadIndices = new uint32_t[s_Data.MaxIndicesPerBuffer];
-
-			uint32_t offset = 0;
-			for (uint32_t i = 0; i < s_Data.MaxIndicesPerBuffer; i += 6)
-			{
-				quadIndices[i + 0] = offset + 0;
-				quadIndices[i + 1] = offset + 1;
-				quadIndices[i + 2] = offset + 2;
-
-				quadIndices[i + 3] = offset + 2;
-				quadIndices[i + 4] = offset + 3;
-				quadIndices[i + 5] = offset + 0;
-
-				offset += 4;
-			}
-
-			Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndicesPerBuffer);
-			s_Data.QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
-			delete[] quadIndices; // TODO: later we'll be adding these to a queue, in which case they'll need a dynamic lifetime, ideally managed by a reference counting system
+			offset += 4;
 		}
 
+		Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndicesPerBuffer);
+		s_Data.QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
+		
+		// TODO: later we'll be adding these to a queue, in which case they'll need a dynamic lifetime, ideally managed by a reference counting system
+		delete[] quadIndices;
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//	CIRCLE VERTEX ARRAY
+		s_Data.CircleVertexArray = VertexArray::Create();
+		
+		// VERTEX BUFFER
+		s_Data.CircleVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(CircleVertex));
+		s_Data.CircleVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3,	"a_WorldPosition"	},
+			{ ShaderDataType::Float2,	"a_LocalPosition"	},
+			{ ShaderDataType::Float4,	"a_Colour"			},
+			{ ShaderDataType::Float,	"a_Thickness"		},
+			{ ShaderDataType::Float,	"a_Fade"			},
+			{ ShaderDataType::Int,		"a_EntityID"		}
+			});
+		s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
+
+		s_Data.CircleVertexBufferBase = new CircleVertex[s_Data.MaxVerticesPerBuffer];
+
+		// INDEX BUFFER (reused from quads)
+		s_Data.CircleVertexArray->SetIndexBuffer(quadIndexBuffer);
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//	LINE VERTEX BUFFER/ARRAY
+		s_Data.LineVertexArray = VertexArray::Create();
+
+		s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(LineVertex));
+		s_Data.LineVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float4, "a_Colour"   }
+			});
+		s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
+		s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVerticesPerBuffer];
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// TEXTURES
@@ -122,7 +204,10 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// SHADERS
 
-		s_Data.TextureShader = Shader::Create("Resources/Shaders/editor_texture.glsl"); // TODO: free ourselves from a hardcoded shader
+		// TODO: free ourselves from hardcoded shaders?
+		s_Data.QuadShader = Shader::Create("Resources/Shaders/renderer_quad.glsl");
+		s_Data.CircleShader = Shader::Create("Resources/Shaders/renderer_circle.glsl");
+		s_Data.LineShader = Shader::Create("Resources/Shaders/renderer_line.glsl");
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,33 +255,57 @@ namespace Zahra
 		SubmitBatch();
 	}
 
-	void Renderer::Flush()
-	{
-		Z_PROFILE_FUNCTION();
-
-		if (s_Data.QuadIndexCount == 0)
-			return; // Nothing to draw, early out
-
-		// Bind textures
-		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-			s_Data.TextureSlots[i]->Bind(i);
-
-		s_Data.TextureShader->Bind();
-		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
-		s_Data.Stats.DrawCalls++;
-	}
-
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
+	float Renderer::GetLineThickness()
+	{
+		return s_Data.LineThickness;
+	}
+
+	void Renderer::SetLineThickness(float thickness)
+	{
+		s_Data.LineThickness = thickness;
+	}
+
 	void Renderer::SubmitBatch()
 	{
-		uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
-		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
+		if (s_Data.QuadIndexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
+			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
-		Flush();
+			// Bind textures
+			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+				s_Data.TextureSlots[i]->Bind(i);
+
+			s_Data.QuadShader->Bind();
+			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+			s_Data.Stats.DrawCalls++;
+		}
+
+		if (s_Data.CircleIndexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase);
+			s_Data.CircleVertexBuffer->SetData(s_Data.CircleVertexBufferBase, dataSize);
+
+			s_Data.CircleShader->Bind();
+			RenderCommand::DrawIndexed(s_Data.CircleVertexArray, s_Data.CircleIndexCount);
+			s_Data.Stats.DrawCalls++;
+		}
+
+		if (s_Data.LineVertexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase);
+			s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
+
+			s_Data.LineShader->Bind();
+			RenderCommand::SetLineThickness(s_Data.LineThickness);
+			RenderCommand::DrawLines(s_Data.LineVertexArray, s_Data.LineVertexCount);
+			s_Data.Stats.DrawCalls++;
+		}
 	}
 
 	void Renderer::NewBatch()
@@ -204,14 +313,21 @@ namespace Zahra
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
+		s_Data.CircleIndexCount = 0;
+		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
+
+		s_Data.LineVertexCount = 0;
+		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
+
 		s_Data.TextureSlotIndex = 1;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	// PRIMITIVES
-	// TODO: remove the entityIds from drawquad
+
 	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int EntityID)
 	{
+		// TODO: separate maxima for each primitive type
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
 		{
 			SubmitBatch();
@@ -236,6 +352,7 @@ namespace Zahra
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling, int EntityID)
 	{
+		// TODO: separate maxima for each primitive type
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
 		{
 			SubmitBatch();
@@ -286,67 +403,60 @@ namespace Zahra
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const glm::vec4& colour)
+	void Renderer::DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int EntityID)
 	{
+		// TODO: separate maxima for each primitive type
+		if (s_Data.CircleIndexCount >= RendererData::MaxIndicesPerBuffer)
+		{
+			SubmitBatch();
+			NewBatch();
+		}
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::scale(glm::mat4(1.0f), { dimensions.x, dimensions.y, 1.0f });
+		for (int i = 0; i < 4; i++)
+		{
+			s_Data.CircleVertexBufferPtr->WorldPosition = transform * s_Data.QuadVertexPositions[i];
+			s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.QuadVertexPositions[i] * 2.0f;
+			s_Data.CircleVertexBufferPtr->Colour = colour;
+			s_Data.CircleVertexBufferPtr->Thickness = thickness;
+			s_Data.CircleVertexBufferPtr->Fade = fade;
+			s_Data.CircleVertexBufferPtr->EntityID = EntityID;
 
-		DrawQuad(transform, colour);
+			s_Data.CircleVertexBufferPtr++;
+		}
 
+		s_Data.CircleIndexCount += 6;
+		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const glm::vec4& colour)
+	void Renderer::DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour)
 	{
-		DrawQuad(glm::vec3(position, 0.0f), dimensions, colour);
+		// TODO: separate maxima for each primitive type
+		if (s_Data.LineVertexCount >= RendererData::MaxVerticesPerBuffer)
+		{
+			SubmitBatch();
+			NewBatch();
+		}
+
+		s_Data.LineVertexBufferPtr->Position = end0;
+		s_Data.LineVertexBufferPtr->Colour = colour;
+		s_Data.LineVertexBufferPtr++;
+
+		s_Data.LineVertexBufferPtr->Position = end1;
+		s_Data.LineVertexBufferPtr->Colour = colour;
+		s_Data.LineVertexBufferPtr++;
+
+		s_Data.LineVertexCount += 2;
 	}
 
-	void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& dimensions, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling)
+	void Renderer::DrawRect(const glm::mat4& transform, const glm::vec4& colour)
 	{
+		glm::vec3 corners[4] = { {.5f, .5f, .0f}, {-.5f, .5f, .0f}, {-.5f, -.5f, .0f}, {.5f, -.5f, .0f} };
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::scale(glm::mat4(1.0f), { dimensions.x, dimensions.y, 1.0f });
-
-		DrawQuad(transform, texture, tint, tiling);
-
+		for (int i = 0; i < 4; i++)
+			DrawLine(transform * glm::vec4(corners[i], 1.f), transform * glm::vec4(corners[(i+1)%4], 1.f), colour);
 	}
 
-	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& dimensions, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling)
-	{
-		DrawQuad(glm::vec3(position, 0.0f), dimensions, texture, tint, tiling);
-	}
 
-	void Renderer::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& dimensions, float rotation, const glm::vec4& colour)
-	{
-
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(.0f, .0f, 1.0f))
-			* glm::scale(glm::mat4(1.0f), { dimensions.x, dimensions.y, 1.0f });
-
-		DrawQuad(transform, colour);
-
-	}
-
-	void Renderer::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& dimensions, float rotation, const glm::vec4& colour)
-	{
-		DrawRotatedQuad(glm::vec3(position, 0.0f), dimensions, rotation, colour);
-	}
-
-	void Renderer::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& dimensions, float rotation, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling)
-	{
-
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(.0f, .0f, 1.0f))
-			* glm::scale(glm::mat4(1.0f), { dimensions.x, dimensions.y, 1.0f });
-
-		DrawQuad(transform, texture, tint, tiling);
-
-	}
-
-	void Renderer::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& dimensions, float rotation, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling)
-	{
-		DrawRotatedQuad(glm::vec3(position, 0.0f), dimensions, rotation, texture, tint, tiling);
-	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SPRITES

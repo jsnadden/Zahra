@@ -64,7 +64,7 @@ namespace Zahra
 		}
 
 		void DrawFloatControl(const std::string& label, float& value, float speed = .05f,
-			bool logarithmic = false, float min = -FLT_MAX / INT_MAX, float max = FLT_MAX / INT_MAX)
+			bool logarithmic = false, float min = -FLT_MAX / INT_MAX, float max = FLT_MAX / INT_MAX, const char* format = "%.2f")
 		{
 			ImGuiSliderFlags flags = 0;
 
@@ -88,7 +88,7 @@ namespace Zahra
 			ImGui::TableNextColumn();
 			{
 				ImGui::PushItemWidth(ImGui::CalcItemWidth());
-				ImGui::DragFloat("##X", &value, speed, min, max, "%.2f", flags);
+				ImGui::DragFloat("##X", &value, speed, min, max, format, flags);
 				ImGui::PopItemWidth();
 			}
 

@@ -1,32 +1,5 @@
 Scene: test.zsc
 Entities:
-  - Entity: 12080441041721093087
-    TagComponent:
-      Tag: magenta square
-    TransformComponent:
-      Translation: [-0.300000012, -1.35000002, 0]
-      EulerAngles: [0.767944872, 0.87266463, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [0.644787669, 0.134434476, 0.571880102, 1]
-  - Entity: 2679488890135080708
-    TagComponent:
-      Tag: cyan square
-    TransformComponent:
-      Translation: [3.54999995, 2.0999999, 0]
-      EulerAngles: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [0.323429883, 0.741312742, 0.639665484, 1]
-  - Entity: 9590709298427143711
-    TagComponent:
-      Tag: red line
-    TransformComponent:
-      Translation: [0, 0, 0]
-      EulerAngles: [0, 0, 2.1991148]
-      Scale: [0.0500000007, 43.7000008, 1]
-    SpriteComponent:
-      Tint: [0.783783793, 0.0181571357, 0.0181571357, 1]
   - Entity: 14861544074307234413
     TagComponent:
       Tag: yellow square
@@ -36,3 +9,30 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [0.878000021, 0.717999995, 0.172000006, 1]
+  - Entity: 9590709298427143711
+    TagComponent:
+      Tag: red line
+    TransformComponent:
+      Translation: [0, 0, 0]
+      EulerAngles: [0, 0, 2.1991148]
+      Scale: [0.0500000007, 43.7000008, 1]
+    SpriteComponent:
+      Tint: [0.783783793, 0.0181571357, 0.0181571357, 1]
+  - Entity: 2679488890135080708
+    TagComponent:
+      Tag: cyan square
+    TransformComponent:
+      Translation: [3.54999995, 2.0999999, 0]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [0.323429883, 0.741312742, 0.639665484, 1]
+  - Entity: 12080441041721093087
+    TagComponent:
+      Tag: magenta square
+    TransformComponent:
+      Translation: [-0.300000012, -1.35000002, 0]
+      EulerAngles: [0.767944872, 0.87266463, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [0.644787669, 0.134434476, 0.571880102, 1]

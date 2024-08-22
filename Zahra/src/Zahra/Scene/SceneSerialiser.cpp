@@ -225,6 +225,19 @@ namespace Zahra
 			out << YAML::EndMap;
 		}
 
+		if (entity.HasComponents<CircleComponent>())
+		{
+			out << YAML::Key << "CircleComponent";
+			out << YAML::BeginMap;
+			{
+				auto& circle = entity.GetComponents<CircleComponent>();
+				out << YAML::Key << "Colour" << YAML::Value << circle.Colour;
+				out << YAML::Key << "Thickness" << YAML::Value << circle.Thickness;
+				out << YAML::Key << "Fade" << YAML::Value << circle.Fade;
+			}
+			out << YAML::EndMap;
+		}
+
 		if (entity.HasComponents<CameraComponent>())
 		{
 			out << YAML::Key << "CameraComponent";
@@ -275,6 +288,23 @@ namespace Zahra
 				auto& collider = entity.GetComponents<RectColliderComponent>();
 				out << YAML::Key << "Offset" << YAML::Value << collider.Offset;
 				out << YAML::Key << "HalfExtent" << YAML::Value << collider.HalfExtent;
+				out << YAML::Key << "Density" << YAML::Value << collider.Density;
+				out << YAML::Key << "Friction" << YAML::Value << collider.Friction;
+				out << YAML::Key << "Restitution" << YAML::Value << collider.Restitution;
+				out << YAML::Key << "RestitutionThreshold" << YAML::Value << collider.RestitutionThreshold;
+
+			}
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponents<CircleColliderComponent>())
+		{
+			out << YAML::Key << "CircleColliderComponent";
+			out << YAML::BeginMap;
+			{
+				auto& collider = entity.GetComponents<CircleColliderComponent>();
+				out << YAML::Key << "Offset" << YAML::Value << collider.Offset;
+				out << YAML::Key << "Radius" << YAML::Value << collider.Radius;
 				out << YAML::Key << "Density" << YAML::Value << collider.Density;
 				out << YAML::Key << "Friction" << YAML::Value << collider.Friction;
 				out << YAML::Key << "Restitution" << YAML::Value << collider.Restitution;
@@ -358,6 +388,16 @@ namespace Zahra
 					// TODO: textures etc.
 				}
 
+				auto circleNode = entityNode["CircleComponent"];
+				if (circleNode)
+				{
+					auto& circle = entity.AddComponent<CircleComponent>();
+
+					circle.Colour = circleNode["Colour"].as<glm::vec4>();
+					circle.Thickness = circleNode["Thickness"].as<float>();
+					circle.Fade = circleNode["Fade"].as<float>();
+				}
+
 				auto cameraNode = entityNode["CameraComponent"];
 				if (cameraNode)
 				{
@@ -402,6 +442,19 @@ namespace Zahra
 					collider.Friction = rectColliderNode["Friction"].as<float>();
 					collider.Restitution = rectColliderNode["Restitution"].as<float>();
 					collider.RestitutionThreshold = rectColliderNode["RestitutionThreshold"].as<float>();
+				}
+
+				auto circleColliderNode = entityNode["CircleColliderComponent"];
+				if (circleColliderNode)
+				{
+					auto& collider = entity.AddComponent<CircleColliderComponent>();
+
+					collider.Offset = circleColliderNode["Offset"].as<glm::vec2>();
+					collider.Radius = circleColliderNode["Radius"].as<float>();
+					collider.Density = circleColliderNode["Density"].as<float>();
+					collider.Friction = circleColliderNode["Friction"].as<float>();
+					collider.Restitution = circleColliderNode["Restitution"].as<float>();
+					collider.RestitutionThreshold = circleColliderNode["RestitutionThreshold"].as<float>();
 				}
 
 			}

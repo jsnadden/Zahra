@@ -83,6 +83,19 @@ namespace Zahra
 
 	};
 
+	struct CircleComponent
+	{
+		glm::vec4 Colour{ 1.0f, 1.0f, 1.0f, 1.0f };
+		float Thickness = 1.0f;
+		float Fade = .005f;
+
+		CircleComponent() = default;
+		CircleComponent(const CircleComponent&) = default;
+		CircleComponent(const glm::vec4& colour)
+			: Colour(colour) {}
+
+	};
+
 	struct CameraComponent
 	{
 		SceneCamera Camera;
@@ -131,6 +144,22 @@ namespace Zahra
 
 		RectColliderComponent() = default;
 		RectColliderComponent(const RectColliderComponent&) = default;
+
+	};
+
+	struct CircleColliderComponent
+	{
+		glm::vec2 Offset = { .0f, .0f };
+		float Radius = .5f;
+
+		// TODO: investigate physically reasonable default values
+		float Density = 1.0f;
+		float Friction = .5f;
+		float Restitution = .5f;
+		float RestitutionThreshold = .5f;
+
+		CircleColliderComponent() = default;
+		CircleColliderComponent(const CircleColliderComponent&) = default;
 
 	};
 
