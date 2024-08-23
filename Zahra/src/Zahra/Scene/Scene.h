@@ -29,12 +29,16 @@ namespace Zahra
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 
+		void OnSimulationStart();
+		void OnSimulationStop();
+
 		void OnUpdateEditor(float dt, EditorCamera& camera);
+		void OnUpdateSimulation(float dt, EditorCamera& camera);
 		void OnUpdateRuntime(float dt);
 
 		// TODO: replace Box2D with a 3d physics engine (e.g. Nvidia PhysX)
 		void InitPhysicsWorld();
-		void UpdatePhysicsWorld();
+		void UpdatePhysicsWorld(float dt);
 
 		void OnViewportResize(float width, float height);
 
@@ -51,14 +55,28 @@ namespace Zahra
 				m_Registry.get<CameraComponent>(entity).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
 
+		struct OverlayMode
+		{
+			bool ShowColliders = false;
+			glm::vec4 ColliderColour = { 1.f, 1.f, 0.f, 1.f };
+
+			OverlayMode() = default;
+			OverlayMode(const OverlayMode&) = default;
+		};
+
+		static const OverlayMode& GetOverlayMode();
+		static void SetOverlayMode(OverlayMode mode);
+
 	private:
 		std::string m_SceneName;
-		
+
 		std::unique_ptr<b2World>(m_PhysicsWorld);
 		std::map<entt::entity, b2Body*> m_PhysicsBodies; // TODO: replace entt::entity with internal uuids?
 
 		entt::basic_registry<entt::entity> m_Registry; // TODO: custom UUIDs (change the template param)
 		float m_ViewportWidth = 1.0f, m_ViewportHeight = 1.0f;
+
+		void RenderEntities();
 
 		friend class Entity;
 		friend class SceneHierarchyPanel;

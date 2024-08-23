@@ -16,11 +16,15 @@
 namespace Zahra
 {
 	// For every component struct added, make sure to do the following:
-	// 1) the component MUST declare a default constructor/copy constructor
-	// 2) add component properties UI code, and add/remove context menus, in SceneHierarchyPanel.cpp
-	// 3) add component serialisation code in SceneSerialiser.cpp
+	// 1) give it a default constructor and copy constructor
+	// 2) add to registry (bottom of this header)
+	// 3) add properties UI code, and add/remove context menus (SceneHierarchyPanel.cpp)
+	// 4) add serialisation code (SceneSerialiser.cpp)
 	//
-	// [TODO: reflection should automate 2) and 3)]
+	// [TODO: reflection should automate some of this]
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CORE COMPONENTS
 
 	struct IDComponent
 	{
@@ -66,6 +70,9 @@ namespace Zahra
 		}
 
 	};
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// RENDERING COMPONENTS
 
 	struct SpriteComponent
 	{
@@ -116,6 +123,7 @@ namespace Zahra
 
 	};
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// PHYSICS COMPONENTS
 
 	struct RigidBody2DComponent
@@ -163,6 +171,9 @@ namespace Zahra
 
 	};
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// SCRIPTING COMPONENTS
+
 	class ScriptableEntity;
 
 	struct NativeScriptComponent
@@ -185,6 +196,7 @@ namespace Zahra
 
 	};
 
+	// e.g.
 	//class CameraController : public ScriptableEntity
 		//{
 		//public:
@@ -208,6 +220,23 @@ namespace Zahra
 		//		}
 		//	}
 		//};
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// COMPONENT REGISTRY
+
+	template<typename... Component>
+	struct ComponentGroup
+	{
+
+	};
+
+	using AllComponents = ComponentGroup<
+		TransformComponent,
+		SpriteComponent, CircleComponent,
+		CameraComponent,
+		RigidBody2DComponent, RectColliderComponent, CircleColliderComponent,
+		NativeScriptComponent
+	>;
 
 }
 

@@ -29,18 +29,19 @@ namespace Zahra
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
 
-		EditorCamera m_EditorCamera;
+		Ref<EditorCamera> m_EditorCamera;
 
 		std::map<std::string, Ref<Texture2D>> m_Icons;
 
 		enum class SceneState // TODO: add Paused?
 		{
-			Edit = 0, Play = 1
+			Edit = 0, Play = 1, Simulate = 2
 		};
 
 		SceneState m_SceneState = SceneState::Edit;
 
 		void ScenePlay();
+		void SceneSimulate();
 		void SceneStop();
 
 		// Saving/opening scene files
@@ -48,10 +49,11 @@ namespace Zahra
 		std::filesystem::path m_CurrentFilePath;
 
 		void UIMenuBar();
+		void UIAboutWindow(); bool m_ShowAboutWindow = false;
 		void UIControls();
 		void UIViewport();
 		void UIGizmos();
-		void UIStatsWindow(); // TODO: this should really be a bar, not a whole freaking window
+		void UIStatsWindow(); // TODO: do something better with this stuff
 
 		void NewScene();
 		void OpenSceneFile();

@@ -22,6 +22,8 @@ namespace Zahra
 
 		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
 
+		void Recenter(const glm::vec3& center);
+
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		const glm::mat4& GetProjection() const { return m_Projection; }
 		glm::mat4 GetPVMatrix() const { return m_Projection * m_ViewMatrix; }

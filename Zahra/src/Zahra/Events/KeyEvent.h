@@ -26,16 +26,16 @@ namespace Zahra
 	{
 	public:
 
-		KeyPressedEvent(KeyCode keycode, int repeatcount)
-			: KeyEvent(keycode), m_RepeatCount(repeatcount) {}
+		KeyPressedEvent(KeyCode keycode, bool repeat)
+			: KeyEvent(keycode), m_Repeated(repeat) {}
 
-		int GetRepeatCount() const { return m_RepeatCount; }
+		bool Repeated() const { return m_Repeated; }
 
 		std::string ToString() const override
 		{
 			std::stringstream stream;
 
-			stream << "KeyPressedEvent: " << m_KeyCode << " (" << m_RepeatCount << " repeats)";
+			stream << "KeyPressedEvent: " << m_KeyCode << (m_Repeated ? " (repeat)" : "");
 
 			return stream.str();
 		}
@@ -44,7 +44,7 @@ namespace Zahra
 
 	private:
 
-		int m_RepeatCount;
+		bool m_Repeated;
 	};
 	
 	class KeyReleasedEvent : public KeyEvent

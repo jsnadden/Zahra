@@ -130,6 +130,12 @@ namespace Zahra
 		m_FocalPoint += -GetForwardDirection() * delta * 3.f;
 	}
 
+	void EditorCamera::Recenter(const glm::vec3& center)
+	{
+		m_FocalPoint = center;
+		UpdateView();
+	}
+
 	glm::vec3 EditorCamera::GetUpDirection() const
 	{
 		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 1.0f, 0.0f));

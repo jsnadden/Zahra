@@ -34,13 +34,15 @@ namespace Zahra
 			serialiser.DeserialiseYaml(sceneFilePath);
 		}
 
-		m_EditorCamera = EditorCamera(.5f, 1.78f, .1f, 1000.f);
+		m_EditorCamera = CreateRef<EditorCamera>(EditorCamera(.5f, 1.78f, .1f, 1000.f));
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneHierarchyPanel.SetEditorCamera(m_EditorCamera);
 
-		m_Icons["Play"] = Texture2D::Create("Resources/Icons/Controls/play.png");
-		m_Icons["Stop"] = Texture2D::Create("Resources/Icons/Controls/stop.png");
-		m_Icons["Replay"] = Texture2D::Create("Resources/Icons/Controls/replay.png");
+		m_Icons["Play"]		= Texture2D::Create("Resources/Icons/Controls/play.png");
+		m_Icons["Stop"]		= Texture2D::Create("Resources/Icons/Controls/stop.png");
+		m_Icons["PlaySim"]	= Texture2D::Create("Resources/Icons/Controls/play_sim.png");
+		m_Icons["Replay"]	= Texture2D::Create("Resources/Icons/Controls/replay.png");
 
 	}
 
@@ -60,13 +62,13 @@ namespace Zahra
 			{
 				m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 				m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
-				m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+				m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 			}
 		}
 
-		if (m_ViewportHovered && m_SceneState == SceneState::Edit)
+		if (m_ViewportHovered && m_SceneState != SceneState::Play)
 		{
-			m_EditorCamera.OnUpdate(dt);
+			m_EditorCamera->OnUpdate(dt);
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,13 +84,25 @@ namespace Zahra
 				m_Framebuffer->ClearColourAttachment(1, -1);
 				
 				// UPDATE SCENE
-				if (m_SceneState == SceneState::Edit)
+				switch (m_SceneState)
 				{
-					m_ActiveScene->OnUpdateEditor(dt, m_EditorCamera);
-				}
-				else
-				{
-					m_ActiveScene->OnUpdateRuntime(dt);
+					case SceneState::Edit:
+					{
+						m_ActiveScene->OnUpdateEditor(dt, *m_EditorCamera);
+						break;
+					}
+					case SceneState::Play:
+					{
+						m_ActiveScene->OnUpdateRuntime(dt);
+						break;
+					}
+					case SceneState::Simulate:
+					{
+						m_ActiveScene->OnUpdateSimulation(dt, *m_EditorCamera);
+						break;
+					}
+					default:
+						Z_CORE_ASSERT(false, "Invalid SceneState");
 				}
 
 				if (m_ViewportHovered)
@@ -103,7 +117,7 @@ namespace Zahra
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		if (m_ViewportHovered) m_EditorCamera.OnEvent(event);
+		if (m_ViewportHovered) m_EditorCamera->OnEvent(event);
 
 		m_ContentBrowserPanel.OnEvent(event);
 		
@@ -115,6 +129,7 @@ namespace Zahra
 	void EditorLayer::OnImGuiRender()
 	{
 		UIMenuBar();
+		UIAboutWindow();
 
 		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_NoWindowMenuButton);
 
@@ -138,13 +153,39 @@ namespace Zahra
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
+	void EditorLayer::SceneSimulate()
+	{
+		m_HoveredEntity = {};
+
+		m_SceneState = SceneState::Simulate;
+
+		m_ActiveScene = Scene::CopyScene(m_EditorScene);
+		m_ActiveScene->OnSimulationStart();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
 	void EditorLayer::SceneStop()
 	{
 		m_HoveredEntity = {};
 
-		m_SceneState = SceneState::Edit;
+		switch (m_SceneState)
+		{
+			case SceneState::Simulate:
+			{
+				m_ActiveScene->OnSimulationStop();
+				break;
+			}
+			case SceneState::Play:
+			{
+				m_ActiveScene->OnRuntimeStop();
+				break;
+			}
+			default:
+				Z_CORE_ASSERT(false, "SceneStop should only be called when SceneState is ::Simulate or ::Play");
+		}
 
-		m_ActiveScene->OnRuntimeStop();
+		m_SceneState = SceneState::Edit;
 		m_ActiveScene = m_EditorScene;
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -186,32 +227,92 @@ namespace Zahra
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Help"))
+			{
+				if (ImGui::MenuItem("About"))
+					m_ShowAboutWindow = true;
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMainMenuBar();
 		}
+	}
 
+	void EditorLayer::UIAboutWindow()
+	{
+		if (m_ShowAboutWindow) ImGui::OpenPopup("Meadow##About");
+
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		if (ImGui::BeginPopupModal("Meadow##About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::Text("The official editor for the Zahra engine.");
+			
+			if (ImGui::Button("Close", ImVec2(120, 0)))
+			{
+				m_ShowAboutWindow = false;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
 	}
 
 	void EditorLayer::UIControls()
 	{
 		ImGui::Begin("Controls");
-
+		
 		float iconSize = 35.f;
 
 		ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-		if (m_SceneState == SceneState::Edit)
+		switch (m_SceneState)
+		{
+		case SceneState::Edit:
 		{
 			if (ImGui::ImageButton((ImTextureID)m_Icons["Play"]->GetRendererID(),
 				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
 			{
 				ScenePlay();
 			}
+
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Play Scene");
+				ImGui::EndTooltip();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::ImageButton((ImTextureID)m_Icons["PlaySim"]->GetRendererID(),
+				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			{
+				SceneSimulate();
+			}
+
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Simulate Physics");
+				ImGui::EndTooltip();
+			}
+
+			break;
 		}
-		else if (m_SceneState == SceneState::Play)
+		case SceneState::Play:
 		{
 			if (ImGui::ImageButton((ImTextureID)m_Icons["Stop"]->GetRendererID(),
 				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
 			{
 				SceneStop();
+			}
+
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Stop Scene");
+				ImGui::EndTooltip();
 			}
 
 			ImGui::SameLine();
@@ -222,8 +323,62 @@ namespace Zahra
 				SceneStop();
 				ScenePlay();
 			}
+
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Restart Scene");
+				ImGui::EndTooltip();
+			}
+
+			break;
+		}
+		case SceneState::Simulate:
+		{
+			if (ImGui::ImageButton((ImTextureID)m_Icons["Stop"]->GetRendererID(),
+				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			{
+				SceneStop();
+			}
+
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Stop Simulation");
+				ImGui::EndTooltip();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::ImageButton((ImTextureID)m_Icons["Replay"]->GetRendererID(),
+				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			{
+				SceneStop();
+				SceneSimulate();
+			}
+
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Reset Simulation");
+				ImGui::EndTooltip();
+			}
+
+			break;
+		}
+		default:
+			break;
 		}
 		ImGui::PopStyleColor();
+
+		ImGui::Separator();
+
+		ImGui::Text("Debug overlay:");
+
+		Scene::OverlayMode overlayMode = m_ActiveScene->GetOverlayMode();
+		ImGui::Checkbox("Show colliders", &overlayMode.ShowColliders);
+		ImGui::ColorEdit4("Collider colour", glm::value_ptr(overlayMode.ColliderColour), ImGuiColorEditFlags_NoInputs);
+		m_ActiveScene->SetOverlayMode(overlayMode);
 
 		ImGui::End();
 	}
@@ -309,8 +464,8 @@ namespace Zahra
 			}
 
 			// Editor camera
-			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+			const glm::mat4& cameraProjection = m_EditorCamera->GetProjection();
+			glm::mat4 cameraView = m_EditorCamera->GetViewMatrix();
 
 			// Entity transform
 			auto& tc = selection.GetComponents<TransformComponent>();
@@ -326,7 +481,7 @@ namespace Zahra
 				ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
 			
 			// Feedback manipulated transform
-			if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
+			if (ImGuizmo::IsUsing() && !m_EditorCamera->Controlled())
 				Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
 
 		}
@@ -349,6 +504,8 @@ namespace Zahra
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Keyboard shortcuts
 		
+		Z_TRACE(event.ToString());
+
 		if (ImGuizmo::IsUsing()) return false; // avoids crash bug when an entity is deleted during manipulation
 
 		bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
@@ -451,7 +608,7 @@ namespace Zahra
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
 	{
 		// block other mouse input when we're trying to use imguizmo, or move our camera around
-		if (m_EditorCamera.Controlled() || (ImGuizmo::IsOver() && m_SceneHierarchyPanel.GetSelectedEntity())) return false;
+		if (m_EditorCamera->Controlled() || (ImGuizmo::IsOver() && m_SceneHierarchyPanel.GetSelectedEntity())) return false;
 		
 		switch (event.GetMouseButton())
 		{

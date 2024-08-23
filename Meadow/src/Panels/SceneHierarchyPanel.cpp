@@ -6,15 +6,21 @@
 
 namespace Zahra
 {
-	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
+	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context, const Ref<EditorCamera>& camera)
 	{
 		SetContext(context);
+		SetEditorCamera(camera);
 	}
 
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
 		m_Selected = {}; // can't reference an entity in a discarded scene!!
 		m_Context = context;
+	}
+
+	void SceneHierarchyPanel::SetEditorCamera(const Ref<EditorCamera>& camera)
+	{
+		m_Camera = camera;
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -117,6 +123,12 @@ namespace Zahra
 		if (ImGui::IsItemClicked())
 		{
 			m_Selected = entity;
+
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				glm::vec3 center = entity.GetComponents<TransformComponent>().Translation;
+				m_Camera->Recenter(center);
+			}
 		}
 
 		bool entityDeleted = false;

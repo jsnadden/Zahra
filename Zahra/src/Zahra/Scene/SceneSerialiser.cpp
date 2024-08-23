@@ -346,7 +346,17 @@ namespace Zahra
 
 	bool SceneSerialiser::DeserialiseYaml(const std::string& filepath)
 	{
-		YAML::Node data = YAML::LoadFile(filepath);
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(filepath);
+		}
+		catch (const YAML::ParserException& ex)
+		{
+			Z_CORE_ERROR("Failed to deserialize scene '{0}'\n     {1}", filepath, ex.what());
+			return false;
+		}
+
 		if (!data["Scene"]) return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();

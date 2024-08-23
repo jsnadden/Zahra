@@ -34,16 +34,16 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// PRIMITIVES
 
-		static void DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int EntityID = -1);
-		static void DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f, int EntityID = -1);
-		static void DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int EntityID = -1);
-		static void DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour);
-		static void DrawRect(const glm::mat4& transform, const glm::vec4& colour);
+		static void DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1);
+		static void DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f, int entityID = -1);
+		static void DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID = -1);
+		static void DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID = -1);
+		static void DrawRect(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// SPRITES
 
-		static void DrawSprite(const glm::mat4& transform, SpriteComponent& sprite, int EntityID = -1);
+		static void DrawSprite(const glm::mat4& transform, SpriteComponent& sprite, int entityID = -1);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// STATS

@@ -41,8 +41,8 @@ void main()
 #type fragment
 #version 450 core
 
-layout(location = 0) out vec4 colour;
-layout(location = 1) out int entityID;
+layout(location = 0) out vec4 o_Colour;
+layout(location = 1) out int o_EntityID;
 
 struct VertexOutput
 {
@@ -57,14 +57,14 @@ layout (location = 4) in flat int v_EntityID;
 
 void main()
 {
-	colour = Input.Colour;
+	o_Colour = Input.Colour;
 
 	float distance = 1.0 - length(Input.LocalPosition);
-	colour.a *= smoothstep(0.0, Input.Fade, distance);
-	colour.a *= smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance);
+	o_Colour.a *= smoothstep(0.0, Input.Fade, distance);
+	o_Colour.a *= smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance);
 
-	if (colour.a == 0)
+	if (o_Colour.a == 0)
 		discard;
 
-	entityID = v_EntityID;
+	o_EntityID = v_EntityID;
 }

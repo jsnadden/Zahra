@@ -40,6 +40,7 @@ namespace Zahra
 	{
 		glm::vec3 Position;
 		glm::vec4 Colour;
+		int EntityID = -1;
 	};
 
 	struct RendererData
@@ -186,7 +187,8 @@ namespace Zahra
 		s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(LineVertex));
 		s_Data.LineVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float4, "a_Colour"   }
+			{ ShaderDataType::Float4, "a_Colour"   },
+			{ ShaderDataType::Int,		"a_EntityID"		}
 			});
 		s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
 		s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVerticesPerBuffer];
@@ -325,7 +327,7 @@ namespace Zahra
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	// PRIMITIVES
 
-	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int EntityID)
+	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID)
 	{
 		// TODO: separate maxima for each primitive type
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
@@ -341,7 +343,7 @@ namespace Zahra
 			s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
 			s_Data.QuadVertexBufferPtr->TextureIndex = 0.0f;
 			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
-			s_Data.QuadVertexBufferPtr->EntityID = EntityID;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 
 			s_Data.QuadVertexBufferPtr++;
 		}
@@ -350,7 +352,7 @@ namespace Zahra
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer::DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling, int EntityID)
+	void Renderer::DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling, int entityID)
 	{
 		// TODO: separate maxima for each primitive type
 		if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
@@ -394,7 +396,7 @@ namespace Zahra
 			s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
 			s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
-			s_Data.QuadVertexBufferPtr->EntityID = EntityID;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 
 			s_Data.QuadVertexBufferPtr++;
 		}
@@ -403,7 +405,7 @@ namespace Zahra
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer::DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int EntityID)
+	void Renderer::DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID)
 	{
 		// TODO: separate maxima for each primitive type
 		if (s_Data.CircleIndexCount >= RendererData::MaxIndicesPerBuffer)
@@ -419,7 +421,7 @@ namespace Zahra
 			s_Data.CircleVertexBufferPtr->Colour = colour;
 			s_Data.CircleVertexBufferPtr->Thickness = thickness;
 			s_Data.CircleVertexBufferPtr->Fade = fade;
-			s_Data.CircleVertexBufferPtr->EntityID = EntityID;
+			s_Data.CircleVertexBufferPtr->EntityID = entityID;
 
 			s_Data.CircleVertexBufferPtr++;
 		}
@@ -428,7 +430,7 @@ namespace Zahra
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer::DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour)
+	void Renderer::DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID)
 	{
 		// TODO: separate maxima for each primitive type
 		if (s_Data.LineVertexCount >= RendererData::MaxVerticesPerBuffer)
@@ -439,21 +441,23 @@ namespace Zahra
 
 		s_Data.LineVertexBufferPtr->Position = end0;
 		s_Data.LineVertexBufferPtr->Colour = colour;
+		s_Data.LineVertexBufferPtr->EntityID = entityID;
 		s_Data.LineVertexBufferPtr++;
 
 		s_Data.LineVertexBufferPtr->Position = end1;
 		s_Data.LineVertexBufferPtr->Colour = colour;
+		s_Data.LineVertexBufferPtr->EntityID = entityID;
 		s_Data.LineVertexBufferPtr++;
 
 		s_Data.LineVertexCount += 2;
 	}
 
-	void Renderer::DrawRect(const glm::mat4& transform, const glm::vec4& colour)
+	void Renderer::DrawRect(const glm::mat4& transform, const glm::vec4& colour, int entityID)
 	{
 		glm::vec3 corners[4] = { {.5f, .5f, .0f}, {-.5f, .5f, .0f}, {-.5f, -.5f, .0f}, {.5f, -.5f, .0f} };
 
 		for (int i = 0; i < 4; i++)
-			DrawLine(transform * glm::vec4(corners[i], 1.f), transform * glm::vec4(corners[(i+1)%4], 1.f), colour);
+			DrawLine(transform * glm::vec4(corners[i], 1.f), transform * glm::vec4(corners[(i+1)%4], 1.f), colour, entityID);
 	}
 
 
@@ -461,13 +465,13 @@ namespace Zahra
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SPRITES
 
-	void Renderer::DrawSprite(const glm::mat4& transform, SpriteComponent& sprite, int EntityID)
+	void Renderer::DrawSprite(const glm::mat4& transform, SpriteComponent& sprite, int entityID)
 	{
 		// TODO: deal with animation data
 		if (sprite.Texture)
-			DrawQuad(transform, sprite.Texture, sprite.Tint, sprite.TextureTiling, EntityID);
+			DrawQuad(transform, sprite.Texture, sprite.Tint, sprite.TextureTiling, entityID);
 		else
-			DrawQuad(transform, sprite.Tint, EntityID);
+			DrawQuad(transform, sprite.Tint, entityID);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
