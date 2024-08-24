@@ -107,6 +107,8 @@ namespace Zahra
 						Z_CORE_ASSERT(false, "Invalid SceneState");
 				}
 
+				UIHighlightSelection();
+
 				if (m_ViewportHovered)
 				{
 					ReadHoveredEntity();
@@ -374,13 +376,17 @@ namespace Zahra
 		ImGui::PopStyleColor();
 
 		ImGui::Separator();
-
 		ImGui::Text("Debug overlay:");
 
 		Scene::OverlayMode overlayMode = m_ActiveScene->GetOverlayMode();
 		ImGui::Checkbox("Show colliders", &overlayMode.ShowColliders);
 		ImGui::ColorEdit4("Collider colour", glm::value_ptr(overlayMode.ColliderColour), ImGuiColorEditFlags_NoInputs);
 		m_ActiveScene->SetOverlayMode(overlayMode);
+
+		ImGui::Separator();
+		ImGui::Text("Editor");
+
+		ImGui::ColorEdit4("Selection colour", glm::value_ptr(m_HighlightSelectionColour), ImGuiColorEditFlags_NoInputs);
 
 		ImGui::End();
 	}
@@ -486,6 +492,18 @@ namespace Zahra
 			if (ImGuizmo::IsUsing() && !m_EditorCamera->Controlled())
 				Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
 
+		}
+	}
+
+	void EditorLayer::UIHighlightSelection()
+	{
+		if (Entity selection = m_SceneHierarchyPanel.GetSelectedEntity())
+		{
+			TransformComponent transform = selection.GetComponents<TransformComponent>();
+
+			Renderer::BeginScene(*m_EditorCamera);
+			Renderer::DrawRect(transform.GetTransform(), m_HighlightSelectionColour);
+			Renderer::EndScene();
 		}
 	}
 

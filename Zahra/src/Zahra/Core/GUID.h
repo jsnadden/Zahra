@@ -1,7 +1,5 @@
 #pragma once
 
-#include <xhash>
-
 namespace Zahra
 {
 	class ZGUID
@@ -22,12 +20,14 @@ namespace Zahra
 
 namespace std
 {
+	template <typename T> struct hash;
+
 	template<>
 	struct hash<Zahra::ZGUID>
 	{
-		std::size_t operator() (const Zahra::ZGUID& guid) const // call operator, generates a hash for a given guid
+		std::size_t operator() (const Zahra::ZGUID& guid) const
 		{
-			return hash<uint64_t>()((uint64_t)guid);
+			return (uint64_t)guid;
 		}
 	};
 

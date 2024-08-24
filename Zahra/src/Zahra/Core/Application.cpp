@@ -1,7 +1,9 @@
 #include "zpch.h"
 #include "Application.h"
+
 #include "Zahra/Core/Input.h"
 #include "Zahra/Renderer/Renderer.h"
+#include "Zahra/Utils/PlatformUtils.h"
 
 namespace Zahra
 {
@@ -38,7 +40,7 @@ namespace Zahra
 		while (m_Running)
 		{
 			// Compute frame time
-			float ThisFrameTime = (float)glfwGetTime(); // TODO MAKE THIS PLATFORM-INDEPENDENT!!
+			float ThisFrameTime = Time::GetTime();
 			float dt = ThisFrameTime - m_PreviousFrameTime;
 			m_PreviousFrameTime = ThisFrameTime;
 

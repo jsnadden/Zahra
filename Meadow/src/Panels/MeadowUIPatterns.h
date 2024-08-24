@@ -12,15 +12,16 @@ namespace Zahra
 	namespace MeadowUIPatterns
 	{
 		template <typename T, typename UIFunction>
-		void DrawComponent(const std::string& name, Entity entity, UIFunction ComponentInterface, bool removeable = true)
+		void DrawComponent(const std::string& name, Entity entity, UIFunction ComponentInterface, bool defaultOpen = false, bool removeable = true)
 		{
 			if (entity.HasComponents<T>())
 			{
-				const ImGuiTreeNodeFlags nodeFlags =
-					ImGuiTreeNodeFlags_DefaultOpen |
+				ImGuiTreeNodeFlags nodeFlags =
 					ImGuiTreeNodeFlags_AllowItemOverlap |
 					ImGuiTreeNodeFlags_SpanAvailWidth |
 					ImGuiTreeNodeFlags_Framed;
+
+				if (defaultOpen) nodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 
 				auto& component = entity.GetComponents<T>();
 

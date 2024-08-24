@@ -13,4 +13,10 @@ namespace Zahra
 
 
 	};
+
+	class Time
+	{
+	public:
+		static float GetTime();
+	};
 }

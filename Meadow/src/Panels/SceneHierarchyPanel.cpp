@@ -211,7 +211,7 @@ namespace Zahra
 					glm::vec3& rotation = glm::degrees(component.EulerAngles);
 					MeadowUIPatterns::DrawFloat3Controls("Euler Angles", rotation, .0f, 1.f);
 					component.EulerAngles = glm::radians(rotation);
-				}, false);
+				}, true, false);
 		
 		MeadowUIPatterns::DrawComponent<SpriteComponent>("Sprite Component", entity, [](auto& component)
 			{
@@ -317,6 +317,7 @@ namespace Zahra
 		{
 			bool clicked = false;
 
+			clicked |= MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
 			clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleComponent>("Circle", m_Selected);
 			clicked |= MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
 			clicked |= MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);

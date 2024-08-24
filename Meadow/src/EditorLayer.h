@@ -53,7 +53,10 @@ namespace Zahra
 		void UIControls();
 		void UIViewport();
 		void UIGizmos();
+		void UIHighlightSelection();
 		void UIStatsWindow(); // TODO: do something better with this stuff
+
+		glm::vec4 m_HighlightSelectionColour = {1.f, 1.f, 1.f, 1.f};
 
 		void NewScene();
 		void OpenSceneFile();
