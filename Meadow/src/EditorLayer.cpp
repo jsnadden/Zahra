@@ -26,7 +26,9 @@ namespace Zahra
 		m_EditorScene = CreateRef<Scene>();
 		m_ActiveScene = m_EditorScene;
 
-		auto commandLineArgs = Application::Get().GetCommandLineArgs();
+		Renderer::SetLineThickness(3.f);
+
+		auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
 		if (commandLineArgs.Count > 1)
 		{
 			auto sceneFilePath = commandLineArgs[1];
@@ -504,8 +506,6 @@ namespace Zahra
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Keyboard shortcuts
 		
-		Z_TRACE(event.ToString());
-
 		if (ImGuizmo::IsUsing()) return false; // avoids crash bug when an entity is deleted during manipulation
 
 		bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);

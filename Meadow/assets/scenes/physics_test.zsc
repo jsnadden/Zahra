@@ -27,6 +27,8 @@ Entities:
       Scale: [16.1499863, 0.24999997, 1]
     SpriteComponent:
       Tint: [0.339221537, 0.455598474, 0.253305703, 1]
+      TextureTiling: 1
+      Animated: false
     RigidBody2DComponent:
       Type: Static
       FixedRotation: false
@@ -46,6 +48,8 @@ Entities:
       Scale: [16.1499691, 0.25, 1]
     SpriteComponent:
       Tint: [0.339221537, 0.455598474, 0.253305703, 1]
+      TextureTiling: 1
+      Animated: false
     RigidBody2DComponent:
       Type: Static
       FixedRotation: false
@@ -64,7 +68,9 @@ Entities:
       EulerAngles: [0, -0, 1.20869851]
       Scale: [0.999982238, 0.999982238, 1]
     SpriteComponent:
-      Tint: [0.99227798, 0.743250728, 0.283507973, 1]
+      Tint: [0.799227834, 0.286850363, 0.234522447, 1]
+      TextureTiling: 1
+      Animated: false
     RigidBody2DComponent:
       Type: Dynamic
       FixedRotation: false

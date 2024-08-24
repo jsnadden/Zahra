@@ -87,23 +87,15 @@ namespace Zahra
 				// right click to add components
 				if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 				{
-					// TODO: keep adding to this list as we include new component types (e.g. scripts!!)
-					// WARNING: Don't forget to add a corresponding OnComponentAdded specialisation to Scene!!
-					
-					// (another) TODO: eventually it might be better just to have a static "add
-					// component" button, and make this a full pop-up window (searchable?)
-
-					MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
-					MeadowUIPatterns::AddComponentMenuItem<CircleComponent>("Circle", m_Selected);
-					MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
-					MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
-					MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);
-					MeadowUIPatterns::AddComponentMenuItem<CircleColliderComponent>("2D Circular Collider", m_Selected);
+					if (ImGui::MenuItem("Add Component(s)")) m_ShowAddComponentsModal = true;
 
 					ImGui::EndPopup();
 				}
+
+				if (m_ShowAddComponentsModal) AddComponentsModal(m_Selected);
 			}
 		}
+
 		ImGui::End();
 	}
 
@@ -169,7 +161,7 @@ namespace Zahra
 		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, tag.c_str());
 
-		if (ImGui::BeginTable("EntityID+Tag", 2))
+		if (ImGui::BeginTable("ID+Tag+Add", 2))
 		{
 			ImGui::TableSetupColumn("label", ImGuiTableColumnFlags_WidthFixed, 50.0f);
 			ImGui::TableSetupColumn("text");
@@ -200,10 +192,12 @@ namespace Zahra
 			{
 				std::stringstream stream;
 				stream << "0x" << std::uppercase << std::hex << (uint64_t)entity.GetGUID();
-
-				ImGui::PushItemWidth(ImGui::GetColumnWidth());
 				ImGui::Text(stream.str().c_str());
-				ImGui::PopItemWidth();
+
+				ImGui::SameLine(ImGui::GetColumnWidth() - 135.f);
+				
+				if (ImGui::Button("Add Component(s)")) m_ShowAddComponentsModal = true;
+				
 			}
 
 			ImGui::EndTable();
@@ -310,6 +304,36 @@ namespace Zahra
 				MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
 			});
 		
+	}
+
+	void SceneHierarchyPanel::AddComponentsModal(Entity entity)
+	{
+		ImGui::OpenPopup("Add Component(s)##Modal");
+
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		if (ImGui::BeginPopupModal("Add Component(s)##Modal", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			bool clicked = false;
+
+			clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleComponent>("Circle", m_Selected);
+			clicked |= MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
+			clicked |= MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
+			clicked |= MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);
+			clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleColliderComponent>("2D Circular Collider", m_Selected);
+
+			clicked |= ImGui::Button("Close");
+
+			if (clicked)
+			{
+				m_ShowAddComponentsModal = false;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
 	}
 
 	

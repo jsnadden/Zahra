@@ -220,7 +220,13 @@ namespace Zahra
 			{
 				auto& sprite = entity.GetComponents<SpriteComponent>();
 				out << YAML::Key << "Tint" << YAML::Value << sprite.Tint;
-				// TODO: once we have an assets manager I need to serialise attached textures!
+				if (sprite.Texture)
+				{
+					std::string texturePath = sprite.Texture->GetFilepath().string();
+					out << YAML::Key << "TexturePath" << YAML::Value << texturePath.c_str();
+				}
+				out << YAML::Key << "TextureTiling" << YAML::Value << sprite.TextureTiling;
+				out << YAML::Key << "Animated" << YAML::Value << sprite.Animated;
 			}
 			out << YAML::EndMap;
 		}
@@ -395,7 +401,10 @@ namespace Zahra
 					auto& sprite = entity.AddComponent<SpriteComponent>();
 
 					sprite.Tint = spriteNode["Tint"].as<glm::vec4>();
-					// TODO: textures etc.
+					if (spriteNode["TexturePath"])
+						sprite.Texture = Texture2D::Create(spriteNode["TexturePath"].as<std::string>());
+					sprite.TextureTiling = spriteNode["TextureTiling"].as<float>();
+					sprite.Animated = spriteNode["Animated"].as<bool>();
 				}
 
 				auto circleNode = entityNode["CircleComponent"];

@@ -30,6 +30,8 @@ Entities:
       Scale: [9.14999104, 0.25000006, 1]
     SpriteComponent:
       Tint: [0.62109983, 0.718146682, 0.71477437, 1]
+      TextureTiling: 1
+      Animated: false
     RigidBody2DComponent:
       Type: Static
       FixedRotation: false
@@ -364,6 +366,8 @@ Entities:
       Scale: [8.39999962, 0.249999955, 1]
     SpriteComponent:
       Tint: [0.619607866, 0.717647076, 0.713725507, 1]
+      TextureTiling: 1
+      Animated: false
     RigidBody2DComponent:
       Type: Static
       FixedRotation: false
@@ -401,6 +405,8 @@ Entities:
       Scale: [9.14999962, 0.25, 1]
     SpriteComponent:
       Tint: [0.62109983, 0.718146682, 0.71477437, 1]
+      TextureTiling: 1
+      Animated: false
     RigidBody2DComponent:
       Type: Static
       FixedRotation: false
@@ -436,7 +442,7 @@ Entities:
     TagComponent:
       Tag: Olive
     TransformComponent:
-      Translation: [-0.529999971, 5.61061716, 0]
+      Translation: [-0.872169971, 5.64413643, 7.46389173e-09]
       EulerAngles: [0, -0, 1.20869851]
       Scale: [0.999982238, 0.999982238, 1]
     CircleComponent:
@@ -495,7 +501,7 @@ Entities:
       Friction: 0.5
       Restitution: 0.5
       RestitutionThreshold: 0.5
-  - Entity: 18235206990161265549
+  - Entity: 14365535296733326665
     TagComponent:
       Tag: circle copy
     TransformComponent:
@@ -516,7 +522,7 @@ Entities:
       Friction: 0.5
       Restitution: 0.5
       RestitutionThreshold: 0.5
-  - Entity: 15194040377760155864
+  - Entity: 10155024132888536036
     TagComponent:
       Tag: circle copy
     TransformComponent:
@@ -559,6 +565,90 @@ Entities:
       Restitution: 0.5
       RestitutionThreshold: 0.5
   - Entity: 7838850942004000368
+    TagComponent:
+      Tag: circle copy
+    TransformComponent:
+      Translation: [0, 0, 0]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Colour: [0.0907261148, 0.405990779, 0.691119671, 1]
+      Thickness: 0.270000011
+      Fade: 0.00499999989
+    RigidBody2DComponent:
+      Type: Dynamic
+      FixedRotation: false
+    CircleColliderComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.5
+      RestitutionThreshold: 0.5
+  - Entity: 17164149283934187930
+    TagComponent:
+      Tag: Platform2 copy
+    TransformComponent:
+      Translation: [2.48510361, -13.465188, 0]
+      EulerAngles: [0, -0, -2.85553312]
+      Scale: [2.81188607, 0.249994963, 1]
+    SpriteComponent:
+      Tint: [0.62109983, 0.718146682, 0.71477437, 1]
+      TextureTiling: 1
+      Animated: false
+    RigidBody2DComponent:
+      Type: Static
+      FixedRotation: false
+    RectColliderComponent:
+      Offset: [0, 0]
+      HalfExtent: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.5
+      RestitutionThreshold: 0.5
+  - Entity: 14749820701369610590
+    TagComponent:
+      Tag: circle copy
+    TransformComponent:
+      Translation: [0, 0, 0]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Colour: [0.0907261148, 0.405990779, 0.691119671, 1]
+      Thickness: 0.270000011
+      Fade: 0.00499999989
+    RigidBody2DComponent:
+      Type: Dynamic
+      FixedRotation: false
+    CircleColliderComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.5
+      RestitutionThreshold: 0.5
+  - Entity: 14008317043606900462
+    TagComponent:
+      Tag: circle copy
+    TransformComponent:
+      Translation: [0, 0, 0]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Colour: [0.0907261148, 0.405990779, 0.691119671, 1]
+      Thickness: 0.270000011
+      Fade: 0.00499999989
+    RigidBody2DComponent:
+      Type: Dynamic
+      FixedRotation: false
+    CircleColliderComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.5
+      RestitutionThreshold: 0.5
+  - Entity: 2466405180314226358
     TagComponent:
       Tag: circle copy
     TransformComponent:

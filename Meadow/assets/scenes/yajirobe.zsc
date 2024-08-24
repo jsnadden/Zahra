@@ -1,4 +1,4 @@
-Scene: warrior.zsc
+Scene: yajirobe.zsc
 Entities:
   - Entity: 6774678113904311529
     TagComponent:
@@ -9,6 +9,9 @@ Entities:
       Scale: [36.5999985, 35.6493721, 0.999990165]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\grass.png
+      TextureTiling: 9.92000008
+      Animated: false
   - Entity: 9534158750695785926
     TagComponent:
       Tag: wall1
@@ -18,6 +21,9 @@ Entities:
       Scale: [5.5, 2.5, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\brickwall.png
+      TextureTiling: 3
+      Animated: false
   - Entity: 13462953152817718162
     TagComponent:
       Tag: wall2
@@ -27,6 +33,9 @@ Entities:
       Scale: [3.99999952, 2.5, 0.999999881]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\brickwall.png
+      TextureTiling: 3
+      Animated: false
   - Entity: 10815946266352694818
     TagComponent:
       Tag: warrior
@@ -36,3 +45,6 @@ Entities:
       Scale: [1.49999964, 1.6875, 0.999999881]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\yajirobe.png
+      TextureTiling: 1
+      Animated: false

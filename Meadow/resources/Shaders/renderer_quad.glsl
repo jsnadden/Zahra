@@ -96,7 +96,10 @@ void main()
 		case 30: textureColour *= texture(u_Textures[30], Input.TextureCoord * Input.TilingFactor); break;
 		case 31: textureColour *= texture(u_Textures[31], Input.TextureCoord * Input.TilingFactor); break;
 	}
-	o_Colour = textureColour;
 
+	if (textureColour.a == 0.0)
+		discard;
+
+	o_Colour = textureColour;
 	o_EntityID = v_EntityID; 
 }

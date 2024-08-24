@@ -54,13 +54,17 @@ namespace Zahra
 		}
 
 		template <typename T>
-		void AddComponentMenuItem(const char* name, Entity entity, bool active = true)
+		bool AddComponentMenuItem(const char* name, Entity entity, bool active = true)
 		{
 			if (ImGui::MenuItem(name, 0, false, active && !entity.HasComponents<T>()))
 			{
 				entity.AddComponent<T>();
 				ImGui::CloseCurrentPopup();
+
+				return true;
 			}
+
+			return false;
 		}
 
 		void DrawFloatControl(const std::string& label, float& value, float speed = .05f,

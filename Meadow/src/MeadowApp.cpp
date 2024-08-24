@@ -9,10 +9,9 @@ namespace Zahra
 	{
 	public:
 
-		Meadow(ApplicationCommandLineArgs args)
-			: Application("Meadow", args)
+		Meadow(const ApplicationSpecification& spec)
+			: Application(spec)
 		{
-			//PushLayer(new ExampleLayer());
 			PushLayer(new EditorLayer());
 		}
 
@@ -26,7 +25,12 @@ namespace Zahra
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
-		return new Meadow(args);
+		ApplicationSpecification spec;
+		spec.Name = "Meadow";
+		spec.WorkingDirectory = ".";
+		spec.CommandLineArgs = args;
+
+		return new Meadow(spec);
 	}
 
 }

@@ -6,14 +6,14 @@
 namespace Zahra
 {
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
-		: m_Path(path)
+	OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
+		: m_Filepath(path)
 	{
 		int width, height, channels;
 
 		stbi_set_flip_vertically_on_load(true);
 		stbi_uc* data = nullptr;
-		data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
 		
 		Z_CORE_ASSERT(data, "Failed to load image.");
 
@@ -82,11 +82,16 @@ namespace Zahra
 		glDeleteTextures(1, &m_RendererID);
 	}
 
+	const std::filesystem::path& OpenGLTexture2D::GetFilepath() const
+	{
+		return m_Filepath;
+	}
+
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
 		Z_PROFILE_FUNCTION();
 
-		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3; // TODO: generalise this if we use formats other than rgb/rgba
+		uint32_t bpp = (m_DataFormat == GL_RGBA ? 4 : 3); // TODO: generalise this if we use formats other than rgb/rgba
 		Z_CORE_ASSERT(size == m_Width * m_Height * bpp, "Incomplete texture data.")
 
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);

@@ -31,10 +31,17 @@ namespace Zahra
 		}
 	};
 
+	struct ApplicationSpecification
+	{
+		std::string Name = "Unnamed App";
+		std::filesystem::path WorkingDirectory;
+		ApplicationCommandLineArgs CommandLineArgs;
+	};
+
 	class Application
 	{
 	public:
-		Application(const std::string& name = "Unnamed App", ApplicationCommandLineArgs args = ApplicationCommandLineArgs());
+		Application(const ApplicationSpecification& spec);
 		virtual ~Application();
 
 		void Run();
@@ -46,7 +53,7 @@ namespace Zahra
 
 		static Application& Get() { return *s_Instance; }
 
-		ApplicationCommandLineArgs GetCommandLineArgs() const { return m_CommandLineArgs; }
+		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 
 		Window& GetWindow() { return *m_Window; }
 
@@ -55,7 +62,7 @@ namespace Zahra
 		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
 	private:
-		ApplicationCommandLineArgs m_CommandLineArgs;
+		ApplicationSpecification m_Specification;
 
 		bool OnWindowClosed(WindowClosedEvent& e);
 		bool OnWindowResized(WindowResizedEvent& e);

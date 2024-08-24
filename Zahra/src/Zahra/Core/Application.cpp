@@ -8,18 +8,17 @@ namespace Zahra
 	Application* Application::s_Instance = nullptr;
 
 
-	Application::Application(const std::string& name, ApplicationCommandLineArgs args)
-		: m_CommandLineArgs(args)
+	Application::Application(const ApplicationSpecification& spec)
+		: m_Specification(spec)
 	{
-		Z_PROFILE_FUNCTION();
-
+		if (!spec.WorkingDirectory.empty())
+			std::filesystem::current_path(spec.WorkingDirectory);
 		Z_CORE_INFO("Current working directory {0}", std::filesystem::current_path().string());
 
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
 
-		m_Window = Window::Create(WindowProperties(name));
-
+		m_Window = Window::Create(WindowProperties(spec.Name));
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
 
 		Renderer::Init();
