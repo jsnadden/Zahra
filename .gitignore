@@ -5,6 +5,7 @@ profiling/
 # binaries
 bin-int/
 **/bin/
+Intermediates/
 !vendor/premake/bin/
 
 # vs files
@@ -19,5 +20,4 @@ bin-int/
 
 Zahra/vendor/VulkanSDK
 Meadow/assets/cache
-Meadow/Resources/Scripts
 scripts/__pycache__
