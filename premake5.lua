@@ -26,8 +26,16 @@ group "Dependencies"
 	include "Zahra/vendor/ImGui"
 	include "Zahra/vendor/yaml-cpp"
 	include "Zahra/vendor/Box2D"
-group ""
 
-include "Zahra"
-include "Sandbox"
-include "Meadow"
+group "Tools"
+	include "Meadow"
+
+group "ZahraCore"
+	include "Zahra"
+	include "ScriptCore"
+
+group "Misc."
+	include "Sandbox"
+
+
+

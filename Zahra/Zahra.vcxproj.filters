@@ -37,6 +37,9 @@
     <Filter Include="src\Zahra\Scene">
       <UniqueIdentifier>{AFD84494-1B64-B258-2475-354D907F0E59}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Zahra\Scripting">
+      <UniqueIdentifier>{94596345-00BB-4053-8928-8705F5887712}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Zahra\Utils">
       <UniqueIdentifier>{F26C7294-5EF8-DF58-6709-634DD3133C59}</UniqueIdentifier>
     </Filter>
@@ -221,6 +224,9 @@
     </ClInclude>
     <ClInclude Include="src\Zahra\Scene\ScriptableEntity.h">
       <Filter>src\Zahra\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Scripting\ScriptEngine.h">
+      <Filter>src\Zahra\Scripting</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Utils\PlatformUtils.h">
       <Filter>src\Zahra\Utils</Filter>
@@ -1582,6 +1588,9 @@
     </ClCompile>
     <ClCompile Include="src\Zahra\Scene\SceneSerialiser.cpp">
       <Filter>src\Zahra\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Scripting\ScriptEngine.cpp">
+      <Filter>src\Zahra\Scripting</Filter>
     </ClCompile>
     <ClCompile Include="src\zpch.cpp">
       <Filter>src</Filter>

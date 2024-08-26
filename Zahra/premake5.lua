@@ -42,7 +42,8 @@ project "Zahra"
 		"%{IncludeDir.EnTT}",
 		"%{IncludeDir.yaml_cpp}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.VulkanSDK}"
+		"%{IncludeDir.VulkanSDK}",
+		"%{IncludeDir.mono}"
 	}
 
 	links
@@ -52,7 +53,8 @@ project "Zahra"
 		"Glad",
 		"ImGui",
 		"yaml-cpp",
-		"opengl32.lib"
+		"opengl32.lib",
+		"%{Library.mono}"
 	}
 
 	filter "files:vendor/ImGuizmo/**.cpp"
@@ -60,6 +62,14 @@ project "Zahra"
 
 	filter "system:windows"
 		systemversion "latest"
+
+		links
+		{
+			"%{Library.WinSock}",
+			"%{Library.WinMultimedia}",
+			"%{Library.WinVersion}",
+			"%{Library.WinBCrypt}"
+		}
 	
 	filter "configurations:Debug"
 		defines "Z_DEBUG"

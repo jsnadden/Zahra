@@ -19,4 +19,5 @@ bin-int/
 
 Zahra/vendor/VulkanSDK
 Meadow/assets/cache
+Meadow/Resources/Scripts
 scripts/__pycache__

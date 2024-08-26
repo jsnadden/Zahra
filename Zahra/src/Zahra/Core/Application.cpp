@@ -4,6 +4,7 @@
 #include "Zahra/Core/Input.h"
 #include "Zahra/Renderer/Renderer.h"
 #include "Zahra/Utils/PlatformUtils.h"
+#include "Zahra/Scripting/ScriptEngine.h"
 
 namespace Zahra
 {
@@ -24,6 +25,7 @@ namespace Zahra
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
 
 		Renderer::Init();
+		ScriptEngine::Init();
 
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverlay(m_ImGuiLayer);
@@ -32,7 +34,8 @@ namespace Zahra
 
 	Application::~Application()
 	{
-
+		ScriptEngine::Shutdown();
+		Renderer::Shutdown();
 	}
 
 	void Application::Run()
