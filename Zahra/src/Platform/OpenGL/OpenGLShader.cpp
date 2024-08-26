@@ -2,7 +2,6 @@
 #include "OpenGLShader.h"
 
 #include "Zahra/Core/Timer.h"
-#include "Platform/OpenGL/OpenGLUtils.h"
 
 #include <fstream>
 
@@ -18,12 +17,117 @@
 namespace Zahra
 {	
 
+	namespace OpenGLShaderUtils
+	{
+		static GLenum ShaderTypeFromString(const std::string& type)
+		{
+			if (type == "vertex")
+			{
+				return GL_VERTEX_SHADER;
+			}
+			else if (type == "fragment" || type == "pixel")
+			{
+				return GL_FRAGMENT_SHADER;
+			}
+			// TODO: add other shader types if they come into play
+
+			Z_CORE_WARN("Unknown shader type");
+			return 0;
+		}
+
+		static shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER:
+			{
+				return shaderc_glsl_vertex_shader;
+			}
+			case GL_FRAGMENT_SHADER:
+			{
+				return shaderc_glsl_fragment_shader;
+			}
+			}
+
+			Z_CORE_ASSERT(false);
+			return (shaderc_shader_kind)0;
+		}
+
+		static const char* GLShaderStageToString(GLenum stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER:
+			{
+				return "GL_VERTEX_SHADER";
+			}
+			case GL_FRAGMENT_SHADER:
+			{
+				return "GL_FRAGMENT_SHADER";
+			}
+			}
+
+			Z_CORE_ASSERT(false);
+			return nullptr;
+		}
+
+		static const char* GetCacheDirectory()
+		{
+			// TODO: validate assets directory
+			return "Resources/cache/shader/opengl";
+		}
+
+		static void CreateCacheDirectoryIfNeeded()
+		{
+			std::string cacheDirectory = GetCacheDirectory();
+
+			if (!std::filesystem::exists(cacheDirectory)) std::filesystem::create_directories(cacheDirectory);
+		}
+
+		static const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER:
+			{
+				return ".cached_opengl.vert";
+			}
+			case GL_FRAGMENT_SHADER:
+			{
+				return ".cached_opengl.frag";
+			}
+			}
+
+			Z_CORE_ASSERT(false);
+			return "";
+		}
+
+		static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER:
+			{
+				return ".cached_vulkan.vert";
+			}
+			case GL_FRAGMENT_SHADER:
+			{
+				return ".cached_vulkan.frag";
+			}
+			}
+
+			Z_CORE_ASSERT(false);
+			return "";
+		}
+
+	}
+
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 		: m_Filepath(filepath)
 	{
 		Z_PROFILE_FUNCTION();
 
-		OpenGLUtils::CreateCacheDirectoryIfNeeded();
+		OpenGLShaderUtils::CreateCacheDirectoryIfNeeded();
 
 		std::string sourceString= ReadFile(filepath);
 		auto shaderSources = ParseShaderSrc(sourceString);
@@ -125,12 +229,12 @@ namespace Zahra
 			size_t shaderTypePosition = typeTokenPosition + typeTokenLength + 1;
 
 			std::string type = shaderSource.substr(shaderTypePosition, endOfLine - shaderTypePosition);
-			Z_CORE_ASSERT(OpenGLUtils::ShaderTypeFromString(type), "Invalid shader type specified.");
+			Z_CORE_ASSERT(OpenGLShaderUtils::ShaderTypeFromString(type), "Invalid shader type specified.");
 
 			size_t shaderCodeStart = shaderSource.find_first_not_of("\r\n", endOfLine);
 			typeTokenPosition = shaderSource.find(typeToken, shaderCodeStart);
 
-			shaderSources[OpenGLUtils::ShaderTypeFromString(type)] = (typeTokenPosition == std::string::npos) ?
+			shaderSources[OpenGLShaderUtils::ShaderTypeFromString(type)] = (typeTokenPosition == std::string::npos) ?
 				shaderSource.substr(shaderCodeStart) : shaderSource.substr(shaderCodeStart, typeTokenPosition - shaderCodeStart);
 		}
 
@@ -145,7 +249,7 @@ namespace Zahra
 		const bool optimize = true;
 		if (optimize) options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-		std::filesystem::path cacheDirectory = OpenGLUtils::GetCacheDirectory();
+		std::filesystem::path cacheDirectory = OpenGLShaderUtils::GetCacheDirectory();
 
 		auto& shaderData = m_VulkanSPIRV;
 		shaderData.clear();
@@ -153,7 +257,7 @@ namespace Zahra
 		for (auto&& [stage, source] : shaderSources)
 		{
 			std::filesystem::path shaderFilePath = m_Filepath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + OpenGLUtils::GLShaderStageCachedVulkanFileExtension(stage));
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + OpenGLShaderUtils::GLShaderStageCachedVulkanFileExtension(stage));
 
 			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 
@@ -168,7 +272,7 @@ namespace Zahra
 			}
 			else
 			{
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, OpenGLUtils::GLShaderStageToShaderC(stage), m_Filepath.c_str(), options);
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, OpenGLShaderUtils::GLShaderStageToShaderC(stage), m_Filepath.c_str(), options);
 			
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
@@ -209,7 +313,7 @@ namespace Zahra
 		const bool optimize = false;
 		if (optimize) options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-		std::filesystem::path cacheDirectory = OpenGLUtils::GetCacheDirectory();
+		std::filesystem::path cacheDirectory = OpenGLShaderUtils::GetCacheDirectory();
 
 		shaderData.clear();
 		m_OpenGLSourceCode.clear();
@@ -217,7 +321,7 @@ namespace Zahra
 		for (auto&& [stage, spirv] : m_VulkanSPIRV)
 		{
 			std::filesystem::path shaderFilePath = m_Filepath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + OpenGLUtils::GLShaderStageCachedOpenGLFileExtension(stage));
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + OpenGLShaderUtils::GLShaderStageCachedOpenGLFileExtension(stage));
 
 			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
 			if (in.is_open())
@@ -236,7 +340,7 @@ namespace Zahra
 				m_OpenGLSourceCode[stage] = glslCompiler.compile();
 				auto& source = m_OpenGLSourceCode[stage];
 
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, OpenGLUtils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, OpenGLShaderUtils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					Z_CORE_ERROR(module.GetErrorMessage());
@@ -304,7 +408,7 @@ namespace Zahra
 		spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
-		Z_CORE_TRACE("OpenGLShader::Reflect: {0} ({1})", OpenGLUtils::GLShaderStageToString(stage), m_Filepath);
+		Z_CORE_TRACE("OpenGLShader::Reflect: {0} ({1})", OpenGLShaderUtils::GLShaderStageToString(stage), m_Filepath);
 		Z_CORE_TRACE("---------------------------------------------------");
 		Z_CORE_TRACE("  |  {0} resource(s)", resources.sampled_images.size());
 		Z_CORE_TRACE("  |  {0} uniform buffer(s)", resources.uniform_buffers.size());

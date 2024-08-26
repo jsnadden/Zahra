@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Zahra
 {
@@ -20,15 +21,14 @@ namespace Zahra
 			Console.WriteLine("Printing default message.");
 		}
 
-		public void PrintCustomMessage(string message)
+		public void PrintNativeLog()
 		{
-			Console.WriteLine($"Printing custom message: {message}");
+			NativeLog("boobs", 58008);
 		}
-
-		public void PrintInteger(int x)
-		{
-			Console.WriteLine($"Printing integer: {x}");
-		}
+		
+		// Import C++ method into C#
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void NativeLog(string text, int parameter);
 
 	}
 

@@ -10,9 +10,9 @@ namespace Zahra
 		static void Shutdown();
 
 	private:
-		static void InitMono();
-		static void ShutdownMono();
-
+		static void InitMonoDomains();
+		static void LoadCoreAssembly(std::filesystem::path filepath);
+		static void ShutdownMonoDomains();
 	};
 
 }

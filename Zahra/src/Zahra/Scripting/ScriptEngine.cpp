@@ -1,40 +1,14 @@
 #include "zpch.h"
 #include "ScriptEngine.h"
 
-#include "mono/jit/jit.h"
-#include "mono/metadata/assembly.h"
-#include "mono/metadata/object.h"
+#include <mono/jit/jit.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/object.h>
 
-namespace Zahra
+namespace MonoUtils
 {
-	// Since we're interfacing with mono's C API, we can do away
-	// with smart pointers (unless something is being exposed)
-	
-	struct ScriptEngineData
-	{
-		MonoDomain* RootDomain = nullptr;
-		MonoDomain* AppDomain = nullptr;
-
-		MonoAssembly* CoreAssembly = nullptr;
-	};
-
-	static ScriptEngineData* s_Data;
-
-	void ScriptEngine::Init()
-	{
-		s_Data = new ScriptEngineData;
-
-		InitMono();
-	}
-
-	void ScriptEngine::Shutdown()
-	{
-		ShutdownMono();
-
-		delete s_Data;
-	}
-
-	char* ReadBytes(const std::string& filepath, uint32_t* outSize)
+	// TODO: move this to a more general engine-wide FileSystem manager:
+	static char* ReadBytes(const std::filesystem::path & filepath, uint32_t* outSize)
 	{
 		std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
 
@@ -62,14 +36,12 @@ namespace Zahra
 		return buffer;
 	}
 
-	MonoAssembly* LoadCSharpAssembly(const std::filesystem::path& assemblyPath)
+	static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath)
 	{
 		Z_CORE_ASSERT(std::filesystem::exists(assemblyPath), "Assembly file does not exist");
 
-		std::string assemblyPathString = assemblyPath.string();
-
 		uint32_t fileSize = 0;
-		char* fileData = ReadBytes(assemblyPathString.c_str(), &fileSize);
+		char* fileData = ReadBytes(assemblyPath, &fileSize);
 
 		// NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
 		MonoImageOpenStatus status;
@@ -82,6 +54,7 @@ namespace Zahra
 			return nullptr;
 		}
 
+		std::string assemblyPathString = assemblyPath.string();
 		MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPathString.c_str(), &status, 0);
 		mono_image_close(image);
 
@@ -91,9 +64,8 @@ namespace Zahra
 		return assembly;
 	}
 
-	void PrintAssemblyTypes(MonoAssembly* assembly)
+	static void PrintAssemblyTypes(MonoImage* image)
 	{
-		MonoImage* image = mono_assembly_get_image(assembly);
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 
@@ -108,37 +80,58 @@ namespace Zahra
 			Z_CORE_TRACE("{}.{}", nameSpace, name);
 		}
 	}
+}
 
-	void ScriptEngine::InitMono()
+namespace Zahra
+{
+	struct ScriptEngineData
+	{
+		MonoDomain* RootDomain = nullptr;
+		MonoDomain* AppDomain = nullptr;
+
+		MonoAssembly* CoreAssembly = nullptr;
+		MonoImage* CoreAssemblyImage = nullptr;
+	};
+
+	static ScriptEngineData* s_Data;
+
+	void ScriptEngine::Init()
+	{
+		s_Data = new ScriptEngineData;
+
+		InitMonoDomains();
+		LoadCoreAssembly("Resources/Scripts/ScriptCore.dll");
+	}
+
+	void ScriptEngine::Shutdown()
+	{
+		ShutdownMonoDomains();
+
+		delete s_Data;
+	}
+		
+	void ScriptEngine::InitMonoDomains()
 	{
 		mono_set_assemblies_path("mono/lib/");
 
 		MonoDomain* rootDomain = mono_jit_init("ZahraJITRuntime");
 		Z_CORE_ASSERT(rootDomain);
 
-		// the only reason we keep this pointer is to delete it later.
-		// (you'd think that mono should be able to deal with this internally...)
 		s_Data->RootDomain = rootDomain;
 
 		s_Data->AppDomain = mono_domain_create_appdomain("ZahraScriptRuntime", nullptr);
 		mono_domain_set(s_Data->AppDomain, true);
-
-		// TEMP:
-		s_Data->CoreAssembly = LoadCSharpAssembly("Resources/Scripts/ScriptCore.dll");
-		PrintAssemblyTypes(s_Data->CoreAssembly);
-
-		MonoImage* imgCore = mono_assembly_get_image(s_Data->CoreAssembly);
-		MonoClass* classMain = mono_class_from_name(imgCore, "Zahra", "Main");
-		MonoObject* objMain = mono_object_new(s_Data->AppDomain, classMain);
-		mono_runtime_object_init(objMain);
-
-		MonoMethod* myMethod = mono_class_get_method_from_name(classMain, "PrintCustomMessage", 1);
-		MonoString* message = mono_string_new(s_Data->AppDomain, "send_help_plz...");
-		void* args = message;
-		mono_runtime_invoke(myMethod, objMain, &args, nullptr);
 	}
 
-	void ScriptEngine::ShutdownMono()
+	void ScriptEngine::LoadCoreAssembly(std::filesystem::path filepath)
+	{
+		s_Data->CoreAssembly = MonoUtils::LoadMonoAssembly(filepath);
+		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
+
+		MonoUtils::PrintAssemblyTypes(s_Data->CoreAssemblyImage);		
+	}
+
+	void ScriptEngine::ShutdownMonoDomains()
 	{
 		mono_domain_set(mono_get_root_domain(), false);
 
@@ -149,6 +142,26 @@ namespace Zahra
 		s_Data->RootDomain = nullptr;
 	}
 
-	
+		// BASIC EXAMPLES TO PULL FROM:
+		//static void CppNativeLog(MonoString* arg1, int arg2)
+		//{
+		//	char* myString = mono_string_to_utf8(arg1);
+		//	Z_CORE_TRACE("{}, {}", myString, arg2);
+		//	mono_free(myString); // NOTE: manually free things mono has allocated for us!
+		//}
+		//
+		//// Export C++ method to C#
+		//mono_add_internal_call("Zahra.Main::NativeLog", CppNativeLog);
+		//
+		//MonoImage* imgCore = mono_assembly_get_image(s_Data->CoreAssembly);
+		//MonoClass* classMain = mono_class_from_name(imgCore, "Zahra", "Main");
+		//MonoObject* objMain = mono_object_new(s_Data->AppDomain, classMain);
+		//mono_runtime_object_init(objMain);
+		//
+		//// Import C# method into C++
+		//MonoMethod* myMethod = mono_class_get_method_from_name(classMain, "PrintNativeLog", 0);
+		//MonoString* message = mono_string_new(s_Data->AppDomain, "send_help_plz...");
+		//void* args = message;
+		//mono_runtime_invoke(myMethod, objMain, nullptr, nullptr);
 
 }
