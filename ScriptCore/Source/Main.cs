@@ -3,32 +3,40 @@ using System.Runtime.CompilerServices;
 
 namespace Zahra
 {
-	public class Main
+	public class Example
 	{
 		public float FloatVar { get; set; }
-		public Main()
+		public Example()
 		{
-			Console.WriteLine("Main constructed.");
+			InternalCalls.NativeLog("Constructor called", 69);
 		}
 
-		~Main()
+		~Example()
 		{
-			Console.WriteLine("Main destructed.");
+			InternalCalls.NativeLog("Destructor called", 420);
 		}
 
-		public void PrintMessage()
+		public void Hello()
 		{
-			Console.WriteLine("Printing default message.");
+			System.Console.WriteLine("Hello, world!");
 		}
 
-		public void PrintNativeLog()
+		public void Hello(int n)
 		{
-			NativeLog("boobs", 58008);
+			for (int i = 0; i < n; i++)
+			{
+				System.Console.WriteLine("Hello, world!");
+
+			}
 		}
-		
+
+	}
+
+	public static class InternalCalls
+	{ 
 		// Import C++ method into C#
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void NativeLog(string text, int parameter);
+		internal  extern static void NativeLog(string text, int parameter);
 
 	}
 

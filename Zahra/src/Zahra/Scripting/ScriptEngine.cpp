@@ -1,6 +1,8 @@
 #include "zpch.h"
 #include "ScriptEngine.h"
 
+#include "Zahra/Scripting/ScriptGlue.h"
+
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/object.h>
@@ -66,6 +68,8 @@ namespace MonoUtils
 
 	static void PrintAssemblyTypes(MonoImage* image)
 	{
+		// TODO: make this a little more presentable
+
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 
@@ -80,6 +84,7 @@ namespace MonoUtils
 			Z_CORE_TRACE("{}.{}", nameSpace, name);
 		}
 	}
+
 }
 
 namespace Zahra
@@ -95,12 +100,68 @@ namespace Zahra
 
 	static ScriptEngineData* s_Data;
 
+	class ScriptClass
+	{
+	public:
+		ScriptClass() = default;
+
+		ScriptClass(MonoImage* image, const std::string& classNamespace, const std::string& className)
+			: m_Namespace(classNamespace), m_Name(className)
+		{
+			m_Class = mono_class_from_name(image, classNamespace.c_str(), className.c_str());
+		}
+
+		MonoObject* Instantiate()
+		{
+			MonoObject* instance = mono_object_new(s_Data->AppDomain, m_Class); // TODO: expose the domain argument?
+			mono_runtime_object_init(instance);
+			return instance;
+		}
+
+		MonoMethod* GetMethod(const std::string& methodName, int numArgs)
+		{
+			return mono_class_get_method_from_name(m_Class, methodName.c_str(), numArgs);
+		}
+
+		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** args)
+		{
+			Z_CORE_ASSERT(mono_object_get_class(instance) == m_Class, "Object is not an instance of this class");
+			return mono_runtime_invoke(method, instance, args, nullptr); // TODO: expose fourth argument (exception handling)
+		}
+
+		MonoClass* GetMonoClass() { return m_Class; }
+		const std::string& GetNamespace() { return m_Namespace; }
+		const std::string& GetName() { return m_Name; }
+
+	private:
+		MonoClass* m_Class = nullptr;
+		std::string m_Namespace;
+		std::string m_Name;
+	};
+
+
+
 	void ScriptEngine::Init()
 	{
 		s_Data = new ScriptEngineData;
 
 		InitMonoDomains();
 		LoadCoreAssembly("Resources/Scripts/ScriptCore.dll");
+
+		ScriptGlue::RegisterFunctions();
+
+		////////////////////////////////////////////////////////////////////////////////////
+		// TEMP
+		ScriptClass exampleClass(s_Data->CoreAssemblyImage, "Zahra", "Example");
+		MonoObject* exampleInstance = exampleClass.Instantiate();
+		std::string classNamespace = exampleClass.GetNamespace();
+		std::string className = exampleClass.GetName();
+		Z_CORE_INFO("I got a {}::{}", classNamespace, className);
+		MonoMethod* exampleMethod = exampleClass.GetMethod("Hello", 1);
+		int n = 7;
+		void* ptr = &n;
+		exampleClass.InvokeMethod(exampleInstance, exampleMethod, &ptr);
+
 	}
 
 	void ScriptEngine::Shutdown()
@@ -142,26 +203,15 @@ namespace Zahra
 		s_Data->RootDomain = nullptr;
 	}
 
-		// BASIC EXAMPLES TO PULL FROM:
-		//static void CppNativeLog(MonoString* arg1, int arg2)
-		//{
-		//	char* myString = mono_string_to_utf8(arg1);
-		//	Z_CORE_TRACE("{}, {}", myString, arg2);
-		//	mono_free(myString); // NOTE: manually free things mono has allocated for us!
-		//}
-		//
-		//// Export C++ method to C#
-		//mono_add_internal_call("Zahra.Main::NativeLog", CppNativeLog);
-		//
-		//MonoImage* imgCore = mono_assembly_get_image(s_Data->CoreAssembly);
-		//MonoClass* classMain = mono_class_from_name(imgCore, "Zahra", "Main");
-		//MonoObject* objMain = mono_object_new(s_Data->AppDomain, classMain);
-		//mono_runtime_object_init(objMain);
-		//
-		//// Import C# method into C++
-		//MonoMethod* myMethod = mono_class_get_method_from_name(classMain, "PrintNativeLog", 0);
-		//MonoString* message = mono_string_new(s_Data->AppDomain, "send_help_plz...");
-		//void* args = message;
-		//mono_runtime_invoke(myMethod, objMain, nullptr, nullptr);
+
+	//// Construct class instance
+	//MonoClass* classMain = mono_class_from_name(s_Data->CoreAssemblyImage, "Zahra", "Main");
+	//MonoObject* objMain = mono_object_new(s_Data->AppDomain, classMain);
+	//mono_runtime_object_init(objMain);
+
+	//// Call C# method
+	//MonoMethod* myMethod = mono_class_get_method_from_name(class, methodName, paramCount);
+	//mono_runtime_invoke(myMethod, object, args, exceptionHandler);
+
 
 }

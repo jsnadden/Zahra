@@ -11,8 +11,12 @@
             "id": "6d0e9411287ab3e2",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {}
+              "type": "markdown",
+              "state": {
+                "file": "Planning & Learning/Audio engine.md",
+                "mode": "source",
+                "source": false
+              }
             }
           }
         ]
@@ -81,6 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Planning & Learning/Audio engine.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -97,6 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "Planning & Learning/Audio engine.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -119,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "TODO/Refactor properties panel helper functions in editor.md"
+                "file": "Planning & Learning/Audio engine.md"
               }
             }
           }
@@ -140,12 +146,14 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "a5fb5a059ffe4623",
+  "active": "6d0e9411287ab3e2",
   "lastOpenFiles": [
-    "Planning & Learning/Resource Management.md",
-    "Planning & Learning/Memory Management.md",
+    "Planning & Learning/VULKAN.md",
+    "Planning & Learning/Audio engine.md",
     "Planning & Learning/Parallelisation.md",
+    "Planning & Learning/Memory Management.md",
     "Planning & Learning/ECS Reflection & Serialisation.md",
+    "Planning & Learning/Resource Management.md",
     "TODO/Refactor properties panel helper functions in editor.md",
     "TODO",
     "Untitled.md",
