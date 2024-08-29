@@ -8,10 +8,10 @@ namespace Zahra
 {
 	namespace InternalCalls
 	{
-		static void NativeLog(MonoString* arg1, int arg2)
+		static void NativeLog(MonoString* arg1)
 		{
 			char* myString = mono_string_to_utf8(arg1);
-			Z_CORE_TRACE("{}, {}", myString, arg2);
+			Z_CORE_INFO("From C#: {}", myString);
 			mono_free(myString); // NOTE: manually free things mono has allocated for us!
 		}
 	}

@@ -3,25 +3,25 @@ using System.Runtime.CompilerServices;
 
 namespace Zahra
 {
-	public class Example
+	public class Entity
 	{
 		public float FloatVar { get; set; }
-		public Example()
+		public Entity()
 		{
-			InternalCalls.NativeLog("Constructor called", 69);
+			InternalCalls.NativeLog("Entity constructed");
 		}
 
-		~Example()
+		~Entity()
 		{
-			InternalCalls.NativeLog("Destructor called", 420);
+			InternalCalls.NativeLog("Entity destroyed");
 		}
 
-		public void Hello()
+		public void Test()
 		{
 			System.Console.WriteLine("Hello, world!");
 		}
 
-		public void Hello(int n)
+		public void Test(int n)
 		{
 			for (int i = 0; i < n; i++)
 			{
@@ -36,7 +36,7 @@ namespace Zahra
 	{ 
 		// Import C++ method into C#
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal  extern static void NativeLog(string text, int parameter);
+		internal  extern static void NativeLog(string text);
 
 	}
 

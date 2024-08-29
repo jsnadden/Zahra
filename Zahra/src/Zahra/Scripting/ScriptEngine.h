@@ -13,6 +13,8 @@ namespace Zahra
 		static void InitMonoDomains();
 		static void LoadCoreAssembly(std::filesystem::path filepath);
 		static void ShutdownMonoDomains();
+
+		static void ReflectAssemblyTypes();
 	};
 
 }

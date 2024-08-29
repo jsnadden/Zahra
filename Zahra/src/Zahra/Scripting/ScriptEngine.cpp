@@ -5,6 +5,7 @@
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
+#include <mono/metadata/class.h>
 #include <mono/metadata/object.h>
 
 namespace MonoUtils
@@ -65,41 +66,10 @@ namespace MonoUtils
 
 		return assembly;
 	}
-
-	static void PrintAssemblyTypes(MonoImage* image)
-	{
-		// TODO: make this a little more presentable
-
-		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-
-		for (int32_t i = 0; i < numTypes; i++)
-		{
-			uint32_t cols[MONO_TYPEDEF_SIZE];
-			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-
-			const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-
-			Z_CORE_TRACE("{}.{}", nameSpace, name);
-		}
-	}
-
 }
 
 namespace Zahra
 {
-	struct ScriptEngineData
-	{
-		MonoDomain* RootDomain = nullptr;
-		MonoDomain* AppDomain = nullptr;
-
-		MonoAssembly* CoreAssembly = nullptr;
-		MonoImage* CoreAssemblyImage = nullptr;
-	};
-
-	static ScriptEngineData* s_Data;
-
 	class ScriptClass
 	{
 	public:
@@ -113,7 +83,7 @@ namespace Zahra
 
 		MonoObject* Instantiate()
 		{
-			MonoObject* instance = mono_object_new(s_Data->AppDomain, m_Class); // TODO: expose the domain argument?
+			MonoObject* instance = mono_object_new(mono_domain_get(), m_Class); // TODO: does the domain need to be user-specified?
 			mono_runtime_object_init(instance);
 			return instance;
 		}
@@ -129,6 +99,11 @@ namespace Zahra
 			return mono_runtime_invoke(method, instance, args, nullptr); // TODO: expose fourth argument (exception handling)
 		}
 
+		bool IsSubclassOf(ScriptClass& other, bool checkInterfaces = false)
+		{
+			return mono_class_is_subclass_of(m_Class, other.GetMonoClass(), checkInterfaces);
+		}
+
 		MonoClass* GetMonoClass() { return m_Class; }
 		const std::string& GetNamespace() { return m_Namespace; }
 		const std::string& GetName() { return m_Name; }
@@ -139,6 +114,21 @@ namespace Zahra
 		std::string m_Name;
 	};
 
+	struct ScriptEngineData
+	{
+		MonoDomain* RootDomain = nullptr;
+		MonoDomain* AppDomain = nullptr;
+
+		MonoAssembly* CoreAssembly = nullptr;
+		MonoImage* CoreAssemblyImage = nullptr;
+
+		std::unordered_map<std::string, Ref<ScriptClass>> EntityTypes;
+	};
+
+	static ScriptEngineData* s_Data;
+
+	
+
 
 
 	void ScriptEngine::Init()
@@ -147,20 +137,29 @@ namespace Zahra
 
 		InitMonoDomains();
 		LoadCoreAssembly("Resources/Scripts/ScriptCore.dll");
+		ReflectAssemblyTypes();
 
 		ScriptGlue::RegisterFunctions();
 
 		////////////////////////////////////////////////////////////////////////////////////
-		// TEMP
-		ScriptClass exampleClass(s_Data->CoreAssemblyImage, "Zahra", "Example");
-		MonoObject* exampleInstance = exampleClass.Instantiate();
-		std::string classNamespace = exampleClass.GetNamespace();
-		std::string className = exampleClass.GetName();
-		Z_CORE_INFO("I got a {}::{}", classNamespace, className);
-		MonoMethod* exampleMethod = exampleClass.GetMethod("Hello", 1);
-		int n = 7;
-		void* ptr = &n;
-		exampleClass.InvokeMethod(exampleInstance, exampleMethod, &ptr);
+		// TEMP TEST
+		{
+			// retrieve a class from C#, then construct an instance of it 
+			ScriptClass exampleClass(s_Data->CoreAssemblyImage, "Sandbox", "Player");
+			MonoObject* exampleInstance = exampleClass.Instantiate();
+			std::string classNamespace = mono_class_get_namespace(exampleClass.GetMonoClass());
+			std::string className = mono_class_get_name(exampleClass.GetMonoClass());
+
+			// retrieve and invoke a C# class method
+			MonoMethod* createMethod = exampleClass.GetMethod("OnCreate", 0);
+			MonoMethod* updateMethod = exampleClass.GetMethod("OnUpdate", 1);
+			float dt = .3f;
+			void* ptr = &dt;
+			exampleClass.InvokeMethod(exampleInstance, createMethod, nullptr);
+			exampleClass.InvokeMethod(exampleInstance, updateMethod, &ptr);
+		}
+		//
+		////////////////////////////////////////////////////////////////////////////////////
 
 	}
 
@@ -188,8 +187,6 @@ namespace Zahra
 	{
 		s_Data->CoreAssembly = MonoUtils::LoadMonoAssembly(filepath);
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
-
-		MonoUtils::PrintAssemblyTypes(s_Data->CoreAssemblyImage);		
 	}
 
 	void ScriptEngine::ShutdownMonoDomains()
@@ -203,6 +200,46 @@ namespace Zahra
 		s_Data->RootDomain = nullptr;
 	}
 
+	void ScriptEngine::ReflectAssemblyTypes()
+	{
+		Z_CORE_TRACE("");
+		Z_CORE_TRACE("=================================================================================");
+		Z_CORE_TRACE("MONO METADATA REFLECTION");
+		Z_CORE_TRACE("---------------------------------------------------------------------------------");
+
+		// re-initialise record of entity types
+		s_Data->EntityTypes.clear();
+
+		// get typedefs table
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_Data->CoreAssemblyImage, MONO_TABLE_TYPEDEF);
+		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+
+		// get entity base class for comparison
+		ScriptClass entityClass(s_Data->CoreAssemblyImage, "Zahra", "Entity");
+
+		// iterate over rows (i.e. C# types)
+		for (int32_t i = 0; i < numTypes; i++)
+		{
+			// get all data in the row
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+
+			std::string reflectedNamespace = mono_metadata_string_heap(s_Data->CoreAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
+			std::string reflectedName = mono_metadata_string_heap(s_Data->CoreAssemblyImage, cols[MONO_TYPEDEF_NAME]);
+			ScriptClass reflectedClass(s_Data->CoreAssemblyImage, reflectedNamespace, reflectedName);
+
+			// record entity types
+			if (reflectedClass.IsSubclassOf(entityClass))
+			{
+				std::string fullName = reflectedNamespace + "." + reflectedName;
+				s_Data->EntityTypes[fullName] = CreateRef<ScriptClass>(reflectedClass);
+				Z_CORE_TRACE("{} is an Entity type", fullName);
+			}
+		}
+
+		Z_CORE_TRACE("=================================================================================");
+
+	}
 
 	//// Construct class instance
 	//MonoClass* classMain = mono_class_from_name(s_Data->CoreAssemblyImage, "Zahra", "Main");
