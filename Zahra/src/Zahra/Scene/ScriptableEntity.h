@@ -5,10 +5,10 @@
 namespace Zahra
 {
 
-	class ScriptableEntity
+	class NativeScriptableEntity
 	{
 	public:
-		virtual ~ScriptableEntity() {}
+		virtual ~NativeScriptableEntity() {}
 
 		template<typename ...Types>
 		auto& GetComponents()
@@ -32,6 +32,31 @@ namespace Zahra
 
 		friend class Scene;
 	};
+
+	// e.g.
+	class CameraController : public NativeScriptableEntity
+		{
+		public:
+			void OnUpdate(float dt)
+			{
+				auto& position = GetComponents<TransformComponent>().Translation;
+				if (HasComponents<CameraComponent>())
+				{
+					auto& camera = GetComponents<CameraComponent>().Camera;
+					float speed = camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic
+						? .5f * camera.GetOrthographicSize() : 2.0f;
+		
+					if (Input::IsKeyPressed(KeyCode::A))
+						position.x -= speed * dt;
+					if (Input::IsKeyPressed(KeyCode::D))
+						position.x += speed * dt;
+					if (Input::IsKeyPressed(KeyCode::W))
+						position.y += speed * dt;
+					if (Input::IsKeyPressed(KeyCode::S))
+						position.y -= speed * dt;
+				}
+			}
+		};
 
 
 }

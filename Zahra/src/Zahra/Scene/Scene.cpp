@@ -2,9 +2,10 @@
 #include "Scene.h"
 
 #include "Zahra/Renderer/Renderer.h"
-#include "Entity.h"
-#include "ScriptableEntity.h"
-#include "Components.h"
+#include "Zahra/Scene/Entity.h"
+#include "Zahra/Scene/ScriptableEntity.h"
+#include "Zahra/Scene/Components.h"
+#include "Zahra/Scripting/ScriptEngine.h"
 
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>
@@ -89,7 +90,7 @@ namespace Zahra
 
 		std::unordered_map<ZGUID, entt::entity> guidToNewHandle;
 
-		// copy entities
+		// copy entities, along with their IDComponents and TagComponents
 		oldRegistry.view<entt::entity>().each([&](auto entityHandle)
 			{
 				Entity oldEntity = { entityHandle, oldScene.get() };
@@ -97,7 +98,7 @@ namespace Zahra
 				guidToNewHandle[guid] = (entt::entity)newScene->CreateEntity(guid, oldEntity.GetComponents<TagComponent>().Tag);
 			});
 
-		// copy components
+		// copy the remaing components
 		CopyComponent(AllComponents{}, newRegistry, oldRegistry, guidToNewHandle);
 
 		return newScene;
@@ -126,9 +127,11 @@ namespace Zahra
 
 	Entity Scene::DuplicateEntity(Entity entity)
 	{
+		// create new component with its own IDComponent and the copied TagComponent
 		std::string newTag = entity.GetName();
 		Entity copy = CreateEntity(newTag);
 
+		// copy the remaining components
 		CopyComponentIfExists(AllComponents{}, entity, copy);
 
 		return copy;
@@ -138,23 +141,26 @@ namespace Zahra
 	{
 		OnSimulationStart();
 
-		// Instantiate scripts
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nativeScript)
+		// Initialise script behaviours
+		{
+			ScriptEngine::OnRuntimeStart(this);
+			
+			auto& view = m_Registry.view<ScriptComponent>();
+			for (auto e : view)
 			{
-				if (!nativeScript.Instance)
-				{
-					nativeScript.Instance = nativeScript.InstantiateScript();
-					nativeScript.Instance->m_Entity = Entity{ entity, this };
-					nativeScript.Instance->OnCreate();
-				}
-			});
+				Entity entity = { e, this };
+				ScriptEngine::InstantiateScript(entity);
+			}
+		}
+		
 	}
 
 	void Scene::OnRuntimeStop()
 	{
 		OnSimulationStop();
 
-		// TODO: stop scripts?
+		ScriptEngine::OnRuntimeStop();
+
 	}
 
 	void Scene::OnSimulationStart()
@@ -167,6 +173,8 @@ namespace Zahra
 		for (auto& body : m_PhysicsBodies) m_PhysicsWorld->DestroyBody(body.second);
 		m_PhysicsBodies.clear();
 		m_PhysicsWorld = nullptr;
+
+		
 	}
 
 	void Scene::OnUpdateEditor(float dt, EditorCamera& camera)
@@ -190,10 +198,12 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// RUN SCRIPTS
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nativeScript)
-				{
-					nativeScript.Instance->OnUpdate(dt);
-				});
+			auto& view = m_Registry.view<ScriptComponent>();
+			for (auto e : view)
+			{
+				Entity entity = { e, this };
+				ScriptEngine::UpdateScript(entity, dt);
+			}
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

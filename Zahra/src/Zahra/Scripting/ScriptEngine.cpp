@@ -1,6 +1,7 @@
 #include "zpch.h"
 #include "ScriptEngine.h"
 
+#include "Zahra/Scene/Scene.h"
 #include "Zahra/Scripting/ScriptGlue.h"
 
 #include <mono/jit/jit.h>
@@ -70,6 +71,7 @@ namespace MonoUtils
 
 namespace Zahra
 {
+
 	class ScriptClass
 	{
 	public:
@@ -107,11 +109,44 @@ namespace Zahra
 		MonoClass* GetMonoClass() { return m_Class; }
 		const std::string& GetNamespace() { return m_Namespace; }
 		const std::string& GetName() { return m_Name; }
+		const std::string& GetFullName() { return m_Namespace + "." + m_Name; }
 
 	private:
 		MonoClass* m_Class = nullptr;
 		std::string m_Namespace;
 		std::string m_Name;
+	};
+
+	class ScriptInstance
+	{
+	public:
+		ScriptInstance(Ref<ScriptClass> scriptClass)
+			: m_Class(scriptClass)
+		{
+			m_Object = m_Class->Instantiate();
+
+			m_OnCreate = m_Class->GetMethod("OnCreate", 0);
+			m_OnUpdate = m_Class->GetMethod("OnUpdate", 1);
+
+			InvokeOnCreate();
+		}
+
+		void InvokeOnCreate()
+		{
+			m_Class->InvokeMethod(m_Object, m_OnCreate, nullptr);
+		}
+
+		void InvokeOnUpdate(float dt)
+		{
+			void* ptr = &dt;
+			m_Class->InvokeMethod(m_Object, m_OnUpdate, &ptr);
+		}
+
+	private:
+		Ref<ScriptClass> m_Class;
+		MonoObject* m_Object = nullptr;
+		MonoMethod* m_OnCreate = nullptr;
+		MonoMethod* m_OnUpdate = nullptr;
 	};
 
 	struct ScriptEngineData
@@ -123,11 +158,12 @@ namespace Zahra
 		MonoImage* CoreAssemblyImage = nullptr;
 
 		std::unordered_map<std::string, Ref<ScriptClass>> EntityTypes;
+		std::unordered_map<ZGUID, Ref<ScriptInstance>> EntityInstances;
+
+		Scene* SceneContext;
 	};
 
 	static ScriptEngineData* s_Data;
-
-	
 
 
 
@@ -141,26 +177,6 @@ namespace Zahra
 
 		ScriptGlue::RegisterFunctions();
 
-		////////////////////////////////////////////////////////////////////////////////////
-		// TEMP TEST
-		{
-			// retrieve a class from C#, then construct an instance of it 
-			ScriptClass exampleClass(s_Data->CoreAssemblyImage, "Sandbox", "Player");
-			MonoObject* exampleInstance = exampleClass.Instantiate();
-			std::string classNamespace = mono_class_get_namespace(exampleClass.GetMonoClass());
-			std::string className = mono_class_get_name(exampleClass.GetMonoClass());
-
-			// retrieve and invoke a C# class method
-			MonoMethod* createMethod = exampleClass.GetMethod("OnCreate", 0);
-			MonoMethod* updateMethod = exampleClass.GetMethod("OnUpdate", 1);
-			float dt = .3f;
-			void* ptr = &dt;
-			exampleClass.InvokeMethod(exampleInstance, createMethod, nullptr);
-			exampleClass.InvokeMethod(exampleInstance, updateMethod, &ptr);
-		}
-		//
-		////////////////////////////////////////////////////////////////////////////////////
-
 	}
 
 	void ScriptEngine::Shutdown()
@@ -168,6 +184,53 @@ namespace Zahra
 		ShutdownMonoDomains();
 
 		delete s_Data;
+	}
+
+	// TODO: once we have intrusive reference counting, we can pass the scene as a Ref instead of a raw pointer
+	void ScriptEngine::OnRuntimeStart(Scene* scene)
+	{
+		s_Data->SceneContext = scene;
+	}
+
+	void ScriptEngine::OnRuntimeStop()
+	{
+		s_Data->SceneContext = nullptr;
+		s_Data->EntityInstances.clear();
+	}
+
+	void ScriptEngine::OnRuntimeUpdate()
+	{
+		// TODO: update all scripted entities
+	}
+
+	void ScriptEngine::InstantiateScript(Entity entity)
+	{
+		if (!entity.HasComponents<ScriptComponent>()) return;
+
+		auto& component = entity.GetComponents<ScriptComponent>();
+		if (!ValidEntityClass(component.ScriptName)) return;
+
+		s_Data->EntityInstances[entity.GetGUID()] = CreateRef<ScriptInstance>(s_Data->EntityTypes[component.ScriptName]);
+	}
+
+	void ScriptEngine::UpdateScript(Entity entity, float dt)
+	{
+		if (!entity.HasComponents<ScriptComponent>()) return;
+
+		auto& component = entity.GetComponents<ScriptComponent>();
+		if (!ValidEntityClass(component.ScriptName)) return;
+
+		s_Data->EntityInstances[entity.GetGUID()]->InvokeOnUpdate(dt);
+	}
+
+	std::unordered_map<std::string, Ref<ScriptClass>> ScriptEngine::GetEntityTypes()
+	{
+		return s_Data->EntityTypes;
+	}
+
+	bool ScriptEngine::ValidEntityClass(const std::string& fullName)
+	{
+		return s_Data->EntityTypes.find(fullName) != s_Data->EntityTypes.end();
 	}
 		
 	void ScriptEngine::InitMonoDomains()
@@ -241,14 +304,5 @@ namespace Zahra
 
 	}
 
-	//// Construct class instance
-	//MonoClass* classMain = mono_class_from_name(s_Data->CoreAssemblyImage, "Zahra", "Main");
-	//MonoObject* objMain = mono_object_new(s_Data->AppDomain, classMain);
-	//mono_runtime_object_init(objMain);
-
-	//// Call C# method
-	//MonoMethod* myMethod = mono_class_get_method_from_name(class, methodName, paramCount);
-	//mono_runtime_invoke(myMethod, object, args, exceptionHandler);
-
-
+		
 }

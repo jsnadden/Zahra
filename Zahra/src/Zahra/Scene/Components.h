@@ -18,7 +18,7 @@ namespace Zahra
 	// For every component struct added, make sure to do the following:
 	// 1) give it a default constructor and copy constructor
 	// 2) add to registry (bottom of this header)
-	// 3) add properties UI code, and add/remove context menus (SceneHierarchyPanel.cpp)
+	// 3) include MeadowUIPatterns::DrawComponent and AddComponentsModal UI code (SceneHierarchyPanel.cpp)
 	// 4) add serialisation code (SceneSerialiser.cpp)
 	//
 	// [TODO: reflection should automate some of this]
@@ -124,6 +124,39 @@ namespace Zahra
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// SCRIPTING COMPONENTS
+
+	struct ScriptComponent
+	{
+		std::string ScriptName = "None";
+
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent&) = default;
+	};
+
+	class NativeScriptableEntity;
+
+	struct NativeScriptComponent
+	{
+		// TODO: this should be private ultimately
+		NativeScriptableEntity* Instance = nullptr;
+
+		NativeScriptableEntity* (*InstantiateScript)();
+		void(*DestroyScript)(NativeScriptComponent*);
+
+		NativeScriptComponent() = default;
+		NativeScriptComponent(const NativeScriptComponent&) = default;
+
+		template <typename T>
+		void Bind()
+		{
+			InstantiateScript = []() { return static_cast<NativeScriptableEntity*>(new T()); }; // Note this requires a default constructor (no params)
+			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
+		}
+
+	};
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// PHYSICS COMPONENTS
 
 	struct RigidBody2DComponent
@@ -171,56 +204,7 @@ namespace Zahra
 
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// SCRIPTING COMPONENTS
-
-	class ScriptableEntity;
-
-	struct NativeScriptComponent
-	{
-		// TODO: this should be private ultimately
-		ScriptableEntity* Instance = nullptr;
-
-		ScriptableEntity*(*InstantiateScript)();
-		void(*DestroyScript)(NativeScriptComponent*);
-
-		NativeScriptComponent() = default;
-		NativeScriptComponent(const NativeScriptComponent&) = default;
-
-		template <typename T>
-		void Bind()
-		{
-			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); }; // Note this requires a default constructor (no params)
-			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
-		}
-
-	};
-
-	// e.g.
-	//class CameraController : public ScriptableEntity
-		//{
-		//public:
-		//	void OnUpdate(float dt)
-		//	{
-		//		auto& position = GetComponents<TransformComponent>().Translation;
-		//		if (HasComponents<CameraComponent>())
-		//		{
-		//			auto& camera = GetComponents<CameraComponent>().Camera;
-		//			float speed = camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic
-		//				? .5f * camera.GetOrthographicSize() : 2.0f;
-	    //
-		//			if (Input::IsKeyPressed(KeyCode::A))
-		//				position.x -= speed * dt;
-		//			if (Input::IsKeyPressed(KeyCode::D))
-		//				position.x += speed * dt;
-		//			if (Input::IsKeyPressed(KeyCode::W))
-		//				position.y += speed * dt;
-		//			if (Input::IsKeyPressed(KeyCode::S))
-		//				position.y -= speed * dt;
-		//		}
-		//	}
-		//};
-
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// COMPONENT REGISTRY
 
@@ -234,8 +218,8 @@ namespace Zahra
 		TransformComponent,
 		SpriteComponent, CircleComponent,
 		CameraComponent,
-		RigidBody2DComponent, RectColliderComponent, CircleColliderComponent,
-		NativeScriptComponent
+		ScriptComponent,
+		RigidBody2DComponent, RectColliderComponent, CircleColliderComponent
 	>;
 
 }

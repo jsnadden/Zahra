@@ -2,6 +2,8 @@
 
 #include "MeadowUIPatterns.h"
 
+#include "Zahra/Scripting/ScriptEngine.h"
+
 #include <iomanip>
 
 namespace Zahra
@@ -227,6 +229,23 @@ namespace Zahra
 				MeadowUIPatterns::DrawFloatControl("Fade", component.Fade, .001f, true, .001f, 10.f, "%.3f");
 			});
 
+		MeadowUIPatterns::DrawComponent<ScriptComponent>("Script Component", entity, [](auto& component)
+			{
+				// TODO: make this a combo box and populate from .first in ScriptEngine::GetEntityTypes
+
+				glm::vec3 textColour = glm::vec3(.95f, .1f, .1f);
+				if (ScriptEngine::ValidEntityClass(component.ScriptName)) textColour = glm::vec3(.1f, .95f, .1f);
+
+				char buffer[64];
+				strcpy_s(buffer, component.ScriptName.c_str());
+				
+				if (MeadowUIPatterns::DrawTextEdit("Script name", buffer, sizeof(buffer), textColour))
+				{
+					if (ImGui::IsWindowFocused()) component.ScriptName = std::string(buffer);
+				}
+
+			});
+
 		MeadowUIPatterns::DrawComponent<CameraComponent>("Camera Component", entity, [](auto& component)
 				{
 					SceneCamera& camera = component.Camera;
@@ -310,15 +329,16 @@ namespace Zahra
 	{
 		ImGui::OpenPopup("Add Component(s)##Modal");
 
-		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		ImVec2 center = ImGui::GetMousePos();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.6f, 0.1f));
 
-		if (ImGui::BeginPopupModal("Add Component(s)##Modal", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		if (ImGui::BeginPopupModal("Add Component(s)##Modal", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
 		{
 			bool clicked = false;
 
 			clicked |= MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
 			clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleComponent>("Circle", m_Selected);
+			clicked |= MeadowUIPatterns::AddComponentMenuItem<ScriptComponent>("Script", m_Selected);
 			clicked |= MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
 			clicked |= MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
 			clicked |= MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);

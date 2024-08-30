@@ -273,6 +273,17 @@ namespace Zahra
 			out << YAML::EndMap;
 		}
 
+		if (entity.HasComponents<ScriptComponent>())
+		{
+			out << YAML::Key << "ScriptComponent";
+			out << YAML::BeginMap;
+			{
+				auto& script = entity.GetComponents<ScriptComponent>();
+				out << YAML::Key << "ScriptName" << YAML::Value << script.ScriptName;
+			}
+			out << YAML::EndMap;
+		}
+
 		if (entity.HasComponents<RigidBody2DComponent>())
 		{
 			out << YAML::Key << "RigidBody2DComponent";
@@ -439,6 +450,14 @@ namespace Zahra
 					);
 					camera.Camera.SetProjectionType(CameraProjectionTypeFromString(cameraSubnode["ProjectionType"].as<std::string>()));
 
+				}
+
+				auto scriptNode = entityNode["ScriptComponent"];
+				if (scriptNode)
+				{
+					auto& script = entity.AddComponent<ScriptComponent>();
+
+					script.ScriptName = scriptNode["ScriptName"].as<std::string>();
 				}
 
 				auto rigidBody2DNode = entityNode["RigidBody2DComponent"];

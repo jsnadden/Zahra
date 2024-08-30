@@ -301,6 +301,34 @@ namespace Zahra
 
 		}
 
+		bool DrawTextEdit(const std::string& label, char* buffer, int bufferLength, const glm::vec3& textColour)
+		{
+			bool edited;
+
+			ImGui::PushID(label.c_str());
+			
+			ImGui::TableNextColumn();
+
+			{
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text(label.c_str());
+			}
+
+			ImGui::TableNextColumn();
+
+			{
+				ImGui::PushItemWidth(ImGui::GetColumnWidth());
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(textColour.r, textColour.g, textColour.b, 1.0f));
+				edited = ImGui::InputText("##label", buffer, bufferLength);
+				ImGui::PopStyleColor();
+				ImGui::PopItemWidth();
+			}
+
+			ImGui::PopID();
+
+			return edited;
+		}
+
 		int DrawComboControl(const std::string& label, const char** options, int count, int currentValue)
 		{
 			int newValue = currentValue;
