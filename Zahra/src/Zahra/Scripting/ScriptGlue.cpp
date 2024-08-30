@@ -30,6 +30,12 @@ namespace Zahra
 
 			entity.GetComponents<TransformComponent>().Translation = *translation;
 		}
+
+		static bool Input_IsKeyDown(KeyCode key)
+		{
+			return Input::IsKeyPressed(key);
+		}
+
 	}
 
 #define Z_REGISTER_INTERNAL_CALL(name) mono_add_internal_call("Zahra.InternalCalls::"#name, (void*)InternalCalls::name);
@@ -39,6 +45,9 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// ENGINE CORE
 		{
+			// Input
+			Z_REGISTER_INTERNAL_CALL(Input_IsKeyDown);
+
 			// Logging
 			Z_REGISTER_INTERNAL_CALL(NativeLog);
 		}
@@ -46,8 +55,6 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// ECS
 		{
-			// Entity
-
 			// TransformComponent
 			Z_REGISTER_INTERNAL_CALL(Entity_GetTranslation);
 			Z_REGISTER_INTERNAL_CALL(Entity_SetTranslation);

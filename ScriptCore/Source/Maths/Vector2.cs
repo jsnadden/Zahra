@@ -32,14 +32,21 @@ namespace Zahra
 			return new Vector2(vector.X * scalar, vector.Y * scalar);
 		}
 
-		public float LengthSquared()
+		public float NormSquared()
 		{
 			return X * X + Y * Y;
 		}
 
-		public float Length()
+		public float Norm()
 		{
-			return (float)Math.Sqrt(LengthSquared());
+			return (float)Math.Sqrt(NormSquared());
+		}
+
+		public void Normalise()
+		{
+			float invNorm = 1 / Norm();
+			X *= invNorm;
+			Y *= invNorm;
 		}
 
 	}

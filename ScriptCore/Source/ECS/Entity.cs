@@ -27,18 +27,5 @@ namespace Zahra
 
 	}
 
-	public static class InternalCalls
-	{ 
-		// Import C++ method into C#
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal  extern static void NativeLog(string text);
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_GetTranslation(ulong guid, out Vector3 translation);
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_SetTranslation(ulong guid, ref Vector3 translation);
-	}
-
 }
 

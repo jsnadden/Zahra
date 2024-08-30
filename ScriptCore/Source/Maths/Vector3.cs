@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace Zahra
 { 
 	public struct Vector3
@@ -38,12 +40,34 @@ namespace Zahra
 			}
 		}
 
+		public float Norm()
+		{
+			return (float)Math.Sqrt(NormSquared());
+		}
+
+		public float NormSquared()
+		{
+			return X * X + Y * Y + Z * Z;
+		}
+
+		public void Normalise()
+		{
+			float norm = Norm();
+
+			if (norm == 0) return;
+
+			float invNorm = 1 / norm;
+			X *= invNorm;
+			Y *= invNorm;
+			Z *= invNorm;
+		}
+
 		public static Vector3 operator +(Vector3 a, Vector3 b)
 		{
 			return new Vector3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 		}
 
-		public static Vector3 operator *(float scalar, Vector3 vector )
+		public static Vector3 operator *(Vector3 vector, float scalar)
 		{
 			return new Vector3(scalar * vector.X, scalar * vector.Y, scalar * vector.Z);
 		}
