@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Zahra;
 
 namespace Sandbox
 {
 	public class Player : Zahra.Entity
 	{
-		void OnCreate()
+
+		Player() : base() {}
+		override public void OnCreate() 
 		{
-			Zahra.InternalCalls.NativeLog("Calling Player.OnCreate()");
+			InternalCalls.NativeLog("Hello, joe");
 		}
-		void OnUpdate(float dt)
+		override public void OnUpdate(float dt)
 		{
-			Zahra.InternalCalls.NativeLog($"Calling Player.OnUpdate({dt})");
+			
 		}
 	}
 }

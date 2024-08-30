@@ -1,39 +1,38 @@
 Scene: physics_test.zsc
 Entities:
-  - Entity: 10109349237895077571
+  - Entity: 16706009162972386994
     TagComponent:
-      Tag: circle
+      Tag: Camera
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [0, 0, 9.5]
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
-    CircleComponent:
-      Colour: [0.250428587, 0.519644141, 0.606177568, 1]
-      Thickness: 0.270000011
-      Fade: 0.00499999989
-    RigidBody2DComponent:
-      Type: Dynamic
-      FixedRotation: false
-    CircleColliderComponent:
-      Offset: [0, 0]
-      Radius: 0.5
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.5
-      RestitutionThreshold: 0.5
-  - Entity: 11664687835891534900
+    CameraComponent:
+      Camera:
+        ProjectionType: Perspective
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 1.04719758
+        PerspectiveNearClip: 0.00999999978
+        PerspectiveFarClip: 1000
+      Active: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ScriptName: Sandbox.Player
+  - Entity: 17875914245172890649
     TagComponent:
-      Tag: Box1
+      Tag: Platform
     TransformComponent:
-      Translation: [-0.233143926, 5.61061716, 0]
-      EulerAngles: [0, -0, 1.20869851]
-      Scale: [0.999982238, 0.999982238, 1]
+      Translation: [0.0596504211, -4.9547286, 0]
+      EulerAngles: [0, -0, -0.639023781]
+      Scale: [16.1499863, 0.24999997, 1]
     SpriteComponent:
-      Tint: [0.799227834, 0.286850363, 0.234522447, 1]
+      Tint: [0.339221537, 0.455598474, 0.253305703, 1]
       TextureTiling: 1
       Animated: false
     RigidBody2DComponent:
-      Type: Dynamic
+      Type: Static
       FixedRotation: false
     RectColliderComponent:
       Offset: [0, 0]
@@ -63,19 +62,19 @@ Entities:
       Friction: 0.5
       Restitution: 0.5
       RestitutionThreshold: 0.5
-  - Entity: 17875914245172890649
+  - Entity: 11664687835891534900
     TagComponent:
-      Tag: Platform
+      Tag: Box1
     TransformComponent:
-      Translation: [0.0596504211, -4.9547286, 0]
-      EulerAngles: [0, -0, -0.639023781]
-      Scale: [16.1499863, 0.24999997, 1]
+      Translation: [-0.233143926, 5.61061716, 0]
+      EulerAngles: [0, -0, 1.20869851]
+      Scale: [0.999982238, 0.999982238, 1]
     SpriteComponent:
-      Tint: [0.339221537, 0.455598474, 0.253305703, 1]
+      Tint: [0.799227834, 0.286850363, 0.234522447, 1]
       TextureTiling: 1
       Animated: false
     RigidBody2DComponent:
-      Type: Static
+      Type: Dynamic
       FixedRotation: false
     RectColliderComponent:
       Offset: [0, 0]
@@ -84,23 +83,24 @@ Entities:
       Friction: 0.5
       Restitution: 0.5
       RestitutionThreshold: 0.5
-  - Entity: 16706009162972386994
+  - Entity: 10109349237895077571
     TagComponent:
-      Tag: Camera
+      Tag: circle
     TransformComponent:
-      Translation: [0, 0, 9.5]
+      Translation: [0, 0, 0]
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: Perspective
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 1.04719758
-        PerspectiveNearClip: 0.00999999978
-        PerspectiveFarClip: 1000
-      Active: true
-      FixedAspectRatio: false
-    ScriptComponent:
-      ScriptName: Sandbox.Camera
+    CircleComponent:
+      Colour: [0.250428587, 0.519644141, 0.606177568, 1]
+      Thickness: 0.270000011
+      Fade: 0.00499999989
+    RigidBody2DComponent:
+      Type: Dynamic
+      FixedRotation: false
+    CircleColliderComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.5
+      RestitutionThreshold: 0.5

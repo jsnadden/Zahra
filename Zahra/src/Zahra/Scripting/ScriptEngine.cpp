@@ -8,6 +8,7 @@
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/class.h>
 #include <mono/metadata/object.h>
+#include <mono/metadata/mono-gc.h>
 
 namespace MonoUtils
 {
@@ -196,11 +197,7 @@ namespace Zahra
 	{
 		s_Data->SceneContext = nullptr;
 		s_Data->EntityInstances.clear();
-	}
-
-	void ScriptEngine::OnRuntimeUpdate()
-	{
-		// TODO: update all scripted entities
+		mono_gc_collect(0); // trigger garbage collection
 	}
 
 	void ScriptEngine::InstantiateScript(Entity entity)
@@ -220,7 +217,9 @@ namespace Zahra
 		auto& component = entity.GetComponents<ScriptComponent>();
 		if (!ValidEntityClass(component.ScriptName)) return;
 
-		s_Data->EntityInstances[entity.GetGUID()]->InvokeOnUpdate(dt);
+		ZGUID entityGUID = entity.GetGUID();
+		Z_CORE_ASSERT(s_Data->EntityInstances.find(entityGUID) != s_Data->EntityInstances.end(), "Entity not registered with ScriptEngine");
+		s_Data->EntityInstances[entityGUID]->InvokeOnUpdate(dt);
 	}
 
 	std::unordered_map<std::string, Ref<ScriptClass>> ScriptEngine::GetEntityTypes()

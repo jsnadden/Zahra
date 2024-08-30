@@ -16,19 +16,8 @@ namespace Zahra
 			InternalCalls.NativeLog("Entity destroyed");
 		}
 
-		public void Test()
-		{
-			System.Console.WriteLine("Hello, world!");
-		}
-
-		public void Test(int n)
-		{
-			for (int i = 0; i < n; i++)
-			{
-				System.Console.WriteLine("Hello, world!");
-
-			}
-		}
+		public virtual void OnCreate() { }
+		public virtual void OnUpdate(float dt) { }
 
 	}
 

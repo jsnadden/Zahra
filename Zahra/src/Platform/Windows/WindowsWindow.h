@@ -19,8 +19,8 @@ namespace Zahra
 		inline uint32_t GetHeight() const override { return m_Data.Height; }
 
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; };
-		void SetVSync(bool enabled) override;
-		bool IsVSync() const override;
+		virtual void SetVSync(bool enabled) override;
+		virtual bool IsVSync() const override;
 
 		inline virtual void* GetNativeWindow() const override { return m_Window; };
 
@@ -37,7 +37,7 @@ namespace Zahra
 		{
 			std::string Title;
 			uint32_t Width, Height;
-			bool VSync = true;
+			bool VSync = false;
 
 			EventCallbackFn EventCallback;
 		};

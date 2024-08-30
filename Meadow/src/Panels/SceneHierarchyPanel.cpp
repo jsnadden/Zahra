@@ -330,7 +330,7 @@ namespace Zahra
 		ImGui::OpenPopup("Add Component(s)##Modal");
 
 		ImVec2 center = ImGui::GetMousePos();
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.6f, 0.1f));
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.6f, 0.6f));
 
 		if (ImGui::BeginPopupModal("Add Component(s)##Modal", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
 		{

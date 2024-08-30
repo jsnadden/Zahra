@@ -15,7 +15,6 @@ namespace Zahra
 
 		static void OnRuntimeStart(Scene* scene);
 		static void OnRuntimeStop();
-		static void OnRuntimeUpdate();
 
 		static void InstantiateScript(Entity entity);
 		static void UpdateScript(Entity entity, float dt);

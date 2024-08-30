@@ -83,10 +83,11 @@ namespace Zahra
 
 		m_Context = CreateScope<OpenGLContext>(m_Window);
 
-		m_Context->Init();		
+		m_Context->Init();
+
+		SetVSync(true);
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
-		SetVSync(true);
 
 		// Set GLFW callbacks
 
@@ -220,12 +221,15 @@ namespace Zahra
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
-		Z_PROFILE_FUNCTION();
-
+		// for some reason this seems to do nothing (facedesk)
 		if (enabled)
+		{
 			glfwSwapInterval(1);
+		}
 		else
+		{
 			glfwSwapInterval(0);
+		}
 
 		m_Data.VSync = enabled;
 	}
