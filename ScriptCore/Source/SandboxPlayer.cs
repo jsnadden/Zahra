@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using System;
 using Zahra;
 
 namespace Sandbox
@@ -11,17 +8,27 @@ namespace Sandbox
 	{
 
 		Player() : base() {}
-		override public void OnCreate() 
+		Player(ulong guid) : base(guid) {}
+
+
+		public void OnCreate() 
 		{
-			InternalCalls.NativeLog("Hello, joe");
+			
 		}
-		override public void OnUpdate(float dt)
+
+		public void OnUpdate(float dt)
 		{
-			float speed = 0.5f;
+			/*float framerate = 1.0f / dt;
+			InternalCalls.NativeLog($"Framerate: {framerate} fps");*/
+
+			float speed = 20.0f;
 
 			Vector3 translation = Translation;
-			translation += speed * new Vector3(1,0,0);
+			translation.Y += dt * speed;
 			Translation = translation;
+			//Vector3 translation = Translation;
+			/*translation += speed * new Vector3(1,0,0);
+			Translation = translation;*/
 		}
 	}
 }

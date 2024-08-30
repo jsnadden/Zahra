@@ -17,17 +17,18 @@ namespace Zahra
 			mono_free(myString); // NOTE: manually free things mono has allocated for us!
 		}
 
-		static void Entity_GetTranslation(glm::vec3& out_translation)
+		static void Entity_GetTranslation(ZGUID guid, glm::vec3* out_translation)
 		{
-			Scene* context = ScriptEngine::GetSceneContext();
-			Z_CORE_ASSERT(context, "Scene context is nullptr");
+			Entity entity = ScriptEngine::GetEntity(guid);
 			
-
+			*out_translation = entity.GetComponents<TransformComponent>().Translation;
 		}
 
-		static void Entity_SetTranslation(glm::vec3& translation)
+		static void Entity_SetTranslation(ZGUID guid, glm::vec3* translation)
 		{
+			Entity entity = ScriptEngine::GetEntity(guid);
 
+			entity.GetComponents<TransformComponent>().Translation = *translation;
 		}
 	}
 

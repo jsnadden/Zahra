@@ -4,7 +4,7 @@
 
 namespace Zahra
 {
-	class ScriptClass;
+	class EntityScriptType;
 	class Scene;
 
 	class ScriptEngine
@@ -19,10 +19,10 @@ namespace Zahra
 		static void InstantiateScript(Entity entity);
 		static void UpdateScript(Entity entity, float dt);
 
-		static std::unordered_map<std::string, Ref<ScriptClass>> GetEntityTypes();
+		static std::unordered_map<std::string, Ref<EntityScriptType>> GetEntityTypes();
 		static bool ValidEntityClass(const std::string& fullName);
 
-		static Entity GetEntityFromGUID(ZGUID guid);
+		static Entity GetEntity(ZGUID guid);
 
 	private:
 		static void InitMonoDomains();

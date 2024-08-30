@@ -25,4 +25,4 @@
 [submodule "zahra/vendor/Box2D"]
 	path = zahra/vendor/Box2D
 	url = https://github.com/TheCherno/box2d.git
-	ignore = all
+	ignore = dirty

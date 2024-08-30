@@ -29,6 +29,7 @@ namespace Zahra
 
 	Scene::~Scene()
 	{
+		m_EntityMap.clear();
 		m_Registry.clear();
 	}
 
@@ -109,6 +110,7 @@ namespace Zahra
 	{
 		Entity entity = { m_Registry.create(), this };
 		entity.GetComponents<TagComponent>().Tag = name.empty() ? "unnamed_entity" : name;
+		m_EntityMap[entity.GetGUID()] = entity;
 		return entity;
 	}
 
@@ -116,13 +118,14 @@ namespace Zahra
 	{
 		Entity entity = Scene::CreateEntity(name);
 		entity.GetComponents<IDComponent>().ID = { guid };
+		m_EntityMap[entity.GetGUID()] = entity;
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+		m_EntityMap.erase(entity.GetGUID());
 		m_Registry.destroy(entity);
-		// TODO: is there more to this cleanup?
 	}
 
 	Entity Scene::DuplicateEntity(Entity entity)
@@ -135,6 +138,12 @@ namespace Zahra
 		CopyComponentIfExists(AllComponents{}, entity, copy);
 
 		return copy;
+	}
+
+	Entity Scene::GetEntity(ZGUID guid)
+	{
+		Z_CORE_ASSERT(m_EntityMap.find(guid) != m_EntityMap.end());
+		return { m_EntityMap.at(guid), this };
 	}
 
 	void Scene::OnRuntimeStart()

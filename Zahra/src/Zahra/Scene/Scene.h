@@ -25,6 +25,7 @@ namespace Zahra
 		Entity CreateEntity(uint64_t guid, const std::string& name = "unnamed_entity");
 		void DestroyEntity(Entity entity);
 		Entity DuplicateEntity(Entity entity);
+		Entity GetEntity(ZGUID guid);
 
 		void OnRuntimeStart();
 		void OnRuntimeStop();
@@ -71,9 +72,11 @@ namespace Zahra
 		std::string m_SceneName;
 
 		std::unique_ptr<b2World>(m_PhysicsWorld);
-		std::map<entt::entity, b2Body*> m_PhysicsBodies; // TODO: replace entt::entity with internal uuids?
+		std::map<entt::entity, b2Body*> m_PhysicsBodies;
 
-		entt::basic_registry<entt::entity> m_Registry; // TODO: custom UUIDs (change the template param)
+		entt::basic_registry<entt::entity> m_Registry;
+		std::unordered_map<ZGUID, entt::entity> m_EntityMap;
+
 		float m_ViewportWidth = 1.0f, m_ViewportHeight = 1.0f;
 
 		void RenderEntities();

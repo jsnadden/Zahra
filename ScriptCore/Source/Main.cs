@@ -6,7 +6,10 @@ namespace Zahra
 
 	public class Entity
 	{
-		public ulong GUID { get; set; }
+		protected Entity() { GUID = 0; Console.WriteLine("guidless entity constructor"); }
+		internal Entity(ulong guid) { GUID = guid; Console.WriteLine("guidful entity constructor"); }
+
+		public readonly ulong GUID;
 
 		public Vector3 Translation
 		{
@@ -18,29 +21,9 @@ namespace Zahra
 			set
 			{
 				InternalCalls.Entity_SetTranslation(GUID, ref value);
-				Translation = value;
 			}
 
 		}
-
-		public Entity()
-		{
-			
-			
-			// TODO: comment this out eventually, it's just for debugging purposes
-			InternalCalls.NativeLog("Entity constructed");
-		}
-
-		~Entity()
-		{
-
-
-			// TODO: comment this out eventually, it's just for debugging purposes
-			InternalCalls.NativeLog("Entity destroyed");
-		}
-
-		public virtual void OnCreate() { }
-		public virtual void OnUpdate(float dt) { }
 
 	}
 
