@@ -1,11 +1,11 @@
 ﻿
 using System;
-using Zahra;
+using Djinn;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Sandbox
 {
-	public class Player : Zahra.Entity
+	public class Player : Djinn.Entity
 	{
 
 		Player() : base() {}

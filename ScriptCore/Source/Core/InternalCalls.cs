@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Zahra
+namespace Djinn
 {
 	public static class InternalCalls
 	{

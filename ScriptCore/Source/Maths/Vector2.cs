@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Zahra
+namespace Djinn
 {
 	public struct Vector2
 	{

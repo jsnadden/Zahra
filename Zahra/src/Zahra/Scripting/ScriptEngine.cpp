@@ -289,7 +289,7 @@ namespace Zahra
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 
 		// get entity base class for comparison
-		EntityScriptType entityClass(s_SEData->CoreAssemblyImage, "Zahra", "Entity");
+		EntityScriptType entityClass(s_SEData->CoreAssemblyImage, "Djinn", "Entity");
 
 		// iterate over rows (i.e. C# types)
 		for (int32_t i = 0; i < numTypes; i++)

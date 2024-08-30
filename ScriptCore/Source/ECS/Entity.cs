@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Zahra
+namespace Djinn
 {
 
 	public class Entity

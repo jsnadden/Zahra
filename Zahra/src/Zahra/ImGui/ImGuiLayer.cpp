@@ -157,7 +157,7 @@ namespace Zahra
 		colours[ImGuiCol_BorderShadow]		= ImVec4{ 0.14f, 0.14f, 0.14f, 1.0f }; // Collapsed window edges
 		colours[ImGuiCol_SeparatorHovered]	= ImVec4{ 0.97f, 0.77f, 0.22f, 1.0f };
 		colours[ImGuiCol_SeparatorActive]	= ImVec4{ 0.92f, 0.72f, 0.18f, 1.0f };
-		colours[ImGuiCol_ResizeGrip]			= ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f };
+		colours[ImGuiCol_ResizeGrip]		= ImVec4{ 0.24f, 0.24f, 0.24f, 1.0f };
 		colours[ImGuiCol_ResizeGripHovered]	= ImVec4{ 0.97f, 0.77f, 0.22f, 1.0f };
 		colours[ImGuiCol_ResizeGripActive]	= ImVec4{ 0.92f, 0.72f, 0.18f, 1.0f };
 

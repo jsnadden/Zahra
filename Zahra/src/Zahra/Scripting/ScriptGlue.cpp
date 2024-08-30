@@ -38,7 +38,7 @@ namespace Zahra
 
 	}
 
-#define Z_REGISTER_INTERNAL_CALL(name) mono_add_internal_call("Zahra.InternalCalls::"#name, (void*)InternalCalls::name);
+#define Z_REGISTER_INTERNAL_CALL(name) mono_add_internal_call("Djinn.InternalCalls::"#name, (void*)InternalCalls::name);
 
 	void ScriptGlue::RegisterFunctions()
 	{

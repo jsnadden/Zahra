@@ -59,7 +59,7 @@ namespace Zahra
 		struct OverlayMode
 		{
 			bool ShowColliders = false;
-			glm::vec4 ColliderColour = { 1.f, .8f, 0.f, 1.f };
+			glm::vec4 ColliderColour = { 0.80f, 0.55f, 0.00f, 1.00f };
 
 			OverlayMode() = default;
 			OverlayMode(const OverlayMode&) = default;
