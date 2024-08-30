@@ -17,7 +17,11 @@ namespace Sandbox
 		}
 		override public void OnUpdate(float dt)
 		{
-			
+			float speed = 0.5f;
+
+			Vector3 translation = Translation;
+			translation += speed * new Vector3(1,0,0);
+			Translation = translation;
 		}
 	}
 }

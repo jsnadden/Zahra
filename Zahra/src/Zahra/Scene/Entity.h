@@ -33,8 +33,6 @@ namespace Zahra
 			
 			T& component =  m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			
-			//m_Scene->OnComponentAdded<T>(component);
-
 			return component;
 		}
 

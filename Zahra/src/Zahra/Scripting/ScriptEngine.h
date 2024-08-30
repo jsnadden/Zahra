@@ -22,6 +22,8 @@ namespace Zahra
 		static std::unordered_map<std::string, Ref<ScriptClass>> GetEntityTypes();
 		static bool ValidEntityClass(const std::string& fullName);
 
+		static Entity GetEntityFromGUID(ZGUID guid);
+
 	private:
 		static void InitMonoDomains();
 		static void LoadCoreAssembly(std::filesystem::path filepath);

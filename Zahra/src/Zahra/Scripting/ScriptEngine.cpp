@@ -164,13 +164,13 @@ namespace Zahra
 		Scene* SceneContext;
 	};
 
-	static ScriptEngineData* s_Data;
+	static ScriptEngineData* s_SEData;
 
 
 
 	void ScriptEngine::Init()
 	{
-		s_Data = new ScriptEngineData;
+		s_SEData = new ScriptEngineData;
 
 		InitMonoDomains();
 		LoadCoreAssembly("Resources/Scripts/ScriptCore.dll");
@@ -184,20 +184,20 @@ namespace Zahra
 	{
 		ShutdownMonoDomains();
 
-		delete s_Data;
+		delete s_SEData;
 	}
 
 	// TODO: once we have intrusive reference counting, we can pass the scene as a Ref instead of a raw pointer
 	void ScriptEngine::OnRuntimeStart(Scene* scene)
 	{
-		s_Data->SceneContext = scene;
+		s_SEData->SceneContext = scene;
 	}
 
 	void ScriptEngine::OnRuntimeStop()
 	{
-		s_Data->SceneContext = nullptr;
-		s_Data->EntityInstances.clear();
-		mono_gc_collect(0); // trigger garbage collection
+		s_SEData->SceneContext = nullptr;
+		s_SEData->EntityInstances.clear();
+		//mono_gc_collect(0); // if necessary we can trigger garbage collection here
 	}
 
 	void ScriptEngine::InstantiateScript(Entity entity)
@@ -207,7 +207,7 @@ namespace Zahra
 		auto& component = entity.GetComponents<ScriptComponent>();
 		if (!ValidEntityClass(component.ScriptName)) return;
 
-		s_Data->EntityInstances[entity.GetGUID()] = CreateRef<ScriptInstance>(s_Data->EntityTypes[component.ScriptName]);
+		s_SEData->EntityInstances[entity.GetGUID()] = CreateRef<ScriptInstance>(s_SEData->EntityTypes[component.ScriptName]);
 	}
 
 	void ScriptEngine::UpdateScript(Entity entity, float dt)
@@ -218,19 +218,26 @@ namespace Zahra
 		if (!ValidEntityClass(component.ScriptName)) return;
 
 		ZGUID entityGUID = entity.GetGUID();
-		Z_CORE_ASSERT(s_Data->EntityInstances.find(entityGUID) != s_Data->EntityInstances.end(), "Entity not registered with ScriptEngine");
-		s_Data->EntityInstances[entityGUID]->InvokeOnUpdate(dt);
+		Z_CORE_ASSERT(s_SEData->EntityInstances.find(entityGUID) != s_SEData->EntityInstances.end(), "Entity not registered with ScriptEngine");
+		s_SEData->EntityInstances[entityGUID]->InvokeOnUpdate(dt);
 	}
 
 	std::unordered_map<std::string, Ref<ScriptClass>> ScriptEngine::GetEntityTypes()
 	{
-		return s_Data->EntityTypes;
+		return s_SEData->EntityTypes;
 	}
 
 	bool ScriptEngine::ValidEntityClass(const std::string& fullName)
 	{
-		return s_Data->EntityTypes.find(fullName) != s_Data->EntityTypes.end();
+		return s_SEData->EntityTypes.find(fullName) != s_SEData->EntityTypes.end();
 	}
+
+	Entity ScriptEngine::GetEntityFromGUID(ZGUID guid)
+	{
+		return 
+	}
+
+
 		
 	void ScriptEngine::InitMonoDomains()
 	{
@@ -239,27 +246,27 @@ namespace Zahra
 		MonoDomain* rootDomain = mono_jit_init("ZahraJITRuntime");
 		Z_CORE_ASSERT(rootDomain);
 
-		s_Data->RootDomain = rootDomain;
+		s_SEData->RootDomain = rootDomain;
 
-		s_Data->AppDomain = mono_domain_create_appdomain("ZahraScriptRuntime", nullptr);
-		mono_domain_set(s_Data->AppDomain, true);
+		s_SEData->AppDomain = mono_domain_create_appdomain("ZahraScriptRuntime", nullptr);
+		mono_domain_set(s_SEData->AppDomain, true);
 	}
 
 	void ScriptEngine::LoadCoreAssembly(std::filesystem::path filepath)
 	{
-		s_Data->CoreAssembly = MonoUtils::LoadMonoAssembly(filepath);
-		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
+		s_SEData->CoreAssembly = MonoUtils::LoadMonoAssembly(filepath);
+		s_SEData->CoreAssemblyImage = mono_assembly_get_image(s_SEData->CoreAssembly);
 	}
 
 	void ScriptEngine::ShutdownMonoDomains()
 	{
 		mono_domain_set(mono_get_root_domain(), false);
 
-		mono_domain_unload(s_Data->AppDomain);
-		s_Data->AppDomain = nullptr;
+		mono_domain_unload(s_SEData->AppDomain);
+		s_SEData->AppDomain = nullptr;
 
-		mono_jit_cleanup(s_Data->RootDomain);
-		s_Data->RootDomain = nullptr;
+		mono_jit_cleanup(s_SEData->RootDomain);
+		s_SEData->RootDomain = nullptr;
 	}
 
 	void ScriptEngine::ReflectAssemblyTypes()
@@ -270,14 +277,14 @@ namespace Zahra
 		Z_CORE_TRACE("---------------------------------------------------------------------------------");
 
 		// re-initialise record of entity types
-		s_Data->EntityTypes.clear();
+		s_SEData->EntityTypes.clear();
 
 		// get typedefs table
-		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_Data->CoreAssemblyImage, MONO_TABLE_TYPEDEF);
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_SEData->CoreAssemblyImage, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 
 		// get entity base class for comparison
-		ScriptClass entityClass(s_Data->CoreAssemblyImage, "Zahra", "Entity");
+		ScriptClass entityClass(s_SEData->CoreAssemblyImage, "Zahra", "Entity");
 
 		// iterate over rows (i.e. C# types)
 		for (int32_t i = 0; i < numTypes; i++)
@@ -286,15 +293,15 @@ namespace Zahra
 			uint32_t cols[MONO_TYPEDEF_SIZE];
 			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
 
-			std::string reflectedNamespace = mono_metadata_string_heap(s_Data->CoreAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
-			std::string reflectedName = mono_metadata_string_heap(s_Data->CoreAssemblyImage, cols[MONO_TYPEDEF_NAME]);
-			ScriptClass reflectedClass(s_Data->CoreAssemblyImage, reflectedNamespace, reflectedName);
+			std::string reflectedNamespace = mono_metadata_string_heap(s_SEData->CoreAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
+			std::string reflectedName = mono_metadata_string_heap(s_SEData->CoreAssemblyImage, cols[MONO_TYPEDEF_NAME]);
+			ScriptClass reflectedClass(s_SEData->CoreAssemblyImage, reflectedNamespace, reflectedName);
 
 			// record entity types
 			if (reflectedClass.IsSubclassOf(entityClass))
 			{
 				std::string fullName = reflectedNamespace + "." + reflectedName;
-				s_Data->EntityTypes[fullName] = CreateRef<ScriptClass>(reflectedClass);
+				s_SEData->EntityTypes[fullName] = CreateRef<ScriptClass>(reflectedClass);
 				Z_CORE_TRACE("{} is an Entity type", fullName);
 			}
 		}

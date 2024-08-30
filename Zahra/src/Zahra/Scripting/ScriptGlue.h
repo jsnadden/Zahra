@@ -8,8 +8,6 @@ namespace Zahra
 	public:
 		static void RegisterFunctions();
 
-
-
 	};
 
 }
