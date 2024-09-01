@@ -10,6 +10,7 @@ namespace Zahra
 {
 	std::shared_ptr<spdlog::logger> Log::s_CoreLogger;
 	std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
+	std::shared_ptr<spdlog::logger> Log::s_ScriptLogger;
 
 
 	void Log::Init()
@@ -23,7 +24,6 @@ namespace Zahra
 
 		s_CoreLogger = std::make_shared<spdlog::logger>("ZAHRA", begin(logSinks), end(logSinks));
 		spdlog::register_logger(s_CoreLogger);
-
 		s_CoreLogger->set_level(spdlog::level::trace);
 		s_CoreLogger->flush_on(spdlog::level::trace);
 
@@ -32,7 +32,10 @@ namespace Zahra
 		s_ClientLogger->set_level(spdlog::level::trace);
 		s_ClientLogger->flush_on(spdlog::level::trace);
 
-
+		s_ScriptLogger = std::make_shared<spdlog::logger>("DJINN", begin(logSinks), end(logSinks));
+		spdlog::register_logger(s_ScriptLogger);
+		s_ScriptLogger->set_level(spdlog::level::trace);
+		s_ScriptLogger->flush_on(spdlog::level::trace);
 
 	}
 }

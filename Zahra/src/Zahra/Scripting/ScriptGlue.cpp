@@ -44,74 +44,39 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// LOGGING
-		static void Log_Core_Trace(MonoString* log)
-		{
-			char* myString = mono_string_to_utf8(log);
-			Z_CORE_TRACE("From C#: {}", myString);
-			mono_free(myString); // NOTE: manually free things mono has allocated for us!
-		}
-
-		static void Log_Core_Info(MonoString* log)
-		{
-			char* myString = mono_string_to_utf8(log);
-			Z_CORE_INFO("From C#: {}", myString);
-			mono_free(myString); // NOTE: manually free things mono has allocated for us!
-		}
-
-		static void Log_Core_Warn(MonoString* log)
-		{
-			char* myString = mono_string_to_utf8(log);
-			Z_CORE_WARN("From C#: {}", myString);
-			mono_free(myString); // NOTE: manually free things mono has allocated for us!
-		}
-
-		static void Log_Core_Error(MonoString* log)
-		{
-			char* myString = mono_string_to_utf8(log);
-			Z_CORE_ERROR("From C#: {}", myString);
-			mono_free(myString); // NOTE: manually free things mono has allocated for us!
-		}
-
-		static void Log_Core_Critical(MonoString* log)
-		{
-			char* myString = mono_string_to_utf8(log);
-			Z_CORE_CRITICAL("From C#: {}", myString);
-			mono_free(myString); // NOTE: manually free things mono has allocated for us!
-		}
-
 		static void Log_Trace(MonoString* log)
 		{
-			char* myString = mono_string_to_utf8(log);
-			Z_TRACE("From C#: {}", myString);
-			mono_free(myString);
+			char* logChars = mono_string_to_utf8(log);
+			Z_SCRIPT_TRACE(logChars);
+			mono_free(logChars); // NOTE: manually free things mono has allocated for us!
 		}
 
 		static void Log_Info(MonoString* log)
 		{
-			char* myString = mono_string_to_utf8(log);
-			Z_INFO("From C#: {}", myString);
-			mono_free(myString);
+			char* logChars = mono_string_to_utf8(log);
+			Z_SCRIPT_INFO(logChars);
+			mono_free(logChars);
 		}
 
 		static void Log_Warn(MonoString* log)
 		{
-			char* myString = mono_string_to_utf8(log);
-			Z_WARN("From C#: {}", myString);
-			mono_free(myString);
+			char* logChars = mono_string_to_utf8(log);
+			Z_SCRIPT_WARN(logChars);
+			mono_free(logChars);
 		}
 
 		static void Log_Error(MonoString* log)
 		{
-			char* myString = mono_string_to_utf8(log);
-			Z_ERROR("From C#: {}", myString);
-			mono_free(myString);
+			char* logChars = mono_string_to_utf8(log);
+			Z_SCRIPT_ERROR(logChars);
+			mono_free(logChars);
 		}
 
 		static void Log_Critical(MonoString* log)
 		{
-			char* myString = mono_string_to_utf8(log);
-			Z_CRITICAL("From C#: {}", myString);
-			mono_free(myString);
+			char* logChars = mono_string_to_utf8(log);
+			Z_SCRIPT_CRITICAL(logChars);
+			mono_free(logChars);
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -533,11 +498,6 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// LOGGING
-		Z_REGISTER_INTERNAL_CALL(Log_Core_Trace);
-		Z_REGISTER_INTERNAL_CALL(Log_Core_Info);
-		Z_REGISTER_INTERNAL_CALL(Log_Core_Warn);
-		Z_REGISTER_INTERNAL_CALL(Log_Core_Error);
-		Z_REGISTER_INTERNAL_CALL(Log_Core_Critical);
 		Z_REGISTER_INTERNAL_CALL(Log_Trace);
 		Z_REGISTER_INTERNAL_CALL(Log_Info);
 		Z_REGISTER_INTERNAL_CALL(Log_Warn);

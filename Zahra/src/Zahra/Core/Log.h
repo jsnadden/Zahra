@@ -20,10 +20,12 @@ namespace Zahra
 		static void Init();
 		static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
 		static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
+		static std::shared_ptr<spdlog::logger>& GetScriptLogger() { return s_ScriptLogger; }
 
 	private:
 		static std::shared_ptr<spdlog::logger> s_CoreLogger;
 		static std::shared_ptr<spdlog::logger> s_ClientLogger;
+		static std::shared_ptr<spdlog::logger> s_ScriptLogger;
 
 	};
 
@@ -60,3 +62,10 @@ inline OStream& operator<<(OStream& stream, const glm::qua<T, Q>& quaternion)
 #define Z_WARN(...) ::Zahra::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define Z_ERROR(...) ::Zahra::Log::GetClientLogger()->error(__VA_ARGS__)
 #define Z_CRITICAL(...) ::Zahra::Log::GetClientLogger()->critical(__VA_ARGS__)
+
+// Script logging macros
+#define Z_SCRIPT_TRACE(...) ::Zahra::Log::GetScriptLogger()->trace(__VA_ARGS__)
+#define Z_SCRIPT_INFO(...) ::Zahra::Log::GetScriptLogger()->info(__VA_ARGS__)
+#define Z_SCRIPT_WARN(...) ::Zahra::Log::GetScriptLogger()->warn(__VA_ARGS__)
+#define Z_SCRIPT_ERROR(...) ::Zahra::Log::GetScriptLogger()->error(__VA_ARGS__)
+#define Z_SCRIPT_CRITICAL(...) ::Zahra::Log::GetScriptLogger()->critical(__VA_ARGS__)
