@@ -8,6 +8,7 @@ namespace Djinn
 		public float X, Y, Z;
 
 		public static Vector3 Zero => new Vector3(0.0f);
+		public static Vector3 One => new Vector3(1.0f);
 
 		public Vector3(float scalar)
 		{
@@ -53,7 +54,6 @@ namespace Djinn
 		public void Normalise()
 		{
 			float norm = Norm();
-
 			if (norm == 0) return;
 
 			float invNorm = 1 / norm;

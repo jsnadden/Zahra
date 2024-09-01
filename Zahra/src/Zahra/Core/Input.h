@@ -14,6 +14,7 @@ namespace Zahra
 		static bool IsKeyPressed(KeyCode keycode);
 
 		static bool IsMouseButtonPressed(MouseCode button);
+		static std::pair<float, float> GetMousePos();
 		static float GetMouseX();
 		static float GetMouseY();
 

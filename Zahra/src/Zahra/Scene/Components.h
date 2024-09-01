@@ -20,8 +20,8 @@ namespace Zahra
 	// 2) add to registry (bottom of this header)
 	// 3) include MeadowUIPatterns::DrawComponent and AddComponentsModal UI code (SceneHierarchyPanel.cpp)
 	// 4) add serialisation code (SceneSerialiser.cpp)
-	//
-	// [TODO: reflection should automate some of this]
+	// 5) write a corresponding class in Djinn (Components.cs)
+	// 6) connect script get/set functions (ScriptGlue.cpp & InternalCalls.cs)
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// CORE COMPONENTS
@@ -110,11 +110,6 @@ namespace Zahra
 
 		// TODO: this status should be held by a scene, not an entity! (maybe the scene can store the active camera's UUID?)
 		bool Active = true;
-
-		void Test()
-		{
-			Z_CORE_INFO("created camera");
-		}
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;

@@ -1,0 +1,40 @@
+Scene: script_testing.zsc
+Entities:
+  - Entity: 18202937906072832139
+    TagComponent:
+      Tag: circle
+    TransformComponent:
+      Translation: [0, 0, 0]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Colour: [1, 1, 1, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    ScriptComponent:
+      ScriptName: Sandbox.Player
+    CircleColliderComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.5
+      RestitutionThreshold: 0.5
+  - Entity: 11346088561474433269
+    TagComponent:
+      Tag: camera
+    TransformComponent:
+      Translation: [0, 0, 0]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: Orthographic
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 1.04719758
+        PerspectiveNearClip: 0.00999999978
+        PerspectiveFarClip: 1000
+      Active: true
+      FixedAspectRatio: false

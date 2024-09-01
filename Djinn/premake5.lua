@@ -1,10 +1,12 @@
-project "ScriptCore"
+project "Djinn"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"
 
 	targetdir ("../Meadow/Resources/Scripts")
 	objdir ("../Meadow/Resources/Scripts/Intermediates")
+
+	namespace ("Djinn")
 
 	files 
 	{

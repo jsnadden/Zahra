@@ -21,20 +21,24 @@ namespace Zahra
 		return state == GLFW_PRESS;
 	}
 
-	float Input::GetMouseX()
+	std::pair<float, float> Input::GetMousePos()
 	{
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		double x;
-		glfwGetCursorPos(window, &x, NULL);
-		return (float)x;
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+		return std::make_pair((float)x,(float)y);
+	}
+
+	float Input::GetMouseX()
+	{
+		auto [x, y] = GetMousePos();
+		return x;
 	}
 
 	float Input::GetMouseY()
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		double y;
-		glfwGetCursorPos(window, NULL, &y);
-		return (float)y;
+		auto [x, y] = GetMousePos();
+		return y;
 	}
 }
 

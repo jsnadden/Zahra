@@ -167,7 +167,6 @@
     <ClInclude Include="src\Zahra\Core\MouseCodes.h" />
     <ClInclude Include="src\Zahra\Core\PlatformDetection.h" />
     <ClInclude Include="src\Zahra\Core\Timer.h" />
-    <ClInclude Include="src\Zahra\Core\Timestep.h" />
     <ClInclude Include="src\Zahra\Core\Window.h" />
     <ClInclude Include="src\Zahra\Debug\Profiling.h" />
     <ClInclude Include="src\Zahra\Events\ApplicationEvent.h" />
@@ -662,8 +661,8 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ScriptCore\ScriptCore.csproj">
-      <Project>{43DDC966-2F95-0BB4-989C-E40F8473A6A4}</Project>
+    <ProjectReference Include="..\Djinn\Djinn.csproj">
+      <Project>{D86F090D-4484-31BE-0D06-D51D79D92DEF}</Project>
     </ProjectReference>
     <ProjectReference Include="vendor\GLFW\GLFW.vcxproj">
       <Project>{154B857C-0182-860D-AA6E-6C109684020F}</Project>

@@ -9,6 +9,7 @@ namespace Djinn
 		public float X, Y;
 
 		public static Vector2 Zero => new Vector2(0.0f);
+		public static Vector2 One => new Vector2(1.0f);
 
 		public Vector2(float scalar)
 		{
@@ -44,6 +45,9 @@ namespace Djinn
 
 		public void Normalise()
 		{
+			float norm = Norm();
+			if (norm == 0) return;
+
 			float invNorm = 1 / Norm();
 			X *= invNorm;
 			Y *= invNorm;

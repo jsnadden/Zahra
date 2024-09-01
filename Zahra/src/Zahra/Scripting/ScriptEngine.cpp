@@ -178,7 +178,7 @@ namespace Zahra
 		s_SEData = new ScriptEngineData;
 
 		InitMonoDomains();
-		LoadCoreAssembly("Resources/Scripts/ScriptCore.dll");
+		LoadCoreAssembly("Resources/Scripts/Djinn.dll");
 		ReflectAssemblyTypes();
 
 		ScriptGlue::RegisterFunctions();
@@ -240,6 +240,12 @@ namespace Zahra
 	Entity ScriptEngine::GetEntity(ZGUID guid)
 	{
 		return s_SEData->SceneContext->GetEntity(guid);
+	}
+
+	void* ScriptEngine::GetMonoString(const std::string& string)
+	{
+		MonoString* monoString = mono_string_new(s_SEData->AppDomain, string.c_str());
+		return monoString;
 	}
 
 

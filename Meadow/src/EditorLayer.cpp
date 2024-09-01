@@ -602,20 +602,6 @@ namespace Zahra
 				if (m_ViewportFocused) m_GizmoType = 896;
 				break;
 			}
-			case KeyCode::Delete:
-			{
-				if (m_SceneState == SceneState::Edit)
-				{
-					Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
-					if (selection)
-					{
-						m_ActiveScene->DestroyEntity(selection);
-						m_SceneHierarchyPanel.SelectEntity({});
-					}
-					return true;
-				}
-				break;
-			}
 			case KeyCode::D:
 			{
 				if (ctrl && m_SceneState == SceneState::Edit)

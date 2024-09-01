@@ -24,6 +24,8 @@ namespace Zahra
 
 		static Entity GetEntity(ZGUID guid);
 
+		static void* GetMonoString(const std::string& string);
+
 	private:
 		static void InitMonoDomains();
 		static void LoadCoreAssembly(std::filesystem::path filepath);

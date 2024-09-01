@@ -32,7 +32,7 @@ group "Tools"
 
 group "ZahraCore"
 	include "Zahra"
-	include "ScriptCore"
+	include "Djinn"
 
 group "Misc."
 	include "Sandbox"

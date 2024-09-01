@@ -141,9 +141,6 @@
     <ClInclude Include="src\Zahra\Core\Timer.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Core\Timestep.h">
-      <Filter>src\Zahra\Core</Filter>
-    </ClInclude>
     <ClInclude Include="src\Zahra\Core\Window.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>

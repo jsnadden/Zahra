@@ -1,7 +1,5 @@
 ﻿
-using System;
 using Djinn;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Sandbox
 {
@@ -25,20 +23,20 @@ namespace Sandbox
 			float speed = 10.0f;
 			Vector3 velocity = Vector3.Zero;
 
-			if (InternalCalls.Input_IsKeyDown(KeyCode.W))
+			if (Zahra.Input_IsKeyDown(KeyCode.W))
 			{
 				velocity.Y = 1.0f;
 			}
-			else if (InternalCalls.Input_IsKeyDown(KeyCode.S))
+			else if (Zahra.Input_IsKeyDown(KeyCode.S))
 			{
 				velocity.Y = -1.0f;
 			}
 			
-			if (InternalCalls.Input_IsKeyDown(KeyCode.A))
+			if (Zahra.Input_IsKeyDown(KeyCode.A))
 			{
 				velocity.X = -1.0f;
 			}
-			else if (InternalCalls.Input_IsKeyDown(KeyCode.D))
+			else if (Zahra.Input_IsKeyDown(KeyCode.D))
 			{
 				velocity.X = 1.0f;
 			}

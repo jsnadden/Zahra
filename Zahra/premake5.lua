@@ -48,7 +48,7 @@ project "Zahra"
 
 	links
 	{
-		"ScriptCore",
+		"Djinn",
 		"GLFW",
 		"Box2D",
 		"Glad",
