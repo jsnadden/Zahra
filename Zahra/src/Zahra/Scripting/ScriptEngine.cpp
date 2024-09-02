@@ -3,6 +3,7 @@
 
 #include "Zahra/Scene/Scene.h"
 #include "Zahra/Scripting/ScriptGlue.h"
+#include "Zahra/Utils/FileIO.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -13,40 +14,14 @@
 namespace MonoUtils
 {
 	// TODO: move this to a more general engine-wide FileSystem manager:
-	static char* ReadBytes(const std::filesystem::path & filepath, uint32_t* outSize)
-	{
-		std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
-
-		if (!stream)
-		{
-			// Failed to open the file
-			return nullptr;
-		}
-
-		std::streampos end = stream.tellg();
-		stream.seekg(0, std::ios::beg);
-		uint32_t size = (uint32_t)(end - stream.tellg());
-
-		if (size == 0)
-		{
-			// File is empty
-			return nullptr;
-		}
-
-		char* buffer = new char[size];
-		stream.read((char*)buffer, size);
-		stream.close();
-
-		*outSize = size;
-		return buffer;
-	}
+	
 
 	static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath)
 	{
 		Z_CORE_ASSERT(std::filesystem::exists(assemblyPath), "Assembly file does not exist");
 
 		uint32_t fileSize = 0;
-		char* fileData = ReadBytes(assemblyPath, &fileSize);
+		char* fileData = Zahra::FileIO::ReadBytes(assemblyPath, &fileSize);
 
 		// NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
 		MonoImageOpenStatus status;

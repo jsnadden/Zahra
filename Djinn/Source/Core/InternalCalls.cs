@@ -27,21 +27,6 @@ namespace Djinn
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// LOGGING
 			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Core_Trace(string text);
-
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Core_Info(string text);
-
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Core_Warn(string text);
-
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Core_Error(string text);
-
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Core_Critical(string text);
-
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
 			internal extern static void Log_Trace(string text);
 
 			[MethodImplAttribute(MethodImplOptions.InternalCall)]

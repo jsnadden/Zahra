@@ -33,6 +33,34 @@ namespace Zahra
 
 	};
 
+	class WindowMovedEvent : public Event
+	{
+	public:
+
+		WindowMovedEvent(float x, float y)
+			: m_PositionX(x), m_PositionY(y) {}
+
+		float GetPositionX() const { return m_PositionX; }
+		float GetPositionY() const { return m_PositionY; }
+
+		std::string ToString() const override
+		{
+			std::stringstream stream;
+			stream << "WindowMovedEvent: " << m_PositionX << ", " << m_PositionY;
+			return stream.str();
+		}
+
+		EVENT_CLASS_TYPE(WindowMoved)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+
+
+	private:
+
+		float m_PositionX;
+		float m_PositionY;
+
+	};
+
 	class WindowClosedEvent : public Event
 	{
 	public:

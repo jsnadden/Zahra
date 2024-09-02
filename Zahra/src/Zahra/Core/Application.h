@@ -1,11 +1,10 @@
 #pragma once
 
 #include "Zahra/Core/Base.h"
+#include "Zahra/Core/LayerStack.h"
+#include "Zahra/Core/Window.h"
 #include "Zahra/Events/Event.h"
 #include "Zahra/Events/ApplicationEvent.h"
-#include "Zahra/Core/Window.h"
-#include "Zahra/Core/LayerStack.h"
-
 #include "Zahra/ImGui/ImGuiLayer.h"
 
 
@@ -33,7 +32,7 @@ namespace Zahra
 
 	struct ApplicationSpecification
 	{
-		std::string Name = "Unnamed App";
+		std::string Name = "Zahra_App";
 		std::filesystem::path WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
 	};

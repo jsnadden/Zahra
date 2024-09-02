@@ -1,13 +1,13 @@
 #include "EditorLayer.h"
 
+#include "Zahra/Scene/SceneSerialiser.h"
+#include "Zahra/Utils/PlatformUtils.h"
+#include "Zahra/Maths/Maths.h"
+
 #include <ImGui/imgui_internal.h>
 #include <ImGui/imgui.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
-
-#include "Zahra/Scene/SceneSerialiser.h"
-#include "Zahra/Utils/PlatformUtils.h"
-#include "Zahra/Maths/Maths.h"
 
 namespace Zahra
 {
@@ -50,7 +50,7 @@ namespace Zahra
 
 	void EditorLayer::OnDetach()
 	{
-
+		// TODO: I should probably clean up things here
 	}
 
 	void EditorLayer::OnUpdate(float dt)
@@ -217,6 +217,13 @@ namespace Zahra
 				{
 					Application::Get().Exit();
 				}
+
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("View"))
+			{
+				if (ImGui::MenuItem("Toggle Fullscreen", "F11")) Application::Get().GetWindow().ToggleFullscreen();
 
 				ImGui::EndMenu();
 			}
@@ -443,7 +450,7 @@ namespace Zahra
 			ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras instead, and move to pure 2D
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
-			ImGuizmo::SetGizmoSizeClipSpace(.15);
+			ImGuizmo::SetGizmoSizeClipSpace(.15f);
 
 			// Gizmo style
 			{
@@ -539,6 +546,9 @@ namespace Zahra
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Keyboard shortcuts
 		
+		// TODO: is this an issue?
+		if (m_SceneState != SceneState::Edit) return false;
+
 		if (ImGuizmo::IsUsing()) return false; // avoids crash bug when an entity is deleted during manipulation
 
 		bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
@@ -617,8 +627,12 @@ namespace Zahra
 
 				break;
 			}
-			default:
-				break;
+			case KeyCode::F11:
+			{
+				Application::Get().GetWindow().ToggleFullscreen();
+				return true;
+			}
+			default: break;
 			}
 
 		return false;

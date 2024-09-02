@@ -11,11 +11,12 @@ namespace Zahra
 	struct WindowProperties
 	{
 		std::string Title;
-		uint32_t Width;
-		uint32_t Height;
 
-		WindowProperties(const std::string& title = "Zahra", uint32_t width = 1600, uint32_t height = 900)
-			: Title(title), Width(width), Height(height) {}
+		uint32_t Width = 1600;
+		uint32_t Height = 900;
+
+		WindowProperties(std::string title = "Zahra_App") : Title(title) {}
+
 	};
 
 	class Window
@@ -29,16 +30,13 @@ namespace Zahra
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-
-		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
-
-		// TODO: add functions to get/set window position (and other
-		// statuses e.g. maximised), and hook this into some kind of
-		// AppConfig class (with serialisation to a config.ini, or 
-		// maybe .yaml?). I'm sick of repositioning the window!!
-
+		virtual std::pair<uint32_t, uint32_t> GetPosition() const = 0;
+		virtual bool IsFullscreen() const = 0;
+		virtual void ToggleFullscreen() = 0;
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool IsVSync() const = 0;
+
+		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;		
 
 		virtual void* GetNativeWindow() const = 0;
 

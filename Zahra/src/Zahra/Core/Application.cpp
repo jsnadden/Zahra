@@ -10,20 +10,23 @@ namespace Zahra
 {
 	Application* Application::s_Instance = nullptr;
 
-
-	Application::Application(const ApplicationSpecification& spec)
-		: m_Specification(spec)
+	Application::Application(const ApplicationSpecification& specification)
+		: m_Specification(specification)
 	{
-		if (!spec.WorkingDirectory.empty())
-			std::filesystem::current_path(spec.WorkingDirectory);
+		if (!specification.WorkingDirectory.empty())
+			std::filesystem::current_path(specification.WorkingDirectory);
+
 		Z_CORE_INFO("Current working directory {0}", std::filesystem::current_path().string());
 
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
 
-		m_Window = Window::Create(WindowProperties(spec.Name));
+		// TODO: read in window properties from config file
+
+		m_Window = Window::Create(WindowProperties(specification.Name));
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
 
+		// Initialise subsystems
 		Renderer::Init();
 		ScriptEngine::Init();
 
@@ -31,7 +34,7 @@ namespace Zahra
 		PushOverlay(m_ImGuiLayer);
 
 	}
-
+	
 	Application::~Application()
 	{
 		ScriptEngine::Shutdown();
@@ -60,7 +63,7 @@ namespace Zahra
 				layer->OnImGuiRender();
 			m_ImGuiLayer->End();
 
-			// Update window context
+			// Poll events and swap buffers
 			m_Window->OnUpdate();
 		}
 	}
@@ -116,6 +119,5 @@ namespace Zahra
 
 		return false;
 	}
-
 
 }

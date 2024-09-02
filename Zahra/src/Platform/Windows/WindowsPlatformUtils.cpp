@@ -15,7 +15,7 @@ namespace Zahra
 
 	float Time::GetTime()
 	{
-		return glfwGetTime();
+		return (float)glfwGetTime();
 	}
 
 	std::filesystem::path FileDialogs::OpenFile(const wchar_t* filterDescription, const wchar_t* filterExtension)

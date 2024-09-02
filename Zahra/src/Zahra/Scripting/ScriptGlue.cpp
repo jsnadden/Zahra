@@ -83,12 +83,12 @@ namespace Zahra
 		// WINDOW
 		static float Window_GetWidth()
 		{
-			return Application::Get().GetWindow().GetWidth();
+			return (float)Application::Get().GetWindow().GetWidth();
 		}
 
 		static float Window_GetHeight()
 		{
-			return Application::Get().GetWindow().GetHeight();
+			return (float)Application::Get().GetWindow().GetHeight();
 		}
 
 #pragma endregion
@@ -222,6 +222,8 @@ namespace Zahra
 			case SceneCamera::ProjectionType::Orthographic: return camera.GetOrthographicSize();
 			case SceneCamera::ProjectionType::Perspective: return camera.GetPerspectiveFOV();
 			}
+			Z_CORE_ASSERT(false, "Invalid ProjectionType value");
+			return 0;
 		}
 
 		static void CameraComponent_SetVerticalSize(ZGUID guid, float size)
@@ -231,9 +233,10 @@ namespace Zahra
 
 			switch (camera.GetProjectionType())
 			{
-			case SceneCamera::ProjectionType::Orthographic: camera.SetOrthographicSize(size);
-			case SceneCamera::ProjectionType::Perspective: camera.SetPerspectiveFOV(size);
+			case SceneCamera::ProjectionType::Orthographic: camera.SetOrthographicSize(size); return;
+			case SceneCamera::ProjectionType::Perspective: camera.SetPerspectiveFOV(size); return;
 			}
+			Z_CORE_ASSERT(false, "Invalid ProjectionType value");
 		}
 
 		static float CameraComponent_GetNearPlane(ZGUID guid)
@@ -246,6 +249,8 @@ namespace Zahra
 			case SceneCamera::ProjectionType::Orthographic: return camera.GetOrthographicNearClip();
 			case SceneCamera::ProjectionType::Perspective: return camera.GetPerspectiveNearClip();
 			}
+			Z_CORE_ASSERT(false, "Invalid ProjectionType value");
+			return 0;
 		}
 
 		static void CameraComponent_SetNearPlane(ZGUID guid, float nearPlane)
@@ -255,9 +260,10 @@ namespace Zahra
 
 			switch (camera.GetProjectionType())
 			{
-			case SceneCamera::ProjectionType::Orthographic: camera.SetOrthographicNearClip(nearPlane);
-			case SceneCamera::ProjectionType::Perspective: camera.SetPerspectiveNearClip(nearPlane);
+			case SceneCamera::ProjectionType::Orthographic: camera.SetOrthographicNearClip(nearPlane); return;
+			case SceneCamera::ProjectionType::Perspective: camera.SetPerspectiveNearClip(nearPlane); return;
 			}
+			Z_CORE_ASSERT(false, "Invalid ProjectionType value");
 		}
 
 		static float CameraComponent_GetFarPlane(ZGUID guid)
@@ -270,6 +276,8 @@ namespace Zahra
 			case SceneCamera::ProjectionType::Orthographic: return camera.GetOrthographicFarClip();
 			case SceneCamera::ProjectionType::Perspective: return camera.GetPerspectiveFarClip();
 			}
+			Z_CORE_ASSERT(false, "Invalid ProjectionType value");
+			return 0;
 		}
 
 		static void CameraComponent_SetFarPlane(ZGUID guid, float farPlane)
@@ -279,9 +287,10 @@ namespace Zahra
 
 			switch (camera.GetProjectionType())
 			{
-			case SceneCamera::ProjectionType::Orthographic: camera.SetOrthographicNearClip(farPlane);
-			case SceneCamera::ProjectionType::Perspective: camera.SetPerspectiveNearClip(farPlane);
+			case SceneCamera::ProjectionType::Orthographic: camera.SetOrthographicNearClip(farPlane); return;
+			case SceneCamera::ProjectionType::Perspective: camera.SetPerspectiveNearClip(farPlane); return;
 			}
+			Z_CORE_ASSERT(false, "Invalid ProjectionType value");
 		}
 
 		static bool CameraComponent_GetFixedAspectRatio(ZGUID guid)
