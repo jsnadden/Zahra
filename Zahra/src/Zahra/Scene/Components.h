@@ -108,9 +108,6 @@ namespace Zahra
 		SceneCamera Camera;
 		bool FixedAspectRatio = false;
 
-		// TODO: this status should be held by a scene, not an entity! (maybe the scene can store the active camera's UUID?)
-		bool Active = true;
-
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
 		CameraComponent(bool fixedRatio)

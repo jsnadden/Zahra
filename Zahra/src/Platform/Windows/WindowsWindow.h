@@ -17,13 +17,24 @@ namespace Zahra
 
 		inline uint32_t GetWidth() const override { return m_WindowData.Rectangle.Width; }
 		inline uint32_t GetHeight() const override { return m_WindowData.Rectangle.Height; }
+		virtual void Resize(uint32_t width, uint32_t height) override;
+
 		virtual std::pair<uint32_t, uint32_t> GetPosition() const override;
+		virtual void Move(uint32_t x, uint32_t y) override;
+
+		virtual WindowState GetState() const override { return m_WindowData.State;  }
+		virtual void SetState(WindowState state) override;
+
 		virtual bool IsFullscreen() const override;
-		virtual void ToggleFullscreen() override;
+		virtual void SetFullscreen(bool enabled) override;
+
 		virtual bool IsVSync() const override;
 		virtual void SetVSync(bool enabled) override;
 
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_WindowData.EventCallback = callback; };
+
+		virtual void WriteConfig() override;
+		virtual void ReadConfig() override;
 
 		inline virtual void* GetNativeWindow() const override { return m_Window; };
 
@@ -49,8 +60,10 @@ namespace Zahra
 			std::string Title;
 			
 			WindowRectangle Rectangle;
+			WindowRectangle RectangleCache;
 
-			bool ShowTitleBar = true;
+			WindowState State = WindowState::Default;
+
 			bool Fullscreen = false;
 			bool VSync = false;
 
@@ -58,10 +71,5 @@ namespace Zahra
 		};
 
 		Win32WindowData m_WindowData;
-
-		void ReadConfig();
-		void WriteConfig();
-
-		WindowRectangle m_FullscreenRectangleCache;
 	};
 }

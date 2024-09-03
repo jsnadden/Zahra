@@ -13,18 +13,16 @@ namespace Zahra
 	Application::Application(const ApplicationSpecification& specification)
 		: m_Specification(specification)
 	{
-		if (!specification.WorkingDirectory.empty())
-			std::filesystem::current_path(specification.WorkingDirectory);
-
+		Z_CORE_ASSERT(!specification.WorkingDirectory.empty(), "Must specify a working directory")
+		std::filesystem::current_path(specification.WorkingDirectory);
 		Z_CORE_INFO("Current working directory {0}", std::filesystem::current_path().string());
 
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
 
-		// TODO: read in window properties from config file
-
 		m_Window = Window::Create(WindowProperties(specification.Name));
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
+		m_Window->ReadConfig();
 
 		// Initialise subsystems
 		Renderer::Init();

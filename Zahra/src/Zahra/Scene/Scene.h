@@ -46,12 +46,13 @@ namespace Zahra
 		const std::string& GetName() { return m_SceneName; }
 		void SetName(const std::string& name) { m_SceneName = name; }
 
+		void SetActiveCamera(Entity entity);
 		Entity GetActiveCamera();
 
 		void InitCameraComponent(entt::basic_registry<entt::entity>& registry, entt::entity entity)
 		{
 			Z_CORE_ASSERT(m_Registry.valid(entity), "Entity does not belong to this scene");
-			
+
 			if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
 				m_Registry.get<CameraComponent>(entity).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
@@ -76,6 +77,8 @@ namespace Zahra
 
 		entt::basic_registry<entt::entity> m_Registry;
 		std::unordered_map<ZGUID, entt::entity> m_EntityMap;
+
+		entt::entity m_ActiveCamera = entt::null;
 
 		float m_ViewportWidth = 1.0f, m_ViewportHeight = 1.0f;
 

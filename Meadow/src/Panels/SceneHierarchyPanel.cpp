@@ -246,11 +246,18 @@ namespace Zahra
 
 			});
 
-		MeadowUIPatterns::DrawComponent<CameraComponent>("Camera Component", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<CameraComponent>("Camera Component", entity, [&](auto& component)
 				{
 					SceneCamera& camera = component.Camera;
 
-					MeadowUIPatterns::DrawBoolControl("Active", component.Active);
+					ImGui::TableNextColumn();
+					ImGui::TableNextColumn();
+					if (ImGui::Button("Make Active"))
+					{
+						m_Context->SetActiveCamera(entity);
+					}
+
+
 
 					const char* projectionTypeStrings[] = { "Orthographic", "Perspective" };
 					SceneCamera::ProjectionType currentProjectionType = (SceneCamera::ProjectionType)MeadowUIPatterns::DrawComboControl("Projection Type", projectionTypeStrings, 2, (int)camera.GetProjectionType());

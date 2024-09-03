@@ -223,7 +223,11 @@ namespace Zahra
 
 			if (ImGui::BeginMenu("View"))
 			{
-				if (ImGui::MenuItem("Toggle Fullscreen", "F11")) Application::Get().GetWindow().ToggleFullscreen();
+				if (ImGui::MenuItem("Toggle Fullscreen", "F11"))
+				{
+					Window& window = Application::Get().GetWindow();
+					window.SetFullscreen(!window.IsFullscreen());
+				}
 
 				ImGui::EndMenu();
 			}
@@ -506,26 +510,29 @@ namespace Zahra
 	{
 		if (Entity selection = m_SceneHierarchyPanel.GetSelectedEntity())
 		{
-			TransformComponent transform = selection.GetComponents<TransformComponent>();
+			TransformComponent entityTransform = selection.GetComponents<TransformComponent>();
 
 			if (m_SceneState == SceneState::Play)
 			{
 				Entity cameraEntity = m_ActiveScene->GetActiveCamera();
 
-				if (cameraEntity.HasComponents<CameraComponent>())
+				if (cameraEntity)
 				{
 					Camera camera = cameraEntity.GetComponents<CameraComponent>().Camera;
-					glm::mat4 transform = cameraEntity.GetComponents<TransformComponent>().GetTransform();
-					Renderer::BeginScene(camera, transform);
+					glm::mat4 cameraTransform = cameraEntity.GetComponents<TransformComponent>().GetTransform();
+					Renderer::BeginScene(camera, cameraTransform);
+					Renderer::DrawRect(entityTransform.GetTransform(), m_HighlightSelectionColour);
+					Renderer::EndScene();
 				}
 			}
 			else
 			{
 				Renderer::BeginScene(*m_EditorCamera);
+				Renderer::DrawRect(entityTransform.GetTransform(), m_HighlightSelectionColour);
+				Renderer::EndScene();
 			}
 			
-			Renderer::DrawRect(transform.GetTransform(), m_HighlightSelectionColour);
-			Renderer::EndScene();
+			
 		}
 	}
 
@@ -629,7 +636,8 @@ namespace Zahra
 			}
 			case KeyCode::F11:
 			{
-				Application::Get().GetWindow().ToggleFullscreen();
+				Window& window = Application::Get().GetWindow();
+				window.SetFullscreen(!window.IsFullscreen());
 				return true;
 			}
 			default: break;

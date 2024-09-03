@@ -180,10 +180,10 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// GUID
 		Z_CORE_ASSERT(entity.HasComponents<IDComponent>(), "All entities must have an IDComponent");
-		uint64_t entityUUID = (uint64_t)entity.GetComponents<IDComponent>().ID;
+		uint64_t entityGUID = (uint64_t)entity.GetComponents<IDComponent>().ID;
 
 		out << YAML::BeginMap;
-		out << YAML::Key << "Entity" << YAML::Value << entityUUID;
+		out << YAML::Key << "Entity" << YAML::Value << entityGUID;
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// TAG (COMPONENT NAME)
@@ -192,7 +192,7 @@ namespace Zahra
 		out << YAML::BeginMap;
 		{
 			auto& tag = entity.GetComponents<TagComponent>().Tag;
-			Z_CORE_TRACE("Serialising entity with ID = {0}, name = {1}", entityUUID, tag);
+			Z_CORE_TRACE("Serialising entity {0} (GUID = {1})", tag, entityGUID);
 
 			out << YAML::Key << "Tag" << YAML::Value << tag;
 		}
@@ -267,7 +267,7 @@ namespace Zahra
 				}
 				out << YAML::EndMap;
 			
-				out << YAML::Key << "Active" << YAML::Value << cameraComponent.Active;
+				//out << YAML::Key << "Active" << YAML::Value << cameraComponent.Active;
 				out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComponent.FixedAspectRatio;
 			}
 			out << YAML::EndMap;
@@ -341,8 +341,13 @@ namespace Zahra
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
+
 		out << YAML::Key << "Scene";
 		out << YAML::Value << sceneName;
+
+		out << YAML::Key << "ActiveCameraGUID";
+		out << YAML::Value << m_Scene->GetActiveCamera().GetGUID();
+
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.view<entt::entity>().each([&](auto entityHandle)
@@ -380,20 +385,24 @@ namespace Zahra
 		m_Scene->SetName(sceneName);
 		Z_CORE_TRACE("Deserialising scene '{0}'", sceneName);
 
+		bool hasActiveCamera = (bool)data["ActiveCameraGUID"];
+		uint64_t cameraGUID;
+		if (hasActiveCamera) cameraGUID = data["ActiveCameraGUID"].as<uint64_t>();
+
 		auto entityNodes = data["Entities"];
 		if (entityNodes)
 		{
 			for (auto entityNode : entityNodes)
 			{
-				uint64_t uuid = entityNode["Entity"].as<uint64_t>();
+				uint64_t entityGUID = entityNode["Entity"].as<uint64_t>();
 
-				std::string name = "unnamed_entity";
+				std::string tag = "unnamed_entity";
 				auto tagNode = entityNode["TagComponent"];
-				if (tagNode) name = tagNode["Tag"].as<std::string>();
+				if (tagNode) tag = tagNode["Tag"].as<std::string>();
 
-				Z_CORE_TRACE("Deserialising entity with ID = {0}, name = {1}", uuid, name);
+				Z_CORE_TRACE("Deserialising entity {0} (GUID = {1})", tag, entityGUID);
 
-				Entity entity = m_Scene->CreateEntity(uuid, name);
+				Entity entity = m_Scene->CreateEntity(entityGUID, tag);
 
 				auto transformNode = entityNode["TransformComponent"];
 				if (transformNode)
@@ -433,7 +442,7 @@ namespace Zahra
 				{
 					auto& camera = entity.AddComponent<CameraComponent>();
 
-					camera.Active = cameraNode["Active"].as<bool>();
+					//camera.Active = cameraNode["Active"].as<bool>();
 					camera.FixedAspectRatio = cameraNode["FixedAspectRatio"].as<bool>();
 
 					auto& cameraSubnode = cameraNode["Camera"];
@@ -450,6 +459,12 @@ namespace Zahra
 					);
 					camera.Camera.SetProjectionType(CameraProjectionTypeFromString(cameraSubnode["ProjectionType"].as<std::string>()));
 
+				}
+
+				if (hasActiveCamera)
+				{
+					if (cameraGUID == entityGUID)
+						m_Scene->SetActiveCamera(entity);
 				}
 
 				auto scriptNode = entityNode["ScriptComponent"];

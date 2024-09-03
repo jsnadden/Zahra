@@ -30,13 +30,26 @@ namespace Zahra
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-		virtual std::pair<uint32_t, uint32_t> GetPosition() const = 0;
-		virtual bool IsFullscreen() const = 0;
-		virtual void ToggleFullscreen() = 0;
-		virtual void SetVSync(bool enabled) = 0;
-		virtual bool IsVSync() const = 0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;		
+		virtual std::pair<uint32_t, uint32_t> GetPosition() const = 0;
+		virtual void Move(uint32_t x, uint32_t y) = 0;
+
+		static enum WindowState { Default=0, Minimised, Maximised };
+
+		virtual WindowState GetState() const = 0;
+		virtual void SetState(WindowState state) = 0;
+
+		virtual bool IsFullscreen() const = 0;
+		virtual void SetFullscreen(bool enabled) = 0;
+
+		virtual bool IsVSync() const = 0;
+		virtual void SetVSync(bool enabled) = 0;
+
+		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;	
+
+		virtual void ReadConfig() = 0;
+		virtual void WriteConfig() = 0;
 
 		virtual void* GetNativeWindow() const = 0;
 

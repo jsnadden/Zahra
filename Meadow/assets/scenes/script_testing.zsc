@@ -1,5 +1,23 @@
 Scene: script_testing.zsc
+ActiveCameraGUID: 11346088561474433269
 Entities:
+  - Entity: 11346088561474433269
+    TagComponent:
+      Tag: camera
+    TransformComponent:
+      Translation: [0, 0, 0]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: Orthographic
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 1.04719758
+        PerspectiveNearClip: 0.00999999978
+        PerspectiveFarClip: 1000
+      FixedAspectRatio: false
   - Entity: 18202937906072832139
     TagComponent:
       Tag: circle
@@ -20,21 +38,3 @@ Entities:
       Friction: 0.5
       Restitution: 0.5
       RestitutionThreshold: 0.5
-  - Entity: 11346088561474433269
-    TagComponent:
-      Tag: camera
-    TransformComponent:
-      Translation: [0, 0, 0]
-      EulerAngles: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: Orthographic
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 1.04719758
-        PerspectiveNearClip: 0.00999999978
-        PerspectiveFarClip: 1000
-      Active: true
-      FixedAspectRatio: false

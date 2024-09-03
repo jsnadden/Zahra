@@ -39,14 +39,14 @@ namespace Zahra
 
 		([&]()
 			{
-				auto componentView = destReg.view<ComponentType>();
+				auto componentView = srcReg.view<ComponentType>();
 				for (auto oldHandle : componentView)
 				{
-					ZGUID guid = destReg.get<IDComponent>(oldHandle).ID;
+					ZGUID guid = srcReg.get<IDComponent>(oldHandle).ID;
 					entt::entity newHandle = guidToNewHandle.at(guid);
 
-					auto& oldComponent = destReg.get<ComponentType>(oldHandle);
-					srcReg.emplace_or_replace<ComponentType>(newHandle, oldComponent);
+					auto& oldComponent = srcReg.get<ComponentType>(oldHandle);
+					destReg.emplace_or_replace<ComponentType>(newHandle, oldComponent);
 				}
 			}
 		(), ...);
@@ -72,37 +72,42 @@ namespace Zahra
 	}
 
 	template<typename... ComponentType>
-	static void CopyComponentIfExists(ComponentGroup<ComponentType...>, Entity srcReg, Entity destReg)
+	static void CopyComponentIfExists(ComponentGroup<ComponentType...>, Entity srcEnt, Entity destEnt)
 	{
-		CopyComponentIfExists<ComponentType...>(srcReg, destReg);
+		CopyComponentIfExists<ComponentType...>(srcEnt, destEnt);
 	}
 
-	Ref<Scene> Scene::CopyScene(Ref<Scene> oldScene)
+	Ref<Scene> Scene::CopyScene(Ref<Scene> srcScene)
 	{
-		Ref<Scene> newScene = CreateRef<Scene>();
+		Ref<Scene> destScene = CreateRef<Scene>();
 
-		newScene->SetName(oldScene->GetName());
+		destScene->SetName(srcScene->GetName());
 
-		newScene->m_ViewportWidth = oldScene->m_ViewportWidth;
-		newScene->m_ViewportHeight = oldScene->m_ViewportHeight;
+		destScene->m_ViewportWidth = srcScene->m_ViewportWidth;
+		destScene->m_ViewportHeight = srcScene->m_ViewportHeight;
 
-		auto& oldRegistry = oldScene->m_Registry;
-		auto& newRegistry = newScene->m_Registry;
+		auto& srcRegistry = srcScene->m_Registry;
+		auto& destRegistry = destScene->m_Registry;
 
 		std::unordered_map<ZGUID, entt::entity> guidToNewHandle;
 
 		// copy entities, along with their IDComponents and TagComponents
-		oldRegistry.view<entt::entity>().each([&](auto entityHandle)
+		srcRegistry.view<entt::entity>().each([&](auto entityHandle)
 			{
-				Entity oldEntity = { entityHandle, oldScene.get() };
+				Entity oldEntity = { entityHandle, srcScene.get() };
 				ZGUID guid = oldEntity.GetGUID();
-				guidToNewHandle[guid] = (entt::entity)newScene->CreateEntity(guid, oldEntity.GetComponents<TagComponent>().Tag);
+				Entity newEntity = destScene->CreateEntity(guid, oldEntity.GetComponents<TagComponent>().Tag);
+				guidToNewHandle[guid] = (entt::entity)newEntity;
 			});
 
 		// copy the remaing components
-		CopyComponent(AllComponents{}, newRegistry, oldRegistry, guidToNewHandle);
+		CopyComponent(AllComponents{}, srcRegistry, destRegistry, guidToNewHandle);
 
-		return newScene;
+		// set active camera
+		Entity oldCamera = srcScene->GetActiveCamera();
+		if (oldCamera) destScene->SetActiveCamera({ guidToNewHandle[oldCamera.GetGUID()] , destScene.get() });
+
+		return destScene;
 	}
 
 	// All entities will automatically be created with an IDComponent, TagComponent and TransformComponent
@@ -222,26 +227,12 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// RENDER SCENE
 		{
-			SceneCamera* activeCamera = nullptr;
-			glm::mat4 cameraTransform;
-
-			// TODO: find a better way of getting a camera. this just picks the first one it finds
-			auto cameraEntities = m_Registry.view<TransformComponent, CameraComponent>();
-			for (auto entity : cameraEntities)
+			if (m_ActiveCamera != entt::null)
 			{
-				auto [transform, camera] = cameraEntities.get<TransformComponent, CameraComponent>(entity);
-				if (camera.Active)
-				{
-					activeCamera = &camera.Camera;
-					cameraTransform = transform.GetTransform();
-					break;
-				}
+				Entity activeCameraEntity(m_ActiveCamera, this);
+				glm::mat4 cameraTransform = activeCameraEntity.GetComponents<TransformComponent>().GetTransform();
 
-			}
-
-			if (activeCamera)
-			{
-				Renderer::BeginScene(activeCamera->GetProjection(), cameraTransform);
+				Renderer::BeginScene(activeCameraEntity.GetComponents<CameraComponent>().Camera.GetProjection(), cameraTransform);
 				RenderEntities();
 				Renderer::EndScene();
 			}
@@ -366,18 +357,21 @@ namespace Zahra
 		}
 	}
 
+	void Scene::SetActiveCamera(Entity entity)
+	{
+		Z_CORE_ASSERT(m_Registry.valid(entity), "Entity does not belong to this scene");
+
+		if (entity.HasComponents<CameraComponent>())
+			InitCameraComponent(m_Registry, entity);
+		else
+			entity.AddComponent<CameraComponent>();
+
+		m_ActiveCamera = entity;
+	}
+
 	Entity Scene::GetActiveCamera()
 	{
-		// TODO: we really need a better way of doing this :(
-		auto view = m_Registry.view<CameraComponent>();
-		
-		for (auto entity : view)
-		{
-			auto camera = view.get<CameraComponent>(entity);
-			if (camera.Active) return Entity{ entity, this };
-		}
-
-		return {};
+		return { m_ActiveCamera, this };
 	}
 
 	const Scene::OverlayMode& Scene::GetOverlayMode()

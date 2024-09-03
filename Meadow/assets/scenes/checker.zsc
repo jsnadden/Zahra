@@ -1,336 +1,11 @@
 Scene: checker.zsc
+ActiveCameraGUID: 7149676492262670363
 Entities:
-  - Entity: 7149676492262670363
-    TagComponent:
-      Tag: camera
-    TransformComponent:
-      Translation: [0, 0, 2.5999999]
-      EulerAngles: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: Perspective
-        OrthographicSize: 10
-        OrthographicNearClip: -1
-        OrthographicFarClip: 1
-        PerspectiveFOV: 1.9687314
-        PerspectiveNearClip: 0.00999999978
-        PerspectiveFarClip: 1000
-      Active: true
-      FixedAspectRatio: false
-  - Entity: 10573866985179884234
+  - Entity: 9205702333088035384
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [-1, 1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 5565344200122472379
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [0, -1.86264515e-09, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [0.267780781, 0.492268741, 0.976833999, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 4832402026279183394
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [3, 1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 10754612482539217752
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [1, 3, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 17083763726356592077
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [1, 1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 11305942242498610870
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [0, 2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 10112689817224802061
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [2, 2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 14181737838236406542
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [2, 0, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 4377102402656268221
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [3, 3, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 2658300153683951054
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [4, 0, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 17098083789048078257
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-1, 3, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 7066612513354371975
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [4, 2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 16646311279201764210
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [1, -1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 9128154030627654672
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [3, -1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 6812622339633384123
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-1, -1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 8224432261910445321
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-2, 0, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 5755712873946324760
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-2, 2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 8287554580932257829
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-2, -2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 7422488240355159497
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [0, -2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 4888133376951862979
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [2, -2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 677533087851576464
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [4, -2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 1296202349326099548
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-3, 1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 6418171969837545567
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-3, -1, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 3654676241882100102
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-3, 3, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 12339453060700840381
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-4, 2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 10564924191798874201
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-4, 0, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 16416223754978487693
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-4, -2, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 3303596898596010655
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-3, -3, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureTiling: 1
-      Animated: false
-  - Entity: 15043435753061175669
-    TagComponent:
-      Tag: New Entity
-    TransformComponent:
-      Translation: [-1, -3, 0]
+      Translation: [3, -3, 0]
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
@@ -348,14 +23,339 @@ Entities:
       Tint: [1, 1, 1, 1]
       TextureTiling: 1
       Animated: false
-  - Entity: 9205702333088035384
+  - Entity: 15043435753061175669
     TagComponent:
       Tag: New Entity
     TransformComponent:
-      Translation: [3, -3, 0]
+      Translation: [-1, -3, 0]
       EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
       TextureTiling: 1
       Animated: false
+  - Entity: 3303596898596010655
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-3, -3, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 16416223754978487693
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-4, -2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 10564924191798874201
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-4, 0, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 12339453060700840381
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-4, 2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 3654676241882100102
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-3, 3, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 6418171969837545567
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-3, -1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 1296202349326099548
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-3, 1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 677533087851576464
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [4, -2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 4888133376951862979
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2, -2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 7422488240355159497
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0, -2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 8287554580932257829
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-2, -2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 5755712873946324760
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-2, 2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 8224432261910445321
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-2, 0, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 6812622339633384123
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-1, -1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 9128154030627654672
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [3, -1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 16646311279201764210
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1, -1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 7066612513354371975
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [4, 2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 17098083789048078257
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-1, 3, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 2658300153683951054
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [4, 0, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 4377102402656268221
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [3, 3, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 14181737838236406542
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2, 0, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 10112689817224802061
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [2, 2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 11305942242498610870
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0, 2, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 17083763726356592077
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1, 1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 10754612482539217752
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [1, 3, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 4832402026279183394
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [3, 1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 5565344200122472379
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0, -1.86264515e-09, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [0.267780781, 0.492268741, 0.976833999, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 10573866985179884234
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [-1, 1, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureTiling: 1
+      Animated: false
+  - Entity: 7149676492262670363
+    TagComponent:
+      Tag: camera
+    TransformComponent:
+      Translation: [0, 0, 2.5999999]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: Perspective
+        OrthographicSize: 10
+        OrthographicNearClip: -1
+        OrthographicFarClip: 1
+        PerspectiveFOV: 1.9687314
+        PerspectiveNearClip: 0.00999999978
+        PerspectiveFarClip: 1000
+      FixedAspectRatio: false

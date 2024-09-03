@@ -2,6 +2,7 @@
 #include "WindowsWindow.h"
 
 #include "Zahra/Core/Input.h"
+#include "Zahra/Core/Application.h"
 #include "Zahra/Events/ApplicationEvent.h"
 #include "Zahra/Events/MouseEvent.h"
 #include "Zahra/Events/KeyEvent.h"
@@ -9,6 +10,10 @@
 #include "Platform/OpenGL/OpenGLContext.h"
 
 #include <shobjidl.h>
+#define YAML_CPP_STATIC_DEFINE
+#include <yaml-cpp/yaml.h>
+
+#include <fstream>
 
 namespace Zahra
 {
@@ -33,6 +38,7 @@ namespace Zahra
 
 	WindowsWindow::~WindowsWindow()
 	{
+		WriteConfig();
 		Shutdown();
 	}
 
@@ -43,6 +49,7 @@ namespace Zahra
 		m_WindowData.Title = props.Title;
 		m_WindowData.Rectangle.Width = props.Width;
 		m_WindowData.Rectangle.Height = props.Height;
+		m_WindowData.RectangleCache = m_WindowData.Rectangle;
 		Z_CORE_INFO("Creating window {0} ({1}x{2})", props.Title, props.Width, props.Height);
 
 		#pragma endregion
@@ -79,11 +86,13 @@ namespace Zahra
 
 		#pragma region Construct window based on WindowData
 
-		glfwWindowHint(GLFW_TITLEBAR, m_WindowData.ShowTitleBar);		
-		GLFWmonitor* mainMonitor = glfwGetPrimaryMonitor();
-		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_WindowData.Title.c_str(),
-			m_WindowData.Fullscreen ? mainMonitor : nullptr, nullptr);
+		// TODO: custom titlebar
+		//glfwWindowHint(GLFW_TITLEBAR, false);		
+
+		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_WindowData.Title.c_str(), nullptr, nullptr);
 		glfwSetWindowPos(m_Window, m_WindowData.Rectangle.XPosition, m_WindowData.Rectangle.YPosition);
+
+		glfwSetWindowUserPointer(m_Window, &m_WindowData);
 
 		#pragma endregion
 
@@ -94,10 +103,8 @@ namespace Zahra
 
 		#pragma endregion
 
-		#pragma region Set win32 window data
-
-		glfwSetWindowUserPointer(m_Window, &m_WindowData);
-
+		#pragma region Set win32 event callbacks
+		
 		glfwSetWindowSizeCallback(m_Window,
 			[](GLFWwindow* window, int width, int height)
 			{
@@ -119,6 +126,42 @@ namespace Zahra
 
 				WindowMovedEvent event((float)x, (float)y);
 				data.EventCallback(event);
+			}
+		);
+
+		glfwSetWindowIconifyCallback(m_Window,
+			[](GLFWwindow* window, int iconified)
+			{
+				Win32WindowData& data = *(Win32WindowData*)glfwGetWindowUserPointer(window);
+				if (iconified == GLFW_TRUE)
+				{
+					data.RectangleCache = data.Rectangle;
+					data.State = WindowState::Minimised;
+				}
+				else
+					data.State = WindowState::Default;
+
+				// TODO: implement this in ApplicationEvent.h:
+				/*WindowMinimisedEvent event();
+				data.EventCallback(event);*/
+			}
+		);
+
+		glfwSetWindowMaximizeCallback(m_Window,
+			[](GLFWwindow* window, int maximised)
+			{
+				Win32WindowData& data = *(Win32WindowData*)glfwGetWindowUserPointer(window);
+				if (maximised == GLFW_TRUE)
+				{
+					data.RectangleCache = data.Rectangle;
+					data.State = WindowState::Maximised;
+				}
+				else
+					data.State = WindowState::Default;
+
+				// TODO: implement this in ApplicationEvent.h:
+				/*WindowMaximisedEvent event();
+				data.EventCallback(event);*/
 			}
 		);
 
@@ -219,34 +262,13 @@ namespace Zahra
 
 		#pragma endregion
 	
-		ReadConfig();
 }
 
 	void WindowsWindow::Shutdown()
 	{
-		WriteConfig();
-
 		glfwDestroyWindow(m_Window);
 
 		CoUninitialize(); // Shutdown Windows COM library
-	}
-
-	void WindowsWindow::ReadConfig()
-	{
-		// TODO:
-		// - get config directory (from AppSpec, or a core config file)
-		// - check if window_config.yml exists, early out if not
-		// - if it does exist, read it in
-		// - parse (key,value)s, and call the appropriate methods (ToggleFullscreen, SetVSync, etc.)
-		// (another TODO: add methods to resize/reposition window)
-	}
-
-	void WindowsWindow::WriteConfig()
-	{
-		// TODO:
-		// - get config directory (from AppSpec, or a core config file)
-		// - create window_config.yml if it doesn't already exist
-		// - write (key, value)s (most we can just get from glfw, but also e.g. m_FullscreenRectangleCache)
 	}
 
 	void WindowsWindow::OnUpdate()
@@ -258,6 +280,12 @@ namespace Zahra
 		m_Context->SwapBuffers();
 	}
 
+	void WindowsWindow::Resize(uint32_t width, uint32_t height)
+	{
+		if (m_WindowData.Fullscreen) return;
+		glfwSetWindowSize(m_Window, (int)width, (int)height);
+	}
+
 	std::pair<uint32_t, uint32_t> WindowsWindow::GetPosition() const
 	{
 		uint32_t x = m_WindowData.Rectangle.XPosition;
@@ -265,27 +293,61 @@ namespace Zahra
 		return std::make_pair(x,y);
 	}
 
+	void WindowsWindow::Move(uint32_t x, uint32_t y)
+	{
+		if (m_WindowData.Fullscreen) return;
+		glfwSetWindowPos(m_Window, (int)x, (int)y);
+	}
+
+	void WindowsWindow::SetState(WindowState state)
+	{
+		if (state == m_WindowData.State || m_WindowData.Fullscreen) return;
+
+		switch (state)
+		{
+			case WindowState::Default:
+			{
+				glfwRestoreWindow(m_Window);
+				break;
+			}
+			case WindowState::Minimised:
+			{
+				m_WindowData.RectangleCache = m_WindowData.Rectangle;
+				glfwIconifyWindow(m_Window);
+				break;
+			}
+			case WindowState::Maximised:
+			{
+				m_WindowData.RectangleCache = m_WindowData.Rectangle;
+				glfwMaximizeWindow(m_Window);
+				break;
+			}
+			default: break;
+		}
+	}
+
 	bool WindowsWindow::IsFullscreen() const
 	{
 		return m_WindowData.Fullscreen;
 	}
 
-	void WindowsWindow::ToggleFullscreen()
+	void WindowsWindow::SetFullscreen(bool enabled)
 	{
+		if (m_WindowData.Fullscreen == enabled) return;
+
 		if (m_WindowData.Fullscreen)
 		{
 			glfwSetWindowMonitor(m_Window,nullptr,
-				m_FullscreenRectangleCache.XPosition, m_FullscreenRectangleCache.YPosition,
-				m_FullscreenRectangleCache.Width, m_FullscreenRectangleCache.Height, 0);
+				m_WindowData.RectangleCache.XPosition, m_WindowData.RectangleCache.YPosition,
+				m_WindowData.RectangleCache.Width, m_WindowData.RectangleCache.Height, 0);
 		}
 		else
 		{
-			m_FullscreenRectangleCache = m_WindowData.Rectangle;
+			if (m_WindowData.State == WindowState::Default) m_WindowData.RectangleCache = m_WindowData.Rectangle;
 			
 			// TODO: find a good way to choose the "current monitor" (Win32 api has this, but not glfw...)
 			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-			Z_CORE_INFO("Going fullscreen: {}x{}", mode->width, mode->height);
 			// TODO: get fullscreen resolution from settings/config file rather than the monitor itself
 			glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 		}
@@ -313,6 +375,101 @@ namespace Zahra
 		m_WindowData.VSync = enabled;
 	}	
 	
+	void WindowsWindow::WriteConfig()
+	{
+		Z_CORE_TRACE("Saving configuration for window '{0}'", m_WindowData.Title);
+
+		WindowState currentState = GetState();
+		SetState(WindowState::Default);
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "WindowRectangle";
+		out << YAML::BeginMap;		
+		{
+			WindowRectangle rect;
+			if (m_WindowData.Fullscreen)
+				rect = m_WindowData.RectangleCache;
+			else
+				rect = m_WindowData.Rectangle;
+
+			out << YAML::Key << "Width";
+			out << YAML::Value << (rect.Width);
+
+			out << YAML::Key << "Height";
+			out << YAML::Value << (rect.Height);
+
+			out << YAML::Key << "XPosition";
+			out << YAML::Value << (rect.XPosition);
+
+			out << YAML::Key << "YPosition";
+			out << YAML::Value << (rect.YPosition);
+		}
+		out << YAML::EndMap;
+
+		out << YAML::Key << "WindowState";
+		out << YAML::Value << currentState;
+
+		out << YAML::Key << "Fullscreen";
+		out << YAML::Value << m_WindowData.Fullscreen;
+
+		out << YAML::Key << "VSync";
+		out << YAML::Value << m_WindowData.VSync;
+
+		out << YAML::EndMap;
+
+		std::filesystem::path configDir = Application::Get().GetSpecification().WorkingDirectory / "Config";
+		if (!std::filesystem::exists(configDir)) std::filesystem::create_directories(configDir);
+
+		std::filesystem::path configFile = configDir / ("window_config_" + m_WindowData.Title + ".yml");
+		std::ofstream fout(configFile.c_str());
+		fout << out.c_str();
+
+	}
+
+	void WindowsWindow::ReadConfig()
+	{
+		std::filesystem::path configDir = Application::Get().GetSpecification().WorkingDirectory / "Config";
+		std::filesystem::path configFile = configDir / ("window_config_" + m_WindowData.Title + ".yml");
+		if (!std::filesystem::exists(configFile)) return;
+
+		Z_CORE_TRACE("Loading configuration for window '{0}'", m_WindowData.Title);
+
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(configFile.string());
+		}
+		catch (const YAML::ParserException& ex)
+		{
+			Z_CORE_ERROR("Failed to load window configuration file '{0}'\n     {1}", configFile.filename().string(), ex.what());
+		}
+
+		if (auto rectNode = data["WindowRectangle"])
+		{
+			uint32_t width = rectNode["Width"].as<uint32_t>();
+			uint32_t height = rectNode["Height"].as<uint32_t>();
+			Resize(width, height);
+
+			uint32_t x = rectNode["XPosition"].as<uint32_t>();
+			uint32_t y = rectNode["YPosition"].as<uint32_t>();
+			Move(x, y);
+		}
+
+		if (auto stateNode = data["WindowState"])
+		{
+			WindowState state = (WindowState)stateNode.as<int>();
+			if (state != WindowState::Minimised) SetState(state);
+		}
+
+		if (auto fullscreenNode = data["Fullscreen"])  SetFullscreen(fullscreenNode.as<bool>());
+
+		if (auto vsyncNode = data["VSync"]) SetVSync(vsyncNode.as<bool>());
+
+	}
+
+
 }
 
 
