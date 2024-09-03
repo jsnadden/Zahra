@@ -12,7 +12,7 @@ namespace Zahra
 	enum class EventType
 	{
 		None=0,
-		WindowClose, WindowResize, WindowFocus, WindowUnfocus, WindowMoved,
+		WindowClose, WindowResize, WindowFocus, WindowUnfocus, WindowMoved, WindowMinimised, WindowMaximised,
 		AppTick, AppUpdate, AppRender,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled

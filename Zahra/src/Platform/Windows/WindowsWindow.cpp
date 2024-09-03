@@ -133,6 +133,7 @@ namespace Zahra
 			[](GLFWwindow* window, int iconified)
 			{
 				Win32WindowData& data = *(Win32WindowData*)glfwGetWindowUserPointer(window);
+
 				if (iconified == GLFW_TRUE)
 				{
 					data.RectangleCache = data.Rectangle;
@@ -141,9 +142,8 @@ namespace Zahra
 				else
 					data.State = WindowState::Default;
 
-				// TODO: implement this in ApplicationEvent.h:
-				/*WindowMinimisedEvent event();
-				data.EventCallback(event);*/
+				WindowMinimisedEvent event(iconified);
+				data.EventCallback(event);
 			}
 		);
 
@@ -151,6 +151,7 @@ namespace Zahra
 			[](GLFWwindow* window, int maximised)
 			{
 				Win32WindowData& data = *(Win32WindowData*)glfwGetWindowUserPointer(window);
+
 				if (maximised == GLFW_TRUE)
 				{
 					data.RectangleCache = data.Rectangle;
@@ -159,9 +160,8 @@ namespace Zahra
 				else
 					data.State = WindowState::Default;
 
-				// TODO: implement this in ApplicationEvent.h:
-				/*WindowMaximisedEvent event();
-				data.EventCallback(event);*/
+				WindowMaximisedEvent event(maximised);
+				data.EventCallback(event);
 			}
 		);
 

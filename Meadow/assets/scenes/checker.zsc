@@ -331,6 +331,8 @@ Entities:
       Tint: [0.267780781, 0.492268741, 0.976833999, 1]
       TextureTiling: 1
       Animated: false
+    ScriptComponent:
+      ScriptName: Sandbox.Player
   - Entity: 10573866985179884234
     TagComponent:
       Tag: New Entity

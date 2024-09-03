@@ -345,11 +345,16 @@ namespace Zahra
 		out << YAML::Key << "Scene";
 		out << YAML::Value << sceneName;
 
-		out << YAML::Key << "ActiveCameraGUID";
-		out << YAML::Value << m_Scene->GetActiveCamera().GetGUID();
+		if (Entity activeCamera = m_Scene->GetActiveCamera())
+		{
+			out << YAML::Key << "ActiveCameraGUID";
+			out << YAML::Value << activeCamera.GetGUID();
+		}
 
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
+
+		m_Scene->m_Registry.sort<entt::entity>([](const auto& lhs, const auto& rhs) { return lhs < rhs; });
 		m_Scene->m_Registry.view<entt::entity>().each([&](auto entityHandle)
 			{
 				Entity entity = { entityHandle, m_Scene.get() };

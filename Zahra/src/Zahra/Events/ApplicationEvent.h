@@ -61,6 +61,56 @@ namespace Zahra
 
 	};
 
+	class WindowMinimisedEvent : public Event
+	{
+	public:
+
+		WindowMinimisedEvent(int minimised)
+			: m_Minimised((bool)minimised) {}
+
+		float Minimised() const { return m_Minimised; }
+
+		std::string ToString() const override
+		{
+			std::stringstream stream;
+			stream << "WindowMinimisedEvent: " << (m_Minimised ? "minimised" : "restored");
+			return stream.str();
+		}
+
+		EVENT_CLASS_TYPE(WindowMinimised)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+
+
+	private:
+		bool m_Minimised;
+
+	};
+
+	class WindowMaximisedEvent : public Event
+	{
+	public:
+
+		WindowMaximisedEvent(int maximised)
+			: m_Maximised((bool)maximised) {}
+
+		float Maximised() const { return m_Maximised; }
+
+		std::string ToString() const override
+		{
+			std::stringstream stream;
+			stream << "WindowMaximisedEvent: " << (m_Maximised ? "maximised" : "restored");
+			return stream.str();
+		}
+
+		EVENT_CLASS_TYPE(WindowMaximised)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+
+
+	private:
+		bool m_Maximised;
+
+	};
+
 	class WindowClosedEvent : public Event
 	{
 	public:

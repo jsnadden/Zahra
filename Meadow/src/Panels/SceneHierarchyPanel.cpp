@@ -41,9 +41,14 @@ namespace Zahra
 
 				ImGui::TableNextColumn();
 
-				// TODO: find a way to get a predictable (adjustable?) ordering of the entities
-				// TODO: this top layer of the hierarchy should only include parentless entities
-				m_Context->m_Registry.view<entt::entity>().each([&](auto entityId)
+				// this forces the entities to be displayed in order of their entt::entity handle
+				m_Context->m_Registry.sort<entt::entity>([](const auto& lhs, const auto& rhs) { return lhs < rhs; });
+				
+				// TODO: once we have parent/child relationships, this top
+				// layer of the hierarchy should only include parentless entities
+				auto entityView = m_Context->m_Registry.view<entt::entity>();
+				entityView.use<entt::entity>();
+				entityView.each([&](auto entityId)
 					{
 						Entity entity{ entityId, m_Context.get() };
 
