@@ -19,10 +19,6 @@
 [submodule "Zahra/vendor/ImGuizmo"]
 	path = Zahra/vendor/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
-[submodule "Zahra/vendor/Box2D"]
-	path = Zahra/vendor/Box2D
-	url = https://github.com/TheCherno/box2d.git
-[submodule "zahra/vendor/Box2D"]
-	path = zahra/vendor/Box2D
-	url = https://github.com/TheCherno/box2d.git
-	ignore = dirty
+[submodule "Zahra/vendor/box2d"]
+	path = Zahra/vendor/box2d
+	url = https://github.com/thecherno/box2d
