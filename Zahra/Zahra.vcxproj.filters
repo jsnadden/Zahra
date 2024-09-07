@@ -225,6 +225,9 @@
     <ClInclude Include="src\Zahra\Scripting\ScriptGlue.h">
       <Filter>src\Zahra\Scripting</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Utils\FileIO.h">
+      <Filter>src\Zahra\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Utils\PlatformUtils.h">
       <Filter>src\Zahra\Utils</Filter>
     </ClInclude>
@@ -1485,7 +1488,9 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Utils\FileIO.h" />
+    <ClInclude Include="src\Zahra\Core\Thread.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanRendererAPI.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanContext.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1593,6 +1598,9 @@
     <ClCompile Include="src\Zahra\Scripting\ScriptGlue.cpp">
       <Filter>src\Zahra\Scripting</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Utils\FileIO.cpp">
+      <Filter>src\Zahra\Utils</Filter>
+    </ClCompile>
     <ClCompile Include="src\zpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -1602,6 +1610,9 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Utils\FileIO.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsThread.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanRendererAPI.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp" />
+    <ClCompile Include="src\Zahra\Core\Thread.cpp" />
   </ItemGroup>
 </Project>

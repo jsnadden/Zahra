@@ -48,7 +48,6 @@ namespace Zahra
 
 		operator std::string& () { return Tag; }
 		operator const std::string& () const { return Tag; }
-
 	};
 
 	struct TransformComponent

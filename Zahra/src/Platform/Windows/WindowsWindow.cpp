@@ -15,6 +15,8 @@
 
 #include <fstream>
 
+// TODO: replace glfw with native Win32 API
+
 namespace Zahra
 {
 	static bool s_GLFWInitialised = false;
@@ -58,11 +60,10 @@ namespace Zahra
 
 		if (!s_GLFWInitialised)
 		{
-			Z_CORE_ASSERT(glfwInit(), "GLFW failed to initialise");
+			s_GLFWInitialised = glfwInit();
+			Z_CORE_ASSERT(s_GLFWInitialised, "GLFW failed to initialise");
 
 			glfwSetErrorCallback(GLFWErrorCallback);
-
-			s_GLFWInitialised = true;
 		}
 
 		#pragma endregion

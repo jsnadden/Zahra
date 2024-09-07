@@ -5,7 +5,7 @@
 namespace Zahra
 {
 
-	class OpenGLRendererAPI : public RendererAPI
+	class VulkanRendererAPI : public RendererAPI
 	{
 	public:
 		virtual void Init() override;

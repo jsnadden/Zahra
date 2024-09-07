@@ -35,7 +35,7 @@ namespace Zahra
 		virtual std::pair<uint32_t, uint32_t> GetPosition() const = 0;
 		virtual void Move(uint32_t x, uint32_t y) = 0;
 
-		static enum WindowState { Default=0, Minimised, Maximised };
+		enum WindowState { Default=0, Minimised, Maximised };
 
 		virtual WindowState GetState() const = 0;
 		virtual void SetState(WindowState state) = 0;
