@@ -25,6 +25,7 @@ Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
 {
 	ApplicationSpecification spec;
 	spec.Name = "Sandbox";
+	spec.Version = ApplicationVersion(0,1,0);
 	spec.WorkingDirectory = "..\\Meadow";
 	spec.CommandLineArgs = args;
 

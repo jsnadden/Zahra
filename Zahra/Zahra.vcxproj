@@ -160,7 +160,7 @@
     <ClInclude Include="src\Zahra.h" />
     <ClInclude Include="src\Zahra\Core\Application.h" />
     <ClInclude Include="src\Zahra\Core\Assert.h" />
-    <ClInclude Include="src\Zahra\Core\Base.h" />
+    <ClInclude Include="src\Zahra\Core\Defines.h" />
     <ClInclude Include="src\Zahra\Core\EntryPoint.h" />
     <ClInclude Include="src\Zahra\Core\GUID.h" />
     <ClInclude Include="src\Zahra\Core\Input.h" />
@@ -170,6 +170,8 @@
     <ClInclude Include="src\Zahra\Core\Log.h" />
     <ClInclude Include="src\Zahra\Core\MouseCodes.h" />
     <ClInclude Include="src\Zahra\Core\PlatformDetection.h" />
+    <ClInclude Include="src\Zahra\Core\Ref.h" />
+    <ClInclude Include="src\Zahra\Core\Scope.h" />
     <ClInclude Include="src\Zahra\Core\Thread.h" />
     <ClInclude Include="src\Zahra\Core\Timer.h" />
     <ClInclude Include="src\Zahra\Core\Window.h" />

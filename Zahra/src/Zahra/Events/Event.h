@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Core/Base.h"
+#include "Zahra/Core/Defines.h"
 #include "zpch.h"
 
 namespace Zahra

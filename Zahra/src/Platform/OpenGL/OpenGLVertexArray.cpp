@@ -32,36 +32,26 @@ namespace Zahra
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
-		Z_PROFILE_FUNCTION();
-
 		glCreateVertexArrays(1, &m_RendererID);
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		Z_PROFILE_FUNCTION();
-
 		glDeleteVertexArrays(1, &m_RendererID);
 	}
 
 	void OpenGLVertexArray::Bind() const
 	{
-		Z_PROFILE_FUNCTION();
-
 		glBindVertexArray(m_RendererID);
 	}
 
 	void OpenGLVertexArray::Unbind() const
 	{
-		Z_PROFILE_FUNCTION();
-
 		glBindVertexArray(NULL);
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
-		Z_PROFILE_FUNCTION();
-
 		Z_CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "VertexBuffer has no layout")
 
 		glBindVertexArray(m_RendererID);
@@ -142,8 +132,6 @@ namespace Zahra
 
 	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
-		Z_PROFILE_FUNCTION();
-
 		glBindVertexArray(m_RendererID);
 		indexBuffer->Bind();
 		m_IndexBuffer = indexBuffer;

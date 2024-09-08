@@ -27,8 +27,6 @@ namespace Zahra
 
 	Scope<Window> Window::Create(const WindowProperties& props)
 	{
-		Z_PROFILE_FUNCTION();
-
 		return CreateScope<WindowsWindow>(props);
 	}
 
@@ -51,7 +49,6 @@ namespace Zahra
 		m_WindowData.Rectangle.Width = props.Width;
 		m_WindowData.Rectangle.Height = props.Height;
 		m_WindowData.RectangleCache = m_WindowData.Rectangle;
-		Z_CORE_INFO("Creating window {0} ({1}x{2})", props.Title, props.Width, props.Height);
 
 		#pragma endregion
 
@@ -87,6 +84,9 @@ namespace Zahra
 			case RendererAPI::API::Vulkan:
 			{
 				glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+				// TODO: temporary
+				glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 				break;
 			}
 			default: break;
@@ -101,8 +101,9 @@ namespace Zahra
 		//glfwWindowHint(GLFW_TITLEBAR, false);		
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_WindowData.Title.c_str(), nullptr, nullptr);
+		Z_CORE_INFO("Window successfully created: {0}", props.Title);
+		
 		glfwSetWindowPos(m_Window, m_WindowData.Rectangle.XPosition, m_WindowData.Rectangle.YPosition);
-
 		glfwSetWindowUserPointer(m_Window, &m_WindowData);
 
 		#pragma endregion
@@ -280,20 +281,19 @@ namespace Zahra
 		);
 
 		#pragma endregion
-	
+
 }
 
 	void WindowsWindow::Shutdown()
 	{
+		m_Context->Shutdown();
 		glfwDestroyWindow(m_Window);
-
+		glfwTerminate();
 		CoUninitialize(); // Shutdown Windows COM library
 	}
 
 	void WindowsWindow::OnUpdate()
 	{
-		Z_PROFILE_FUNCTION();
-
 		glfwPollEvents();
 
 		m_Context->SwapBuffers();

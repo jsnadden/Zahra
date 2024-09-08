@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Zahra/Core/Scope.h"
+
 #include <chrono>
 #include <fstream>
 #include <string>

@@ -12,6 +12,7 @@ namespace Zahra
 		OpenGLContext(GLFWwindow* handle);
 
 		virtual void Init() override;
+		virtual void Shutdown() override {};
 		virtual void SwapBuffers() override;
 
 	private:

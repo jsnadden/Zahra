@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Core/Base.h"
+#include "Zahra/Core/Defines.h"
 #include "Zahra/Core/Log.h"
 
 #include <filesystem>

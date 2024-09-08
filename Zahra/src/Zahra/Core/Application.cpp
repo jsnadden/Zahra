@@ -15,7 +15,7 @@ namespace Zahra
 	{
 		Z_CORE_ASSERT(!specification.WorkingDirectory.empty(), "Must specify a working directory")
 		std::filesystem::current_path(specification.WorkingDirectory);
-		Z_CORE_INFO("Current working directory {0}", std::filesystem::current_path().string());
+		Z_CORE_INFO("Current working directory: {0}", std::filesystem::current_path().string());
 
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
@@ -25,8 +25,9 @@ namespace Zahra
 		m_Window->ReadConfig();
 
 		// Initialise subsystems
-		// TODO: Renderer::Init();
-		/*ScriptEngine::Init();*/
+		// TODO: ressurect
+		/*Renderer::Init();
+		ScriptEngine::Init();*/
 
 		m_ImGuiLayer = ImGuiLayer::Create();
 		PushOverlay(m_ImGuiLayer);
@@ -35,7 +36,8 @@ namespace Zahra
 	
 	Application::~Application()
 	{
-	/*	ScriptEngine::Shutdown();
+		// TODO: ressurect
+		/*ScriptEngine::Shutdown();
 		Renderer::Shutdown();*/
 	}
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Core/Base.h"
+#include "Zahra/Core/Defines.h"
 
 #pragma warning(push, 0)
 	#include <spdlog/spdlog.h>

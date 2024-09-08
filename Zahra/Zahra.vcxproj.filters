@@ -123,9 +123,6 @@
     <ClInclude Include="src\Zahra\Core\Assert.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Core\Base.h">
-      <Filter>src\Zahra\Core</Filter>
-    </ClInclude>
     <ClInclude Include="src\Zahra\Core\EntryPoint.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
@@ -1506,6 +1503,9 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Defines.h" />
+    <ClInclude Include="src\Zahra\Core\Scope.h" />
+    <ClInclude Include="src\Zahra\Core\Ref.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">

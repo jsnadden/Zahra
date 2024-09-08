@@ -4,13 +4,15 @@
 
 //------------CORE---------------------
 #include "Zahra/Core/Application.h"
-#include "Zahra/Core/Layer.h"
-#include "Zahra/Core/Log.h"
-#include "Zahra/Core/Input.h"
-#include "Zahra/Core/KeyCodes.h"
-#include "Zahra/Core/MouseCodes.h"
 #include "Zahra/Core/Assert.h"
 #include "Zahra/Core/GUID.h"
+#include "Zahra/Core/Input.h"
+#include "Zahra/Core/Layer.h"
+#include "Zahra/Core/KeyCodes.h"
+#include "Zahra/Core/Log.h"
+#include "Zahra/Core/MouseCodes.h"
+#include "Zahra/Core/Ref.h"
+#include "Zahra/Core/Scope.h"
 
 //------------DEBUG--------------------
 #include "Zahra/Debug/Profiling.h"

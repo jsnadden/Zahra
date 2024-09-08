@@ -252,8 +252,6 @@ namespace Zahra
 
 	void Renderer::EndScene()
 	{
-		Z_PROFILE_FUNCTION();
-
 		SubmitBatch();
 	}
 

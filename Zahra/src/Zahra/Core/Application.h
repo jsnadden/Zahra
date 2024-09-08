@@ -1,20 +1,11 @@
 #pragma once
 
-#include "Zahra/Core/Base.h"
+#include "Zahra/Core/Defines.h"
 #include "Zahra/Core/LayerStack.h"
 #include "Zahra/Core/Window.h"
 #include "Zahra/Events/Event.h"
 #include "Zahra/Events/ApplicationEvent.h"
 #include "Zahra/ImGui/ImGuiLayer.h"
-
-
-///////////////////////////////////////////////////
-// TODO: We're using a GLFW include to compute
-// timesteps for now, but those calculations
-// should eventually become platform-independent
-#include <../vendor/GLFW/include/GLFW/glfw3.h>
-///////////////////////////////////////////////////
-
 
 namespace Zahra
 {
@@ -30,9 +21,21 @@ namespace Zahra
 		}
 	};
 
+	struct ApplicationVersion
+	{
+		uint16_t Major = 0;
+		uint16_t Minor = 0;
+		uint16_t Patch = 0;
+
+		ApplicationVersion() = default;
+		ApplicationVersion(int major, int minor, int patch)
+			: Major(major), Minor(minor), Patch(patch) {}
+	};
+
 	struct ApplicationSpecification
 	{
 		std::string Name = "Zahra_App";
+		ApplicationVersion Version;
 		std::filesystem::path WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
 	};

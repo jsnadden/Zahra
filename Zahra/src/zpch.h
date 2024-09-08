@@ -16,8 +16,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Zahra/Core/Assert.h"
 #include "Zahra/Core/Log.h"
 #include "Zahra/Debug/Profiling.h"
+#include "Zahra/Core/Ref.h"
+#include "Zahra/Core/Scope.h"
 
 
 #ifdef Z_PLATFORM_WINDOWS

@@ -72,8 +72,7 @@ namespace Zahra
 
 	void VulkanImGuiLayer::Begin()
 	{
-		Z_PROFILE_FUNCTION();
-
+		// TODO: ressurect
 		/*ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -82,8 +81,6 @@ namespace Zahra
 
 	void VulkanImGuiLayer::End()
 	{
-		Z_PROFILE_FUNCTION();
-
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();
 		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());

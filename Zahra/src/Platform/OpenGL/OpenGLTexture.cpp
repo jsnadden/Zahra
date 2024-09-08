@@ -60,8 +60,6 @@ namespace Zahra
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 		: m_Width(width), m_Height(height)
 	{
-		Z_PROFILE_FUNCTION();
-
 		//TODO: make this stuff configurable
 
 		m_InternalFormat = GL_RGBA8;
@@ -89,8 +87,6 @@ namespace Zahra
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
-		Z_PROFILE_FUNCTION();
-
 		uint32_t bpp = (m_DataFormat == GL_RGBA ? 4 : 3); // TODO: generalise this if we use formats other than rgb/rgba
 		Z_CORE_ASSERT(size == m_Width * m_Height * bpp, "Incomplete texture data.")
 
@@ -99,8 +95,6 @@ namespace Zahra
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
-		Z_PROFILE_FUNCTION();
-
 		glBindTextureUnit(slot, m_RendererID);
 	}
 

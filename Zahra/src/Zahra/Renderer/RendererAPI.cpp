@@ -5,5 +5,6 @@ namespace Zahra
 {
 	// TODO: make this configurable externally (e.g. ApplicationSpecifications?)
 	RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
+	//RendererAPI::API RendererAPI::s_API = RendererAPI::API::OpenGL;
 
 }

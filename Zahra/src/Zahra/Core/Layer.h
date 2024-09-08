@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Core/Base.h"
+#include "Zahra/Core/Defines.h"
 #include "Zahra/Events/Event.h"
 //#include "Zahra/Core/Timestep.h"
 

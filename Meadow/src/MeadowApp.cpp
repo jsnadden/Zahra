@@ -27,6 +27,7 @@ namespace Zahra
 	{
 		ApplicationSpecification spec;
 		spec.Name = "Meadow";
+		spec.Version = ApplicationVersion(0, 1, 0);
 		spec.WorkingDirectory = ".";
 		spec.CommandLineArgs = args;
 

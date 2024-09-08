@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Core/Base.h"
+#include "Zahra/Core/Defines.h"
 #include "Zahra/Core/KeyCodes.h"
 #include "Zahra/Core/MouseCodes.h"
 
