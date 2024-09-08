@@ -2,10 +2,11 @@
 #include "RenderCommand.h"
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
+#include "Platform/Vulkan/VulkanRendererAPI.h"
 
 namespace Zahra
 {
-	// hard coding opengl, until we implement other apis
-	Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<OpenGLRendererAPI>();
+	// TODO: make this configurable externally (e.g. ApplicationSpecifications?)
+	Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<VulkanRendererAPI>();
 
 }

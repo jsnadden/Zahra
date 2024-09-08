@@ -16,7 +16,13 @@ int main(int argc, char** argv)
 	Z_PROFILE_END_SESSION();
 
 	Z_PROFILE_BEGIN_SESSION("Runtime", "C:/dev/Zahra/profiling/Zahra_profile_runtime.json");
-	app->Run();
+	try {
+		app->Run();
+	}
+	catch (const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
 	Z_PROFILE_END_SESSION();
 
 	Z_PROFILE_BEGIN_SESSION("Shutdown", "C:/dev/Zahra/profiling/Zahra_profile_shutdown.json");

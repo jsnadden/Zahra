@@ -7,9 +7,6 @@
 	#include <spdlog/fmt/ostr.h>
 #pragma warning(pop)
 
-#ifndef GLM_ENABLE_EXPERIMENTAL
-	#define GLM_ENABLE_EXPERIMENTAL
-#endif
 #include <glm/gtx/string_cast.hpp>
 
 namespace Zahra

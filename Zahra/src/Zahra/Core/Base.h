@@ -5,6 +5,17 @@
 #include <memory>
 
 
+#ifndef GLM_ENABLE_EXPERIMENTAL
+	#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#ifndef GLM_FORCE_RADIANS
+	#define GLM_FORCE_RADIANS
+#endif
+#ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
+	#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#endif
+
+
 #ifdef Z_DEBUG
 	#ifdef Z_PLATFORM_WINDOWS
 		#define Z_DEBUGBREAK() __debugbreak()
@@ -20,10 +31,13 @@
 	#define Z_DEBUGBREAK()
 #endif
 
+
 #define Z_EXPAND_MACRO(x) x
 #define Z_STRINGIFY_MACRO(x) #x
 
+
 #define BIT(x) (1 << x)
+
 
 #define Z_BIND_EVENT_FN(f) [this](auto&&... args)->decltype(auto) { return this->f(std::forward<decltype(args)>(args)...); }
 

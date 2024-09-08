@@ -7,15 +7,15 @@
 
 namespace Zahra
 {
-	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
-		: m_windowHandle(windowHandle)
+	OpenGLContext::OpenGLContext(GLFWwindow* handle)
+		: m_WindowHandle(handle)
 	{
-		Z_CORE_ASSERT(windowHandle, "Window handle is NULL")
+		Z_CORE_ASSERT(handle, "Window handle is NULL")
 	}
 
 	void OpenGLContext::Init()
 	{
-		glfwMakeContextCurrent(m_windowHandle);
+		glfwMakeContextCurrent(m_WindowHandle);
 
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		Z_CORE_ASSERT(status, "Failed to initialise Glad");
@@ -36,6 +36,6 @@ namespace Zahra
 
 	void OpenGLContext::SwapBuffers()
 	{
-		glfwSwapBuffers(m_windowHandle);
+		glfwSwapBuffers(m_WindowHandle);
 	}
 }

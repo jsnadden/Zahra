@@ -43,6 +43,7 @@ namespace Zahra
 		virtual bool IsFullscreen() const = 0;
 		virtual void SetFullscreen(bool enabled) = 0;
 
+		// TODO: vsync property might better belong in GraphicsContext or elsewhere in the renderer stuff?
 		virtual bool IsVSync() const = 0;
 		virtual void SetVSync(bool enabled) = 0;
 

@@ -3,7 +3,7 @@
 
 namespace Zahra
 {
-	// hard coding opengl, until we implement other apis
-	RendererAPI::API RendererAPI::s_API = RendererAPI::API::OpenGL;
+	// TODO: make this configurable externally (e.g. ApplicationSpecifications?)
+	RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
 
 }

@@ -25,18 +25,18 @@ namespace Zahra
 		m_Window->ReadConfig();
 
 		// Initialise subsystems
-		Renderer::Init();
-		ScriptEngine::Init();
+		// TODO: Renderer::Init();
+		/*ScriptEngine::Init();*/
 
-		m_ImGuiLayer = new ImGuiLayer;
+		m_ImGuiLayer = ImGuiLayer::Create();
 		PushOverlay(m_ImGuiLayer);
 
 	}
 	
 	Application::~Application()
 	{
-		ScriptEngine::Shutdown();
-		Renderer::Shutdown();
+	/*	ScriptEngine::Shutdown();
+		Renderer::Shutdown();*/
 	}
 
 	void Application::Run()

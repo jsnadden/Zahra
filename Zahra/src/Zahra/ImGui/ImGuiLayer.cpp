@@ -1,115 +1,27 @@
 #include "zpch.h"
 #include "ImGuiLayer.h"
 
-#include "Zahra/Core/Application.h"
+#include "Platform/OpenGL/OpenGLImGuiLayer.h"
+#include "Platform/Vulkan/VulkanImGuiLayer.h"
+#include "Zahra/Renderer/Renderer.h"
 
 #include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
-
-#include <ImGuizmo.h>
-
-// SHOULD EVENTUALLY REMOVE
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
 
 namespace Zahra
 {
-	ImGuiLayer::ImGuiLayer() : Layer("ImGui_Layer")
-	{}
 
-	ImGuiLayer::~ImGuiLayer()
-	{}
-
-	void ImGuiLayer::OnAttach()
+	ImGuiLayer* ImGuiLayer::Create()
 	{
-		// Setup Dear ImGui context
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
-		// TODO: write a font library so that I don't have to rely on imgui's internal font vector
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Inter\\Inter-Regular.ttf", 18.0f); // font 0
-		io.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Inter\\Inter-Bold.ttf", 18.0f); // font 1
-
-		ImGui::StyleColorsDark();
-
-		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-		ImGuiStyle& style = ImGui::GetStyle();
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		switch (Renderer::GetAPI())
 		{
-			style.WindowRounding = 0.0f;
-			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
+		case RendererAPI::API::OpenGL:    return new OpenGLImGuiLayer("OpenGL_ImGui_Layer");
+		case RendererAPI::API::Vulkan:    return new VulkanImGuiLayer("Vulkan_ImGui_Layer");
 		}
-
-		SetColourTheme();
-
-		Application& app = Application::Get();
-
-		/////////////////////////////////////////////
-		// TODO: VULKANISE!
-		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
-		/////////////////////////////////////////////
+		Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
+		return nullptr;
 	}
 
-	void ImGuiLayer::OnDetach()
-	{
-		Z_PROFILE_FUNCTION();
-
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
-	}
-
-	void ImGuiLayer::OnEvent(Event& e)
-	{
-		if (m_BlockEvents)
-		{
-			ImGuiIO& io = ImGui::GetIO();
-			e.Handled |= e.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse;
-			e.Handled |= e.IsInCategory(EventCategoryKeyboard) && io.WantCaptureKeyboard;
-		}
-	}
-
-	void ImGuiLayer::Begin()
-	{
-		Z_PROFILE_FUNCTION();
-
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		ImGuizmo::BeginFrame();
-	}
-
-	void ImGuiLayer::End()
-	{
-		Z_PROFILE_FUNCTION();
-
-		ImGuiIO& io = ImGui::GetIO();
-		Application& app = Application::Get();
-		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
-
-		// Rendering
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
-		}
-
-
-	}
-
-	// TODO: it would be nice to read/write colour themes (yaml, json, or even just ini),
-	// and especially nice to design a menu popup for this!
 	void ImGuiLayer::SetColourTheme()
 	{
 		// TODO: customise this default scheme, and figure out what the rest of the options are in ImGuiCol_
@@ -189,6 +101,5 @@ namespace Zahra
 		colours[ImGuiCol_TableRowBgAlt]		= ImVec4{ 0.2f, 0.2f, 0.2f, 1.0f }; // Table row background (odd rows)
 
 	}
-
 
 }

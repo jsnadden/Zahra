@@ -55,7 +55,8 @@ project "Zahra"
 		"ImGui",
 		"yaml-cpp",
 		"opengl32.lib",
-		"%{Library.mono}"
+		"%{Library.mono}",
+		"%{Library.Vulkan}"
 	}
 
 	filter "files:vendor/ImGuizmo/**.cpp"

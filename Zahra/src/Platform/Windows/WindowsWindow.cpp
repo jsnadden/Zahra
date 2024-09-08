@@ -8,14 +8,13 @@
 #include "Zahra/Events/KeyEvent.h"
 #include "Zahra/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLContext.h"
+#include "Platform/Vulkan/VulkanContext.h"
 
 #include <shobjidl.h>
 #define YAML_CPP_STATIC_DEFINE
 #include <yaml-cpp/yaml.h>
 
 #include <fstream>
-
-// TODO: replace glfw with native Win32 API
 
 namespace Zahra
 {
@@ -78,11 +77,22 @@ namespace Zahra
 		#pragma region Initialise renderer API debugging
 		#if defined(Z_DEBUG)
 
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL) glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-		// TODO: if (Renderer::GetAPI() == RendererAPI::API::Direct3D) DO SOMETHING;
-		// TODO: if (Renderer::GetAPI() == RendererAPI::API::Vulkan) DO SOMETHING;
+		switch (Renderer::GetAPI())
+		{
+			case RendererAPI::API::OpenGL:
+			{
+				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+				break;
+			}
+			case RendererAPI::API::Vulkan:
+			{
+				glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+				break;
+			}
+			default: break;
+		}
 
-		#endif		
+		#endif
 		#pragma endregion
 
 		#pragma region Construct window based on WindowData
@@ -99,7 +109,15 @@ namespace Zahra
 
 		#pragma region Initialise renderer context
 
-		m_Context = CreateScope<OpenGLContext>(m_Window);
+		RendererAPI::API api = Renderer::GetAPI();
+		switch (api)
+		{
+			case RendererAPI::API::OpenGL: m_Context = CreateScope<OpenGLContext>(m_Window); break;
+			case RendererAPI::API::Vulkan: m_Context = CreateScope<VulkanContext>(m_Window); break;
+			default: break;
+		}
+		Z_CORE_ASSERT(m_Context, "Failed to set window context: unsupported graphics API");
+
 		m_Context->Init();
 
 		#pragma endregion
@@ -364,14 +382,14 @@ namespace Zahra
 	void WindowsWindow::SetVSync(bool enabled)
 	{
 		// TODO: make this actually work...
-		if (enabled)
+		/*if (enabled)
 		{
 			glfwSwapInterval(1);
 		}
 		else
 		{
 			glfwSwapInterval(0);
-		}
+		}*/
 
 		m_WindowData.VSync = enabled;
 	}	

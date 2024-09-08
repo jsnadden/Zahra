@@ -21,7 +21,7 @@ void Sandbox2DLayer::OnDetach()
 
 void Sandbox2DLayer::OnUpdate(float dt)
 {
-	Zahra::RenderCommand::SetClearColour(glm::vec4(.0f));
+	Zahra::RenderCommand::SetClearColour(glm::vec4(.1f));
 	Zahra::RenderCommand::Clear();
 
 }
@@ -34,9 +34,6 @@ void Sandbox2DLayer::OnEvent(Zahra::Event& event)
 
 void Sandbox2DLayer::OnImGuiRender()
 {
-	ImGui::Begin("Settings");
-
-	ImGui::End();
 }
 
 bool Sandbox2DLayer::OnKeyPressedEvent(Zahra::KeyPressedEvent& event)

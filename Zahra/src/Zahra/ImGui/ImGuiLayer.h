@@ -10,21 +10,16 @@ namespace Zahra
 	class ImGuiLayer : public Layer
 	{
 	public:
-		ImGuiLayer();
-		~ImGuiLayer();
-
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
-		virtual void OnEvent(Event& e) override;
-
-		void Begin();
-		void End();
+		virtual void Begin() = 0;
+		virtual void End() = 0;
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
-		void SetColourTheme();
+		void SetColourTheme(); // TODO: make a "theme" struct and pass one in here. Also save the theme to a .yml?
 
-	private:
+		static ImGuiLayer* Create();
+
+	protected:
 		bool m_BlockEvents = true;
 
 	};

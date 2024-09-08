@@ -9,13 +9,13 @@ namespace Zahra
 	class OpenGLContext : public GraphicsContext
 	{
 	public:
-		OpenGLContext(GLFWwindow* windowHandle);
+		OpenGLContext(GLFWwindow* handle);
 
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
 
 	private:
-		GLFWwindow* m_windowHandle;
+		GLFWwindow* m_WindowHandle;
 
 	};
 }
