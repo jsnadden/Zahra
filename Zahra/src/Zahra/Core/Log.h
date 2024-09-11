@@ -18,11 +18,13 @@ namespace Zahra
 		static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
 		static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
 		static std::shared_ptr<spdlog::logger>& GetScriptLogger() { return s_ScriptLogger; }
+		static std::shared_ptr<spdlog::logger>& GetVulkanLogger() { return s_VulkanLogger; }
 
 	private:
 		static std::shared_ptr<spdlog::logger> s_CoreLogger;
 		static std::shared_ptr<spdlog::logger> s_ClientLogger;
 		static std::shared_ptr<spdlog::logger> s_ScriptLogger;
+		static std::shared_ptr<spdlog::logger> s_VulkanLogger;
 
 	};
 
@@ -66,3 +68,8 @@ inline OStream& operator<<(OStream& stream, const glm::qua<T, Q>& quaternion)
 #define Z_SCRIPT_WARN(...) ::Zahra::Log::GetScriptLogger()->warn(__VA_ARGS__)
 #define Z_SCRIPT_ERROR(...) ::Zahra::Log::GetScriptLogger()->error(__VA_ARGS__)
 #define Z_SCRIPT_CRITICAL(...) ::Zahra::Log::GetScriptLogger()->critical(__VA_ARGS__)
+
+// Vulkan logging macros
+#define Z_VULKAN_INFO(...)		::Zahra::Log::GetVulkanLogger()->info(__VA_ARGS__)
+#define Z_VULKAN_WARN(...)		::Zahra::Log::GetVulkanLogger()->warn(__VA_ARGS__)
+#define Z_VULKAN_ERROR(...)		::Zahra::Log::GetVulkanLogger()->error(__VA_ARGS__)

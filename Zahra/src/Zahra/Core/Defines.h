@@ -7,29 +7,29 @@
 
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
+	#define GLM_ENABLE_EXPERIMENTAL
 #endif
 #ifndef GLM_FORCE_RADIANS
-#define GLM_FORCE_RADIANS
+	#define GLM_FORCE_RADIANS
 #endif
 #ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+	#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #endif
 
 
 #ifdef Z_DEBUG
-#ifdef Z_PLATFORM_WINDOWS
-#define Z_DEBUGBREAK() __debugbreak()
-#elif defined(Z_PLATFORM_LINUX)
-#include <signal.h>
-#define Z_DEBUGBREAK() raise(SIGTRAP)
-#else
-#error "Platform doesn't support debugbreak yet!"
-#endif
+	#ifdef Z_PLATFORM_WINDOWS
+		#define Z_DEBUGBREAK() __debugbreak()
+	#elif defined(Z_PLATFORM_LINUX)
+		#include <signal.h>
+		#define Z_DEBUGBREAK() raise(SIGTRAP)
+	#else
+		#error "Platform doesn't support debugbreak yet!"
+	#endif
 
-#define Z_ENABLE_ASSERTS
+	#define Z_ENABLE_ASSERTS
 #else
-#define Z_DEBUGBREAK()
+	#define Z_DEBUGBREAK()
 #endif
 
 

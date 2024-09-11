@@ -66,6 +66,8 @@ namespace Zahra
 			// Poll events and swap buffers
 			m_Window->OnUpdate();
 		}
+
+		Z_CORE_INFO("Exited run loop");
 	}
 
 	void Application::OnEvent(Event& e)

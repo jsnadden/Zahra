@@ -11,6 +11,7 @@ namespace Zahra
 	std::shared_ptr<spdlog::logger> Log::s_CoreLogger;
 	std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
 	std::shared_ptr<spdlog::logger> Log::s_ScriptLogger;
+	std::shared_ptr<spdlog::logger> Log::s_VulkanLogger;
 
 
 	void Log::Init()
@@ -18,7 +19,6 @@ namespace Zahra
 		std::vector<spdlog::sink_ptr> logSinks;
 		logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 		logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Zahra.log", true));
-
 		logSinks[0]->set_pattern("%^[%T] %n: %v%$");
 		logSinks[1]->set_pattern("[%T] [%l] %n: %v");
 
@@ -36,6 +36,17 @@ namespace Zahra
 		spdlog::register_logger(s_ScriptLogger);
 		s_ScriptLogger->set_level(spdlog::level::trace);
 		s_ScriptLogger->flush_on(spdlog::level::trace);
+
+		std::vector<spdlog::sink_ptr> vkLogSinks;
+		vkLogSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+		vkLogSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Vulkan.log", true));
+		vkLogSinks[0]->set_pattern("%^[%T] %n: %v%$");
+		vkLogSinks[1]->set_pattern("[%T] [%l] %n: %v");
+
+		s_VulkanLogger = std::make_shared<spdlog::logger>("VULKAN", begin(vkLogSinks), end(vkLogSinks));
+		spdlog::register_logger(s_VulkanLogger);
+		s_VulkanLogger->set_level(spdlog::level::info);
+		s_VulkanLogger->flush_on(spdlog::level::info);
 
 	}
 }
