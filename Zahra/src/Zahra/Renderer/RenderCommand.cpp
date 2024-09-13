@@ -6,8 +6,7 @@
 
 namespace Zahra
 {
-	// TODO: make this configurable externally (e.g. ApplicationSpecifications?)
+	#if defined(Z_RENDERERAPI_VULKAN)
 	Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<VulkanRendererAPI>();
-	//Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<OpenGLRendererAPI>();
-
+	#endif
 }

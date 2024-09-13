@@ -76,7 +76,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>zpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_RENDERERAPI_VULKAN;Z_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Box2D\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;C:\VulkanSDK\1.3.224.1\Include;vendor\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -98,7 +98,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>zpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_RENDERERAPI_VULKAN;Z_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Box2D\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;C:\VulkanSDK\1.3.224.1\Include;vendor\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -123,7 +123,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>zpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_RENDERERAPI_VULKAN;Z_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Box2D\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;C:\VulkanSDK\1.3.224.1\Include;vendor\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -154,10 +154,13 @@
     <ClInclude Include="src\Platform\OpenGL\OpenGLUniformBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanImGuiLayer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererAPI.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanSwapchain.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Zahra.h" />
+    <ClInclude Include="src\Zahra\Core\AppRequirements.h" />
     <ClInclude Include="src\Zahra\Core\Application.h" />
     <ClInclude Include="src\Zahra\Core\Assert.h" />
     <ClInclude Include="src\Zahra\Core\Defines.h" />

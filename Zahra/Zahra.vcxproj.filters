@@ -105,6 +105,9 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanImGuiLayer.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
@@ -117,10 +120,16 @@
     <ClInclude Include="src\Zahra.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Core\AppRequirements.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Core\Application.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Assert.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Defines.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\EntryPoint.h">
@@ -148,6 +157,12 @@
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\PlatformDetection.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Ref.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Scope.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Thread.h">
@@ -1503,9 +1518,7 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Core\Defines.h" />
-    <ClInclude Include="src\Zahra\Core\Scope.h" />
-    <ClInclude Include="src\Zahra\Core\Ref.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanSwapchain.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">

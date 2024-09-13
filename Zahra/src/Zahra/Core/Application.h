@@ -6,6 +6,7 @@
 #include "Zahra/Events/Event.h"
 #include "Zahra/Events/ApplicationEvent.h"
 #include "Zahra/ImGui/ImGuiLayer.h"
+#include "Zahra/Core/AppRequirements.h"
 
 namespace Zahra
 {
@@ -38,6 +39,7 @@ namespace Zahra
 		ApplicationVersion Version;
 		std::filesystem::path WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
+		GPURequirements MinGPURequirements;
 	};
 
 	class Application

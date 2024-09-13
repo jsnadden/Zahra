@@ -9,21 +9,21 @@ namespace Zahra
 {
 	bool Input::IsKeyPressed(KeyCode keycode)
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetWindowHandle());
 		auto state = glfwGetKey(window, static_cast<int32_t>(keycode));
 		return state == GLFW_PRESS;
 	}
 
 	bool Input::IsMouseButtonPressed(MouseCode button)
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetWindowHandle());
 		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
 		return state == GLFW_PRESS;
 	}
 
 	std::pair<float, float> Input::GetMousePos()
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetWindowHandle());
 		double x, y;
 		glfwGetCursorPos(window, &x, &y);
 		return std::make_pair((float)x,(float)y);

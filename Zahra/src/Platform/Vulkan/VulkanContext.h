@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Zahra/Renderer/GraphicsContext.h"
+#include "Platform/Vulkan/VulkanDevice.h"
 
 #include <vulkan/vulkan.h>
 
@@ -52,26 +53,35 @@ namespace Zahra
 
 	private:
 		
+		GLFWwindow* m_WindowHandle;
+
 		VkInstance m_VulkanInstance = VK_NULL_HANDLE;
+		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
+		VulkanDevice m_Device;
 		VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
-		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 
 		void CreateInstance();
 		void GetGLFWExtensions(std::vector<const char*>& extensions);
-		void CheckExtensionSupport(const std::vector<const char*>& extensions);
-		void CheckValidationLayerSupport(const std::vector<const char*>& validationLayers);
+		bool CheckInstanceExtensionSupport(const std::vector<const char*>& extensions);
+		bool CheckValidationLayerSupport(const std::vector<const char*>& validationLayers);
 
 		void CreateDebugMessenger();
 		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 
-		void ChoosePhysicalDevice();
-		uint32_t ScorePhysicalDevice(VkPhysicalDeviceProperties properties, VkPhysicalDeviceFeatures features, VkPhysicalDeviceMemoryProperties memory);
+		void CreateSurface();
+
+		void CreateDevice();
+		void TargetPhysicalDevice();
+		bool MeetsMinimimumRequirements(const VkPhysicalDevice& device);
+		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions);
+		void IdentifyQueueFamilies(const VkPhysicalDevice& device, QueueFamilyIndices& indices);
+
 
 		#if Z_DEBUG
 		bool m_ValidationLayersEnabled = true;
 		#else
 		bool m_ValidationLayersEnabled = false;
-		#endif		
+		#endif
 
 	};
 }

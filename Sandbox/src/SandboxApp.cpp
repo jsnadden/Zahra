@@ -29,5 +29,7 @@ Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
 	spec.WorkingDirectory = ".";
 	spec.CommandLineArgs = args;
 
+	spec.MinGPURequirements.IsDiscreteGPU = true;
+
 	return new Sandbox(spec);
 }

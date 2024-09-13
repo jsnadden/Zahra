@@ -64,6 +64,7 @@ project "Zahra"
 
 	filter "system:windows"
 		systemversion "latest"
+		defines "Z_RENDERERAPI_VULKAN"
 
 		links
 		{

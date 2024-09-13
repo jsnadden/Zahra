@@ -16,9 +16,15 @@ namespace Zahra
 
 	void Log::Init()
 	{
+		std::filesystem::path logDirectory = "./Logs";
+		if (!std::filesystem::exists(logDirectory)) std::filesystem::create_directories(logDirectory);
+
+		std::filesystem::path logFile = logDirectory / "Zahra.log";
+		std::filesystem::path vkLogFile = logDirectory / "Vulkan.log";
+
 		std::vector<spdlog::sink_ptr> logSinks;
 		logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-		logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Zahra.log", true));
+		logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.string(), true));
 		logSinks[0]->set_pattern("%^[%T] %n: %v%$");
 		logSinks[1]->set_pattern("[%T] [%l] %n: %v");
 
@@ -39,7 +45,7 @@ namespace Zahra
 
 		std::vector<spdlog::sink_ptr> vkLogSinks;
 		vkLogSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-		vkLogSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Vulkan.log", true));
+		vkLogSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(vkLogFile.string(), true));
 		vkLogSinks[0]->set_pattern("%^[%T] %n: %v%$");
 		vkLogSinks[1]->set_pattern("[%T] [%l] %n: %v");
 

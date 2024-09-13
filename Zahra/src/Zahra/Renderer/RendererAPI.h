@@ -14,7 +14,7 @@ namespace Zahra
 
 		enum class API
 		{
-			None = 0, OpenGL = 1, Direct3D = 2, Vulkan = 3
+			None = 0, OpenGL = 1, DX12 = 2, Vulkan = 3
 		};
 
 		virtual void Init() = 0;

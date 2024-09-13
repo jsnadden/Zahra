@@ -30,6 +30,8 @@ namespace Zahra
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+		io.IniFilename = "./Config/imgui.ini";
+
 		// TODO: write a font library so that I don't have to rely on imgui's internal font vector
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("..\\Meadow\\Resources\\Fonts\\Inter\\Inter-Regular.ttf", 18.0f); // font 0
 		io.Fonts->AddFontFromFileTTF("..\\Meadow\\Resources\\Fonts\\Inter\\Inter-Bold.ttf", 18.0f); // font 1
@@ -48,7 +50,7 @@ namespace Zahra
 
 		//Application& app = Application::Get();
 
-		//GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+		//GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetWindowHandle());
 		//ImGui_ImplGlfw_InitForVulkan(window, true);
 		//ImGui_ImplVulkan_Init();
 	}

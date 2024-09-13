@@ -37,7 +37,7 @@ namespace Zahra
 		virtual void WriteConfig() override;
 		virtual void ReadConfig() override;
 
-		inline virtual void* GetNativeWindow() const override { return m_Window; };
+		inline virtual void* GetWindowHandle() const override { return m_Window; };
 
 	private:
 
