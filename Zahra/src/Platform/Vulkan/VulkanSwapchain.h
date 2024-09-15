@@ -1,14 +1,19 @@
 #pragma once
 
-#include <vector>
 #include <vulkan/vulkan.h>
 
 namespace Zahra
 {
 	struct VulkanSwapchain
 	{
-		VkSurfaceCapabilitiesKHR Capabilities;
-		std::vector<VkSurfaceFormatKHR> Formats;
-		std::vector<VkPresentModeKHR> PresentationModes;
+		VkSwapchainKHR Swapchain = VK_NULL_HANDLE;
+		std::vector<VkImage> Images;
+
+		VkSurfaceFormatKHR Format;
+		VkPresentModeKHR PresentationMode;
+		VkExtent2D Extent;
+
+		VulkanSwapchain() = default;
 	};
+
 }

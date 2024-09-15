@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Zahra/Renderer/GraphicsContext.h"
 #include "Platform/Vulkan/VulkanDevice.h"
+#include "Platform/Vulkan/VulkanSwapchain.h"
+#include "Zahra/Renderer/GraphicsContext.h"
 
 #include <vulkan/vulkan.h>
 
@@ -50,6 +51,10 @@ namespace Zahra
 
 			return VK_FALSE;
 		};
+		
+		const VkSurfaceKHR& GetSurface() { return m_Surface; }
+		const Ref<VulkanDevice>& GetDevice() { return m_Device; }
+		Ref<VulkanSwapchain> GetSwapchain() { return m_Swapchain; }
 
 	private:
 		
@@ -57,7 +62,9 @@ namespace Zahra
 
 		VkInstance m_VulkanInstance = VK_NULL_HANDLE;
 		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
-		VulkanDevice m_Device;
+		Ref<VulkanDevice> m_Device;
+		Ref<VulkanSwapchain> m_Swapchain;
+
 		VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
 
 		void CreateInstance();
@@ -75,6 +82,12 @@ namespace Zahra
 		bool MeetsMinimimumRequirements(const VkPhysicalDevice& device);
 		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions);
 		void IdentifyQueueFamilies(const VkPhysicalDevice& device, QueueFamilyIndices& indices);
+		
+		void CreateSwapchain();
+		bool CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support);
+		VkSurfaceFormatKHR ChooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR ChooseSwapchainPresentationMode(const std::vector<VkPresentModeKHR>& availableModes);
+		VkExtent2D ChooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
 
 		#if Z_DEBUG

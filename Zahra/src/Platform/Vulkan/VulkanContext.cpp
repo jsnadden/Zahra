@@ -49,6 +49,7 @@ namespace Zahra
 				func(instance, debugMessenger, allocator);
 			}
 		}
+	
 	}
 
 	static const std::vector<const char*> s_ValidationLayers =
@@ -62,9 +63,9 @@ namespace Zahra
 	};
 
 	VulkanContext::VulkanContext(GLFWwindow* handle)
+		: m_WindowHandle(handle)
 	{
 		Z_CORE_ASSERT(handle, "Window handle is NULL");
-		m_WindowHandle = handle;
 	}
 
 	void VulkanContext::Init()
@@ -72,20 +73,21 @@ namespace Zahra
 		CreateInstance();
 
 		if (m_ValidationLayersEnabled)
+		{
 			CreateDebugMessenger();
+		}
 
 		CreateSurface();
-
 		CreateDevice();
-
+		CreateSwapchain();
 	}
 
 	void VulkanContext::Shutdown()
 	{
 		Z_CORE_INFO("Vulkan renderer shutting down");
 
-		vkDestroyDevice(m_Device.Device, nullptr);
-
+		vkDestroySwapchainKHR(m_Device->Device, m_Swapchain->Swapchain, nullptr);
+		vkDestroyDevice(m_Device->Device, nullptr);
 		vkDestroySurfaceKHR(m_VulkanInstance, m_Surface, nullptr);
 
 		if (m_ValidationLayersEnabled)
@@ -171,7 +173,7 @@ namespace Zahra
 		uint32_t glfwExtensionCount = 0;
 		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-		for (int i = 0; i < glfwExtensionCount; i++) extensions.emplace_back(glfwExtensions[i]);
+		for (uint32_t i = 0; i < glfwExtensionCount; i++) extensions.emplace_back(glfwExtensions[i]);
 
 	}
 
@@ -269,6 +271,8 @@ namespace Zahra
 
 	void VulkanContext::CreateDevice()
 	{
+		m_Device = CreateRef<VulkanDevice>();
+
 		TargetPhysicalDevice();
 
 		std::vector<VkDeviceQueueCreateInfo> queueInfoList;
@@ -277,8 +281,8 @@ namespace Zahra
 		// queues to the same index will cause device creation to fail
 		std::set<uint32_t> queueIndices =
 		{
-			m_Device.QueueFamilyIndices.GraphicsIndex.value(),
-			m_Device.QueueFamilyIndices.PresentationIndex.value()
+			m_Device->QueueFamilyIndices.GraphicsIndex.value(),
+			m_Device->QueueFamilyIndices.PresentationIndex.value()
 		};		
 
 		float queuePriority = 1.0f;
@@ -298,16 +302,16 @@ namespace Zahra
 		logicalDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		logicalDeviceInfo.queueCreateInfoCount = (uint32_t)queueInfoList.size();
 		logicalDeviceInfo.pQueueCreateInfos = queueInfoList.data();
-		logicalDeviceInfo.pEnabledFeatures = &m_Device.Features;
+		logicalDeviceInfo.pEnabledFeatures = &m_Device->Features;
 		logicalDeviceInfo.enabledExtensionCount = (uint32_t)s_DeviceExtensions.size();
 		logicalDeviceInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
 
-		VulkanUtils::ValidateVkResult(vkCreateDevice(m_Device.PhysicalDevice, &logicalDeviceInfo, nullptr, &m_Device.Device), "Vulkan device creation failed");
+		VulkanUtils::ValidateVkResult(vkCreateDevice(m_Device->PhysicalDevice, &logicalDeviceInfo, nullptr, &m_Device->Device), "Vulkan device creation failed");
 		Z_CORE_INFO("Vulkan device creation succeeded");
-		Z_CORE_INFO("Target GPU: {0}", m_Device.Properties.deviceName);
+		Z_CORE_INFO("Target GPU: {0}", m_Device->Properties.deviceName);
 
-		vkGetDeviceQueue(m_Device.Device, m_Device.QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device.GraphicsQueue);
-		vkGetDeviceQueue(m_Device.Device, m_Device.QueueFamilyIndices.PresentationIndex.value(), 0, &m_Device.PresentationQueue);
+		vkGetDeviceQueue(m_Device->Device, m_Device->QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device->GraphicsQueue);
+		vkGetDeviceQueue(m_Device->Device, m_Device->QueueFamilyIndices.PresentationIndex.value(), 0, &m_Device->PresentationQueue);
 
 	}
 
@@ -332,23 +336,27 @@ namespace Zahra
 		{
 			bool pass = MeetsMinimimumRequirements(device);
 
+			VulkanDeviceSwapchainSupport support;
+			pass &= CheckSwapchainSupport(device, support);
+
 			if (!pass) break;
 
 			IdentifyQueueFamilies(device, indices);
 
 			if (indices.Complete())
 			{
-				m_Device.PhysicalDevice = device;
-				m_Device.QueueFamilyIndices = indices;
+				m_Device->PhysicalDevice = device;
+				m_Device->QueueFamilyIndices = indices;
+				m_Device->SwapchainSupport = support;
 
-				vkGetPhysicalDeviceFeatures(device, &m_Device.Features);
-				vkGetPhysicalDeviceProperties(device, &m_Device.Properties);
-				vkGetPhysicalDeviceMemoryProperties(device, &m_Device.Memory);
+				vkGetPhysicalDeviceFeatures(device, &m_Device->Features);
+				vkGetPhysicalDeviceProperties(device, &m_Device->Properties);
+				vkGetPhysicalDeviceMemoryProperties(device, &m_Device->Memory);
 			}
 
 		}
 
-		if (m_Device.PhysicalDevice == VK_NULL_HANDLE)
+		if (m_Device->PhysicalDevice == VK_NULL_HANDLE)
 		{
 			const char* errorMessage = "Failed to identify a GPU meeting the minimum required specifications";
 			Z_CORE_CRITICAL(errorMessage);
@@ -360,7 +368,7 @@ namespace Zahra
 	bool VulkanContext::MeetsMinimimumRequirements(const VkPhysicalDevice& device)
 	{
 		if (!CheckDeviceExtensionSupport(device, s_DeviceExtensions)) return false;
-		
+
 		VkPhysicalDeviceFeatures features;
 		vkGetPhysicalDeviceFeatures(device, &features);
 		VkPhysicalDeviceProperties properties;
@@ -419,7 +427,7 @@ namespace Zahra
 
 		// TODO: take other queues into account, and optimise these choices
 
-		for (int i = 0; i < queueFamilyCount; i++)
+		for (uint32_t i = 0; i < queueFamilyCount; i++)
 		{
 			if (indices.Complete()) break;
 
@@ -431,6 +439,160 @@ namespace Zahra
 		}
 	}
 
+	void VulkanContext::CreateSwapchain()
+	{
+		m_Swapchain = CreateRef<VulkanSwapchain>();
+
+		m_Swapchain->Format = ChooseSwapchainFormat(m_Device->SwapchainSupport.Formats);
+		m_Swapchain->PresentationMode = ChooseSwapchainPresentationMode(m_Device->SwapchainSupport.PresentationModes);
+		m_Swapchain->Extent = ChooseSwapchainExtent(m_Device->SwapchainSupport.Capabilities);
+
+		uint32_t swapchainLength = m_Device->SwapchainSupport.Capabilities.minImageCount + 1;
+		uint32_t maxImageCount = m_Device->SwapchainSupport.Capabilities.maxImageCount;
+		if (maxImageCount > 0 && swapchainLength > maxImageCount) swapchainLength = maxImageCount;
+
+		VkSwapchainCreateInfoKHR swapchainInfo{};
+		swapchainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		swapchainInfo.surface = m_Surface;
+		swapchainInfo.minImageCount = swapchainLength;
+		swapchainInfo.imageFormat = m_Swapchain->Format.format;
+		swapchainInfo.imageColorSpace = m_Swapchain->Format.colorSpace;
+		swapchainInfo.presentMode = m_Swapchain->PresentationMode;
+		swapchainInfo.imageExtent = m_Swapchain->Extent;
+		swapchainInfo.imageArrayLayers = 1;
+		swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+		uint32_t queueFamilyIndices[] =
+		{
+			m_Device->QueueFamilyIndices.GraphicsIndex.value(),
+			m_Device->QueueFamilyIndices.PresentationIndex.value()
+		};
+
+		if (m_Device->QueueFamilyIndices.GraphicsIndex = m_Device->QueueFamilyIndices.PresentationIndex)
+		{
+			// EXCLUSIVE MODE: An image is owned by one queue family
+			// at a time and ownership must be explicitly transferred
+			// before using it in another queue family. This option
+			// offers the best performance.
+			swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			swapchainInfo.queueFamilyIndexCount = 0;
+			swapchainInfo.pQueueFamilyIndices = nullptr;
+		}
+		else
+		{
+			// CONCURRENT MODE: Images can be used across multiple queue
+			// families without explicit ownership transfers. This requires
+			// you to specify in advance between which queue families
+			// ownership will be shared using the queueFamilyIndexCount
+			// and pQueueFamilyIndices parameters. Could also use exclusive
+			// mode in this case, but it's more complicated.
+			swapchainInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+			swapchainInfo.queueFamilyIndexCount = 2;
+			swapchainInfo.pQueueFamilyIndices = queueFamilyIndices;
+		}
+
+		swapchainInfo.preTransform = m_Device->SwapchainSupport.Capabilities.currentTransform; // no overall screen rotation/flip
+		swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // no alpha blending with other windows
+		swapchainInfo.clipped = VK_TRUE; // ignore pixels obscured by other windows
+
+		// With Vulkan it's possible that your swap chain becomes invalid
+		// or unoptimized while your application is running, for example
+		// because the window was resized. In that case the swap chain
+		// actually needs to be recreated from scratch and a reference to
+		// the old one must be specified in this field.
+		swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
+
+		VulkanUtils::ValidateVkResult(vkCreateSwapchainKHR(m_Device->Device, &swapchainInfo, nullptr, &m_Swapchain->Swapchain), "Vulkan swap chain creation failed");
+		Z_CORE_INFO("Vulkan swap chain creation succeeded");
+
+		vkGetSwapchainImagesKHR(m_Device->Device, m_Swapchain->Swapchain, &swapchainLength, nullptr);
+		m_Swapchain->Images.resize(swapchainLength);
+		vkGetSwapchainImagesKHR(m_Device->Device, m_Swapchain->Swapchain, &swapchainLength, m_Swapchain->Images.data());
+	}
+
+	bool VulkanContext::CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support)
+	{
+		bool adequateSupport = true;
+
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
+		
+		if (formatCount)
+		{
+			support.Formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, support.Formats.data());
+		}
+		else
+		{
+			adequateSupport = false;
+		}
+
+		uint32_t modeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &modeCount, nullptr);
+
+		if (modeCount)
+		{
+			support.PresentationModes.resize(modeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &modeCount, support.PresentationModes.data());
+		}
+		else
+		{
+			adequateSupport = false;
+		}
+
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &support.Capabilities);
+
+		if (!adequateSupport) Z_CORE_CRITICAL("Selected GPU/window do not provide adequate support for Vulkan swap chain creation");
+		return adequateSupport;
+
+	}
+
+	VkSurfaceFormatKHR VulkanContext::ChooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+	{
+		for (const auto& format : availableFormats)
+		{
+			if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			{
+				return format;
+			}
+		}
+
+		// TODO: rank formats and return best. For now just...
+		return availableFormats[0];
+	}
+
+	VkPresentModeKHR VulkanContext::ChooseSwapchainPresentationMode(const std::vector<VkPresentModeKHR>& availableModes)
+	{
+		for (const auto& mode : availableModes)
+		{
+			// triple+ buffering
+			if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
+			{
+				return mode;
+			}
+		}
+
+		// standard double buffering
+		return VK_PRESENT_MODE_FIFO_KHR;
+	}
+
+	VkExtent2D VulkanContext::ChooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+	{
+		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+		{
+			return capabilities.currentExtent;
+		}
+
+		int width, height;
+		glfwGetFramebufferSize(m_WindowHandle, &width, &height);
+
+		VkExtent2D extent = { (uint32_t)width, (uint32_t)height };
+
+		extent.width = std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+		extent.height = std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+		return extent;
+	}
 	
 
 	
