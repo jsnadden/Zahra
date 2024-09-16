@@ -153,9 +153,12 @@
     <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLUniformBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanShader.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanUtils.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanImGuiLayer.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanPipeline.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererAPI.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanSwapchain.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
@@ -639,7 +642,9 @@
     <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanImGuiLayer.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanPipeline.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererAPI.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsThread.cpp" />

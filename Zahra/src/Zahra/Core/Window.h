@@ -5,6 +5,7 @@
 #include "Zahra/Core/Defines.h"
 #include "Zahra/Events/Event.h"
 
+struct GLFWwindow;
 
 namespace Zahra
 {
@@ -51,8 +52,8 @@ namespace Zahra
 
 		virtual void ReadConfig() = 0;
 		virtual void WriteConfig() = 0;
-
-		virtual void* GetWindowHandle() const = 0;
+		
+		virtual GLFWwindow* GetWindowHandle() const = 0;
 
 		static Scope<Window> Create(const WindowProperties& props = WindowProperties());
 	};

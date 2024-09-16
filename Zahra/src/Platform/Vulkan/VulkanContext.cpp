@@ -10,15 +10,6 @@ namespace Zahra
 {
 	namespace VulkanUtils
 	{
-
-		static void ValidateVkResult(VkResult result, const std::string& errorMessage = "")
-		{
-			if (result != VK_SUCCESS)
-			{
-				throw std::runtime_error(errorMessage);
-			}
-		}
-
 		static VkResult CreateDebugUtilsMessengerEXT(
 			VkInstance instance,
 			const VkDebugUtilsMessengerCreateInfoEXT* createInfo,
@@ -79,15 +70,18 @@ namespace Zahra
 
 		CreateSurface();
 		CreateDevice();
-		CreateSwapchain();
+
+		m_Swapchain = CreateRef<VulkanSwapchain>();
+		m_Swapchain->Init(m_Device, m_Surface);
 	}
 
 	void VulkanContext::Shutdown()
 	{
 		Z_CORE_INFO("Vulkan renderer shutting down");
 
-		vkDestroySwapchainKHR(m_Device->Device, m_Swapchain->Swapchain, nullptr);
-		vkDestroyDevice(m_Device->Device, nullptr);
+		m_Swapchain->Shutdown();
+
+		ShutdownDevice();
 		vkDestroySurfaceKHR(m_VulkanInstance, m_Surface, nullptr);
 
 		if (m_ValidationLayersEnabled)
@@ -260,7 +254,7 @@ namespace Zahra
 		debugMessengerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		debugMessengerInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 		debugMessengerInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-		debugMessengerInfo.pfnUserCallback = DebugCallback;
+		debugMessengerInfo.pfnUserCallback = VulkanUtils::DebugCallback;
 	}
 
 	void VulkanContext::CreateSurface()
@@ -312,6 +306,12 @@ namespace Zahra
 
 		vkGetDeviceQueue(m_Device->Device, m_Device->QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device->GraphicsQueue);
 		vkGetDeviceQueue(m_Device->Device, m_Device->QueueFamilyIndices.PresentationIndex.value(), 0, &m_Device->PresentationQueue);
+
+	}
+
+	void VulkanContext::ShutdownDevice()
+	{
+		vkDestroyDevice(m_Device->Device, nullptr);
 
 	}
 
@@ -439,77 +439,6 @@ namespace Zahra
 		}
 	}
 
-	void VulkanContext::CreateSwapchain()
-	{
-		m_Swapchain = CreateRef<VulkanSwapchain>();
-
-		m_Swapchain->Format = ChooseSwapchainFormat(m_Device->SwapchainSupport.Formats);
-		m_Swapchain->PresentationMode = ChooseSwapchainPresentationMode(m_Device->SwapchainSupport.PresentationModes);
-		m_Swapchain->Extent = ChooseSwapchainExtent(m_Device->SwapchainSupport.Capabilities);
-
-		uint32_t swapchainLength = m_Device->SwapchainSupport.Capabilities.minImageCount + 1;
-		uint32_t maxImageCount = m_Device->SwapchainSupport.Capabilities.maxImageCount;
-		if (maxImageCount > 0 && swapchainLength > maxImageCount) swapchainLength = maxImageCount;
-
-		VkSwapchainCreateInfoKHR swapchainInfo{};
-		swapchainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		swapchainInfo.surface = m_Surface;
-		swapchainInfo.minImageCount = swapchainLength;
-		swapchainInfo.imageFormat = m_Swapchain->Format.format;
-		swapchainInfo.imageColorSpace = m_Swapchain->Format.colorSpace;
-		swapchainInfo.presentMode = m_Swapchain->PresentationMode;
-		swapchainInfo.imageExtent = m_Swapchain->Extent;
-		swapchainInfo.imageArrayLayers = 1;
-		swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-		uint32_t queueFamilyIndices[] =
-		{
-			m_Device->QueueFamilyIndices.GraphicsIndex.value(),
-			m_Device->QueueFamilyIndices.PresentationIndex.value()
-		};
-
-		if (m_Device->QueueFamilyIndices.GraphicsIndex = m_Device->QueueFamilyIndices.PresentationIndex)
-		{
-			// EXCLUSIVE MODE: An image is owned by one queue family
-			// at a time and ownership must be explicitly transferred
-			// before using it in another queue family. This option
-			// offers the best performance.
-			swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-			swapchainInfo.queueFamilyIndexCount = 0;
-			swapchainInfo.pQueueFamilyIndices = nullptr;
-		}
-		else
-		{
-			// CONCURRENT MODE: Images can be used across multiple queue
-			// families without explicit ownership transfers. This requires
-			// you to specify in advance between which queue families
-			// ownership will be shared using the queueFamilyIndexCount
-			// and pQueueFamilyIndices parameters. Could also use exclusive
-			// mode in this case, but it's more complicated.
-			swapchainInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-			swapchainInfo.queueFamilyIndexCount = 2;
-			swapchainInfo.pQueueFamilyIndices = queueFamilyIndices;
-		}
-
-		swapchainInfo.preTransform = m_Device->SwapchainSupport.Capabilities.currentTransform; // no overall screen rotation/flip
-		swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // no alpha blending with other windows
-		swapchainInfo.clipped = VK_TRUE; // ignore pixels obscured by other windows
-
-		// With Vulkan it's possible that your swap chain becomes invalid
-		// or unoptimized while your application is running, for example
-		// because the window was resized. In that case the swap chain
-		// actually needs to be recreated from scratch and a reference to
-		// the old one must be specified in this field.
-		swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
-
-		VulkanUtils::ValidateVkResult(vkCreateSwapchainKHR(m_Device->Device, &swapchainInfo, nullptr, &m_Swapchain->Swapchain), "Vulkan swap chain creation failed");
-		Z_CORE_INFO("Vulkan swap chain creation succeeded");
-
-		vkGetSwapchainImagesKHR(m_Device->Device, m_Swapchain->Swapchain, &swapchainLength, nullptr);
-		m_Swapchain->Images.resize(swapchainLength);
-		vkGetSwapchainImagesKHR(m_Device->Device, m_Swapchain->Swapchain, &swapchainLength, m_Swapchain->Images.data());
-	}
-
 	bool VulkanContext::CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support)
 	{
 		bool adequateSupport = true;
@@ -546,56 +475,6 @@ namespace Zahra
 		return adequateSupport;
 
 	}
-
-	VkSurfaceFormatKHR VulkanContext::ChooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
-	{
-		for (const auto& format : availableFormats)
-		{
-			if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-			{
-				return format;
-			}
-		}
-
-		// TODO: rank formats and return best. For now just...
-		return availableFormats[0];
-	}
-
-	VkPresentModeKHR VulkanContext::ChooseSwapchainPresentationMode(const std::vector<VkPresentModeKHR>& availableModes)
-	{
-		for (const auto& mode : availableModes)
-		{
-			// triple+ buffering
-			if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
-			{
-				return mode;
-			}
-		}
-
-		// standard double buffering
-		return VK_PRESENT_MODE_FIFO_KHR;
-	}
-
-	VkExtent2D VulkanContext::ChooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& capabilities)
-	{
-		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-		{
-			return capabilities.currentExtent;
-		}
-
-		int width, height;
-		glfwGetFramebufferSize(m_WindowHandle, &width, &height);
-
-		VkExtent2D extent = { (uint32_t)width, (uint32_t)height };
-
-		extent.width = std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-		extent.height = std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-		return extent;
-	}
-	
-
-	
 
 }
 

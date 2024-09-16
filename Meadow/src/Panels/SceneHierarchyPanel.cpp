@@ -69,7 +69,7 @@ namespace Zahra
 			// right clicking on empty window space brings up this menu
 			if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 			{
-				if (ImGui::MenuItem("Create New Entity"))
+				if (ImGui::MenuItem("Init New Entity"))
 				{
 					m_Selected = m_Context->CreateEntity("New Entity");
 				}
