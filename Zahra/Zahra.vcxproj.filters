@@ -1661,5 +1661,6 @@
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanPipeline.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanShader.cpp" />
   </ItemGroup>
 </Project>

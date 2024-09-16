@@ -12,6 +12,9 @@ namespace Zahra
 	class Shader
 	{
 	public:
+
+		enum Stage { Vertex, Tesselation, Geometry, Fragment };
+
 		virtual ~Shader() = default;
 
 		virtual void Bind() const = 0;

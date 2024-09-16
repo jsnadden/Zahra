@@ -27,7 +27,8 @@ namespace Zahra
 		stream.read((char*)buffer, size);
 		stream.close();
 
-		*outSize = size;
+		if (outSize) *outSize = size;
+
 		return buffer;
 	}
 }
