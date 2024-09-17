@@ -37,6 +37,8 @@ namespace Zahra
 		virtual void WriteConfig() override;
 		virtual void ReadConfig() override;
 
+		inline virtual Ref<GraphicsContext> GetGraphicsContext() override { return m_Context; }
+
 		inline virtual GLFWwindow* GetWindowHandle() const override { return m_Window; };
 
 	private:
@@ -46,7 +48,7 @@ namespace Zahra
 
 		GLFWwindow* m_Window;
 
-		Scope<GraphicsContext> m_Context;
+		Ref<GraphicsContext> m_Context;
 
 		struct WindowRectangle
 		{

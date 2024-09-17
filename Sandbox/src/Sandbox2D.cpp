@@ -1,8 +1,9 @@
 #include "Sandbox2D.h"
 
+#include "Zahra/Renderer/Shader.h"
+
 #include <ImGui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
-
 
 Sandbox2DLayer::Sandbox2DLayer()
 	: Layer("Sandbox2D_Layer")
@@ -11,7 +12,7 @@ Sandbox2DLayer::Sandbox2DLayer()
 
 void Sandbox2DLayer::OnAttach()
 {
-
+	Zahra::Shader::Create("vulkan_tutorial", "Assets/Shaders");
 }
 
 void Sandbox2DLayer::OnDetach()

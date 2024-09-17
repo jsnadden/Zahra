@@ -55,11 +55,11 @@ namespace Zahra
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
 
-		static Application& Get() { return *s_Instance; }
+		static inline Application& Get() { return *s_Instance; }
 
 		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 
-		Window& GetWindow() { return *m_Window; }
+		inline Window& GetWindow() { return *m_Window; }
 
 		void Exit();
 

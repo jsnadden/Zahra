@@ -3,6 +3,7 @@
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Platform/Vulkan/VulkanDevice.h"
 #include "Platform/Vulkan/VulkanSwapchain.h"
+#include "Zahra/Core/Application.h"
 #include "Zahra/Renderer/GraphicsContext.h"
 
 #include <vulkan/vulkan.h>

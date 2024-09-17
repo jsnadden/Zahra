@@ -3,20 +3,34 @@
 
 #include "Zahra/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/Vulkan/VulkanShader.h"
 
 namespace Zahra
 {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Shader Class
 
-    Ref<Shader> Shader::Create(const std::string& filepath)
+	Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path& directory)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None:	Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
+		case RendererAPI::API::OpenGL:	Z_CORE_ASSERT(false, "RendererAPI::API::OpenGL does not support such a constructor");
+		case RendererAPI::API::DX12:	Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
+		case RendererAPI::API::Vulkan:	return CreateRef<VulkanShader>(name, directory);
+		}
+		Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
+		return nullptr;
+	}
+
+	Ref<Shader> Shader::Create(const std::string& filepath)
     {
         switch (Renderer::GetAPI())
         {
-        case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
-        case RendererAPI::API::OpenGL:    return CreateRef<OpenGLShader>(filepath);
-        case RendererAPI::API::DX12:  Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
-        case RendererAPI::API::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan is not currently supported"); return nullptr;
+        case RendererAPI::API::None:	Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
+        case RendererAPI::API::OpenGL:	return CreateRef<OpenGLShader>(filepath);
+        case RendererAPI::API::DX12:	Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
+        case RendererAPI::API::Vulkan:	Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan does not support such a constructor"); return nullptr;
         }
         Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
         return nullptr;
@@ -26,10 +40,10 @@ namespace Zahra
     {
         switch (Renderer::GetAPI())
         {
-        case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
-        case RendererAPI::API::OpenGL:    return CreateRef<OpenGLShader>(name, vertexSource, fragmentSource);
-        case RendererAPI::API::DX12:  Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
-        case RendererAPI::API::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan is not currently supported"); return nullptr;
+        case RendererAPI::API::None:	Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
+        case RendererAPI::API::OpenGL:	return CreateRef<OpenGLShader>(name, vertexSource, fragmentSource);
+        case RendererAPI::API::DX12:	Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
+        case RendererAPI::API::Vulkan:	Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan does not support such a constructor"); return nullptr;
         }
         Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
         return nullptr;

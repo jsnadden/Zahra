@@ -13,7 +13,7 @@ namespace Zahra
 	{
 	public:
 
-		enum Stage { Vertex, Tesselation, Geometry, Fragment };
+		enum Stage { Vertex, TesselationControl, TesselationEvaluation, Geometry, Fragment, Compute };
 
 		virtual ~Shader() = default;
 
@@ -22,6 +22,9 @@ namespace Zahra
 
 		virtual const std::string& GetName() const = 0;
 
+		// this top Create method is preferred for Vulkan
+		static Ref<Shader> Create(const std::string& name, const std::filesystem::path& directory);
+		// these two will be deprecated soon!
 		static Ref<Shader> Create(const std::string& filepath);
 		static Ref<Shader> Create(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource);
 

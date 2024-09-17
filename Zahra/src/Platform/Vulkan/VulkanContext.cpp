@@ -6,8 +6,6 @@
 #include <GLFW/glfw3.h>
 #include <set>
 
-#include "VulkanShader.h"
-
 namespace Zahra
 {
 	namespace VulkanUtils
@@ -75,8 +73,6 @@ namespace Zahra
 
 		m_Swapchain = CreateRef<VulkanSwapchain>();
 		m_Swapchain->Init(m_Device, m_Surface);
-
-		VulkanShader shader("VulkanTutorial", "C:\\dev\\Zahra\\Sandbox\\Assets\\Shaders");
 	}
 
 	void VulkanContext::Shutdown()

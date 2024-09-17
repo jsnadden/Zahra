@@ -127,7 +127,7 @@ namespace Zahra
 	{
 		OpenGLShaderUtils::CreateCacheDirectoryIfNeeded();
 
-		std::string sourceString= ReadFile(filepath);
+		std::string sourceString = ReadFile(filepath);
 		auto shaderSources = ParseShaderSrc(sourceString);
 		
 		Timer timer;

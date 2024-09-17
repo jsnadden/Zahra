@@ -113,8 +113,8 @@ namespace Zahra
 		RendererAPI::API api = Renderer::GetAPI();
 		switch (api)
 		{
-			case RendererAPI::API::OpenGL: m_Context = CreateScope<OpenGLContext>(m_Window); break;
-			case RendererAPI::API::Vulkan: m_Context = CreateScope<VulkanContext>(m_Window); break;
+			case RendererAPI::API::OpenGL: m_Context = CreateRef<OpenGLContext>(m_Window); break;
+			case RendererAPI::API::Vulkan: m_Context = CreateRef<VulkanContext>(m_Window); break;
 			default: break;
 		}
 		Z_CORE_ASSERT(m_Context, "Failed to set window context: unsupported graphics API");
