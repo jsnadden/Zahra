@@ -110,15 +110,7 @@ namespace Zahra
 
 		#pragma region Initialise renderer context
 
-		RendererAPI::API api = Renderer::GetAPI();
-		switch (api)
-		{
-			case RendererAPI::API::OpenGL: m_Context = CreateRef<OpenGLContext>(m_Window); break;
-			case RendererAPI::API::Vulkan: m_Context = CreateRef<VulkanContext>(m_Window); break;
-			default: break;
-		}
-		Z_CORE_ASSERT(m_Context, "Failed to set window context: unsupported graphics API");
-
+		m_Context = RendererContext::Create(m_Window);
 		m_Context->Init();
 
 		#pragma endregion

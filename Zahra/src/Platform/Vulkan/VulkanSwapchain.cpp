@@ -5,13 +5,19 @@
 #include "Zahra/Core/Application.h"
 
 #include <GLFW/glfw3.h>
+#include <set>
 
 namespace Zahra
 {
-	void VulkanSwapchain::Init(Ref<VulkanDevice> device, VkSurfaceKHR surface)
+	static const std::vector<const char*> s_DeviceExtensions =
 	{
-		m_Device = device;
-		m_Surface = surface;
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
+
+	void VulkanSwapchain::Init(VkInstance& instance, GLFWwindow* windowHandle)
+	{
+		CreateSurface(instance, windowHandle);
+		CreateDevice(instance);
 
 		m_Format = ChooseSwapchainFormat();
 		m_PresentationMode = ChooseSwapchainPresentationMode();
@@ -103,7 +109,7 @@ namespace Zahra
 		Z_CORE_INFO("Vulkan swap chain creation succeeded");
 	}
 
-	void VulkanSwapchain::Shutdown()
+	void VulkanSwapchain::Shutdown(VkInstance& instance)
 	{
 		for (auto imageView : m_ImageViews)
 		{
@@ -115,6 +121,224 @@ namespace Zahra
 
 		m_Images.clear();
 		m_Swapchain = VK_NULL_HANDLE;
+
+		ShutdownDevice();
+		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
+	}
+
+	void VulkanSwapchain::CreateSurface(VkInstance& instance, GLFWwindow* windowHandle)
+	{
+		VulkanUtils::ValidateVkResult(glfwCreateWindowSurface(instance, windowHandle, nullptr, &m_Surface), "Vulkan surface creation failed");
+		Z_CORE_INFO("Vulkan surface creation succeeded");
+	}
+
+	void VulkanSwapchain::CreateDevice(VkInstance& instance)
+	{
+		m_Device = CreateRef<VulkanDevice>();
+
+		TargetPhysicalDevice(instance);
+
+		std::vector<VkDeviceQueueCreateInfo> queueInfoList;
+
+		// using a set rather than a vector here, because assigning separate
+		// queues to the same index will cause device creation to fail
+		std::set<uint32_t> queueIndices =
+		{
+			m_Device->QueueFamilyIndices.GraphicsIndex.value(),
+			m_Device->QueueFamilyIndices.PresentationIndex.value()
+		};
+
+		float queuePriority = 1.0f;
+
+		for (uint32_t index : queueIndices)
+		{
+			VkDeviceQueueCreateInfo queueInfo{};
+			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueInfo.queueFamilyIndex = index;
+			queueInfo.queueCount = 1;
+			queueInfo.pQueuePriorities = &queuePriority;
+
+			queueInfoList.push_back(queueInfo);
+		}
+
+		VkDeviceCreateInfo logicalDeviceInfo{};
+		logicalDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		logicalDeviceInfo.queueCreateInfoCount = (uint32_t)queueInfoList.size();
+		logicalDeviceInfo.pQueueCreateInfos = queueInfoList.data();
+		logicalDeviceInfo.pEnabledFeatures = &m_Device->Features;
+		logicalDeviceInfo.enabledExtensionCount = (uint32_t)s_DeviceExtensions.size();
+		logicalDeviceInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
+
+		VulkanUtils::ValidateVkResult(vkCreateDevice(m_Device->PhysicalDevice, &logicalDeviceInfo, nullptr, &m_Device->Device), "Vulkan device creation failed");
+		Z_CORE_INFO("Vulkan device creation succeeded");
+		Z_CORE_INFO("Target GPU: {0}", m_Device->Properties.deviceName);
+
+		vkGetDeviceQueue(m_Device->Device, m_Device->QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device->GraphicsQueue);
+		vkGetDeviceQueue(m_Device->Device, m_Device->QueueFamilyIndices.PresentationIndex.value(), 0, &m_Device->PresentationQueue);
+	}
+
+	void VulkanSwapchain::ShutdownDevice()
+	{
+		vkDestroyDevice(m_Device->Device, nullptr);
+	}
+
+	void VulkanSwapchain::TargetPhysicalDevice(VkInstance& instance)
+	{
+		uint32_t deviceCount = 0;
+		VulkanUtils::ValidateVkResult(vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr));
+
+		if (deviceCount == 0)
+		{
+			const char* errorMessage = "Failed to identify a GPU with Vulkan support";
+			Z_CORE_CRITICAL(errorMessage);
+			throw std::runtime_error(errorMessage);
+		}
+
+		QueueFamilyIndices indices;
+
+		std::vector<VkPhysicalDevice> allDevices(deviceCount);
+		VulkanUtils::ValidateVkResult(vkEnumeratePhysicalDevices(instance, &deviceCount, allDevices.data()));
+
+		for (const auto& device : allDevices)
+		{
+			bool pass = MeetsMinimimumRequirements(device);
+
+			VulkanDeviceSwapchainSupport support;
+			pass &= CheckSwapchainSupport(device, support);
+
+			if (!pass) break;
+
+			IdentifyQueueFamilies(device, indices);
+
+			if (indices.Complete())
+			{
+				m_Device->PhysicalDevice = device;
+				m_Device->QueueFamilyIndices = indices;
+				m_Device->SwapchainSupport = support;
+
+				vkGetPhysicalDeviceFeatures(device, &m_Device->Features);
+				vkGetPhysicalDeviceProperties(device, &m_Device->Properties);
+				vkGetPhysicalDeviceMemoryProperties(device, &m_Device->Memory);
+			}
+
+		}
+
+		if (m_Device->PhysicalDevice == VK_NULL_HANDLE)
+		{
+			const char* errorMessage = "Failed to identify a GPU meeting the minimum required specifications";
+			Z_CORE_CRITICAL(errorMessage);
+			throw std::runtime_error(errorMessage);
+		}
+	}
+
+	bool VulkanSwapchain::MeetsMinimimumRequirements(const VkPhysicalDevice& device)
+	{
+		if (!CheckDeviceExtensionSupport(device, s_DeviceExtensions)) return false;
+
+		VkPhysicalDeviceFeatures features;
+		vkGetPhysicalDeviceFeatures(device, &features);
+		VkPhysicalDeviceProperties properties;
+		vkGetPhysicalDeviceProperties(device, &properties);
+		VkPhysicalDeviceMemoryProperties memory;
+		vkGetPhysicalDeviceMemoryProperties(device, &memory);
+
+		const GPURequirements& requirements = Application::Get().GetSpecification().MinGPURequirements;
+
+		bool pass = true;
+
+		if (requirements.IsDiscreteGPU)
+			pass &= properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+
+		// TODO: add checks for other requirements
+
+		return pass;
+	}
+
+	bool VulkanSwapchain::CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions)
+	{
+		// Generate list of all supported extensions
+		uint32_t supportedExtensionCount = 0;
+		VulkanUtils::ValidateVkResult(vkEnumerateDeviceExtensionProperties(device, nullptr, &supportedExtensionCount, nullptr));
+
+		std::vector<VkExtensionProperties> supportedExtensions(supportedExtensionCount);
+		VulkanUtils::ValidateVkResult(vkEnumerateDeviceExtensionProperties(device, nullptr, &supportedExtensionCount, supportedExtensions.data()));
+
+		for (auto& ext : extensions)
+		{
+			bool supported = false;
+
+			for (auto& prop : supportedExtensions)
+			{
+				if (strncmp(ext, prop.extensionName, strlen(ext)) == 0)
+				{
+					supported = true;
+					break;
+				}
+			}
+
+			if (!supported) return false;
+
+		}
+
+		return true;
+	}
+
+	void VulkanSwapchain::IdentifyQueueFamilies(const VkPhysicalDevice& device, QueueFamilyIndices& indices)
+	{
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+		// TODO: take other queues into account, and optimise these choices
+
+		for (uint32_t i = 0; i < queueFamilyCount; i++)
+		{
+			if (indices.Complete()) break;
+
+			VkBool32 presentationSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentationSupport);
+
+			if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) indices.GraphicsIndex = i;
+			if (presentationSupport) indices.PresentationIndex = i;
+		}
+	}
+
+	bool VulkanSwapchain::CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support)
+	{
+		bool adequateSupport = true;
+
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
+
+		if (formatCount)
+		{
+			support.Formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, support.Formats.data());
+		}
+		else
+		{
+			adequateSupport = false;
+		}
+
+		uint32_t modeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &modeCount, nullptr);
+
+		if (modeCount)
+		{
+			support.PresentationModes.resize(modeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &modeCount, support.PresentationModes.data());
+		}
+		else
+		{
+			adequateSupport = false;
+		}
+
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &support.Capabilities);
+
+		if (!adequateSupport) Z_CORE_CRITICAL("Selected GPU/window do not provide adequate support for Vulkan swap chain creation");
+		return adequateSupport;
 	}
 
 	VkSurfaceFormatKHR VulkanSwapchain::ChooseSwapchainFormat()

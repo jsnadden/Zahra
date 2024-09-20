@@ -18,8 +18,7 @@ public:
 	bool OnKeyPressedEvent(Zahra::KeyPressedEvent& event);
 
 private:
-	
-
+	Zahra::Ref<Zahra::Shader> m_Shader;
 
 };
 

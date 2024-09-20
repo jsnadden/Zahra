@@ -34,6 +34,10 @@ namespace Zahra
 #endif
 	}
 
+	void OpenGLContext::Shutdown()
+	{
+	}
+
 	void OpenGLContext::SwapBuffers()
 	{
 		glfwSwapBuffers(m_WindowHandle);

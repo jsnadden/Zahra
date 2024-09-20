@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Zahra/Core/Window.h"
-#include "Zahra/Renderer/GraphicsContext.h"
+#include "Zahra/Renderer/RendererContext.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -37,7 +37,7 @@ namespace Zahra
 		virtual void WriteConfig() override;
 		virtual void ReadConfig() override;
 
-		inline virtual Ref<GraphicsContext> GetGraphicsContext() override { return m_Context; }
+		inline virtual Ref<RendererContext> GetRendererContext() override { return m_Context; }
 
 		inline virtual GLFWwindow* GetWindowHandle() const override { return m_Window; };
 
@@ -48,7 +48,7 @@ namespace Zahra
 
 		GLFWwindow* m_Window;
 
-		Ref<GraphicsContext> m_Context;
+		Ref<RendererContext> m_Context;
 
 		struct WindowRectangle
 		{

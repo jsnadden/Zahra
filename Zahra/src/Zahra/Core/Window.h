@@ -4,7 +4,7 @@
 
 #include "Zahra/Core/Defines.h"
 #include "Zahra/Events/Event.h"
-#include "Zahra/Renderer/GraphicsContext.h"
+#include "Zahra/Renderer/RendererContext.h"
 
 struct GLFWwindow;
 
@@ -54,7 +54,7 @@ namespace Zahra
 		virtual void ReadConfig() = 0;
 		virtual void WriteConfig() = 0;
 		
-		inline virtual Ref<GraphicsContext> GetGraphicsContext() = 0;
+		inline virtual Ref<RendererContext> GetRendererContext() = 0;
 		
 		virtual GLFWwindow* GetWindowHandle() const = 0;
 

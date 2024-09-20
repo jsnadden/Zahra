@@ -4,6 +4,8 @@
 
 #include <vulkan/vulkan.h>
 
+struct GLFWwindow;
+
 namespace Zahra
 {
 	class VulkanSwapchain
@@ -11,8 +13,11 @@ namespace Zahra
 	public:
 		VulkanSwapchain() = default;
 
-		void Init(Ref<VulkanDevice> device, VkSurfaceKHR surface);
-		void Shutdown();
+		void Init(VkInstance& instance, GLFWwindow* windowHandle);
+		void Shutdown(VkInstance& instance);
+
+		VkSurfaceKHR& GetSurface() { return m_Surface; }
+		Ref<VulkanDevice> GetDevice() { return m_Device; }
 
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
@@ -23,8 +28,18 @@ namespace Zahra
 		VkPresentModeKHR m_PresentationMode;
 		VkExtent2D m_Extent;
 
+		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 		Ref<VulkanDevice> m_Device;
-		VkSurfaceKHR m_Surface;
+
+		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
+
+		void CreateDevice(VkInstance& instance);
+		void ShutdownDevice();
+		void TargetPhysicalDevice(VkInstance& instance);
+		bool MeetsMinimimumRequirements(const VkPhysicalDevice& device);
+		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions);
+		void IdentifyQueueFamilies(const VkPhysicalDevice& device, QueueFamilyIndices& indices);
+		bool CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support);
 
 		VkSurfaceFormatKHR ChooseSwapchainFormat();
 		VkPresentModeKHR ChooseSwapchainPresentationMode();

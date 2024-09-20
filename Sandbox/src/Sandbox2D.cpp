@@ -12,12 +12,12 @@ Sandbox2DLayer::Sandbox2DLayer()
 
 void Sandbox2DLayer::OnAttach()
 {
-	Zahra::Shader::Create("vulkan_tutorial", "Assets/Shaders");
+	m_Shader = Zahra::Shader::Create("vulkan_tutorial", "Assets/Shaders");
 }
 
 void Sandbox2DLayer::OnDetach()
 {
-	
+	m_Shader.reset();
 }
 
 void Sandbox2DLayer::OnUpdate(float dt)

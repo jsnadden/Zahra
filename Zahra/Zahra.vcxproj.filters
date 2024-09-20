@@ -207,7 +207,7 @@
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\GraphicsContext.h">
+    <ClInclude Include="src\Zahra\Renderer\RendererContext.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\RenderCommand.h">
@@ -1662,5 +1662,6 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanPipeline.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanShader.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\RendererContext.cpp" />
   </ItemGroup>
 </Project>

@@ -43,12 +43,14 @@ namespace Zahra
 
 	void Application::Run()
 	{
+		Z_CORE_INFO("Start of run loop");
+
 		while (m_Running)
 		{
 			// Compute frame time
-			float ThisFrameTime = Time::GetTime();
-			float dt = ThisFrameTime - m_PreviousFrameTime;
-			m_PreviousFrameTime = ThisFrameTime;
+			float frameStartTime = Time::GetTime();
+			float dt = frameStartTime - m_PreviousFrameTime;
+			m_PreviousFrameTime = frameStartTime;
 
 			if (!m_Minimised)
 			{
@@ -67,7 +69,7 @@ namespace Zahra
 			m_Window->OnUpdate();
 		}
 
-		Z_CORE_INFO("Exited run loop");
+		Z_CORE_INFO("End of run loop");
 	}
 
 	void Application::OnEvent(Event& e)
