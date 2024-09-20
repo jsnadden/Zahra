@@ -13,7 +13,7 @@ namespace Zahra
 	class VulkanContext : public RendererContext
 	{
 	public:
-		VulkanContext(GLFWwindow* handle);
+		static VulkanContext* Get(GLFWwindow* handle = nullptr);
 
 		virtual void Init() override;
 		virtual void Shutdown() override;
@@ -21,8 +21,17 @@ namespace Zahra
 		
 		Ref<VulkanSwapchain> GetSwapchain() { return m_Swapchain; }
 
+		VkSurfaceKHR& GetSurface() { return m_Swapchain->GetSurface(); }
+		Ref<VulkanDevice> GetDevice() { return m_Swapchain->GetDevice(); }
+
 	private:
-		
+		// singleton
+		VulkanContext(GLFWwindow* handle);
+		VulkanContext(const VulkanContext&) = delete;
+		VulkanContext(VulkanContext&&) = delete;
+		VulkanContext& operator=(const VulkanContext&) = delete;
+		VulkanContext& operator=(VulkanContext&&) = delete;
+
 		GLFWwindow* m_WindowHandle;
 
 		VkInstance m_VulkanInstance = VK_NULL_HANDLE;

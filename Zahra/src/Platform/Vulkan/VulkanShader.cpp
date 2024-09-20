@@ -192,54 +192,18 @@ namespace Zahra
 
 	}
 
-	void VulkanShader::Bind() const
+	VulkanShader::~VulkanShader()
 	{
-	}
-
-	void VulkanShader::Unbind() const
-	{
-	}
-
-	void VulkanShader::SetInt(const std::string& name, int value)
-	{
-	}
-
-	void VulkanShader::SetIntArray(const std::string& name, uint32_t count, int* values)
-	{
-	}
-
-	void VulkanShader::SetFloat(const std::string& name, float value)
-	{
-	}
-
-	void VulkanShader::SetFloat2(const std::string& name, const glm::vec2& values)
-	{
-	}
-
-	void VulkanShader::SetFloat3(const std::string& name, const glm::vec4& values)
-	{
-	}
-
-	void VulkanShader::SetFloat4(const std::string& name, const glm::vec4& values)
-	{
-	}
-
-	void VulkanShader::SetMat2(const std::string& name, const glm::mat2& matrix)
-	{
-	}
-
-	void VulkanShader::SetMat3(const std::string& name, const glm::mat3& matrix)
-	{
-	}
-
-	void VulkanShader::SetMat4(const std::string& name, const glm::mat4& matrix)
-	{
+		for (auto& [stage, module] : m_Modules)
+		{
+			vkDestroyShaderModule(VulkanContext::Get()->GetDevice()->Device, module, nullptr);
+		}
 	}
 
 	bool VulkanShader::ReadShaderSource(Shader::Stage stage)
 	{
 		bool success = true;
-		
+
 		std::filesystem::path sourceFilepath = m_SourceDirectory / GetSourceFilename(stage);
 
 		if (!std::filesystem::exists(sourceFilepath))
@@ -329,13 +293,56 @@ namespace Zahra
 			moduleInfo.codeSize = bytes.size() * sizeof(uint32_t);
 			moduleInfo.pCode = bytes.data();
 
+			VulkanUtils::ValidateVkResult(vkCreateShaderModule(VulkanContext::Get()->GetDevice()->Device, &moduleInfo, nullptr, &m_Modules[stage]));
 		}
+	}
+
+	void VulkanShader::Bind() const
+	{
+	}
+
+	void VulkanShader::Unbind() const
+	{
+	}
+
+	void VulkanShader::SetInt(const std::string& name, int value)
+	{
+	}
+
+	void VulkanShader::SetIntArray(const std::string& name, uint32_t count, int* values)
+	{
+	}
+
+	void VulkanShader::SetFloat(const std::string& name, float value)
+	{
+	}
+
+	void VulkanShader::SetFloat2(const std::string& name, const glm::vec2& values)
+	{
+	}
+
+	void VulkanShader::SetFloat3(const std::string& name, const glm::vec4& values)
+	{
+	}
+
+	void VulkanShader::SetFloat4(const std::string& name, const glm::vec4& values)
+	{
+	}
+
+	void VulkanShader::SetMat2(const std::string& name, const glm::mat2& matrix)
+	{
+	}
+
+	void VulkanShader::SetMat3(const std::string& name, const glm::mat3& matrix)
+	{
+	}
+
+	void VulkanShader::SetMat4(const std::string& name, const glm::mat4& matrix)
+	{
 	}
 
 	std::string VulkanShader::GetSourceFilename(Shader::Stage stage)
 	{
 		return m_Name + "." + VulkanUtils::ShaderStageToFileExtension(stage);
 	}
-
-
 }

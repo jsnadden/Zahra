@@ -47,6 +47,17 @@ namespace Zahra
 		"VK_LAYER_KHRONOS_validation"
 	};
 
+	static VulkanContext* s_Instance = nullptr;
+
+	VulkanContext* VulkanContext::Get(GLFWwindow* handle)
+	{
+		if (!s_Instance)
+		{
+			s_Instance = new VulkanContext(handle);
+		}
+
+		return s_Instance;
+	}
 	VulkanContext::VulkanContext(GLFWwindow* handle)
 		: m_WindowHandle(handle)
 	{
