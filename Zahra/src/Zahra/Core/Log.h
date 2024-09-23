@@ -70,6 +70,6 @@ inline OStream& operator<<(OStream& stream, const glm::qua<T, Q>& quaternion)
 #define Z_SCRIPT_CRITICAL(...) ::Zahra::Log::GetScriptLogger()->critical(__VA_ARGS__)
 
 // Vulkan logging macros
-#define Z_VULKAN_INFO(...)		::Zahra::Log::GetVulkanLogger()->info(__VA_ARGS__)
+#define Z_VULKAN_INFO(...)		::Zahra::Log::GetVulkanLogger()->trace(__VA_ARGS__)
 #define Z_VULKAN_WARN(...)		::Zahra::Log::GetVulkanLogger()->warn(__VA_ARGS__)
 #define Z_VULKAN_ERROR(...)		::Zahra::Log::GetVulkanLogger()->error(__VA_ARGS__)

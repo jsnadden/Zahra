@@ -23,7 +23,7 @@ namespace Zahra
 
 		m_Framebuffer = Framebuffer::Create(framebufferSpec);
 
-		m_EditorScene = CreateRef<Scene>();
+		m_EditorScene = Ref<Scene>::Create();
 		m_ActiveScene = m_EditorScene;
 
 		Renderer::SetLineThickness(3.f);
@@ -35,8 +35,6 @@ namespace Zahra
 			SceneSerialiser serialiser(m_EditorScene);
 			serialiser.DeserialiseYaml(sceneFilePath);
 		}
-
-		m_EditorCamera = CreateRef<EditorCamera>(EditorCamera(.5f, 1.78f, .1f, 1000.f));
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 		m_SceneHierarchyPanel.SetEditorCamera(m_EditorCamera);
@@ -64,13 +62,13 @@ namespace Zahra
 			{
 				m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 				m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
-				m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+				m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 			}
 		}
 
 		if (m_ViewportHovered && m_SceneState != SceneState::Play)
 		{
-			m_EditorCamera->OnUpdate(dt);
+			m_EditorCamera.OnUpdate(dt);
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +88,7 @@ namespace Zahra
 				{
 					case SceneState::Edit:
 					{
-						m_ActiveScene->OnUpdateEditor(dt, *m_EditorCamera);
+						m_ActiveScene->OnUpdateEditor(dt, m_EditorCamera);
 						break;
 					}
 					case SceneState::Play:
@@ -100,7 +98,7 @@ namespace Zahra
 					}
 					case SceneState::Simulate:
 					{
-						m_ActiveScene->OnUpdateSimulation(dt, *m_EditorCamera);
+						m_ActiveScene->OnUpdateSimulation(dt, m_EditorCamera);
 						break;
 					}
 					default:
@@ -121,7 +119,7 @@ namespace Zahra
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		if (m_ViewportHovered) m_EditorCamera->OnEvent(event);
+		if (m_ViewportHovered) m_EditorCamera.OnEvent(event);
 
 		m_ContentBrowserPanel.OnEvent(event);
 		
@@ -483,8 +481,8 @@ namespace Zahra
 			}
 
 			// Editor camera
-			const glm::mat4& cameraProjection = m_EditorCamera->GetProjection();
-			glm::mat4 cameraView = m_EditorCamera->GetViewMatrix();
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			// Entity transform
 			auto& tc = selection.GetComponents<TransformComponent>();
@@ -500,7 +498,7 @@ namespace Zahra
 				ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
 			
 			// Feedback manipulated transform
-			if (ImGuizmo::IsUsing() && !m_EditorCamera->Controlled())
+			if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
 				Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
 
 		}
@@ -527,7 +525,7 @@ namespace Zahra
 			}
 			else
 			{
-				Renderer::BeginScene(*m_EditorCamera);
+				Renderer::BeginScene(m_EditorCamera);
 				Renderer::DrawRect(entityTransform.GetTransform(), m_HighlightSelectionColour);
 				Renderer::EndScene();
 			}
@@ -649,7 +647,7 @@ namespace Zahra
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
 	{
 		// block other mouse input when we're trying to use imguizmo, or move our camera around
-		if (m_EditorCamera->Controlled() || (ImGuizmo::IsOver() && m_SceneHierarchyPanel.GetSelectedEntity())) return false;
+		if (m_EditorCamera.Controlled() || (ImGuizmo::IsOver() && m_SceneHierarchyPanel.GetSelectedEntity())) return false;
 		
 		switch (event.GetMouseButton())
 		{
@@ -668,7 +666,7 @@ namespace Zahra
 		if (m_SceneState != SceneState::Edit) SceneStop();
 
 		{
-			m_EditorScene = CreateRef<Scene>();
+			m_EditorScene = Ref<Scene>::Create();
 
 			m_EditorScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 			m_CurrentFilePath.clear();
@@ -698,7 +696,7 @@ namespace Zahra
 			return;
 		}
 
-		Ref<Scene> newScene = CreateRef<Scene>();
+		Ref<Scene> newScene = Ref<Scene>::Create();
 		SceneSerialiser serialiser(newScene);
 		if (serialiser.DeserialiseYaml(filepath.string()))
 		{
@@ -760,7 +758,7 @@ namespace Zahra
 
 		int hoveredID = m_Framebuffer->ReadPixel(1, (int)mouse.x, (int)mouse.y);
 
-		m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.get());
+		m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.Raw());
 
 	}
 

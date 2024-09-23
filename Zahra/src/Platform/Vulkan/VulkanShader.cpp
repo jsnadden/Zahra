@@ -25,6 +25,48 @@ namespace Zahra
 			return s_CacheDirectory;
 		}
 
+		static Shader::StageBits ShaderStageToStageBit(Shader::Stage stage)
+		{
+			switch (stage)
+			{
+				case Shader::Stage::Vertex:
+				{
+					return Shader::StageBits::VertexBit;
+				}
+
+				case Shader::Stage::TesselationControl:
+				{
+					return Shader::StageBits::TesselationControlBit;
+				}
+
+				case Shader::Stage::TesselationEvaluation:
+				{
+					return Shader::StageBits::TesselationEvaluationBit;
+				}
+
+				case Shader::Stage::Geometry:
+				{
+					return Shader::StageBits::GeometryBit;
+				}
+
+				case Shader::Stage::Fragment:
+				{
+					return Shader::StageBits::FragmentBit;
+				}
+
+				case Shader::Stage::Compute:
+				{
+					return Shader::StageBits::ComputeBit;
+				}
+
+				default:
+				{
+					Z_CORE_ASSERT(false, "Unrecognised shader stage");
+					break;
+				}
+			}
+		}
+
 		static const char* ShaderStageToFileExtension(Shader::Stage stage)
 		{
 			const char* extension;
@@ -171,24 +213,90 @@ namespace Zahra
 			}
 		}
 
+		static VkShaderStageFlagBits ShaderStageToVkFlagBit(Shader::Stage stage)
+		{
+			switch (stage)
+			{
+				case Shader::Stage::Vertex:
+				{
+					return VK_SHADER_STAGE_VERTEX_BIT;
+				}
+
+				case Shader::Stage::TesselationControl:
+				{
+					return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+				}
+
+				case Shader::Stage::TesselationEvaluation:
+				{
+					return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+				}
+
+				case Shader::Stage::Geometry:
+				{
+					return VK_SHADER_STAGE_GEOMETRY_BIT;
+				}
+
+				case Shader::Stage::Fragment:
+				{
+					return VK_SHADER_STAGE_FRAGMENT_BIT;
+				}
+
+				case Shader::Stage::Compute:
+				{
+					return VK_SHADER_STAGE_COMPUTE_BIT;
+				}
+
+				default:
+				{
+					Z_CORE_ASSERT(false, "Unrecognised shader stage");
+					break;
+				}
+			}
+		}
 	}
 
-	VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& directory)
-		: m_Name(name), m_SourceDirectory(directory)
+	VulkanShader::VulkanShader(ShaderSpecification& specification)
+		: m_Specification(specification)
 	{
-		// TODO: currently only dealing with vertex and fragment shaders,
-		// others will be included (optionally) as I build on this.
-		Z_CORE_ASSERT(ReadShaderSource(Shader::Stage::Vertex));
-		Z_CORE_ASSERT(ReadShaderSource(Shader::Stage::Fragment));
-		
+		bool loaded = true;
+
+		// TODO: include other shader stages
+		if (specification.StageBitMask & Shader::StageBits::VertexBit)
+			loaded &= ReadShaderSource(Shader::Stage::Vertex);
+
+		if (specification.StageBitMask & Shader::StageBits::FragmentBit)
+			loaded &= ReadShaderSource(Shader::Stage::Fragment);
+	
+		if (!loaded)
+		{
+			std::string errorMessage = "Failed to load source code for shader '{0}'" + specification.Name;
+			throw std::runtime_error(errorMessage);
+		}
+
 		std::filesystem::path cacheDirectory = VulkanUtils::GetSPIRVCachePath();
 		
 		Timer shaderCreationTimer;
 		{
 			CompileOrGetSPIRV(m_GLSLSource, cacheDirectory);
 			CreateModules(m_SPIRVBytecode);
+
+			///////////////////////////////////////////////////////////////////////////////////////
+			// TODO: move this to its own function, possibly in VulkanPipeline?
+			//for (auto& [stage, module] : m_Modules)
+			//{
+			//	VkPipelineShaderStageCreateInfo shaderStageInfo;
+			//	shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			//	shaderStageInfo.stage = VulkanUtils::ShaderStageToFlagBit(stage);
+			//	shaderStageInfo.module = module;
+			//	shaderStageInfo.pName = "main";
+			//	shaderStageInfo.pSpecializationInfo = nullptr; // TODO: allows you to specify values for shader constants
+			//
+			//
+			//}
+			///////////////////////////////////////////////////////////////////////////////////////
 		}
-		Z_CORE_WARN("Shader creation/acquisition took {0} ms", shaderCreationTimer.ElapsedMillis());
+		Z_CORE_TRACE("Shader creation took {0} ms", shaderCreationTimer.ElapsedMillis());
 
 	}
 
@@ -204,7 +312,7 @@ namespace Zahra
 	{
 		bool success = true;
 
-		std::filesystem::path sourceFilepath = m_SourceDirectory / GetSourceFilename(stage);
+		std::filesystem::path sourceFilepath = m_Specification.SourceDirectory / GetSourceFilename(stage);
 
 		if (!std::filesystem::exists(sourceFilepath))
 		{
@@ -217,7 +325,7 @@ namespace Zahra
 		if (sourceCodeSize)
 		{
 			m_GLSLSource[stage] = sourceCode;
-			Z_CORE_INFO("Successfully loaded shader source file '{0}'", sourceFilepath.string().c_str());
+			Z_CORE_TRACE("Successfully loaded shader source file '{0}'", sourceFilepath.string().c_str());
 		}
 		else
 		{
@@ -241,7 +349,7 @@ namespace Zahra
 
 		for (auto&& [stage, source] : shaderSources)
 		{
-			std::filesystem::path spirvFilename = m_Name + "_" + VulkanUtils::ShaderStageToFileExtension(stage) + ".spv";
+			std::filesystem::path spirvFilename = m_Specification.Name + "_" + VulkanUtils::ShaderStageToFileExtension(stage) + ".spv";
 			std::filesystem::path spirvFilepath = cacheDirectory / spirvFilename;
 
 			std::ifstream filestream(spirvFilepath, std::ios::in | std::ios::binary | std::ios::ate);
@@ -257,7 +365,7 @@ namespace Zahra
 			}
 			else
 			{
-				std::filesystem::path sourceFilepath = m_SourceDirectory / GetSourceFilename(stage);
+				std::filesystem::path sourceFilepath = m_Specification.SourceDirectory / GetSourceFilename(stage);
 
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source,
 					VulkanUtils::ShaderStageToShaderC(stage), sourceFilepath.string().c_str(), options);
@@ -293,7 +401,8 @@ namespace Zahra
 			moduleInfo.codeSize = bytes.size() * sizeof(uint32_t);
 			moduleInfo.pCode = bytes.data();
 
-			VulkanUtils::ValidateVkResult(vkCreateShaderModule(VulkanContext::Get()->GetDevice()->Device, &moduleInfo, nullptr, &m_Modules[stage]));
+			VkDevice device = VulkanContext::GetCurrentDevice()->Device;
+			VulkanUtils::ValidateVkResult(vkCreateShaderModule(device, &moduleInfo, nullptr, &m_Modules[stage]));
 		}
 	}
 
@@ -343,6 +452,6 @@ namespace Zahra
 
 	std::string VulkanShader::GetSourceFilename(Shader::Stage stage)
 	{
-		return m_Name + "." + VulkanUtils::ShaderStageToFileExtension(stage);
+		return m_Specification.Name + "." + VulkanUtils::ShaderStageToFileExtension(stage);
 	}
 }

@@ -47,17 +47,6 @@ namespace Zahra
 		"VK_LAYER_KHRONOS_validation"
 	};
 
-	static VulkanContext* s_Instance = nullptr;
-
-	VulkanContext* VulkanContext::Get(GLFWwindow* handle)
-	{
-		if (!s_Instance)
-		{
-			s_Instance = new VulkanContext(handle);
-		}
-
-		return s_Instance;
-	}
 	VulkanContext::VulkanContext(GLFWwindow* handle)
 		: m_WindowHandle(handle)
 	{
@@ -73,8 +62,11 @@ namespace Zahra
 			CreateDebugMessenger();
 		}
 
-		m_Swapchain = CreateRef<VulkanSwapchain>();
+		m_Swapchain = Ref<VulkanSwapchain>::Create();
 		m_Swapchain->Init(m_VulkanInstance, m_WindowHandle);
+		m_Device = m_Swapchain->GetDevice();
+
+		Z_CORE_INFO("Vulkan renderer successfully initialised");
 	}
 
 	void VulkanContext::Shutdown()
@@ -104,7 +96,7 @@ namespace Zahra
 			bool supported = CheckValidationLayerSupport(s_ValidationLayers);
 			if (!supported)
 			{
-				Z_CORE_INFO("Disabling validation layers");
+				Z_CORE_WARN("Disabling Vulkan validation layers");
 				m_ValidationLayersEnabled = false;
 			}
 		}
@@ -157,7 +149,7 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 		// CREATE INSTANCE
 		VulkanUtils::ValidateVkResult(vkCreateInstance(&instanceCreateInfo, nullptr, &m_VulkanInstance), "Vulkan instance creation failed");
-		Z_CORE_INFO("Vulkan instance creation succeeded");
+		Z_CORE_TRACE("Vulkan instance creation succeeded");
 	}
 
 	void VulkanContext::GetGLFWExtensions(std::vector<const char*>& extensions)

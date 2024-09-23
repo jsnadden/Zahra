@@ -13,7 +13,7 @@ namespace Zahra
 {
 	class Entity;
 
-	class Scene
+	class Scene : public RefCounted
 	{
 	public:
 		Scene();

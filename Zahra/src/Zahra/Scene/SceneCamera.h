@@ -28,7 +28,7 @@ namespace Zahra
 		enum class ProjectionType { Orthographic = 0, Perspective = 1 };
 
 		SceneCamera();
-		virtual ~SceneCamera() = default;
+		virtual ~SceneCamera() override = default;
 
 		void SetViewportSize(float width, float height);
 

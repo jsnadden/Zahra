@@ -8,7 +8,7 @@ struct GLFWwindow;
 
 namespace Zahra
 {
-	class VulkanSwapchain
+	class VulkanSwapchain : public RefCounted
 	{
 	public:
 		VulkanSwapchain() = default;

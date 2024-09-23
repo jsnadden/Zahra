@@ -101,7 +101,7 @@ namespace Zahra
 		//glfwWindowHint(GLFW_TITLEBAR, false);		
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_WindowData.Title.c_str(), nullptr, nullptr);
-		Z_CORE_INFO("Window successfully created: {0}", props.Title);
+		Z_CORE_INFO("'{0}' window successfully created", props.Title);
 		
 		glfwSetWindowPos(m_Window, m_WindowData.Rectangle.XPosition, m_WindowData.Rectangle.YPosition);
 		glfwSetWindowUserPointer(m_Window, &m_WindowData);
@@ -282,6 +282,8 @@ namespace Zahra
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 		CoUninitialize(); // Shutdown Windows COM library
+
+		Z_CORE_INFO("'{0}' window closed", m_WindowData.Title);
 	}
 
 	void WindowsWindow::OnUpdate()

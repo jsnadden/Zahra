@@ -9,21 +9,50 @@
 
 namespace Zahra
 {
-	class Shader
+
+	class Shader : public RefCounted
 	{
 	public:
 
-		enum Stage { Vertex, TesselationControl, TesselationEvaluation, Geometry, Fragment, Compute };
+		enum class Stage
+		{
+			Vertex,
+			TesselationControl,
+			TesselationEvaluation,
+			Geometry,
+			Fragment,
+			Compute
+		};		
+
+		enum StageBits
+		{
+			None = 0,
+			VertexBit = 0x00000001,
+			TesselationControlBit = 0x00000002,
+			TesselationEvaluationBit = 0x00000004,
+			GeometryBit = 0x00000008,
+			FragmentBit = 0x00000010,
+			ComputeBit = 0x00000020,
+			AllGraphics = 0x0000001f
+		};
+
+		struct ShaderSpecification
+		{
+			std::string Name;
+			std::filesystem::path SourceDirectory = "Resources/Shaders";
+			uint32_t StageBitMask = Shader::StageBits::AllGraphics;
+		};
 
 		virtual ~Shader() = default;
 
+		// TODO: remove these - Vulkan pipelines are immutable, and all bindings are configured in advance!!
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
 		virtual const std::string& GetName() const = 0;
 
 		// this top Create method is preferred for Vulkan
-		static Ref<Shader> Create(const std::string& name, const std::filesystem::path& directory);
+		static Ref<Shader> Create(ShaderSpecification& specification);
 		// these two will be deprecated soon!
 		static Ref<Shader> Create(const std::string& filepath);
 		static Ref<Shader> Create(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource);

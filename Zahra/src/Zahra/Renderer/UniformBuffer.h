@@ -5,7 +5,7 @@
 namespace Zahra
 {
 
-	class UniformBuffer
+	class UniformBuffer : public RefCounted
 	{
 	public:
 		virtual ~UniformBuffer() {}

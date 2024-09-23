@@ -4,7 +4,7 @@ struct GLFWwindow;
 
 namespace Zahra
 {
-	class RendererContext
+	class RendererContext : public RefCounted
 	{
 	public:
 		virtual ~RendererContext() = default;

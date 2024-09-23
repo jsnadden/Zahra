@@ -357,7 +357,7 @@ namespace Zahra
 		m_Scene->m_Registry.sort<entt::entity>([](const auto& lhs, const auto& rhs) { return lhs < rhs; });
 		m_Scene->m_Registry.view<entt::entity>().each([&](auto entityHandle)
 			{
-				Entity entity = { entityHandle, m_Scene.get() };
+				Entity entity = { entityHandle, m_Scene.Raw() };
 				if (!entity) return;
 
 				SerialiseEntity(out, entity);

@@ -79,7 +79,7 @@ namespace Zahra
 
 	Ref<Scene> Scene::CopyScene(Ref<Scene> srcScene)
 	{
-		Ref<Scene> destScene = CreateRef<Scene>();
+		Ref<Scene> destScene = Ref<Scene>::Create();
 
 		destScene->SetName(srcScene->GetName());
 
@@ -94,7 +94,7 @@ namespace Zahra
 		// copy entities, along with their IDComponents and TagComponents
 		srcRegistry.view<entt::entity>().each([&](auto entityHandle)
 			{
-				Entity oldEntity = { entityHandle, srcScene.get() };
+				Entity oldEntity = { entityHandle, srcScene.Raw() };
 				ZGUID guid = oldEntity.GetGUID();
 				Entity newEntity = destScene->CreateEntity(guid, oldEntity.GetComponents<TagComponent>().Tag);
 				guidToNewHandle[guid] = (entt::entity)newEntity;
@@ -105,7 +105,7 @@ namespace Zahra
 
 		// set active camera
 		Entity oldCamera = srcScene->GetActiveCamera();
-		if (oldCamera) destScene->SetActiveCamera({ guidToNewHandle[oldCamera.GetGUID()] , destScene.get() });
+		if (oldCamera) destScene->SetActiveCamera({ guidToNewHandle[oldCamera.GetGUID()] , destScene.Raw() });
 
 		return destScene;
 	}

@@ -48,10 +48,17 @@ namespace MonoUtils
 namespace Zahra
 {
 
-	class EntityScriptType
+	class EntityScriptType : public RefCounted
 	{
 	public:
 		EntityScriptType() = default;
+
+		EntityScriptType(const EntityScriptType& other)
+		{
+			m_Class = other.m_Class;
+			m_Namespace = other.m_Namespace;
+			m_Name = other.m_Name;
+		}
 
 		EntityScriptType(MonoImage* image, const std::string& classNamespace, const std::string& className)
 			: m_Namespace(classNamespace), m_Name(className)
@@ -93,7 +100,7 @@ namespace Zahra
 		std::string m_Name;
 	};
 
-	class EntityScriptInstance
+	class EntityScriptInstance : public RefCounted
 	{
 	public:
 		EntityScriptInstance(Ref<EntityScriptType> scriptClass, ZGUID guid)
@@ -187,7 +194,7 @@ namespace Zahra
 		auto& component = entity.GetComponents<ScriptComponent>();
 		if (!ValidEntityClass(component.ScriptName)) return;
 
-		s_SEData->EntityScriptInstances[entity.GetGUID()] = CreateRef<EntityScriptInstance>(s_SEData->EntityScriptTypes[component.ScriptName], entity.GetGUID());
+		s_SEData->EntityScriptInstances[entity.GetGUID()] = Ref<EntityScriptInstance>::Create(s_SEData->EntityScriptTypes[component.ScriptName], entity.GetGUID());
 	}
 
 	void ScriptEngine::UpdateScript(Entity entity, float dt)
@@ -287,7 +294,7 @@ namespace Zahra
 			if (reflectedClass.IsSubclassOf(entityClass))
 			{
 				std::string fullName = reflectedNamespace + "." + reflectedName;
-				s_SEData->EntityScriptTypes[fullName] = CreateRef<EntityScriptType>(reflectedClass);
+				s_SEData->EntityScriptTypes[fullName] = Ref<EntityScriptType>::Create(reflectedClass);
 				Z_CORE_TRACE("{} is an Entity type", fullName);
 			}
 		}

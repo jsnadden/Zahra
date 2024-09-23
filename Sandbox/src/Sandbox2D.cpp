@@ -12,12 +12,16 @@ Sandbox2DLayer::Sandbox2DLayer()
 
 void Sandbox2DLayer::OnAttach()
 {
-	m_Shader = Zahra::Shader::Create("vulkan_tutorial", "Assets/Shaders");
+	Zahra::Shader::ShaderSpecification spec;
+	spec.Name = "vulkan_tutorial";
+	spec.SourceDirectory = "Assets/Shaders";
+
+	m_Shader = Zahra::Shader::Create(spec);
 }
 
 void Sandbox2DLayer::OnDetach()
 {
-	m_Shader.reset();
+	m_Shader.Reset();
 }
 
 void Sandbox2DLayer::OnUpdate(float dt)

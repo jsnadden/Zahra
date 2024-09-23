@@ -366,7 +366,7 @@ namespace Zahra
 			for (uint32_t i = 1; i < s_RendererData.TextureSlotIndex; i++)
 			{
 				// TODO: this comparison is horrendous, refactor it once we have a general asset UUID system
-				if (*s_RendererData.TextureSlots[i].get() == *texture.get())
+				if (*s_RendererData.TextureSlots[i].Raw() == *texture.Raw())
 				{
 					textureIndex = (float)i;
 					break;

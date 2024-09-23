@@ -37,7 +37,7 @@ namespace Zahra
 		virtual void WriteConfig() override;
 		virtual void ReadConfig() override;
 
-		inline virtual Ref<RendererContext> GetRendererContext() override { return m_Context; }
+		virtual Ref<RendererContext> GetRendererContext() override { return m_Context; }
 
 		inline virtual GLFWwindow* GetWindowHandle() const override { return m_Window; };
 

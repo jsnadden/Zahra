@@ -29,7 +29,7 @@ namespace Zahra
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
 
-		Ref<EditorCamera> m_EditorCamera;
+		EditorCamera m_EditorCamera{ .5f, 1.78f, .1f, 1000.f };
 
 		std::map<std::string, Ref<Texture2D>> m_Icons;
 

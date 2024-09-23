@@ -125,7 +125,7 @@ namespace Zahra
 
 	};
 
-	class VertexBuffer
+	class VertexBuffer : public RefCounted
 	{
 	public:
 		virtual ~VertexBuffer() = default;
@@ -143,7 +143,7 @@ namespace Zahra
 	};
 
 	// Todo: provide option for 16-bit index buffers
-	class IndexBuffer
+	class IndexBuffer : public RefCounted
 	{
 	public:
 		virtual ~IndexBuffer() = default;

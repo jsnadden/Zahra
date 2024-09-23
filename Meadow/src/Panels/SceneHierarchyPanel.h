@@ -9,10 +9,10 @@ namespace Zahra
 	{
 	public:
 		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(const Ref<Scene>& context, const Ref<EditorCamera>& camera);
+		SceneHierarchyPanel(const Ref<Scene>& context, EditorCamera& camera);
 
 		void SetContext(const Ref<Scene>& context);
-		void SetEditorCamera(const Ref<EditorCamera>& camera);
+		void SetEditorCamera(EditorCamera& camera);
 
 		void OnImGuiRender();
 
@@ -23,7 +23,7 @@ namespace Zahra
 
 	private:
 		Ref<Scene> m_Context;
-		Ref<EditorCamera> m_Camera;
+		EditorCamera* m_Camera;
 
 		Entity m_Selected;
 

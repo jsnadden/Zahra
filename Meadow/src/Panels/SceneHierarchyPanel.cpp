@@ -8,7 +8,7 @@
 
 namespace Zahra
 {
-	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context, const Ref<EditorCamera>& camera)
+	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context, EditorCamera& camera)
 	{
 		SetContext(context);
 		SetEditorCamera(camera);
@@ -20,9 +20,9 @@ namespace Zahra
 		m_Context = context;
 	}
 
-	void SceneHierarchyPanel::SetEditorCamera(const Ref<EditorCamera>& camera)
+	void SceneHierarchyPanel::SetEditorCamera(EditorCamera& camera)
 	{
-		m_Camera = camera;
+		m_Camera = &camera;
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -50,7 +50,7 @@ namespace Zahra
 				entityView.use<entt::entity>();
 				entityView.each([&](auto entityId)
 					{
-						Entity entity{ entityId, m_Context.get() };
+						Entity entity{ entityId, m_Context.Raw() };
 
 						DrawEntityNode(entity);
 

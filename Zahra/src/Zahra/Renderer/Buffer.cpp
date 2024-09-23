@@ -11,19 +11,20 @@ namespace Zahra
         switch (Renderer::GetAPI())
         {
         case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
-        case RendererAPI::API::OpenGL:    return CreateRef<OpenGLVertexBuffer>(size);
+        case RendererAPI::API::OpenGL:    return Ref<OpenGLVertexBuffer>::Create(size);
         case RendererAPI::API::DX12:  Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
         case RendererAPI::API::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan is not currently supported"); return nullptr;
         }
         Z_CORE_ASSERT(false, "Unknown RendererAPI");
         return nullptr;
     }
+
     Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t count)
     {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
-            case RendererAPI::API::OpenGL:    return CreateRef<OpenGLVertexBuffer>(vertices, count);
+            case RendererAPI::API::OpenGL:    return Ref<OpenGLVertexBuffer>::Create(vertices, count);
             case RendererAPI::API::DX12:  Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
             case RendererAPI::API::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan is not currently supported"); return nullptr;
         }
@@ -36,7 +37,7 @@ namespace Zahra
         switch (Renderer::GetAPI())
         {
         case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
-        case RendererAPI::API::OpenGL:    return CreateRef<OpenGLIndexBuffer>(indices, count);
+        case RendererAPI::API::OpenGL:    return Ref<OpenGLIndexBuffer>::Create(indices, count);
         case RendererAPI::API::DX12:  Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
         case RendererAPI::API::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan is not currently supported"); return nullptr;
         }

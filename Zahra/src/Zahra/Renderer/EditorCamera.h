@@ -8,7 +8,7 @@
 
 namespace Zahra
 {
-	class EditorCamera : Camera
+	class EditorCamera : public Camera
 	{
 	public:
 		EditorCamera() = default;

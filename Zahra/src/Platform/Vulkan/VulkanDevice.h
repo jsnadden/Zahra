@@ -31,7 +31,7 @@ namespace Zahra
 		VkSurfaceCapabilitiesKHR Capabilities;
 	};
 
-	struct VulkanDevice
+	struct VulkanDevice : public RefCounted
 	{
 		VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
 		VkDevice Device = VK_NULL_HANDLE;

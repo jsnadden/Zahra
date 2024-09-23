@@ -12,13 +12,13 @@ namespace Zahra
 	class VulkanShader : public Shader
 	{
 	public:
-		VulkanShader(const std::string& name, const std::filesystem::path& directory);
+		VulkanShader(ShaderSpecification& specification);
 		~VulkanShader();
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
-		virtual const std::string& GetName() const override { return m_Name; }
+		virtual const std::string& GetName() const override { return m_Specification.Name; }
 
 		virtual void SetInt(const  std::string& name, int value) override;
 		virtual void SetIntArray(const  std::string& name, uint32_t count, int* values) override;
@@ -33,10 +33,7 @@ namespace Zahra
 		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) override;
 
 	private:
-		uint32_t m_RendererID;
-
-		std::string m_Name;
-		std::filesystem::path m_SourceDirectory;
+		ShaderSpecification m_Specification;
 
 		std::unordered_map<Shader::Stage, std::string> m_GLSLSource;
 		std::unordered_map<Shader::Stage, std::vector<uint32_t>> m_SPIRVBytecode;

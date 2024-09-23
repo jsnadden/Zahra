@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "EditorCamera.h"
 
+#include "Zahra/Core/Application.h"
 #include "Zahra/Scene/Components.h"
 
 namespace Zahra
@@ -22,6 +23,8 @@ namespace Zahra
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
 		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+
+		static Ref<RendererContext> GetContext() { return Application::Get().GetWindow().GetRendererContext(); }
 
 		static float GetLineThickness();
 		static void SetLineThickness(float thickness);

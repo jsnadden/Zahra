@@ -51,8 +51,8 @@ namespace Zahra
 
 		s_VulkanLogger = std::make_shared<spdlog::logger>("VULKAN", begin(vkLogSinks), end(vkLogSinks));
 		spdlog::register_logger(s_VulkanLogger);
-		s_VulkanLogger->set_level(spdlog::level::info);
-		s_VulkanLogger->flush_on(spdlog::level::info);
+		s_VulkanLogger->set_level(spdlog::level::trace);
+		s_VulkanLogger->flush_on(spdlog::level::trace);
 
 	}
 }

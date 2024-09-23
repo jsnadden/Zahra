@@ -4,6 +4,7 @@
 #include "Platform/Vulkan/VulkanDevice.h"
 #include "Platform/Vulkan/VulkanSwapchain.h"
 #include "Zahra/Core/Application.h"
+#include "Zahra/Renderer/Renderer.h"
 #include "Zahra/Renderer/RendererContext.h"
 
 #include <vulkan/vulkan.h>
@@ -13,7 +14,9 @@ namespace Zahra
 	class VulkanContext : public RendererContext
 	{
 	public:
-		static VulkanContext* Get(GLFWwindow* handle = nullptr);
+		VulkanContext(GLFWwindow* handle);
+
+		static Ref<VulkanContext> Get() { return Ref<VulkanContext>(Renderer::GetContext()); }
 
 		virtual void Init() override;
 		virtual void Shutdown() override;
@@ -22,21 +25,17 @@ namespace Zahra
 		Ref<VulkanSwapchain> GetSwapchain() { return m_Swapchain; }
 
 		VkSurfaceKHR& GetSurface() { return m_Swapchain->GetSurface(); }
-		Ref<VulkanDevice> GetDevice() { return m_Swapchain->GetDevice(); }
+		Ref<VulkanDevice> GetDevice() { return m_Device; }
+		static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
 
 	private:
-		// singleton
-		VulkanContext(GLFWwindow* handle);
-		VulkanContext(const VulkanContext&) = delete;
-		VulkanContext(VulkanContext&&) = delete;
-		VulkanContext& operator=(const VulkanContext&) = delete;
-		VulkanContext& operator=(VulkanContext&&) = delete;
 
 		GLFWwindow* m_WindowHandle;
 
 		VkInstance m_VulkanInstance = VK_NULL_HANDLE;
 		
 		Ref<VulkanSwapchain> m_Swapchain;
+		Ref<VulkanDevice> m_Device;
 
 		VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
 
