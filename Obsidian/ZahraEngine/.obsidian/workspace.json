@@ -11,11 +11,14 @@
             "id": "6d0e9411287ab3e2",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "Planning & Learning/VULKAN.md",
-                "mode": "source",
-                "source": false
+                "file": "Planning & Learning/Renderer architecture.canvas",
+                "viewState": {
+                  "x": 783.0947922134069,
+                  "y": -330.9495368542736,
+                  "zoom": -0.333333333333333
+                }
               }
             }
           }
@@ -85,7 +88,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Planning & Learning/VULKAN.md",
+                "file": "Planning & Learning/Renderer architecture.canvas",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +105,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Planning & Learning/VULKAN.md",
+                "file": "Planning & Learning/Renderer architecture.canvas",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +128,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Planning & Learning/VULKAN.md"
+                "file": "Planning & Learning/Renderer architecture.canvas"
               }
             }
           }
@@ -148,12 +151,14 @@
   },
   "active": "6d0e9411287ab3e2",
   "lastOpenFiles": [
+    "Planning & Learning/Renderer architecture.canvas",
+    "Planning & Learning/VULKAN.md",
+    "Planning & Learning/Vulkan pipeline.md",
     "Planning & Learning/Resource Management.md",
     "Planning & Learning/Parallelisation.md",
     "Planning & Learning/Memory Management.md",
     "Planning & Learning/Audio engine.md",
     "Planning & Learning/ECS Reflection & Serialisation.md",
-    "Planning & Learning/VULKAN.md",
     "TODO/Refactor properties panel helper functions in editor.md",
     "TODO",
     "Untitled.md",

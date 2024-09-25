@@ -18,6 +18,7 @@ namespace Zahra
 
 		VkSurfaceKHR& GetSurface() { return m_Surface; }
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
+		const VkExtent2D& GetExtent() { return m_Extent; }
 
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;

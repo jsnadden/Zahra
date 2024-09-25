@@ -20,17 +20,7 @@ namespace Zahra
 
 		virtual const std::string& GetName() const override { return m_Specification.Name; }
 
-		virtual void SetInt(const  std::string& name, int value) override;
-		virtual void SetIntArray(const  std::string& name, uint32_t count, int* values) override;
-
-		virtual void SetFloat(const  std::string& name, float value) override;
-		virtual void SetFloat2(const std::string& name, const glm::vec2& values) override;
-		virtual void SetFloat3(const std::string& name, const glm::vec4& values) override;
-		virtual void SetFloat4(const std::string& name, const glm::vec4& values) override;
-
-		virtual void SetMat2(const std::string& name, const glm::mat2& matrix) override;
-		virtual void SetMat3(const std::string& name, const glm::mat3& matrix) override;
-		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) override;
+		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStages() { return m_PipelineShaderStageInfos; }
 
 	private:
 		ShaderSpecification m_Specification;
@@ -38,6 +28,7 @@ namespace Zahra
 		std::unordered_map<Shader::Stage, std::string> m_GLSLSource;
 		std::unordered_map<Shader::Stage, std::vector<uint32_t>> m_SPIRVBytecode;
 		std::unordered_map<Shader::Stage, VkShaderModule> m_Modules;
+		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageInfos;
 
 		bool ReadShaderSource(Shader::Stage stage);
 		void CompileOrGetSPIRV(const std::unordered_map<Shader::Stage, std::string>& shaderSources, const std::filesystem::path& cacheDirectory);

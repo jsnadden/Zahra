@@ -663,6 +663,7 @@
     <ClCompile Include="src\Zahra\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\Pipeline.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RenderCommand.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp" />

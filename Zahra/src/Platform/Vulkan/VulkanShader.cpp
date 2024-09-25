@@ -280,21 +280,6 @@ namespace Zahra
 		{
 			CompileOrGetSPIRV(m_GLSLSource, cacheDirectory);
 			CreateModules(m_SPIRVBytecode);
-
-			///////////////////////////////////////////////////////////////////////////////////////
-			// TODO: move this to its own function, possibly in VulkanPipeline?
-			//for (auto& [stage, module] : m_Modules)
-			//{
-			//	VkPipelineShaderStageCreateInfo shaderStageInfo;
-			//	shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-			//	shaderStageInfo.stage = VulkanUtils::ShaderStageToFlagBit(stage);
-			//	shaderStageInfo.module = module;
-			//	shaderStageInfo.pName = "main";
-			//	shaderStageInfo.pSpecializationInfo = nullptr; // TODO: allows you to specify values for shader constants
-			//
-			//
-			//}
-			///////////////////////////////////////////////////////////////////////////////////////
 		}
 		Z_CORE_TRACE("Shader creation took {0} ms", shaderCreationTimer.ElapsedMillis());
 
@@ -403,6 +388,12 @@ namespace Zahra
 
 			VkDevice device = VulkanContext::GetCurrentDevice()->Device;
 			VulkanUtils::ValidateVkResult(vkCreateShaderModule(device, &moduleInfo, nullptr, &m_Modules[stage]));
+
+			VkPipelineShaderStageCreateInfo& shaderStageInfo = m_PipelineShaderStageInfos.emplace_back();
+			shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			shaderStageInfo.stage = VulkanUtils::ShaderStageToVkFlagBit(stage);
+			shaderStageInfo.module = m_Modules[stage];
+			shaderStageInfo.pName = "main";
 		}
 	}
 
@@ -411,42 +402,6 @@ namespace Zahra
 	}
 
 	void VulkanShader::Unbind() const
-	{
-	}
-
-	void VulkanShader::SetInt(const std::string& name, int value)
-	{
-	}
-
-	void VulkanShader::SetIntArray(const std::string& name, uint32_t count, int* values)
-	{
-	}
-
-	void VulkanShader::SetFloat(const std::string& name, float value)
-	{
-	}
-
-	void VulkanShader::SetFloat2(const std::string& name, const glm::vec2& values)
-	{
-	}
-
-	void VulkanShader::SetFloat3(const std::string& name, const glm::vec4& values)
-	{
-	}
-
-	void VulkanShader::SetFloat4(const std::string& name, const glm::vec4& values)
-	{
-	}
-
-	void VulkanShader::SetMat2(const std::string& name, const glm::mat2& matrix)
-	{
-	}
-
-	void VulkanShader::SetMat3(const std::string& name, const glm::mat3& matrix)
-	{
-	}
-
-	void VulkanShader::SetMat4(const std::string& name, const glm::mat4& matrix)
 	{
 	}
 

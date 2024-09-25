@@ -20,7 +20,7 @@ namespace Zahra
 
 		virtual const std::string& GetName() const override { return m_Name; }
 
-		virtual void SetInt(const  std::string& name, int value) override;
+		/*virtual void SetInt(const  std::string& name, int value) override;
 		virtual void SetIntArray(const  std::string& name, uint32_t count, int* values) override;
 		
 		virtual void SetFloat(const  std::string& name, float value) override;
@@ -30,7 +30,7 @@ namespace Zahra
 		
 		virtual void SetMat2(const std::string& name, const glm::mat2& matrix) override;
 		virtual void SetMat3(const std::string& name, const glm::mat3& matrix) override;
-		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) override;
+		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) override;*/
 		
 
 	private:

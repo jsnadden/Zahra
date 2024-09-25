@@ -12,16 +12,23 @@ Sandbox2DLayer::Sandbox2DLayer()
 
 void Sandbox2DLayer::OnAttach()
 {
-	Zahra::Shader::ShaderSpecification spec;
-	spec.Name = "vulkan_tutorial";
-	spec.SourceDirectory = "Assets/Shaders";
+	Zahra::Shader::ShaderSpecification shaderSpec{};
+	shaderSpec.Name = "vulkan_tutorial";
+	shaderSpec.SourceDirectory = "Assets/Shaders";
 
-	m_Shader = Zahra::Shader::Create(spec);
+	m_Shader = Zahra::Shader::Create(shaderSpec);
+
+	Zahra::PipelineSpecification pipelineSpec{};
+	pipelineSpec.Shader = m_Shader;
+	pipelineSpec.TargetFramebuffer = nullptr;
+
+	m_Pipeline = Zahra::Pipeline::Create(pipelineSpec);
 }
 
 void Sandbox2DLayer::OnDetach()
 {
 	m_Shader.Reset();
+	m_Pipeline.Reset();
 }
 
 void Sandbox2DLayer::OnUpdate(float dt)

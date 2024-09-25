@@ -419,7 +419,7 @@ namespace Zahra
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SET UNIFORMS
 
-	void OpenGLShader::SetInt(const std::string& name, int value)
+	/*void OpenGLShader::SetInt(const std::string& name, int value)
 	{
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		glUniform1i(location, value);
@@ -471,7 +471,7 @@ namespace Zahra
 	{
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
-	}
+	}*/
 
 }
 

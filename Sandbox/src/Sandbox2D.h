@@ -19,6 +19,6 @@ public:
 
 private:
 	Zahra::Ref<Zahra::Shader> m_Shader;
-
+	Zahra::Ref<Zahra::Pipeline> m_Pipeline;
 };
 
