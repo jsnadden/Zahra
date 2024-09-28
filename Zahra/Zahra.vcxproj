@@ -197,6 +197,7 @@
     <ClInclude Include="src\Zahra\Renderer\Renderer.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererContext.h" />
+    <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
     <ClInclude Include="src\Zahra\Renderer\Shader.h" />
     <ClInclude Include="src\Zahra\Renderer\Texture.h" />
     <ClInclude Include="src\Zahra\Renderer\UniformBuffer.h" />
@@ -630,6 +631,7 @@
     <ClInclude Include="vendor\glm\glm\vec4.hpp" />
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
     <ClInclude Include="vendor\stb_image\stb_image.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanRenderPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
@@ -668,6 +670,7 @@
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererContext.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\RenderPass.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Shader.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Texture.cpp" />
     <ClCompile Include="src\Zahra\Renderer\UniformBuffer.cpp" />
@@ -686,6 +689,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanRenderPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Djinn\Djinn.csproj">

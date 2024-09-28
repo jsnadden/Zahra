@@ -25,38 +25,38 @@ namespace Zahra
 			return s_CacheDirectory;
 		}
 
-		static Shader::StageBits ShaderStageToStageBit(Shader::Stage stage)
+		static ShaderStageBits ShaderStageToStageBit(ShaderStage stage)
 		{
 			switch (stage)
 			{
-				case Shader::Stage::Vertex:
+				case ShaderStage::Vertex:
 				{
-					return Shader::StageBits::VertexBit;
+					return ShaderStageBits::VertexBit;
 				}
 
-				case Shader::Stage::TesselationControl:
+				case ShaderStage::TesselationControl:
 				{
-					return Shader::StageBits::TesselationControlBit;
+					return ShaderStageBits::TesselationControlBit;
 				}
 
-				case Shader::Stage::TesselationEvaluation:
+				case ShaderStage::TesselationEvaluation:
 				{
-					return Shader::StageBits::TesselationEvaluationBit;
+					return ShaderStageBits::TesselationEvaluationBit;
 				}
 
-				case Shader::Stage::Geometry:
+				case ShaderStage::Geometry:
 				{
-					return Shader::StageBits::GeometryBit;
+					return ShaderStageBits::GeometryBit;
 				}
 
-				case Shader::Stage::Fragment:
+				case ShaderStage::Fragment:
 				{
-					return Shader::StageBits::FragmentBit;
+					return ShaderStageBits::FragmentBit;
 				}
 
-				case Shader::Stage::Compute:
+				case ShaderStage::Compute:
 				{
-					return Shader::StageBits::ComputeBit;
+					return ShaderStageBits::ComputeBit;
 				}
 
 				default:
@@ -67,43 +67,43 @@ namespace Zahra
 			}
 		}
 
-		static const char* ShaderStageToFileExtension(Shader::Stage stage)
+		static const char* ShaderStageToFileExtension(ShaderStage stage)
 		{
 			const char* extension;
 
 			switch (stage)
 			{
-				case Shader::Stage::Vertex:
+				case ShaderStage::Vertex:
 				{
 					extension = "vert";
 					break;
 				}
 
-				case Shader::Stage::TesselationControl:
+				case ShaderStage::TesselationControl:
 				{
 					extension = "tesc";
 					break;
 				}
 
-				case Shader::Stage::TesselationEvaluation:
+				case ShaderStage::TesselationEvaluation:
 				{
 					extension = "tese";
 					break;
 				}
 
-				case Shader::Stage::Geometry:
+				case ShaderStage::Geometry:
 				{
 					extension = "geom";
 					break;
 				}
 
-				case Shader::Stage::Fragment:
+				case ShaderStage::Fragment:
 				{
 					extension = "frag";
 					break;
 				}
 
-				case Shader::Stage::Compute:
+				case ShaderStage::Compute:
 				{
 					extension = "comp";
 					break;
@@ -119,43 +119,43 @@ namespace Zahra
 			return extension;
 		}
 
-		static std::string ShaderStageToString(Shader::Stage stage)
+		static std::string ShaderStageToString(ShaderStage stage)
 		{
 			std::string stageName;
 
 			switch (stage)
 			{
-				case Shader::Stage::Vertex:
+				case ShaderStage::Vertex:
 				{
 					stageName = "vertex";
 					break;
 				}
 
-				case Shader::Stage::TesselationControl:
+				case ShaderStage::TesselationControl:
 				{
 					stageName = "tesselation control";
 					break;
 				}
 
-				case Shader::Stage::TesselationEvaluation:
+				case ShaderStage::TesselationEvaluation:
 				{
 					stageName = "tesselation evaluation";
 					break;
 				}
 
-				case Shader::Stage::Geometry:
+				case ShaderStage::Geometry:
 				{
 					stageName = "geometry";
 					break;
 				}
 
-				case Shader::Stage::Fragment:
+				case ShaderStage::Fragment:
 				{
 					stageName = "fragment";
 					break;
 				}
 
-				case Shader::Stage::Compute:
+				case ShaderStage::Compute:
 				{
 					stageName = "compute";
 					break;
@@ -171,36 +171,36 @@ namespace Zahra
 			return stageName;
 		}
 
-		static shaderc_shader_kind ShaderStageToShaderC(Shader::Stage stage)
+		static shaderc_shader_kind ShaderStageToShaderC(ShaderStage stage)
 		{
 			switch (stage)
 			{
-				case Shader::Stage::Vertex:
+				case ShaderStage::Vertex:
 				{
 					return shaderc_vertex_shader;
 				}
 
-				case Shader::Stage::TesselationControl:
+				case ShaderStage::TesselationControl:
 				{
 					return shaderc_tess_control_shader;
 				}
 
-				case Shader::Stage::TesselationEvaluation:
+				case ShaderStage::TesselationEvaluation:
 				{
 					return shaderc_tess_evaluation_shader;
 				}
 
-				case Shader::Stage::Geometry:
+				case ShaderStage::Geometry:
 				{
 					return shaderc_geometry_shader;
 				}
 
-				case Shader::Stage::Fragment:
+				case ShaderStage::Fragment:
 				{
 					return shaderc_fragment_shader;
 				}
 
-				case Shader::Stage::Compute:
+				case ShaderStage::Compute:
 				{
 					return shaderc_compute_shader;
 				}
@@ -213,36 +213,36 @@ namespace Zahra
 			}
 		}
 
-		static VkShaderStageFlagBits ShaderStageToVkFlagBit(Shader::Stage stage)
+		static VkShaderStageFlagBits ShaderStageToVkFlagBit(ShaderStage stage)
 		{
 			switch (stage)
 			{
-				case Shader::Stage::Vertex:
+				case ShaderStage::Vertex:
 				{
 					return VK_SHADER_STAGE_VERTEX_BIT;
 				}
 
-				case Shader::Stage::TesselationControl:
+				case ShaderStage::TesselationControl:
 				{
 					return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 				}
 
-				case Shader::Stage::TesselationEvaluation:
+				case ShaderStage::TesselationEvaluation:
 				{
 					return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 				}
 
-				case Shader::Stage::Geometry:
+				case ShaderStage::Geometry:
 				{
 					return VK_SHADER_STAGE_GEOMETRY_BIT;
 				}
 
-				case Shader::Stage::Fragment:
+				case ShaderStage::Fragment:
 				{
 					return VK_SHADER_STAGE_FRAGMENT_BIT;
 				}
 
-				case Shader::Stage::Compute:
+				case ShaderStage::Compute:
 				{
 					return VK_SHADER_STAGE_COMPUTE_BIT;
 				}
@@ -262,11 +262,11 @@ namespace Zahra
 		bool loaded = true;
 
 		// TODO: include other shader stages
-		if (specification.StageBitMask & Shader::StageBits::VertexBit)
-			loaded &= ReadShaderSource(Shader::Stage::Vertex);
+		if (specification.StageBitMask & ShaderStageBits::VertexBit)
+			loaded &= ReadShaderSource(ShaderStage::Vertex);
 
-		if (specification.StageBitMask & Shader::StageBits::FragmentBit)
-			loaded &= ReadShaderSource(Shader::Stage::Fragment);
+		if (specification.StageBitMask & ShaderStageBits::FragmentBit)
+			loaded &= ReadShaderSource(ShaderStage::Fragment);
 	
 		if (!loaded)
 		{
@@ -287,13 +287,13 @@ namespace Zahra
 
 	VulkanShader::~VulkanShader()
 	{
-		for (auto& [stage, module] : m_Modules)
+		for (auto& stageInfo : m_PipelineShaderStageInfos)
 		{
-			vkDestroyShaderModule(VulkanContext::Get()->GetDevice()->Device, module, nullptr);
+			vkDestroyShaderModule(VulkanContext::Get()->GetDevice()->Device, stageInfo.module, nullptr);
 		}
 	}
 
-	bool VulkanShader::ReadShaderSource(Shader::Stage stage)
+	bool VulkanShader::ReadShaderSource(ShaderStage stage)
 	{
 		bool success = true;
 
@@ -321,7 +321,7 @@ namespace Zahra
 		return success;
 	}
 
-	void VulkanShader::CompileOrGetSPIRV(const std::unordered_map<Shader::Stage, std::string>& shaderSources, const std::filesystem::path& cacheDirectory)
+	void VulkanShader::CompileOrGetSPIRV(const std::unordered_map<ShaderStage, std::string>& shaderSources, const std::filesystem::path& cacheDirectory)
 	{
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
@@ -377,23 +377,23 @@ namespace Zahra
 
 	}
 
-	void VulkanShader::CreateModules(const std::unordered_map<Shader::Stage, std::vector<uint32_t>>& bytecode)
+	void VulkanShader::CreateModules(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode)
 	{
+		VkDevice device = VulkanContext::GetCurrentDevice()->Device;
+		
 		for (const auto& [stage, bytes] : bytecode)
 		{
+			VkPipelineShaderStageCreateInfo& shaderStageInfo = m_PipelineShaderStageInfos.emplace_back();
+			shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			shaderStageInfo.stage = VulkanUtils::ShaderStageToVkFlagBit(stage);
+			shaderStageInfo.pName = "main";
+
 			VkShaderModuleCreateInfo moduleInfo{};
 			moduleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			moduleInfo.codeSize = bytes.size() * sizeof(uint32_t);
 			moduleInfo.pCode = bytes.data();
 
-			VkDevice device = VulkanContext::GetCurrentDevice()->Device;
-			VulkanUtils::ValidateVkResult(vkCreateShaderModule(device, &moduleInfo, nullptr, &m_Modules[stage]));
-
-			VkPipelineShaderStageCreateInfo& shaderStageInfo = m_PipelineShaderStageInfos.emplace_back();
-			shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-			shaderStageInfo.stage = VulkanUtils::ShaderStageToVkFlagBit(stage);
-			shaderStageInfo.module = m_Modules[stage];
-			shaderStageInfo.pName = "main";
+			VulkanUtils::ValidateVkResult(vkCreateShaderModule(device, &moduleInfo, nullptr, &shaderStageInfo.module));
 		}
 	}
 
@@ -405,7 +405,7 @@ namespace Zahra
 	{
 	}
 
-	std::string VulkanShader::GetSourceFilename(Shader::Stage stage)
+	std::string VulkanShader::GetSourceFilename(ShaderStage stage)
 	{
 		return m_Specification.Name + "." + VulkanUtils::ShaderStageToFileExtension(stage);
 	}

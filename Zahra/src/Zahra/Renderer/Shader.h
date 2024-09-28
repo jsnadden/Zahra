@@ -9,39 +9,37 @@
 
 namespace Zahra
 {
+	enum class ShaderStage
+	{
+		Vertex,
+		TesselationControl,
+		TesselationEvaluation,
+		Geometry,
+		Fragment,
+		Compute
+	};
+
+	enum ShaderStageBits
+	{
+		VertexBit = 0x00000001,
+		TesselationControlBit = 0x00000002,
+		TesselationEvaluationBit = 0x00000004,
+		GeometryBit = 0x00000008,
+		FragmentBit = 0x00000010,
+		ComputeBit = 0x00000020,
+		AllGraphics = 0x0000001f
+	};
+
+	struct ShaderSpecification
+	{
+		std::string Name;
+		std::filesystem::path SourceDirectory = "Resources/Shaders";
+		uint32_t StageBitMask = ShaderStageBits::AllGraphics;
+	};
 
 	class Shader : public RefCounted
 	{
 	public:
-
-		enum class Stage
-		{
-			Vertex,
-			TesselationControl,
-			TesselationEvaluation,
-			Geometry,
-			Fragment,
-			Compute
-		};		
-
-		enum StageBits
-		{
-			None = 0,
-			VertexBit = 0x00000001,
-			TesselationControlBit = 0x00000002,
-			TesselationEvaluationBit = 0x00000004,
-			GeometryBit = 0x00000008,
-			FragmentBit = 0x00000010,
-			ComputeBit = 0x00000020,
-			AllGraphics = 0x0000001f
-		};
-
-		struct ShaderSpecification
-		{
-			std::string Name;
-			std::filesystem::path SourceDirectory = "Resources/Shaders";
-			uint32_t StageBitMask = Shader::StageBits::AllGraphics;
-		};
 
 		virtual ~Shader() = default;
 

@@ -2,6 +2,7 @@
 #include "VulkanPipeline.h"
 
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanRenderPass.h"
 #include "Platform/Vulkan/VulkanShader.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 
@@ -9,6 +10,7 @@ namespace Zahra
 {
 	
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& specification)
+		: m_Specification(specification)
 	{
 		Z_CORE_ASSERT(specification.Shader);
 
@@ -18,6 +20,7 @@ namespace Zahra
 	VulkanPipeline::~VulkanPipeline()
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->Device;
+		vkDestroyPipeline(device, m_Pipeline, nullptr);
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 	}
 
@@ -26,9 +29,11 @@ namespace Zahra
 		// gather data
 		VkDevice device = VulkanContext::GetCurrentDevice()->Device;
 		Ref<VulkanShader> shader = Ref<VulkanShader>(m_Specification.Shader);
+		const auto& shaderStageInfos = shader->GetPipelineShaderStageInfos();
+		Ref<VulkanRenderPass> renderPass = Ref<VulkanRenderPass>(m_Specification.RenderPass);
 		// TODO: get target framebuffer		
-		// TODO: get descriptor set layouts (from shader?)
-		// TODO: get push constant ranges (from shader?)
+		// TODO: get descriptor set layouts
+		// TODO: get push constant ranges
 
 		// specify which pipeline properties will be dynamically set (at draw time)
 		/*std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
@@ -141,7 +146,26 @@ namespace Zahra
 		// create pipeline!!
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		// TODO: fill the rest of this out and print success to TRACE
+		pipelineInfo.stageCount = static_cast<uint32_t>(shaderStageInfos.size());;
+		pipelineInfo.pStages = shaderStageInfos.data();
+		pipelineInfo.pVertexInputState = &vertexInputInfo;
+		pipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
+		pipelineInfo.pViewportState = &viewportStateInfo;
+		pipelineInfo.pRasterizationState = &rasterizationStateInfo;
+		pipelineInfo.pMultisampleState = &multisampleStateInfo;
+		pipelineInfo.pDepthStencilState = nullptr; // we'll need this later
+		pipelineInfo.pColorBlendState = &colorBlendState;
+		pipelineInfo.pDynamicState = nullptr; // probably will include some dynamic state eventually
+		pipelineInfo.layout = m_PipelineLayout;
+		pipelineInfo.renderPass = renderPass->GetVulkanRenderPassHandle();
+		pipelineInfo.subpass = 0;
+		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+		pipelineInfo.basePipelineIndex = -1;
+		
+		VulkanUtils::ValidateVkResult(vkCreateGraphicsPipelines(device, m_PipelineCache, 1, &pipelineInfo, nullptr, &m_Pipeline),
+			"Vulkan graphics pipeline creation failed");
+
+		Z_CORE_TRACE("Vulkan graphics pipeline creation successful");
 
 	}
 

@@ -25,7 +25,7 @@ namespace Zahra
 
 		VkPipelineLayout m_PipelineLayout = nullptr;
 		VkPipeline m_Pipeline = nullptr;
-		VkPipelineCache m_PipelineCache = nullptr;
+		VkPipelineCache m_PipelineCache = nullptr; // TODO: set this up too
 
 	};
 
