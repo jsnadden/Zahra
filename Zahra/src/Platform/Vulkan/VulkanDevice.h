@@ -6,10 +6,18 @@
 
 namespace Zahra
 {
+	enum class GPUQueueType
+	{
+		Graphics,
+		Present,
+		Transfer,
+		Compute
+	};
+
 	struct QueueFamilyIndices
 	{
 		std::optional<uint32_t> GraphicsIndex;
-		std::optional<uint32_t> PresentationIndex;
+		std::optional<uint32_t> PresentIndex;
 		std::optional<uint32_t> TransferIndex;
 		std::optional<uint32_t> ComputeIndex;
 
@@ -19,7 +27,27 @@ namespace Zahra
 		bool Complete()
 		{
 			// TODO: more robust checking
-			return GraphicsIndex.has_value() && PresentationIndex.has_value();
+			return GraphicsIndex.has_value() && PresentIndex.has_value();
+		}
+
+		const std::optional<uint32_t>& GetIndex(GPUQueueType queueType)
+		{
+			switch (queueType)
+			{
+				case Zahra::GPUQueueType::Graphics:
+					return GraphicsIndex;
+				case Zahra::GPUQueueType::Present:
+					return PresentIndex;
+				case Zahra::GPUQueueType::Transfer:
+					return TransferIndex;
+				case Zahra::GPUQueueType::Compute:
+					return ComputeIndex;
+				default:
+					break;
+			}
+
+			Z_CORE_ASSERT(false, "Unrecognised GPUQueueType");
+			return std::nullopt;
 		}
 
 	};
@@ -34,7 +62,7 @@ namespace Zahra
 	struct VulkanDevice : public RefCounted
 	{
 		VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
-		VkDevice Device = VK_NULL_HANDLE;
+		VkDevice LogicalDevice = VK_NULL_HANDLE;
 
 		VkQueue GraphicsQueue = VK_NULL_HANDLE;
 		VkQueue PresentationQueue = VK_NULL_HANDLE;

@@ -49,11 +49,7 @@ namespace Zahra
 
 		virtual const std::string& GetName() const = 0;
 
-		// this top Create method is preferred for Vulkan
 		static Ref<Shader> Create(ShaderSpecification& specification);
-		// these two will be deprecated soon!
-		static Ref<Shader> Create(const std::string& filepath);
-		static Ref<Shader> Create(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource);
 
 		/*virtual void SetInt(const  std::string& name, int value) = 0;
 		virtual void SetIntArray(const  std::string& name, uint32_t count, int* values) = 0;
@@ -76,8 +72,8 @@ namespace Zahra
 		void Add(const std::string& name, const Ref<Shader>& shader);
 		void Add(const Ref<Shader>& shader);
 
-		Ref<Shader> Load(const std::string& filepath);
-		Ref<Shader> Load(const std::string& name, const std::string& filepath);
+		//Ref<Shader> Load(const std::string& filepath);
+		//Ref<Shader> Load(const std::string& name, const std::string& filepath);
 
 		Ref<Shader> Get(const std::string& name);
 		bool Exists(const std::string& name) const;

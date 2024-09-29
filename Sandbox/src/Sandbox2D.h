@@ -19,7 +19,6 @@ public:
 
 private:
 	Zahra::Ref<Zahra::Shader> m_Shader;
-	Zahra::Ref<Zahra::RenderPass> m_RenderPass;
 	Zahra::Ref<Zahra::Pipeline> m_Pipeline;
 };
 

@@ -289,7 +289,7 @@ namespace Zahra
 	{
 		for (auto& stageInfo : m_PipelineShaderStageInfos)
 		{
-			vkDestroyShaderModule(VulkanContext::Get()->GetDevice()->Device, stageInfo.module, nullptr);
+			vkDestroyShaderModule(VulkanContext::Get()->GetDevice()->LogicalDevice, stageInfo.module, nullptr);
 		}
 	}
 
@@ -379,7 +379,7 @@ namespace Zahra
 
 	void VulkanShader::CreateModules(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode)
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->Device;
+		VkDevice device = VulkanContext::GetCurrentDevice()->LogicalDevice;
 		
 		for (const auto& [stage, bytes] : bytecode)
 		{

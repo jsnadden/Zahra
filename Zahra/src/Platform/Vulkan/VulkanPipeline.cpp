@@ -19,7 +19,7 @@ namespace Zahra
 
 	VulkanPipeline::~VulkanPipeline()
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->Device;
+		VkDevice device = VulkanContext::GetCurrentDevice()->LogicalDevice;
 		vkDestroyPipeline(device, m_Pipeline, nullptr);
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 	}
@@ -27,20 +27,20 @@ namespace Zahra
 	void VulkanPipeline::Invalidate()
 	{
 		// gather data
-		VkDevice device = VulkanContext::GetCurrentDevice()->Device;
 		Ref<VulkanShader> shader = Ref<VulkanShader>(m_Specification.Shader);
 		const auto& shaderStageInfos = shader->GetPipelineShaderStageInfos();
-		Ref<VulkanRenderPass> renderPass = Ref<VulkanRenderPass>(m_Specification.RenderPass);
-		// TODO: get target framebuffer		
+		Ref<VulkanSwapchain> swapchain = VulkanContext::Get()->GetSwapchain();
+		VkDevice device = swapchain->GetDevice()->LogicalDevice;
+		VkRenderPass renderPass = swapchain->GetVkRenderPass();
 		// TODO: get descriptor set layouts
 		// TODO: get push constant ranges
 
 		// specify which pipeline properties will be dynamically set (at draw time)
-		/*std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 		VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
 		dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		dynamicStateInfo.dynamicStateCount = (uint32_t)dynamicStates.size();
-		dynamicStateInfo.pDynamicStates = dynamicStates.data();*/
+		dynamicStateInfo.pDynamicStates = dynamicStates.data();
 
 		// specify layout for vertex input data
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
@@ -56,29 +56,27 @@ namespace Zahra
 		inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; // TODO: fill this out based on m_Specification.Topology
 		inputAssemblyInfo.primitiveRestartEnable = VK_FALSE; // TODO: figure out what this should be set to
 
-		////////////////////////////////////////////////////////////////////////
-		// MAKE THESE DYNAMIC?
-		VkExtent2D extent = VulkanContext::Get()->GetSwapchain()->GetExtent();
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = (float)extent.width;
-		viewport.height = (float)extent.height;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		// TODO: fill these out based on m_Specification.TargetFramebuffer and so forth
+		// TODO: decide if these should be dynamically set, or fixed state
+		//VkExtent2D extent = swapchain->GetExtent();
+		//VkViewport viewport{};
+		//viewport.x = 0.0f;
+		//viewport.y = 0.0f;
+		//viewport.width = (float)extent.width;
+		//viewport.height = (float)extent.height;
+		//viewport.minDepth = 0.0f;
+		//viewport.maxDepth = 1.0f;
+		//// TODO: fill these out based on m_Specification.TargetFramebuffer and so forth
 
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = extent;
+		//VkRect2D scissor{};
+		//scissor.offset = { 0, 0 };
+		//scissor.extent = extent;
 
 		VkPipelineViewportStateCreateInfo viewportStateInfo{};
 		viewportStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportStateInfo.viewportCount = 1;
-		viewportStateInfo.pViewports = &viewport;
 		viewportStateInfo.scissorCount = 1;
-		viewportStateInfo.pScissors = &scissor;
-		////////////////////////////////////////////////////////////////////////
+		viewportStateInfo.pViewports = nullptr; // nullptr because these are dynamic states
+		viewportStateInfo.pScissors = nullptr;
 
 		VkPipelineRasterizationStateCreateInfo rasterizationStateInfo{};
 		rasterizationStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -157,7 +155,7 @@ namespace Zahra
 		pipelineInfo.pColorBlendState = &colorBlendState;
 		pipelineInfo.pDynamicState = nullptr; // probably will include some dynamic state eventually
 		pipelineInfo.layout = m_PipelineLayout;
-		pipelineInfo.renderPass = renderPass->GetVulkanRenderPassHandle();
+		pipelineInfo.renderPass = renderPass;
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 		pipelineInfo.basePipelineIndex = -1;

@@ -207,9 +207,9 @@ namespace Zahra
 		// SHADERS
 
 		// TODO: free ourselves from hardcoded shaders?
-		s_RendererData.QuadShader = Shader::Create("Resources/Shaders/renderer_quad.glsl");
+		/*s_RendererData.QuadShader = Shader::Create("Resources/Shaders/renderer_quad.glsl");
 		s_RendererData.CircleShader = Shader::Create("Resources/Shaders/renderer_circle.glsl");
-		s_RendererData.LineShader = Shader::Create("Resources/Shaders/renderer_line.glsl");
+		s_RendererData.LineShader = Shader::Create("Resources/Shaders/renderer_line.glsl");*/
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

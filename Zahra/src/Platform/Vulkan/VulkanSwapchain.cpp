@@ -18,112 +18,39 @@ namespace Zahra
 	{
 		CreateSurface(instance, windowHandle);
 		CreateDevice(instance);
-
-		m_Format = ChooseSwapchainFormat();
-		m_PresentationMode = ChooseSwapchainPresentationMode();
-		m_Extent = ChooseSwapchainExtent();
-
-		uint32_t swapchainLength = m_Device->SwapchainSupport.Capabilities.minImageCount + 1;
-		uint32_t maxImageCount = m_Device->SwapchainSupport.Capabilities.maxImageCount;
-		if (maxImageCount > 0 && swapchainLength > maxImageCount) swapchainLength = maxImageCount;
-
-		VkSwapchainCreateInfoKHR swapchainInfo{};
-		swapchainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		swapchainInfo.surface = m_Surface;
-		swapchainInfo.minImageCount = swapchainLength;
-		swapchainInfo.imageFormat = m_Format.format;
-		swapchainInfo.imageColorSpace = m_Format.colorSpace;
-		swapchainInfo.presentMode = m_PresentationMode;
-		swapchainInfo.imageExtent = m_Extent;
-		swapchainInfo.imageArrayLayers = 1;
-		swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-		uint32_t queueFamilyIndices[] =
-		{
-			m_Device->QueueFamilyIndices.GraphicsIndex.value(),
-			m_Device->QueueFamilyIndices.PresentationIndex.value()
-		};
-
-		if (m_Device->QueueFamilyIndices.GraphicsIndex = m_Device->QueueFamilyIndices.PresentationIndex)
-		{
-			// EXCLUSIVE MODE: An image is owned by one queue family
-			// at a time and ownership must be explicitly transferred
-			// before using it in another queue family. This option
-			// offers the best performance.
-			swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-			swapchainInfo.queueFamilyIndexCount = 0;
-			swapchainInfo.pQueueFamilyIndices = nullptr;
-		}
-		else
-		{
-			// CONCURRENT MODE: Images can be used across multiple queue
-			// families without explicit ownership transfers. This requires
-			// you to specify in advance between which queue families
-			// ownership will be shared using the queueFamilyIndexCount
-			// and pQueueFamilyIndices parameters. Could also use exclusive
-			// mode in this case, but it's more complicated.
-			swapchainInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-			swapchainInfo.queueFamilyIndexCount = 2;
-			swapchainInfo.pQueueFamilyIndices = queueFamilyIndices;
-		}
-
-		swapchainInfo.preTransform = m_Device->SwapchainSupport.Capabilities.currentTransform; // no overall screen rotation/flip
-		swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // no alpha blending with other windows
-		swapchainInfo.clipped = VK_TRUE; // ignore pixels obscured by other windows
-
-		// With Vulkan it's possible that your swap chain becomes invalid
-		// or unoptimized while your application is running, for example
-		// because the window was resized. In that case the swap chain
-		// actually needs to be recreated from scratch and a reference to
-		// the old one must be specified in this field.
-		swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
-
-		VulkanUtils::ValidateVkResult(vkCreateSwapchainKHR(m_Device->Device, &swapchainInfo, nullptr, &m_Swapchain), "Vulkan swap chain creation failed");
-
-		vkGetSwapchainImagesKHR(m_Device->Device, m_Swapchain, &swapchainLength, nullptr);
-		m_Images.resize(swapchainLength);
-		vkGetSwapchainImagesKHR(m_Device->Device, m_Swapchain, &swapchainLength, m_Images.data());
-
-		m_ImageViews.resize(swapchainLength);
-		for (size_t i = 0; i < swapchainLength; i++)
-		{
-			VkImageViewCreateInfo imageViewInfo{};
-			imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			imageViewInfo.image = m_Images[i];
-			imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			imageViewInfo.format = m_Format.format;
-			imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-			imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-			imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-			imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-			imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			imageViewInfo.subresourceRange.baseMipLevel = 0;
-			imageViewInfo.subresourceRange.levelCount = 1;
-			imageViewInfo.subresourceRange.baseArrayLayer = 0;
-			imageViewInfo.subresourceRange.layerCount = 1;
-
-			VulkanUtils::ValidateVkResult(vkCreateImageView(m_Device->Device, &imageViewInfo,
-				nullptr, &m_ImageViews[i]), "Vulkan image view creation failed");
-		}
+		CreateSwapchain();
+		CreateImagesAndViews();
+		CreateRenderPass();
+		CreateFramebuffers();
 
 		Z_CORE_TRACE("Vulkan swap chain creation succeeded");
 	}
 
 	void VulkanSwapchain::Shutdown(VkInstance& instance)
 	{
+		for (auto framebuffer : m_Framebuffers) {
+			vkDestroyFramebuffer(m_Device->LogicalDevice, framebuffer, nullptr);
+		}
+		m_Framebuffers.clear();
+		
+		vkDestroyRenderPass(m_Device->LogicalDevice, m_RenderPass, nullptr);
+		m_RenderPass = VK_NULL_HANDLE;
+
 		for (auto imageView : m_ImageViews)
 		{
-			vkDestroyImageView(m_Device->Device, imageView, nullptr);
+			vkDestroyImageView(m_Device->LogicalDevice, imageView, nullptr);
 		}
 		m_ImageViews.clear();
 
-		vkDestroySwapchainKHR(m_Device->Device, m_Swapchain, nullptr);
-
+		vkDestroySwapchainKHR(m_Device->LogicalDevice, m_Swapchain, nullptr);
 		m_Images.clear();
 		m_Swapchain = VK_NULL_HANDLE;
 
-		ShutdownDevice();
+		vkDestroyDevice(m_Device->LogicalDevice, nullptr);
+		m_Device->LogicalDevice = VK_NULL_HANDLE;
+
 		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
+		m_Surface = VK_NULL_HANDLE;
 	}
 
 	void VulkanSwapchain::CreateSurface(VkInstance& instance, GLFWwindow* windowHandle)
@@ -145,7 +72,7 @@ namespace Zahra
 		std::set<uint32_t> queueIndices =
 		{
 			m_Device->QueueFamilyIndices.GraphicsIndex.value(),
-			m_Device->QueueFamilyIndices.PresentationIndex.value()
+			m_Device->QueueFamilyIndices.PresentIndex.value()
 		};
 
 		float queuePriority = 1.0f;
@@ -169,17 +96,12 @@ namespace Zahra
 		logicalDeviceInfo.enabledExtensionCount = (uint32_t)s_DeviceExtensions.size();
 		logicalDeviceInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
 
-		VulkanUtils::ValidateVkResult(vkCreateDevice(m_Device->PhysicalDevice, &logicalDeviceInfo, nullptr, &m_Device->Device), "Vulkan device creation failed");
+		VulkanUtils::ValidateVkResult(vkCreateDevice(m_Device->PhysicalDevice, &logicalDeviceInfo, nullptr, &m_Device->LogicalDevice), "Vulkan device creation failed");
 		Z_CORE_TRACE("Vulkan device creation succeeded");
 		Z_CORE_INFO("Target GPU: {0}", m_Device->Properties.deviceName);
 
-		vkGetDeviceQueue(m_Device->Device, m_Device->QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device->GraphicsQueue);
-		vkGetDeviceQueue(m_Device->Device, m_Device->QueueFamilyIndices.PresentationIndex.value(), 0, &m_Device->PresentationQueue);
-	}
-
-	void VulkanSwapchain::ShutdownDevice()
-	{
-		vkDestroyDevice(m_Device->Device, nullptr);
+		vkGetDeviceQueue(m_Device->LogicalDevice, m_Device->QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device->GraphicsQueue);
+		vkGetDeviceQueue(m_Device->LogicalDevice, m_Device->QueueFamilyIndices.PresentIndex.value(), 0, &m_Device->PresentationQueue);
 	}
 
 	void VulkanSwapchain::TargetPhysicalDevice(VkInstance& instance)
@@ -301,7 +223,7 @@ namespace Zahra
 			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentationSupport);
 
 			if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) indices.GraphicsIndex = i;
-			if (presentationSupport) indices.PresentationIndex = i;
+			if (presentationSupport) indices.PresentIndex = i;
 		}
 	}
 
@@ -339,6 +261,71 @@ namespace Zahra
 
 		if (!adequateSupport) Z_CORE_CRITICAL("Selected GPU/window do not provide adequate support for Vulkan swap chain creation");
 		return adequateSupport;
+	}
+
+	void VulkanSwapchain::CreateSwapchain()
+	{
+		m_Format = ChooseSwapchainFormat();
+		m_PresentationMode = ChooseSwapchainPresentationMode();
+		m_Extent = ChooseSwapchainExtent();
+
+		m_ImageCount = m_Device->SwapchainSupport.Capabilities.minImageCount + 1;
+		uint32_t maxImageCount = m_Device->SwapchainSupport.Capabilities.maxImageCount;
+		if (maxImageCount > 0 && m_ImageCount > maxImageCount) m_ImageCount = maxImageCount;
+		
+		VkSwapchainCreateInfoKHR swapchainInfo{};
+		swapchainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		swapchainInfo.surface = m_Surface;
+		swapchainInfo.minImageCount = m_ImageCount;
+		swapchainInfo.imageFormat = m_Format.format;
+		swapchainInfo.imageColorSpace = m_Format.colorSpace;
+		swapchainInfo.presentMode = m_PresentationMode;
+		swapchainInfo.imageExtent = m_Extent;
+		swapchainInfo.imageArrayLayers = 1;
+		swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+		uint32_t queueFamilyIndices[] =
+		{
+			m_Device->QueueFamilyIndices.GraphicsIndex.value(),
+			m_Device->QueueFamilyIndices.PresentIndex.value()
+		};
+
+		if (m_Device->QueueFamilyIndices.GraphicsIndex = m_Device->QueueFamilyIndices.PresentIndex)
+		{
+			// EXCLUSIVE MODE: An image is owned by one queue family
+			// at a time and ownership must be explicitly transferred
+			// before using it in another queue family. This option
+			// offers the best performance.
+			swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			swapchainInfo.queueFamilyIndexCount = 0;
+			swapchainInfo.pQueueFamilyIndices = nullptr;
+		}
+		else
+		{
+			// CONCURRENT MODE: Images can be used across multiple queue
+			// families without explicit ownership transfers. This requires
+			// you to specify in advance between which queue families
+			// ownership will be shared using the queueFamilyIndexCount
+			// and pQueueFamilyIndices parameters. Could also use exclusive
+			// mode in this case, but it's more complicated.
+			swapchainInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+			swapchainInfo.queueFamilyIndexCount = 2;
+			swapchainInfo.pQueueFamilyIndices = queueFamilyIndices;
+		}
+
+		swapchainInfo.preTransform = m_Device->SwapchainSupport.Capabilities.currentTransform; // no overall screen rotation/flip
+		swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // no alpha blending with other windows
+		swapchainInfo.clipped = VK_TRUE; // ignore pixels obscured by other windows
+
+		// With Vulkan it's possible that your swap chain becomes invalid
+		// or unoptimized while your application is running, for example
+		// because the window was resized. In that case the swap chain
+		// actually needs to be recreated from scratch and a reference to
+		// the old one must be specified in this field.
+		swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
+
+		VulkanUtils::ValidateVkResult(vkCreateSwapchainKHR(m_Device->LogicalDevice, &swapchainInfo, nullptr, &m_Swapchain),
+			"Vulkan swap chain creation failed");
 	}
 
 	VkSurfaceFormatKHR VulkanSwapchain::ChooseSwapchainFormat()
@@ -392,6 +379,92 @@ namespace Zahra
 		extent.height = std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
 		return extent;
+	}
+
+	void VulkanSwapchain::CreateImagesAndViews()
+	{
+		vkGetSwapchainImagesKHR(m_Device->LogicalDevice, m_Swapchain, &m_ImageCount, nullptr);
+		m_Images.resize(m_ImageCount);
+		vkGetSwapchainImagesKHR(m_Device->LogicalDevice, m_Swapchain, &m_ImageCount, m_Images.data());
+
+		m_ImageViews.resize(m_ImageCount);
+		for (size_t i = 0; i < m_ImageCount; i++)
+		{
+			VkImageViewCreateInfo imageViewInfo{};
+			imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			imageViewInfo.image = m_Images[i];
+			imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			imageViewInfo.format = m_Format.format;
+			imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+			imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+			imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+			imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+			imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageViewInfo.subresourceRange.baseMipLevel = 0;
+			imageViewInfo.subresourceRange.levelCount = 1;
+			imageViewInfo.subresourceRange.baseArrayLayer = 0;
+			imageViewInfo.subresourceRange.layerCount = 1;
+
+			VulkanUtils::ValidateVkResult(vkCreateImageView(m_Device->LogicalDevice, &imageViewInfo, nullptr, &m_ImageViews[i]),
+				"Vulkan image view creation failed");
+		}
+	}
+
+	void VulkanSwapchain::CreateRenderPass()
+	{
+		// colour attachment for this render pass
+		VkAttachmentDescription colourAttachment{};
+		colourAttachment.format = m_Format.format;
+		colourAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colourAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colourAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colourAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colourAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colourAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // expected data layout of the image given to this render pass as input
+		colourAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // data layout of the image this render pass will output
+
+		// for now just a single subpass
+		VkAttachmentReference colourAttachmentRef{};
+		colourAttachmentRef.attachment = 0;
+		colourAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // data layout the given subpass will treat the image as
+
+		VkSubpassDescription subpass{};
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // as opposed to compute
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments = &colourAttachmentRef;
+
+		VkRenderPassCreateInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		renderPassInfo.attachmentCount = 1;
+		renderPassInfo.pAttachments = &colourAttachment;
+		renderPassInfo.subpassCount = 1;
+		renderPassInfo.pSubpasses = &subpass;
+
+		VulkanUtils::ValidateVkResult(vkCreateRenderPass(m_Device->LogicalDevice, &renderPassInfo, nullptr, &m_RenderPass),
+			"Vulkan swapchain render pass creation failed");
+	}
+
+	void VulkanSwapchain::CreateFramebuffers()
+	{
+		m_Framebuffers.resize(m_ImageCount);
+
+		for (auto& imageView : m_ImageViews)
+		{
+			VkImageView attachments[] = { imageView };
+			auto& framebuffer = m_Framebuffers.emplace_back();
+
+			VkFramebufferCreateInfo framebufferInfo{};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = m_RenderPass;
+			framebufferInfo.attachmentCount = 1;
+			framebufferInfo.pAttachments = attachments;
+			framebufferInfo.width = m_Extent.width;
+			framebufferInfo.height = m_Extent.height;
+			framebufferInfo.layers = 1;
+
+			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(m_Device->LogicalDevice, &framebufferInfo, nullptr, &framebuffer),
+				"Vulkan swapchain framebuffer creation failed");
+		}
 	}
 
 }

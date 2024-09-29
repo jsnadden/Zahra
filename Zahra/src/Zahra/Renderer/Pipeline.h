@@ -20,8 +20,6 @@ namespace Zahra
 	struct PipelineSpecification
 	{
 		Ref<Shader> Shader;
-		Ref<RenderPass> RenderPass;
-		Ref<Framebuffer> TargetFramebuffer;
 		BufferLayout VertexBufferLayout;
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
 	};
