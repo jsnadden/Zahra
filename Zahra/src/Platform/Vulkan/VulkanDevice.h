@@ -47,7 +47,7 @@ namespace Zahra
 			}
 
 			Z_CORE_ASSERT(false, "Unrecognised GPUQueueType");
-			return std::nullopt;
+			return std::optional<uint32_t>();
 		}
 
 	};

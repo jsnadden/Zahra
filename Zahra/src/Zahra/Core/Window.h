@@ -28,7 +28,8 @@ namespace Zahra
 
 		virtual ~Window() {}
 
-		virtual void OnUpdate() = 0;
+		virtual void PollEvents() = 0;
+		virtual void PresentImage() = 0;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;

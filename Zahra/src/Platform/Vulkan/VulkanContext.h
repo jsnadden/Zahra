@@ -16,14 +16,13 @@ namespace Zahra
 	public:
 		VulkanContext(GLFWwindow* handle);
 
-		static Ref<VulkanContext> Get() { return Ref<VulkanContext>(Renderer::GetContext()); }
-
 		virtual void Init() override;
 		virtual void Shutdown() override;
-		virtual void SwapBuffers() override;
-		
-		Ref<VulkanSwapchain> GetSwapchain() { return m_Swapchain; }
 
+		virtual void PresentImage() override;
+		
+		static Ref<VulkanContext> Get() { return Ref<VulkanContext>(Renderer::GetContext()); }
+		Ref<VulkanSwapchain> GetSwapchain() { return m_Swapchain; }
 		VkSurfaceKHR& GetSurface() { return m_Swapchain->GetSurface(); }
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
 		static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }

@@ -21,8 +21,21 @@
                 }
               }
             }
+          },
+          {
+            "id": "a8f1ab397bc0c1a0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Planning & Learning/Renderer architecture.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -88,7 +101,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Planning & Learning/Renderer architecture.canvas",
+                "file": "Planning & Learning/Renderer architecture.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -105,7 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Planning & Learning/Renderer architecture.canvas",
+                "file": "Planning & Learning/Renderer architecture.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -128,7 +141,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Planning & Learning/Renderer architecture.canvas"
+                "file": "Planning & Learning/Renderer architecture.md"
               }
             }
           }
@@ -149,9 +162,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "6d0e9411287ab3e2",
+  "active": "a8f1ab397bc0c1a0",
   "lastOpenFiles": [
     "Planning & Learning/Renderer architecture.canvas",
+    "Planning & Learning/Renderer architecture.md",
+    "Untitled",
     "Planning & Learning/VULKAN.md",
     "Planning & Learning/Vulkan pipeline.md",
     "Planning & Learning/Resource Management.md",
@@ -161,7 +176,6 @@
     "Planning & Learning/ECS Reflection & Serialisation.md",
     "TODO/Refactor properties panel helper functions in editor.md",
     "TODO",
-    "Untitled.md",
     "Planning & Learning",
     "Welcome.md"
   ]

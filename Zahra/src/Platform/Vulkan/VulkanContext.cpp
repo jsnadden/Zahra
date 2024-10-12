@@ -82,7 +82,7 @@ namespace Zahra
 		vkDestroyInstance(m_VulkanInstance, nullptr);
 	}
 
-	void VulkanContext::SwapBuffers()
+	void VulkanContext::PresentImage()
 	{
 
 	}

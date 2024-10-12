@@ -12,28 +12,17 @@ Sandbox2DLayer::Sandbox2DLayer()
 
 void Sandbox2DLayer::OnAttach()
 {
-	Zahra::ShaderSpecification shaderSpec{};
-	shaderSpec.Name = "vulkan_tutorial";
-	shaderSpec.SourceDirectory = "Resources/Shaders";
-	m_Shader = Zahra::Shader::Create(shaderSpec);
-
-	Zahra::PipelineSpecification pipelineSpec{};
-	pipelineSpec.Shader = m_Shader;
-	m_Pipeline = Zahra::Pipeline::Create(pipelineSpec);
+	
 }
 
 void Sandbox2DLayer::OnDetach()
 {
-	m_Shader.Reset();
-	m_Pipeline.Reset();
+	
 }
 
 void Sandbox2DLayer::OnUpdate(float dt)
 {
-	// 1) get swapchain image
-	// 2) record commandbuffer commands using that image
-	// 3) send the image back to the swapchain for presentation
-
+	
 }
 
 void Sandbox2DLayer::OnEvent(Zahra::Event& event)

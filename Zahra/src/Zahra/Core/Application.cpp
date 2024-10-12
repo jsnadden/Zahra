@@ -20,14 +20,15 @@ namespace Zahra
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
 
+		// TODO: maybe fill out more WindowProperties details before window creation?
 		m_Window = Window::Create(WindowProperties(specification.Name));
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->ReadConfig();
 
 		// Initialise subsystems
+		Renderer::Init();
 		// TODO: ressurect
-		/*Renderer::Init();
-		ScriptEngine::Init();*/
+		//ScriptEngine::Init();
 
 		m_ImGuiLayer = ImGuiLayer::Create();
 		PushOverlay(m_ImGuiLayer);
@@ -37,8 +38,8 @@ namespace Zahra
 	Application::~Application()
 	{
 		// TODO: ressurect
-		/*ScriptEngine::Shutdown();
-		Renderer::Shutdown();*/
+		//ScriptEngine::Shutdown();
+		Renderer::Shutdown();
 	}
 
 	void Application::Run()
@@ -49,24 +50,29 @@ namespace Zahra
 		{
 			// Compute frame time
 			float frameStartTime = Time::GetTime();
-			float dt = frameStartTime - m_PreviousFrameTime;
-			m_PreviousFrameTime = frameStartTime;
+			float frameTimeStep = frameStartTime - m_PreviousFrameStartTime; // actual delta time
+			float dt = glm::min<float>(frameTimeStep, 0.0333f); // regularised for some numerical stability
+			m_PreviousFrameStartTime = frameStartTime;
+
+			m_Window->PollEvents();
 
 			if (!m_Minimised)
 			{
+				Renderer::NewFrame();
+
 				// Update layers
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(dt);
+
+				// Render ImGui layers
+				m_ImGuiLayer->Begin();
+				for (Layer* layer : m_LayerStack)
+					layer->OnImGuiRender();
+				m_ImGuiLayer->End();
+
+				m_Window->PresentImage();
 			}
-
-			// Render ImGui layers
-			m_ImGuiLayer->Begin();
-			for (Layer* layer : m_LayerStack)
-				layer->OnImGuiRender();
-			m_ImGuiLayer->End();
-
-			// Poll events and swap buffers
-			m_Window->OnUpdate();
+			
 		}
 
 		Z_CORE_INFO("End of run loop");
@@ -77,6 +83,7 @@ namespace Zahra
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowClosedEvent>(Z_BIND_EVENT_FN(Application::OnWindowClosed));
 		dispatcher.Dispatch<WindowResizedEvent>(Z_BIND_EVENT_FN(Application::OnWindowResized));
+		dispatcher.Dispatch<WindowMinimisedEvent>(Z_BIND_EVENT_FN(Application::OnWindowMinimised));
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
@@ -121,6 +128,12 @@ namespace Zahra
 
 		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 
+		return false;
+	}
+
+	bool Application::OnWindowMinimised(WindowMinimisedEvent& e)
+	{
+		m_Minimised = e.Minimised();
 		return false;
 	}
 

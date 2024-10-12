@@ -14,6 +14,10 @@ namespace Zahra
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 
+	VulkanSwapchain::VulkanSwapchain()
+	{
+	}
+
 	void VulkanSwapchain::Init(VkInstance& instance, GLFWwindow* windowHandle)
 	{
 		CreateSurface(instance, windowHandle);
@@ -51,6 +55,16 @@ namespace Zahra
 
 		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
 		m_Surface = VK_NULL_HANDLE;
+	}
+
+	void VulkanSwapchain::SubmitCommandBuffer()
+	{
+		
+	}
+
+	void VulkanSwapchain::PresentImage()
+	{
+		
 	}
 
 	void VulkanSwapchain::CreateSurface(VkInstance& instance, GLFWwindow* windowHandle)

@@ -144,11 +144,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Zahra\Renderer\SceneRenderer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLImGuiLayer.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLUniformBuffer.h" />
@@ -196,7 +196,7 @@
     <ClInclude Include="src\Zahra\Renderer\EditorCamera.h" />
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\Pipeline.h" />
-    <ClInclude Include="src\Zahra\Renderer\RenderCommand.h" />
+    <ClInclude Include="src\Zahra\Renderer\RenderCommandQueue.h" />
     <ClInclude Include="src\Zahra\Renderer\Renderer.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererContext.h" />
@@ -637,11 +637,11 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderPass.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Zahra\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLImGuiLayer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLRendererAPI.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLUniformBuffer.cpp" />
@@ -671,7 +671,7 @@
     <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Pipeline.cpp" />
-    <ClCompile Include="src\Zahra\Renderer\RenderCommand.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\RenderCommandQueue.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererContext.cpp" />

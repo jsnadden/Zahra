@@ -11,10 +11,13 @@ namespace Zahra
 	class VulkanSwapchain : public RefCounted
 	{
 	public:
-		VulkanSwapchain() = default;
+		VulkanSwapchain();
 
 		void Init(VkInstance& instance, GLFWwindow* windowHandle);
 		void Shutdown(VkInstance& instance);
+
+		void SubmitCommandBuffer();
+		void PresentImage();
 
 		VkSurfaceKHR& GetSurface() { return m_Surface; }
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
@@ -27,19 +30,25 @@ namespace Zahra
 
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
+
 		uint32_t m_ImageCount = 0;
 		std::vector<VkImage> m_Images;
 		std::vector<VkImageView> m_ImageViews;
 		std::vector<VkFramebuffer> m_Framebuffers;
 		uint32_t m_CurrentImageIndex = 0;
-		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 
 		VkSurfaceFormatKHR m_Format;
 		VkPresentModeKHR m_PresentationMode;
 		VkExtent2D m_Extent;
-
 		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
+
+		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+		
 		Ref<VulkanDevice> m_Device;
+
+		VkSemaphore m_ImageAvailableSemaphore;
+		VkSemaphore m_RenderFinishedSemaphore;
+		VkFence m_InFlightFence;
 
 		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
 

@@ -23,11 +23,12 @@
 //------------RENDERING----------------
 #include "Zahra/Renderer/Buffer.h"
 #include "Zahra/Renderer/Camera.h"
+#include "Zahra/Renderer/CommandBuffer.h"
 #include "Zahra/Renderer/EditorCamera.h"
 #include "Zahra/Renderer/Framebuffer.h"
 #include "Zahra/Renderer/Pipeline.h"
 #include "Zahra/Renderer/Renderer.h"
-#include "Zahra/Renderer/RenderCommand.h"
+#include "Zahra/Renderer/RenderCommandQueue.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/VertexArray.h"

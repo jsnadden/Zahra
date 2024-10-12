@@ -1,11 +1,10 @@
 #pragma once
 
-#include "RenderCommand.h"
-#include "Camera.h"
-#include "Texture.h"
-#include "EditorCamera.h"
-
 #include "Zahra/Core/Application.h"
+#include "Zahra/Renderer/RenderCommandQueue.h"
+#include "Zahra/Renderer/Camera.h"
+#include "Zahra/Renderer/Texture.h"
+#include "Zahra/Renderer/EditorCamera.h"
 #include "Zahra/Scene/Components.h"
 
 namespace Zahra
@@ -15,6 +14,8 @@ namespace Zahra
 	public:
 		static void Init();
 		static void Shutdown();
+
+		static void NewFrame();
 
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
@@ -26,12 +27,12 @@ namespace Zahra
 
 		static Ref<RendererContext> GetContext() { return Application::Get().GetWindow().GetRendererContext(); }
 
-		static float GetLineThickness();
-		static void SetLineThickness(float thickness);
+		/*static float GetLineThickness();
+		static void SetLineThickness(float thickness);*/
 
 	private:
-		static void SubmitBatch();
-		static void NewBatch();
+		/*static void SubmitBatch();
+		static void NewBatch();*/
 
 	public:
 		///////////////////////////////////////////////////////////////////////////////////////////////////////

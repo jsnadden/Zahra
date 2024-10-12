@@ -49,7 +49,7 @@ namespace Zahra
 		vertexInputInfo.pVertexBindingDescriptions = nullptr;
 		vertexInputInfo.vertexAttributeDescriptionCount = 0;
 		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-		// TODO: fill these out based on m_Specification.VertexBufferLayout
+		// TODO: fill these out based on m_Specification.VertexBufferLayout?
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
 		inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -85,8 +85,7 @@ namespace Zahra
 		rasterizationStateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizationStateInfo.lineWidth = 1.0f;
 		rasterizationStateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizationStateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
-		// TODO: fuck clockwise, I'm not a heathen. Refactor to use ccw!!
+		rasterizationStateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizationStateInfo.depthBiasEnable = VK_FALSE;
 		rasterizationStateInfo.depthBiasConstantFactor = 0.0f;
 		rasterizationStateInfo.depthBiasClamp = 0.0f;
@@ -102,7 +101,7 @@ namespace Zahra
 		multisampleStateInfo.pSampleMask = nullptr;
 		multisampleStateInfo.alphaToCoverageEnable = VK_FALSE;
 		multisampleStateInfo.alphaToOneEnable = VK_FALSE;
-		// TODO: figure out where these data come from
+		// TODO: figure out where these data need to come from
 
 		// TODO: fill out a VkPipelineDepthStencilStateCreateInfo depthStencilStateInfo{};
 		// (for now we'll just use a nullptr in its place)
@@ -132,7 +131,6 @@ namespace Zahra
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.pNext = nullptr;
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 0;
 		pipelineLayoutInfo.pSetLayouts = nullptr;
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
@@ -151,9 +149,9 @@ namespace Zahra
 		pipelineInfo.pViewportState = &viewportStateInfo;
 		pipelineInfo.pRasterizationState = &rasterizationStateInfo;
 		pipelineInfo.pMultisampleState = &multisampleStateInfo;
-		pipelineInfo.pDepthStencilState = nullptr; // we'll need this later
+		pipelineInfo.pDepthStencilState = nullptr; // TODO: include depth buffer!!
 		pipelineInfo.pColorBlendState = &colorBlendState;
-		pipelineInfo.pDynamicState = nullptr; // probably will include some dynamic state eventually
+		pipelineInfo.pDynamicState = &dynamicStateInfo;
 		pipelineInfo.layout = m_PipelineLayout;
 		pipelineInfo.renderPass = renderPass;
 		pipelineInfo.subpass = 0;

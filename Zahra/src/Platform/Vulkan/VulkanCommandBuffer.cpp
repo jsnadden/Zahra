@@ -83,12 +83,12 @@ namespace Zahra
 		Ref<VulkanDevice> device = m_Swapchain->GetDevice();
 		QueueFamilyIndices queueFamilyIndices = m_Swapchain->GetDevice()->QueueFamilyIndices;
 
-		VkCommandPoolCreateInfo commandPoolInfo{};
-		commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		commandPoolInfo.queueFamilyIndex = queueFamilyIndices.GraphicsIndex.value();
+		VkCommandPoolCreateInfo graphicsPoolInfo{};
+		graphicsPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		graphicsPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		graphicsPoolInfo.queueFamilyIndex = queueFamilyIndices.GraphicsIndex.value();
 
-		VulkanUtils::ValidateVkResult(vkCreateCommandPool(device->LogicalDevice, &commandPoolInfo, nullptr, &m_CommandPool),
+		VulkanUtils::ValidateVkResult(vkCreateCommandPool(device->LogicalDevice, &graphicsPoolInfo, nullptr, &m_CommandPool),
 			"Vulkan command pool creation failed");
 
 	}

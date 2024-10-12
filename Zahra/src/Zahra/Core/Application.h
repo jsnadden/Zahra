@@ -68,9 +68,6 @@ namespace Zahra
 	private:
 		ApplicationSpecification m_Specification;
 
-		bool OnWindowClosed(WindowClosedEvent& e);
-		bool OnWindowResized(WindowResizedEvent& e);
-
 		static Application* s_Instance;
 
 		Scope<Window> m_Window;
@@ -80,9 +77,15 @@ namespace Zahra
 		bool m_Running = true;
 		bool m_Minimised = false;
 
-		float m_PreviousFrameTime;
+		float m_PreviousFrameStartTime;
 
 		LayerStack m_LayerStack;
+
+		bool OnWindowClosed(WindowClosedEvent& e);
+		bool OnWindowResized(WindowResizedEvent& e);
+		bool OnWindowMinimised(WindowMinimisedEvent& e);
+
+
 	};
 
 	// To be defined by client app

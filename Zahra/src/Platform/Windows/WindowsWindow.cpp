@@ -41,6 +41,16 @@ namespace Zahra
 		Shutdown();
 	}
 
+	void WindowsWindow::PollEvents()
+	{
+		glfwPollEvents();
+	}
+
+	void WindowsWindow::PresentImage()
+	{
+		m_Context->PresentImage();
+	}
+
 	void WindowsWindow::Init(const WindowProperties& props)
 	{
 		#pragma region Set initial window data
@@ -284,13 +294,6 @@ namespace Zahra
 		CoUninitialize(); // Shutdown Windows COM library
 
 		Z_CORE_INFO("'{0}' window closed", m_WindowData.Title);
-	}
-
-	void WindowsWindow::OnUpdate()
-	{
-		glfwPollEvents();
-
-		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::Resize(uint32_t width, uint32_t height)

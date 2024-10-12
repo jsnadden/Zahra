@@ -26,7 +26,7 @@ namespace Zahra
 		m_EditorScene = Ref<Scene>::Create();
 		m_ActiveScene = m_EditorScene;
 
-		Renderer::SetLineThickness(3.f);
+		//Renderer::SetLineThickness(3.f);
 
 		auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
 		if (commandLineArgs.Count > 1)
@@ -78,8 +78,8 @@ namespace Zahra
 			
 			m_Framebuffer->Bind();
 			{
-				RenderCommand::SetClearColour(glm::make_vec4(m_ClearColour));
-				RenderCommand::Clear();
+				RenderCommandQueue::SetClearColour(glm::make_vec4(m_ClearColour));
+				//RenderCommandQueue::Clear();
 
 				m_Framebuffer->ClearColourAttachment(1, -1);
 				
