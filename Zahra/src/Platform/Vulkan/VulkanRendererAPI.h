@@ -16,6 +16,9 @@ namespace Zahra
 
 		virtual void Present() override;	
 
+		// TEMPORARY
+		virtual void SetPipeline(const Ref<Pipeline>& pipeline) override;
+
 	};
 
 }

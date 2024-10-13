@@ -46,8 +46,8 @@ namespace Zahra
 	struct RendererData
 	{
 		// TEMPORARY (these should be externally set)
-		Ref<Shader> m_Shader;
-		Ref<Pipeline> m_Pipeline;
+		Ref<Shader> Shader;
+		Ref<Pipeline> Pipeline;
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// PARAMETERS
@@ -116,9 +116,27 @@ namespace Zahra
 	{
 		RenderCommandQueue::Init();
 		
-		#pragma region deprecated
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////	QUAD VERTEX ARRAY
+		// TEMPORARY
+		ShaderSpecification shaderSpec{};
+		// TODO: the app should send the shader details prior to this (in Renderer::Init() e.g.)
+		// (and they should really be owned by a shader library)
+		shaderSpec.Name = "vulkan_tutorial";
+		shaderSpec.SourceDirectory = "Resources/Shaders";
+		s_RendererData.Shader = Shader::Create(shaderSpec);
+
+		PipelineSpecification pipelineSpec{};
+		pipelineSpec.Shader = s_RendererData.Shader;
+		s_RendererData.Pipeline = Pipeline::Create(pipelineSpec);
+
+		// TODO: figure out a better way to supply the swapchain (or whoever
+		// else ends up owning the command buffer) with the vkpipeline handle.
+		// As it stands, this is being redirected all over the place...
+		RenderCommandQueue::SetPipeline(s_RendererData.Pipeline);
+
+		// TODO: ressurect these bits
+		#pragma region
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//	QUAD VERTEX ARRAY
 		//s_RendererData.QuadVertexArray = VertexArray::Create();
 		//
 		//// VERTEX BUFFER
@@ -231,6 +249,10 @@ namespace Zahra
 
 	void Renderer::Shutdown()
 	{
+		// TEMPORARY
+		s_RendererData.Pipeline.Reset();
+		s_RendererData.Shader.Reset();
+
 		//delete[] s_RendererData.QuadVertexBufferBase;
 	}
 

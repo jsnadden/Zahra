@@ -19,13 +19,7 @@ namespace Zahra
 		SceneRenderer(const SceneRendererSpecification& specification);
 		~SceneRenderer();
 
-		// TEMPORARY
-		void DrawStuff();
-
 	private:
-		Ref<Shader> m_Shader;
-		Ref<Pipeline> m_Pipeline;
-		Ref<CommandBuffer> m_CommandBuffer;
 	};
 
 }

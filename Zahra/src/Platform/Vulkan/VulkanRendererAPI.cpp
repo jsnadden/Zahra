@@ -1,6 +1,9 @@
 #include "zpch.h"
 #include "VulkanRendererAPI.h"
 
+#include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanPipeline.h"
+
 namespace Zahra
 {
 
@@ -10,12 +13,6 @@ namespace Zahra
 	}
 
 	void VulkanRendererAPI::Shutdown()
-	{
-		
-	}
-
-	// TEMPORARY
-	void VulkanRendererAPI::Present()
 	{
 		
 	}
@@ -30,5 +27,17 @@ namespace Zahra
 		// TODO: figure out which class "owns" this and forward it this data
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////
+	// TEMPORARY
+	void VulkanRendererAPI::SetPipeline(const Ref<Pipeline>& pipeline)
+	{
+		VulkanContext::Get()->GetSwapchain()->SetPipeline(pipeline.As<VulkanPipeline>()->GetVkPipeline());
+	}
+
+	void VulkanRendererAPI::Present()
+	{
+
+	}
+	/////////////////////////////////////////////////////////////////////////////////
 }
 

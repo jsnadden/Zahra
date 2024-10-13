@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Zahra/Renderer/Pipeline.h"
 #include "Zahra/Renderer/VertexArray.h"
 
 #include <glm/glm.hpp>
@@ -26,6 +27,9 @@ namespace Zahra
 		virtual void Present() = 0;
 
 		inline static API GetAPI() { return s_API; }
+
+		// TEMPORARY
+		virtual void SetPipeline(const Ref<Pipeline>& pipeline) = 0;
 
 	private:
 		static API s_API;

@@ -37,6 +37,12 @@ namespace Zahra
 			s_RendererAPI->SetClearColour(colour);
 		}
 
+		// TEMPORARY
+		static void SetPipeline(const Ref<Pipeline>& pipeline)
+		{
+			s_RendererAPI->SetPipeline(pipeline);
+		}
+
 		/*static void Clear()
 		{
 			s_RendererAPI->Clear();
