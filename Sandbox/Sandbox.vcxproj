@@ -146,6 +146,10 @@
       <Project>{BB97920E-27AC-BABF-F02D-5E1F5C01B7F0}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\vulkan_tutorial.frag" />
+    <None Include="Resources\Shaders\vulkan_tutorial.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

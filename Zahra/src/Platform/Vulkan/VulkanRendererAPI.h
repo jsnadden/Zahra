@@ -19,13 +19,10 @@ namespace Zahra
 		
 		virtual void NewFrame() override;
 
-		virtual void BeginRenderPass() override;
+		virtual void BeginRenderPass(Ref<Pipeline> pipeline) override;
 		virtual void EndRenderPass() override;
-		virtual void SubmitCommandBuffer() override;
 
-		virtual void BindPipeline(const Ref<Pipeline>& pipeline) override;
-
-		virtual void Present() override;
+		virtual void PresentImage() override;
 
 		// TEMPORARY
 		virtual void TutorialDrawCalls() override;
@@ -33,19 +30,8 @@ namespace Zahra
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;
 
-		VkCommandPool m_CommandPool = VK_NULL_HANDLE;
-		VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
+		VkClearValue m_ClearColour = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
 
-		VkSemaphore m_ImageAvailableSemaphore;
-		VkSemaphore m_RenderFinishedSemaphore;
-		VkFence m_InFlightFence;
-
-		VkClearValue m_ClearColour = { { { 0.05f, 0.1f, 0.05f, 1.0f } } };
-
-		void CreateCommandPool();
-		void AllocateCommandBuffer();
-
-		void CreateSyncObjects();
 	};
 
 }

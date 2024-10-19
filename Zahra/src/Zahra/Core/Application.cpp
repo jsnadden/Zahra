@@ -70,7 +70,8 @@ namespace Zahra
 					layer->OnImGuiRender();
 				m_ImGuiLayer->End();
 
-				m_Window->PresentImage();
+
+				Renderer::PresentImage();
 			}
 			
 		}

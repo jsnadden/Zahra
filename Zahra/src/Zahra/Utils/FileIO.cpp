@@ -44,7 +44,9 @@ namespace Zahra
 
 			fileSize -= skippedChars - 1;
 			result.resize(fileSize);
-			in.read(result.data(), fileSize);
+			in.read(result.data() + 1, fileSize);
+			// Add a dummy tab to beginning of file.
+			result[0] = '\t';
 		}
 		in.close();
 		return result;

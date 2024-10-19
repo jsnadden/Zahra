@@ -16,7 +16,7 @@ namespace Zahra
 		void Init(VkInstance& instance, GLFWwindow* windowHandle);
 		void Shutdown(VkInstance& instance);
 
-		uint32_t GetNextImage(VkSemaphore& imageAvailableSemaphore);
+		void GetNextImage();
 		void PresentImage();
 
 		VkSurfaceKHR& GetSurface() { return m_Surface; }
@@ -30,8 +30,11 @@ namespace Zahra
 
 		const VkRenderPass& GetVkRenderPass() { return m_RenderPass; }
 
-		const std::vector<VkFramebuffer>& GetFramebuffers() { return m_Framebuffers; }
-		const VkFramebuffer& GetCurrentFramebuffer() { return m_Framebuffers[m_CurrentImageIndex]; }
+		VkFramebuffer GetFramebuffer(uint32_t index);
+		VkFramebuffer GetCurrentFramebuffer() { return GetFramebuffer(m_CurrentImageIndex); }
+
+		VkCommandBuffer GetDrawCommandBuffer(uint32_t index);
+		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentImageIndex); }
 		
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
@@ -52,6 +55,13 @@ namespace Zahra
 		// TODO: does this belong here?
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 
+		VkCommandPool m_CommandPool = VK_NULL_HANDLE;
+		VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
+
+		VkSemaphore m_ImageAvailableSemaphore;
+		VkSemaphore m_RenderFinishedSemaphore;
+		VkFence m_InFlightFence;
+
 		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
 
 		void CreateDevice(VkInstance& instance);
@@ -69,6 +79,11 @@ namespace Zahra
 		void CreateImagesAndViews();
 		void CreateRenderPass();
 		void CreateFramebuffers();
+
+		void CreateCommandPool();
+		void AllocateCommandBuffer();
+
+		void CreateSyncObjects();
 
 		friend class VulkanContext;
 	};

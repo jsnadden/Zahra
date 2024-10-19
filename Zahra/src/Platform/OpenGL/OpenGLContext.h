@@ -13,7 +13,6 @@ namespace Zahra
 
 		virtual void Init() override;
 		virtual void Shutdown() override;
-		virtual void PresentImage() override;
 
 	private:
 		GLFWwindow* m_WindowHandle;

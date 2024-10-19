@@ -264,11 +264,9 @@ namespace Zahra
 
 	void Renderer::DrawTutorialScene()
 	{
-		s_RendererAPI->BeginRenderPass();
-		s_RendererAPI->BindPipeline(s_RendererData.Pipeline);
+		s_RendererAPI->BeginRenderPass(s_RendererData.Pipeline);
 		s_RendererAPI->TutorialDrawCalls();
 		s_RendererAPI->EndRenderPass();
-		s_RendererAPI->SubmitCommandBuffer();
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
@@ -290,6 +288,11 @@ namespace Zahra
 	void Renderer::EndScene()
 	{
 		//SubmitBatch();
+	}
+
+	void Renderer::PresentImage()
+	{
+		s_RendererAPI->PresentImage();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)

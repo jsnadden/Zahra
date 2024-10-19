@@ -358,7 +358,7 @@ namespace Zahra
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					Z_CORE_ERROR(result.GetErrorMessage());
-					Z_CORE_ASSERT(false);
+					Z_CORE_ASSERT(false, "Vulkan shader failed to compile");
 				}
 
 				bytecode[stage] = std::vector<uint32_t>(result.cbegin(), result.cend());

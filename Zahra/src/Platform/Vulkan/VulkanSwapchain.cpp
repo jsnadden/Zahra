@@ -22,12 +22,21 @@ namespace Zahra
 		CreateImagesAndViews();
 		CreateRenderPass();
 		CreateFramebuffers();
+		CreateCommandPool();
+		AllocateCommandBuffer();
+		CreateSyncObjects();
 
 		Z_CORE_TRACE("Vulkan swap chain creation succeeded");
 	}
 
 	void VulkanSwapchain::Shutdown(VkInstance& instance)
 	{
+		vkDestroySemaphore(m_Device->LogicalDevice, m_ImageAvailableSemaphore, nullptr);
+		vkDestroySemaphore(m_Device->LogicalDevice, m_RenderFinishedSemaphore, nullptr);
+		vkDestroyFence(m_Device->LogicalDevice, m_InFlightFence, nullptr);
+
+		vkDestroyCommandPool(m_Device->LogicalDevice, m_CommandPool, nullptr);
+	
 		for (auto framebuffer : m_Framebuffers) {
 			vkDestroyFramebuffer(m_Device->LogicalDevice, framebuffer, nullptr);
 		}
@@ -53,16 +62,62 @@ namespace Zahra
 		m_Surface = VK_NULL_HANDLE;
 	}
 
-	uint32_t VulkanSwapchain::GetNextImage(VkSemaphore& imageAvailableSemaphore)
+	void VulkanSwapchain::GetNextImage()
 	{
-		vkAcquireNextImageKHR(m_Device->LogicalDevice, m_Swapchain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &m_CurrentImageIndex);
+		vkWaitForFences(m_Device->LogicalDevice, 1, &m_InFlightFence, VK_TRUE, UINT64_MAX);
+		vkResetFences(m_Device->LogicalDevice, 1, &m_InFlightFence);
 
-		return m_CurrentImageIndex;
+		VkResult result = vkAcquireNextImageKHR(m_Device->LogicalDevice, m_Swapchain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &m_CurrentImageIndex);
+
+		// TODO: check result to see if swapchain needs to be recreated
+
+		vkResetCommandBuffer(m_CommandBuffer, 0);
 	}
 
 	void VulkanSwapchain::PresentImage()
 	{
-		
+		VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphore };
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphore };
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &m_CommandBuffer;
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		VulkanUtils::ValidateVkResult(vkQueueSubmit(m_Device->GraphicsQueue, 1, &submitInfo, m_InFlightFence));
+
+		VkSwapchainKHR swapChains[] = { m_Swapchain };
+
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+		presentInfo.pImageIndices = &m_CurrentImageIndex;
+
+		VkResult result = vkQueuePresentKHR(m_Device->PresentationQueue, &presentInfo);
+
+	}
+
+	VkFramebuffer VulkanSwapchain::GetFramebuffer(uint32_t index)
+	{
+		Z_CORE_ASSERT(index < m_Framebuffers.size());
+
+		return m_Framebuffers[index];
+	}
+
+	VkCommandBuffer VulkanSwapchain::GetDrawCommandBuffer(uint32_t index)
+	{
+		Z_CORE_ASSERT(index < m_Framebuffers.size());
+
+		return m_CommandBuffer;
 	}
 
 	void VulkanSwapchain::CreateSurface(VkInstance& instance, GLFWwindow* windowHandle)
@@ -445,12 +500,24 @@ namespace Zahra
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colourAttachmentRef;
 
+		// this subpass dependency sets up waiting until the swapchain has finished
+		// reading the colour attachment (for presentation) before the next frame is written to it
+		VkSubpassDependency dependency{};
+		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependency.dstSubpass = 0;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcAccessMask = 0;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 		VkRenderPassCreateInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 		renderPassInfo.attachmentCount = 1;
 		renderPassInfo.pAttachments = &colourAttachment;
 		renderPassInfo.subpassCount = 1;
 		renderPassInfo.pSubpasses = &subpass;
+		renderPassInfo.dependencyCount = 1;
+		renderPassInfo.pDependencies = &dependency;
 
 		VulkanUtils::ValidateVkResult(vkCreateRenderPass(m_Device->LogicalDevice, &renderPassInfo, nullptr, &m_RenderPass),
 			"Vulkan swapchain render pass creation failed");
@@ -476,6 +543,49 @@ namespace Zahra
 				"Vulkan swapchain framebuffer creation failed");
 		}
 	}
+
+	void VulkanSwapchain::CreateSyncObjects()
+	{
+		// these guys have trivial CreateInfos
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		VkFenceCreateInfo fenceInfo{};
+		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		// fence starts in the signaled state, otherwise we would wait indefinitely on the first frame:
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		VulkanUtils::ValidateVkResult(vkCreateSemaphore(m_Device->LogicalDevice, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore),
+			"Vulkan semaphore creation failed");
+		VulkanUtils::ValidateVkResult(vkCreateSemaphore(m_Device->LogicalDevice, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore),
+			"Vulkan semaphore creation failed");
+		VulkanUtils::ValidateVkResult(vkCreateFence(m_Device->LogicalDevice, &fenceInfo, nullptr, &m_InFlightFence),
+			"Vulkan fence creation failed");
+
+	}
+
+	void VulkanSwapchain::CreateCommandPool()
+	{
+		VkCommandPoolCreateInfo graphicsPoolInfo{};
+		graphicsPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		graphicsPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		graphicsPoolInfo.queueFamilyIndex = m_Device->QueueFamilyIndices.GraphicsIndex.value();
+
+		VulkanUtils::ValidateVkResult(vkCreateCommandPool(m_Device->LogicalDevice, &graphicsPoolInfo, nullptr, &m_CommandPool),
+			"Vulkan command pool creation failed");
+	}
+
+	void VulkanSwapchain::AllocateCommandBuffer()
+	{
+		VkCommandBufferAllocateInfo commandBufferInfo{};
+		commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		commandBufferInfo.commandPool = m_CommandPool;
+		commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		commandBufferInfo.commandBufferCount = 1;
+
+		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(m_Device->LogicalDevice, &commandBufferInfo, &m_CommandBuffer),
+			"Vulkan command buffer allocation failed");
+	}
+
 
 }
 

@@ -46,11 +46,6 @@ namespace Zahra
 		glfwPollEvents();
 	}
 
-	void WindowsWindow::PresentImage()
-	{
-		m_Context->PresentImage();
-	}
-
 	void WindowsWindow::Init(const WindowProperties& props)
 	{
 		#pragma region Set initial window data

@@ -82,11 +82,6 @@ namespace Zahra
 		vkDestroyInstance(m_VulkanInstance, nullptr);
 	}
 
-	void VulkanContext::PresentImage()
-	{
-
-	}
-
 	void VulkanContext::CreateInstance()
 	{
 		//////////////////////////////////////////////////////////////////////////////////////////////////

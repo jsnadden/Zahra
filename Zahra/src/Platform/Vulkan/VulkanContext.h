@@ -18,8 +18,6 @@ namespace Zahra
 
 		virtual void Init() override;
 		virtual void Shutdown() override;
-
-		virtual void PresentImage() override;
 		
 		static Ref<VulkanContext> Get() { return Ref<VulkanContext>(Renderer::GetContext()); }
 		Ref<VulkanSwapchain> GetSwapchain() { return m_Swapchain; }

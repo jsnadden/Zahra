@@ -25,9 +25,9 @@ namespace Zahra
 			s_RendererAPI->NewFrame();
 		}
 
-		static void BeginRenderPass()
+		static void BeginRenderPass(Ref<Pipeline> pipeline)
 		{
-			s_RendererAPI->BeginRenderPass();
+			s_RendererAPI->BeginRenderPass(pipeline);
 		}
 
 		static void EndRenderPass()
@@ -35,9 +35,9 @@ namespace Zahra
 			s_RendererAPI->EndRenderPass();
 		}
 
-		static void Present()
+		static void PresentImage()
 		{
-			s_RendererAPI->Present();
+			s_RendererAPI->PresentImage();
 		}
 
 
@@ -49,11 +49,6 @@ namespace Zahra
 		static void SetClearColour(const glm::vec4& colour)
 		{
 			s_RendererAPI->SetClearColour(colour);
-		}
-
-		static void BindPipeline(const Ref<Pipeline>& pipeline)
-		{
-			s_RendererAPI->BindPipeline(pipeline);
 		}
 
 		/*static void Clear()

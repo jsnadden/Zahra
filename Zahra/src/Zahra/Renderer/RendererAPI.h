@@ -26,13 +26,10 @@ namespace Zahra
 
 		virtual void NewFrame() = 0;
 
-		virtual void BeginRenderPass() = 0;
+		virtual void BeginRenderPass(Ref<Pipeline> pipeline) = 0;
 		virtual void EndRenderPass() = 0;
-		virtual void SubmitCommandBuffer() = 0;
 
-		virtual void Present() = 0;
-
-		virtual void BindPipeline(const Ref<Pipeline>& pipeline) = 0;
+		virtual void PresentImage() = 0;
 
 		inline static API GetAPI() { return s_API; }
 		static RendererAPI* Create();

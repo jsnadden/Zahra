@@ -15,7 +15,6 @@ namespace Zahra
 		virtual ~WindowsWindow();
 
 		virtual void PollEvents() override;
-		virtual void PresentImage() override;
 
 		inline uint32_t GetWidth() const override { return m_WindowData.Rectangle.Width; }
 		inline uint32_t GetHeight() const override { return m_WindowData.Rectangle.Height; }
