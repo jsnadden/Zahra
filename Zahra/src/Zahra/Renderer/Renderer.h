@@ -17,6 +17,10 @@ namespace Zahra
 
 		static void NewFrame();
 
+		// TEMPORARY
+		static void DrawTutorialScene();
+
+		// TODO: move this stuff to SceneRenderer
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();

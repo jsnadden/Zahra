@@ -111,11 +111,13 @@ namespace Zahra
 
 	static RendererData s_RendererData;
 
+	static RendererAPI* s_RendererAPI;
 
 	void Renderer::Init()
 	{
-		RenderCommandQueue::Init();
-		
+		s_RendererAPI = RendererAPI::Create();
+		s_RendererAPI->Init();
+
 		// TEMPORARY
 		ShaderSpecification shaderSpec{};
 		// TODO: the app should send the shader details prior to this (in Renderer::Init() e.g.)
@@ -127,11 +129,6 @@ namespace Zahra
 		PipelineSpecification pipelineSpec{};
 		pipelineSpec.Shader = s_RendererData.Shader;
 		s_RendererData.Pipeline = Pipeline::Create(pipelineSpec);
-
-		// TODO: figure out a better way to supply the swapchain (or whoever
-		// else ends up owning the command buffer) with the vkpipeline handle.
-		// As it stands, this is being redirected all over the place...
-		RenderCommandQueue::SetPipeline(s_RendererData.Pipeline);
 
 		// TODO: ressurect these bits
 		#pragma region
@@ -254,14 +251,24 @@ namespace Zahra
 		s_RendererData.Shader.Reset();
 
 		//delete[] s_RendererData.QuadVertexBufferBase;
+
+		s_RendererAPI->Shutdown();
 	}
 
 	void Renderer::NewFrame()
 	{
-		// TODO: 
-		// 1) wait for previous frame to complete
-		// 2) get new swapchain image
-		// 3) reset command/descriptor pools
+		s_RendererAPI->NewFrame();
+
+		// TODO: reset descriptor pools
+	}
+
+	void Renderer::DrawTutorialScene()
+	{
+		s_RendererAPI->BeginRenderPass();
+		s_RendererAPI->BindPipeline(s_RendererData.Pipeline);
+		s_RendererAPI->TutorialDrawCalls();
+		s_RendererAPI->EndRenderPass();
+		s_RendererAPI->SubmitCommandBuffer();
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
@@ -287,7 +294,7 @@ namespace Zahra
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
-		RenderCommandQueue::SetViewport(0, 0, width, height);
+		s_RendererAPI->SetViewport(0, 0, width, height);
 	}
 
 	/*float Renderer::GetLineThickness()

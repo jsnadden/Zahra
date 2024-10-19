@@ -20,7 +20,21 @@ namespace Zahra
 			s_RendererAPI->Shutdown();
 		}
 
-		// TEMPORARY
+		static void NewFrame()
+		{
+			s_RendererAPI->NewFrame();
+		}
+
+		static void BeginRenderPass()
+		{
+			s_RendererAPI->BeginRenderPass();
+		}
+
+		static void EndRenderPass()
+		{
+			s_RendererAPI->EndRenderPass();
+		}
+
 		static void Present()
 		{
 			s_RendererAPI->Present();
@@ -37,10 +51,9 @@ namespace Zahra
 			s_RendererAPI->SetClearColour(colour);
 		}
 
-		// TEMPORARY
-		static void SetPipeline(const Ref<Pipeline>& pipeline)
+		static void BindPipeline(const Ref<Pipeline>& pipeline)
 		{
-			s_RendererAPI->SetPipeline(pipeline);
+			s_RendererAPI->BindPipeline(pipeline);
 		}
 
 		/*static void Clear()

@@ -22,7 +22,7 @@ void Sandbox2DLayer::OnDetach()
 
 void Sandbox2DLayer::OnUpdate(float dt)
 {
-	
+	Zahra::Renderer::DrawTutorialScene();
 }
 
 void Sandbox2DLayer::OnEvent(Zahra::Event& event)

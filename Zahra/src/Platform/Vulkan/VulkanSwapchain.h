@@ -11,24 +11,25 @@ namespace Zahra
 	class VulkanSwapchain : public RefCounted
 	{
 	public:
-		VulkanSwapchain();
+		VulkanSwapchain() = default;
 
 		void Init(VkInstance& instance, GLFWwindow* windowHandle);
 		void Shutdown(VkInstance& instance);
 
-		void RecordCommandBuffer();
-		void SubmitCommandBuffer();
+		uint32_t GetNextImage(VkSemaphore& imageAvailableSemaphore);
 		void PresentImage();
 
-		// TEMPORARY
-		void SetPipeline(const VkPipeline& pipeline) { m_Pipeline = pipeline; }
-
 		VkSurfaceKHR& GetSurface() { return m_Surface; }
+
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
+		const VkDevice& GetLogicalDevice() { return m_Device->LogicalDevice; }
+
 		const VkExtent2D& GetExtent() { return m_Extent; }
 		const VkFormat& GetImageFormat() { return m_Format.format; }
 		const std::vector<VkImageView>& GetImageViews() { return m_ImageViews; }
+
 		const VkRenderPass& GetVkRenderPass() { return m_RenderPass; }
+
 		const std::vector<VkFramebuffer>& GetFramebuffers() { return m_Framebuffers; }
 		const VkFramebuffer& GetCurrentFramebuffer() { return m_Framebuffers[m_CurrentImageIndex]; }
 		
@@ -48,17 +49,8 @@ namespace Zahra
 		VkExtent2D m_Extent;
 		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 
+		// TODO: does this belong here?
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
-		
-		VkCommandPool m_CommandPool = VK_NULL_HANDLE;
-		VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
-
-		// TEMPORARY
-		VkPipeline m_Pipeline;
-
-		VkSemaphore m_ImageAvailableSemaphore;
-		VkSemaphore m_RenderFinishedSemaphore;
-		VkFence m_InFlightFence;
 
 		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
 
@@ -77,9 +69,6 @@ namespace Zahra
 		void CreateImagesAndViews();
 		void CreateRenderPass();
 		void CreateFramebuffers();
-
-		void CreateCommandPool();
-		void AllocateCommandBuffer();
 
 		friend class VulkanContext;
 	};
