@@ -1509,7 +1509,6 @@
     <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderPass.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLImGuiLayer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h" />
@@ -1520,6 +1519,7 @@
     <ClInclude Include="src\Zahra\Renderer\CommandBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\SceneRenderer.h" />
+    <ClInclude Include="src\Zahra\Renderer\RendererConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp">
@@ -1644,7 +1644,6 @@
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Pipeline.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLImGuiLayer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp" />

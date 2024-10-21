@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Zahra/Core/Ref.h"
+
 struct GLFWwindow;
 
 namespace Zahra

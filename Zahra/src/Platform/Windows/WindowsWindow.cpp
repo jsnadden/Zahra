@@ -7,7 +7,6 @@
 #include "Zahra/Events/MouseEvent.h"
 #include "Zahra/Events/KeyEvent.h"
 #include "Zahra/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/Vulkan/VulkanContext.h"
 
 #include <shobjidl.h>

@@ -19,7 +19,7 @@ namespace Zahra
 
 	void VulkanRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
-		// TODO: figure out which class "owns" this and forward it this data
+		//VulkanContext::Get()->GetSwapchain()->OnWindowResize(width, height);
 	}
 
 	void VulkanRendererAPI::NewFrame()

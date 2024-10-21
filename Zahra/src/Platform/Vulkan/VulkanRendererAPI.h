@@ -30,7 +30,7 @@ namespace Zahra
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;
 
-		VkClearValue m_ClearColour = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
+		VkClearValue m_ClearColour = { { { 0.01f, 0.02f, 0.01f, 1.0f } } };
 
 	};
 
