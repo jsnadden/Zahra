@@ -45,8 +45,11 @@ namespace Zahra
 
 	struct RendererData
 	{
-		// TEMPORARY (these should be externally set)
 		Ref<Shader> Shader;
+
+		RendererConfig Config;
+
+		// TODO: set pipelines externally?
 		Ref<Pipeline> Pipeline;
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -253,6 +256,16 @@ namespace Zahra
 		//delete[] s_RendererData.QuadVertexBufferBase;
 
 		s_RendererAPI->Shutdown();
+	}
+
+	RendererConfig& Renderer::GetConfig()
+	{
+		return s_RendererData.Config;
+	}
+
+	void Renderer::SetConfig(const RendererConfig& config)
+	{
+		s_RendererData.Config = config;
 	}
 
 	void Renderer::NewFrame()

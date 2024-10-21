@@ -20,13 +20,15 @@ namespace Zahra
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
 
+		Renderer::SetConfig(m_Specification.RendererConfig);
+
 		// TODO: maybe fill out more WindowProperties details before window creation?
 		m_Window = Window::Create(WindowProperties(specification.Name));
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->ReadConfig();
 
-		// Initialise subsystems
 		Renderer::Init();
+
 		// TODO: ressurect
 		//ScriptEngine::Init();
 

@@ -3,6 +3,7 @@
 
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Zahra/Core/Application.h"
+#include "Zahra/Renderer/Renderer.h"
 
 #include <GLFW/glfw3.h>
 #include <set>
@@ -31,9 +32,12 @@ namespace Zahra
 
 	void VulkanSwapchain::Shutdown(VkInstance& instance)
 	{
-		vkDestroySemaphore(m_Device->LogicalDevice, m_ImageAvailableSemaphore, nullptr);
-		vkDestroySemaphore(m_Device->LogicalDevice, m_RenderFinishedSemaphore, nullptr);
-		vkDestroyFence(m_Device->LogicalDevice, m_InFlightFence, nullptr);
+		for (uint32_t i = 0; i < m_FramesInFlight; i++)
+		{
+			vkDestroySemaphore(m_Device->LogicalDevice, m_ImageAvailableSemaphores[i], nullptr);
+			vkDestroySemaphore(m_Device->LogicalDevice, m_RenderFinishedSemaphores[i], nullptr);
+			vkDestroyFence(m_Device->LogicalDevice, m_InFlightFences[i], nullptr);
+		}
 
 		vkDestroyCommandPool(m_Device->LogicalDevice, m_CommandPool, nullptr);
 	
@@ -64,21 +68,21 @@ namespace Zahra
 
 	void VulkanSwapchain::GetNextImage()
 	{
-		vkWaitForFences(m_Device->LogicalDevice, 1, &m_InFlightFence, VK_TRUE, UINT64_MAX);
-		vkResetFences(m_Device->LogicalDevice, 1, &m_InFlightFence);
+		vkWaitForFences(m_Device->LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
+		vkResetFences(m_Device->LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex]);
 
-		VkResult result = vkAcquireNextImageKHR(m_Device->LogicalDevice, m_Swapchain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &m_CurrentImageIndex);
+		VkResult result = vkAcquireNextImageKHR(m_Device->LogicalDevice, m_Swapchain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
 
 		// TODO: check result to see if swapchain needs to be recreated
 
-		vkResetCommandBuffer(m_CommandBuffer, 0);
+		vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], 0);
 	}
 
 	void VulkanSwapchain::PresentImage()
 	{
-		VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphore };
+		VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[m_CurrentFrameIndex] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphore };
+		VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[m_CurrentFrameIndex] };
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -86,11 +90,11 @@ namespace Zahra
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_CommandBuffer;
+		submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentFrameIndex];
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		VulkanUtils::ValidateVkResult(vkQueueSubmit(m_Device->GraphicsQueue, 1, &submitInfo, m_InFlightFence));
+		VulkanUtils::ValidateVkResult(vkQueueSubmit(m_Device->GraphicsQueue, 1, &submitInfo, m_InFlightFences[m_CurrentFrameIndex]));
 
 		VkSwapchainKHR swapChains[] = { m_Swapchain };
 
@@ -104,6 +108,8 @@ namespace Zahra
 
 		VkResult result = vkQueuePresentKHR(m_Device->PresentationQueue, &presentInfo);
 
+		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % m_FramesInFlight;
+
 	}
 
 	VkFramebuffer VulkanSwapchain::GetFramebuffer(uint32_t index)
@@ -115,9 +121,9 @@ namespace Zahra
 
 	VkCommandBuffer VulkanSwapchain::GetDrawCommandBuffer(uint32_t index)
 	{
-		Z_CORE_ASSERT(index < m_Framebuffers.size());
+		Z_CORE_ASSERT(index < m_CommandBuffers.size());
 
-		return m_CommandBuffer;
+		return m_CommandBuffers[index];
 	}
 
 	void VulkanSwapchain::CreateSurface(VkInstance& instance, GLFWwindow* windowHandle)
@@ -231,7 +237,7 @@ namespace Zahra
 		VkPhysicalDeviceMemoryProperties memory;
 		vkGetPhysicalDeviceMemoryProperties(device, &memory);
 
-		const GPURequirements& requirements = Application::Get().GetSpecification().MinGPURequirements;
+		const GPURequirements& requirements = Application::Get().GetSpecification().GPURequirements;
 
 		bool pass = true;
 
@@ -454,6 +460,9 @@ namespace Zahra
 		m_Images.resize(m_ImageCount);
 		vkGetSwapchainImagesKHR(m_Device->LogicalDevice, m_Swapchain, &m_ImageCount, m_Images.data());
 
+		m_FramesInFlight = Renderer::GetConfig().FramesInFlight;
+		if (m_FramesInFlight > m_ImageCount) m_FramesInFlight = m_ImageCount;
+
 		m_ImageViews.resize(m_ImageCount);
 		for (size_t i = 0; i < m_ImageCount; i++)
 		{
@@ -544,25 +553,6 @@ namespace Zahra
 		}
 	}
 
-	void VulkanSwapchain::CreateSyncObjects()
-	{
-		// these guys have trivial CreateInfos
-		VkSemaphoreCreateInfo semaphoreInfo{};
-		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		VkFenceCreateInfo fenceInfo{};
-		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		// fence starts in the signaled state, otherwise we would wait indefinitely on the first frame:
-		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-		VulkanUtils::ValidateVkResult(vkCreateSemaphore(m_Device->LogicalDevice, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore),
-			"Vulkan semaphore creation failed");
-		VulkanUtils::ValidateVkResult(vkCreateSemaphore(m_Device->LogicalDevice, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore),
-			"Vulkan semaphore creation failed");
-		VulkanUtils::ValidateVkResult(vkCreateFence(m_Device->LogicalDevice, &fenceInfo, nullptr, &m_InFlightFence),
-			"Vulkan fence creation failed");
-
-	}
-
 	void VulkanSwapchain::CreateCommandPool()
 	{
 		VkCommandPoolCreateInfo graphicsPoolInfo{};
@@ -576,16 +566,45 @@ namespace Zahra
 
 	void VulkanSwapchain::AllocateCommandBuffer()
 	{
+		m_CommandBuffers.resize(m_FramesInFlight);
+
 		VkCommandBufferAllocateInfo commandBufferInfo{};
 		commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferInfo.commandPool = m_CommandPool;
 		commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		commandBufferInfo.commandBufferCount = 1;
+		commandBufferInfo.commandBufferCount = m_FramesInFlight;
 
-		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(m_Device->LogicalDevice, &commandBufferInfo, &m_CommandBuffer),
-			"Vulkan command buffer allocation failed");
+		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(m_Device->LogicalDevice, &commandBufferInfo, m_CommandBuffers.data()),
+			"Vulkan command buffer allocations failed");
 	}
 
+	void VulkanSwapchain::CreateSyncObjects()
+	{
+		VkDevice device = m_Device->LogicalDevice;
+
+		m_ImageAvailableSemaphores.resize(m_FramesInFlight);
+		m_RenderFinishedSemaphores.resize(m_FramesInFlight);
+		m_InFlightFences.resize(m_FramesInFlight);
+
+		// these guys have trivial CreateInfos
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		VkFenceCreateInfo fenceInfo{};
+		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		// fence starts in the signaled state, otherwise we would wait indefinitely on the first frame:
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		for (uint32_t i = 0; i < m_FramesInFlight; i++)
+		{
+			VulkanUtils::ValidateVkResult(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]),
+				"Vulkan semaphore creation failed");
+			VulkanUtils::ValidateVkResult(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]),
+				"Vulkan semaphore creation failed");
+			VulkanUtils::ValidateVkResult(vkCreateFence(device, &fenceInfo, nullptr, &m_InFlightFences[i]),
+				"Vulkan fence creation failed");
+		}		
+
+	}
 
 }
 

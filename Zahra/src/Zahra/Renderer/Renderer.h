@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Zahra/Core/Application.h"
-#include "Zahra/Renderer/RenderCommandQueue.h"
 #include "Zahra/Renderer/Camera.h"
-#include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/EditorCamera.h"
+#include "Zahra/Renderer/RenderCommandQueue.h"
+#include "Zahra/Renderer/RendererConfig.h"
+#include "Zahra/Renderer/Texture.h"
 #include "Zahra/Scene/Components.h"
 
 namespace Zahra
@@ -14,6 +15,9 @@ namespace Zahra
 	public:
 		static void Init();
 		static void Shutdown();
+
+		static RendererConfig& GetConfig();
+		static void SetConfig(const RendererConfig& config);
 
 		static void NewFrame();
 

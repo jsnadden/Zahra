@@ -11,12 +11,12 @@ namespace Zahra
 		// tests in VulkanContext::MeetsMinimimumRequirements
 	};
 
-	struct GeneralRequirements
-	{
-		uint32_t MinCPUCores;
-		double MinClockSpeed; // in Hz
-		uint64_t MinRAM; // in bytes
-		uint64_t MinStorage; // in bytes
-	};
+	//struct GeneralRequirements
+	//{
+	//	uint32_t MinCPUCores;
+	//	double MinClockSpeed; // in Hz
+	//	uint64_t MinRAM; // in bytes
+	//	uint64_t MinStorage; // in bytes
+	//};
 
 }

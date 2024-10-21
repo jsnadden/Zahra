@@ -1,12 +1,13 @@
 #pragma once
 
+#include "Zahra/Core/AppRequirements.h"
 #include "Zahra/Core/Defines.h"
 #include "Zahra/Core/LayerStack.h"
 #include "Zahra/Core/Window.h"
-#include "Zahra/Events/Event.h"
 #include "Zahra/Events/ApplicationEvent.h"
+#include "Zahra/Events/Event.h"
 #include "Zahra/ImGui/ImGuiLayer.h"
-#include "Zahra/Core/AppRequirements.h"
+#include "Zahra/Renderer/RendererConfig.h"
 
 namespace Zahra
 {
@@ -37,9 +38,12 @@ namespace Zahra
 	{
 		std::string Name = "Zahra_App";
 		ApplicationVersion Version;
+
 		std::filesystem::path WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
-		GPURequirements MinGPURequirements;
+
+		RendererConfig RendererConfig;
+		GPURequirements GPURequirements;
 	};
 
 	class Application

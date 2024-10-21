@@ -31,7 +31,7 @@ namespace Zahra
 		spec.WorkingDirectory = ".";
 		spec.CommandLineArgs = args;
 
-		spec.MinGPURequirements.IsDiscreteGPU = true;
+		spec.GPURequirements.IsDiscreteGPU = true;
 
 		return new Meadow(spec);
 	}

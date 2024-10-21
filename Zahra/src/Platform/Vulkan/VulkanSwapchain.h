@@ -34,7 +34,7 @@ namespace Zahra
 		VkFramebuffer GetCurrentFramebuffer() { return GetFramebuffer(m_CurrentImageIndex); }
 
 		VkCommandBuffer GetDrawCommandBuffer(uint32_t index);
-		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentImageIndex); }
+		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentFrameIndex); }
 		
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
@@ -44,6 +44,9 @@ namespace Zahra
 		std::vector<VkImageView> m_ImageViews;
 		std::vector<VkFramebuffer> m_Framebuffers;
 		uint32_t m_CurrentImageIndex = 0;
+
+		uint32_t m_FramesInFlight = 3;
+		uint32_t m_CurrentFrameIndex = 0;
 
 		Ref<VulkanDevice> m_Device;
 
@@ -56,11 +59,11 @@ namespace Zahra
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 
 		VkCommandPool m_CommandPool = VK_NULL_HANDLE;
-		VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
+		std::vector<VkCommandBuffer> m_CommandBuffers;
 
-		VkSemaphore m_ImageAvailableSemaphore;
-		VkSemaphore m_RenderFinishedSemaphore;
-		VkFence m_InFlightFence;
+		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
+		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+		std::vector<VkFence> m_InFlightFences;
 
 		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
 
