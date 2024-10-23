@@ -310,7 +310,7 @@ namespace Zahra
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
-		s_RendererAPI->SetViewport(0, 0, width, height);
+		s_RendererAPI->OnWindowResize();
 	}
 
 	/*float Renderer::GetLineThickness()

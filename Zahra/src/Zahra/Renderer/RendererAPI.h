@@ -22,6 +22,8 @@ namespace Zahra
 		virtual void Shutdown() = 0;
 
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
+		virtual void OnWindowResize() = 0;
+
 		virtual void SetClearColour(const glm::vec4& colour) = 0;
 
 		virtual void NewFrame() = 0;

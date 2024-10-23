@@ -25,8 +25,7 @@ namespace Zahra
 		// TODO: maybe fill out more WindowProperties details before window creation?
 		m_Window = Window::Create(WindowProperties(specification.Name));
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
-		m_Window->ReadConfig();
-
+		
 		Renderer::Init();
 
 		// TODO: ressurect
@@ -35,6 +34,7 @@ namespace Zahra
 		m_ImGuiLayer = ImGuiLayer::Create();
 		PushOverlay(m_ImGuiLayer);
 
+		m_Window->ReadConfig();
 	}
 	
 	Application::~Application()
@@ -54,6 +54,7 @@ namespace Zahra
 			float frameStartTime = Time::GetTime();
 			float frameTimeStep = frameStartTime - m_PreviousFrameStartTime; // actual delta time
 			float dt = glm::min<float>(frameTimeStep, 0.0333f); // regularised for some numerical stability
+			//Z_CORE_TRACE("Frame timestep: {0}", dt);
 			m_PreviousFrameStartTime = frameStartTime;
 
 			m_Window->PollEvents();
@@ -123,11 +124,11 @@ namespace Zahra
 	{
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
-			m_Minimised = true;
+			//m_Minimised = true;
 			return false;
 		}
 		
-		m_Minimised = false;
+		//m_Minimised = false;
 
 		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 

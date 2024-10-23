@@ -89,8 +89,7 @@ namespace Zahra
 			{
 				glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-				// TODO: temporary
-				glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+				//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 				break;
 			}
 			default: break;

@@ -22,6 +22,11 @@ namespace Zahra
 		//VulkanContext::Get()->GetSwapchain()->OnWindowResize(width, height);
 	}
 
+	void VulkanRendererAPI::OnWindowResize()
+	{
+		VulkanContext::Get()->GetSwapchain()->OnWindowResize();
+	}
+
 	void VulkanRendererAPI::NewFrame()
 	{
 		m_Swapchain->GetNextImage();

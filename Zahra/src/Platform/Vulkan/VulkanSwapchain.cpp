@@ -30,8 +30,24 @@ namespace Zahra
 		Z_CORE_TRACE("Vulkan swap chain creation succeeded");
 	}
 
+	void VulkanSwapchain::Recreate()
+	{
+		vkDeviceWaitIdle(m_Device->LogicalDevice);
+
+		Cleanup();
+
+		CreateSwapchain();
+		CreateImagesAndViews();
+		CreateFramebuffers();
+	}
+
 	void VulkanSwapchain::Shutdown(VkInstance& instance)
 	{
+		Cleanup();
+
+		vkDestroyRenderPass(m_Device->LogicalDevice, m_RenderPass, nullptr);
+		m_RenderPass = VK_NULL_HANDLE;
+
 		for (uint32_t i = 0; i < m_FramesInFlight; i++)
 		{
 			vkDestroySemaphore(m_Device->LogicalDevice, m_ImageAvailableSemaphores[i], nullptr);
@@ -40,14 +56,20 @@ namespace Zahra
 		}
 
 		vkDestroyCommandPool(m_Device->LogicalDevice, m_CommandPool, nullptr);
-	
+
+		vkDestroyDevice(m_Device->LogicalDevice, nullptr);
+		m_Device->LogicalDevice = VK_NULL_HANDLE;
+
+		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
+		m_Surface = VK_NULL_HANDLE;
+	}
+
+	void VulkanSwapchain::Cleanup()
+	{
 		for (auto framebuffer : m_Framebuffers) {
 			vkDestroyFramebuffer(m_Device->LogicalDevice, framebuffer, nullptr);
 		}
 		m_Framebuffers.clear();
-		
-		vkDestroyRenderPass(m_Device->LogicalDevice, m_RenderPass, nullptr);
-		m_RenderPass = VK_NULL_HANDLE;
 
 		for (auto imageView : m_ImageViews)
 		{
@@ -58,23 +80,25 @@ namespace Zahra
 		vkDestroySwapchainKHR(m_Device->LogicalDevice, m_Swapchain, nullptr);
 		m_Images.clear();
 		m_Swapchain = VK_NULL_HANDLE;
-
-		vkDestroyDevice(m_Device->LogicalDevice, nullptr);
-		m_Device->LogicalDevice = VK_NULL_HANDLE;
-
-		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
-		m_Surface = VK_NULL_HANDLE;
 	}
 
 	void VulkanSwapchain::GetNextImage()
 	{
 		vkWaitForFences(m_Device->LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
-		vkResetFences(m_Device->LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex]);
 
 		VkResult result = vkAcquireNextImageKHR(m_Device->LogicalDevice, m_Swapchain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
 
-		// TODO: check result to see if swapchain needs to be recreated
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			Recreate();
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		{
+			throw std::runtime_error("Vulkan swapchain failed to acquire next image");
+		}
 
+		vkResetFences(m_Device->LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex]);
 		vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], 0);
 	}
 
@@ -107,6 +131,16 @@ namespace Zahra
 		presentInfo.pImageIndices = &m_CurrentImageIndex;
 
 		VkResult result = vkQueuePresentKHR(m_Device->PresentationQueue, &presentInfo);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_Resized)
+		{
+			m_Resized = false;
+			Recreate();
+		}
+		else if (result != VK_SUCCESS)
+		{
+			throw std::runtime_error("Vulkan swapchain failed to present rendered image");
+		}
 
 		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % m_FramesInFlight;
 
@@ -330,14 +364,21 @@ namespace Zahra
 			adequateSupport = false;
 		}
 
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &support.Capabilities);
+		QuerySurfaceCapabilities(device, support.Capabilities);
 
 		if (!adequateSupport) Z_CORE_CRITICAL("Selected GPU/window do not provide adequate support for Vulkan swap chain creation");
 		return adequateSupport;
 	}
 
+	void VulkanSwapchain::QuerySurfaceCapabilities(const VkPhysicalDevice& device, VkSurfaceCapabilitiesKHR& capabilities)
+	{
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &capabilities);
+	}
+
 	void VulkanSwapchain::CreateSwapchain()
 	{
+		QuerySurfaceCapabilities(m_Device->PhysicalDevice, m_Device->SwapchainSupport.Capabilities);
+
 		m_Format = ChooseSwapchainFormat();
 		m_PresentationMode = ChooseSwapchainPresentationMode();
 		m_Extent = ChooseSwapchainExtent();

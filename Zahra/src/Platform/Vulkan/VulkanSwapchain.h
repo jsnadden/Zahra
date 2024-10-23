@@ -14,7 +14,11 @@ namespace Zahra
 		VulkanSwapchain() = default;
 
 		void Init(VkInstance& instance, GLFWwindow* windowHandle);
+		void Recreate();
 		void Shutdown(VkInstance& instance);
+		void Cleanup();
+
+		void OnWindowResize() { m_Resized = true; }
 
 		void GetNextImage();
 		void PresentImage();
@@ -38,6 +42,9 @@ namespace Zahra
 		
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
+
+		bool m_Resized = false;
+		bool m_Invalidated = false;
 
 		uint32_t m_ImageCount = 0;
 		std::vector<VkImage> m_Images;
@@ -73,6 +80,7 @@ namespace Zahra
 		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions);
 		void IdentifyQueueFamilies(const VkPhysicalDevice& device, QueueFamilyIndices& indices);
 		bool CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support);
+		void QuerySurfaceCapabilities(const VkPhysicalDevice& device, VkSurfaceCapabilitiesKHR& capabilities);
 
 		void CreateSwapchain();
 		VkSurfaceFormatKHR ChooseSwapchainFormat();
