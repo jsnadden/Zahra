@@ -64,7 +64,10 @@ project "Zahra"
 
 	filter "system:windows"
 		systemversion "latest"
-		defines "Z_RENDERERAPI_VULKAN"
+		defines
+		{
+			"Z_RENDERERAPI_VULKAN"
+		}
 
 		links
 		{
@@ -97,6 +100,9 @@ project "Zahra"
 			"%{Library.SPIRV_Cross_Release}",
 			"%{Library.SPIRV_Cross_GLSL_Release}"
 		}
+
+	filter { "configurations:Debug or configurations:Release" }
+		defines "Z_TRACK_MEMORY"
 
 	filter "configurations:Distribution"
 		defines "Z_DIST"

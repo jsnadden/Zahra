@@ -1,11 +1,10 @@
 #include "zpch.h"
 #include "Renderer.h"
 
-#include "Zahra/Renderer/Buffer.h"
+#include "Zahra/Renderer/VertexBuffer.h"
 #include "Zahra/Renderer/Pipeline.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/UniformBuffer.h"
-#include "Zahra/Renderer/VertexArray.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>

@@ -1,6 +1,9 @@
 #pragma once
 
+#include "Zahra/Core/Memory.h"
+
 #include <memory>
+#include <atomic>
 
 namespace Zahra
 {
@@ -164,7 +167,11 @@ namespace Zahra
 		template<typename... Args>
 		static Ref<T> Create(Args&&... args)
 		{
+#if Z_TRACK_MEMORY && defined(Z_PLATFORM_WINDOWS)
+			return Ref<T>(new(typeid(T).name()) T(std::forward<Args>(args)...));
+#else
 			return Ref<T>(new T(std::forward<Args>(args)...));
+#endif
 		}
 
 		bool operator==(const Ref<T>& other) const

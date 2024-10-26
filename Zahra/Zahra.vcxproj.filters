@@ -75,16 +75,43 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLImGuiLayer.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLUniformBuffer.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanFramebuffer.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanImGuiLayer.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanIndexBuffer.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanPipeline.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanRenderPass.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererAPI.h">
@@ -97,6 +124,9 @@
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanUtils.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanVertexBuffer.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
@@ -112,6 +142,9 @@
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Assert.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Buffer.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Defines.h">
@@ -138,6 +171,9 @@
     <ClInclude Include="src\Zahra\Core\Log.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Memory.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Core\MouseCodes.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
@@ -154,6 +190,9 @@
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Timer.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Core\Types.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Window.h">
@@ -180,10 +219,10 @@
     <ClInclude Include="src\Zahra\Maths\Maths.h">
       <Filter>src\Zahra\Maths</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Buffer.h">
+    <ClInclude Include="src\Zahra\Renderer\Camera.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Camera.h">
+    <ClInclude Include="src\Zahra\Renderer\CommandBuffer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\EditorCamera.h">
@@ -192,10 +231,16 @@
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\IndexBuffer.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Pipeline.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\RenderCommandQueue.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\RenderPass.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Renderer.h">
@@ -204,7 +249,13 @@
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\RendererConfig.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\RendererContext.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\SceneRenderer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Shader.h">
@@ -216,7 +267,7 @@
     <ClInclude Include="src\Zahra\Renderer\UniformBuffer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\VertexArray.h">
+    <ClInclude Include="src\Zahra\Renderer\VertexBuffer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Scene\Components.h">
@@ -1506,26 +1557,33 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
-    <ClInclude Include="src\Platform\Vulkan\VulkanRenderPass.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLImGuiLayer.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLUniformBuffer.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h" />
-    <ClInclude Include="src\Platform\Vulkan\VulkanFramebuffer.h" />
-    <ClInclude Include="src\Zahra\Renderer\CommandBuffer.h" />
-    <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />
-    <ClInclude Include="src\Zahra\Renderer\SceneRenderer.h" />
-    <ClInclude Include="src\Zahra\Renderer\RendererConfig.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLImGuiLayer.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLUniformBuffer.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanImGuiLayer.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanIndexBuffer.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanPipeline.cpp">
@@ -1538,6 +1596,9 @@
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanSwapchain.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanVertexBuffer.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1567,6 +1628,9 @@
     <ClCompile Include="src\Zahra\Core\Log.cpp">
       <Filter>src\Zahra\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Core\Memory.cpp">
+      <Filter>src\Zahra\Core</Filter>
+    </ClCompile>
     <ClCompile Include="src\Zahra\Core\Thread.cpp">
       <Filter>src\Zahra\Core</Filter>
     </ClCompile>
@@ -1579,13 +1643,19 @@
     <ClCompile Include="src\Zahra\Maths\Maths.cpp">
       <Filter>src\Zahra\Maths</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Buffer.cpp">
+    <ClCompile Include="src\Zahra\Renderer\CommandBuffer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\IndexBuffer.cpp">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\Pipeline.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\RenderCommandQueue.cpp">
@@ -1600,6 +1670,9 @@
     <ClCompile Include="src\Zahra\Renderer\RendererContext.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\SceneRenderer.cpp">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Shader.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
@@ -1609,7 +1682,7 @@
     <ClCompile Include="src\Zahra\Renderer\UniformBuffer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\VertexArray.cpp">
+    <ClCompile Include="src\Zahra\Renderer\VertexBuffer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Scene\Entity.cpp">
@@ -1642,16 +1715,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Pipeline.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLImGuiLayer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLUniformBuffer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp" />
-    <ClCompile Include="src\Zahra\Renderer\CommandBuffer.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp" />
-    <ClCompile Include="src\Zahra\Renderer\SceneRenderer.cpp" />
   </ItemGroup>
 </Project>

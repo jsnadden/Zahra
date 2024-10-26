@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Renderer/Buffer.h"
+#include "Zahra/Renderer/VertexBuffer.h"
 #include "Zahra/Renderer/Framebuffer.h"
 #include "Zahra/Renderer/RenderPass.h"
 #include "Zahra/Renderer/Shader.h"
@@ -20,7 +20,7 @@ namespace Zahra
 	struct PipelineSpecification
 	{
 		Ref<Shader> Shader;
-		BufferLayout VertexBufferLayout;
+		VertexBufferLayout VertexBufferLayout;
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
 	};
 

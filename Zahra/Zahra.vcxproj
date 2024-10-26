@@ -76,7 +76,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>zpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_RENDERERAPI_VULKAN;Z_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_RENDERERAPI_VULKAN;Z_DEBUG;Z_TRACK_MEMORY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Box2D\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;C:\VulkanSDK\1.3.224.1\Include;vendor\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -98,7 +98,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>zpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_RENDERERAPI_VULKAN;Z_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;Z_RENDERERAPI_VULKAN;Z_RELEASE;Z_TRACK_MEMORY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Box2D\include;vendor\Glad\include;vendor\ImGui;vendor\glm;vendor\stb_image;vendor\EnTT;vendor\yaml-cpp\include;vendor\ImGuizmo;C:\VulkanSDK\1.3.224.1\Include;vendor\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -144,30 +144,30 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Zahra\Renderer\RendererConfig.h" />
-    <ClInclude Include="src\Zahra\Renderer\SceneRenderer.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLImGuiLayer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLUniformBuffer.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanFramebuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanImGuiLayer.h" />
-    <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanIndexBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanPipeline.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanRenderPass.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererAPI.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanShader.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanSwapchain.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanUtils.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanVertexBuffer.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Zahra.h" />
     <ClInclude Include="src\Zahra\Core\AppRequirements.h" />
     <ClInclude Include="src\Zahra\Core\Application.h" />
     <ClInclude Include="src\Zahra\Core\Assert.h" />
+    <ClInclude Include="src\Zahra\Core\Buffer.h" />
     <ClInclude Include="src\Zahra\Core\Defines.h" />
     <ClInclude Include="src\Zahra\Core\EntryPoint.h" />
     <ClInclude Include="src\Zahra\Core\GUID.h" />
@@ -176,12 +176,14 @@
     <ClInclude Include="src\Zahra\Core\Layer.h" />
     <ClInclude Include="src\Zahra\Core\LayerStack.h" />
     <ClInclude Include="src\Zahra\Core\Log.h" />
+    <ClInclude Include="src\Zahra\Core\Memory.h" />
     <ClInclude Include="src\Zahra\Core\MouseCodes.h" />
     <ClInclude Include="src\Zahra\Core\PlatformDetection.h" />
     <ClInclude Include="src\Zahra\Core\Ref.h" />
     <ClInclude Include="src\Zahra\Core\Scope.h" />
     <ClInclude Include="src\Zahra\Core\Thread.h" />
     <ClInclude Include="src\Zahra\Core\Timer.h" />
+    <ClInclude Include="src\Zahra\Core\Types.h" />
     <ClInclude Include="src\Zahra\Core\Window.h" />
     <ClInclude Include="src\Zahra\Debug\Profiling.h" />
     <ClInclude Include="src\Zahra\Events\ApplicationEvent.h" />
@@ -190,21 +192,23 @@
     <ClInclude Include="src\Zahra\Events\MouseEvent.h" />
     <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Zahra\Maths\Maths.h" />
-    <ClInclude Include="src\Zahra\Renderer\Buffer.h" />
     <ClInclude Include="src\Zahra\Renderer\Camera.h" />
     <ClInclude Include="src\Zahra\Renderer\CommandBuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\EditorCamera.h" />
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h" />
+    <ClInclude Include="src\Zahra\Renderer\IndexBuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\Pipeline.h" />
     <ClInclude Include="src\Zahra\Renderer\RenderCommandQueue.h" />
+    <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
     <ClInclude Include="src\Zahra\Renderer\Renderer.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h" />
+    <ClInclude Include="src\Zahra\Renderer\RendererConfig.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererContext.h" />
-    <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
+    <ClInclude Include="src\Zahra\Renderer\SceneRenderer.h" />
     <ClInclude Include="src\Zahra\Renderer\Shader.h" />
     <ClInclude Include="src\Zahra\Renderer\Texture.h" />
     <ClInclude Include="src\Zahra\Renderer\UniformBuffer.h" />
-    <ClInclude Include="src\Zahra\Renderer\VertexArray.h" />
+    <ClInclude Include="src\Zahra\Renderer\VertexBuffer.h" />
     <ClInclude Include="src\Zahra\Scene\Components.h" />
     <ClInclude Include="src\Zahra\Scene\Entity.h" />
     <ClInclude Include="src\Zahra\Scene\Scene.h" />
@@ -634,24 +638,22 @@
     <ClInclude Include="vendor\glm\glm\vec4.hpp" />
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
     <ClInclude Include="vendor\stb_image\stb_image.h" />
-    <ClInclude Include="src\Platform\Vulkan\VulkanRenderPass.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Zahra\Renderer\SceneRenderer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLImGuiLayer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLUniformBuffer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanImGuiLayer.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanIndexBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanPipeline.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererAPI.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanShader.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanSwapchain.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanVertexBuffer.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsThread.cpp" />
@@ -661,23 +663,25 @@
     <ClCompile Include="src\Zahra\Core\Layer.cpp" />
     <ClCompile Include="src\Zahra\Core\LayerStack.cpp" />
     <ClCompile Include="src\Zahra\Core\Log.cpp" />
+    <ClCompile Include="src\Zahra\Core\Memory.cpp" />
     <ClCompile Include="src\Zahra\Core\Thread.cpp" />
     <ClCompile Include="src\Zahra\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\Zahra\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Zahra\Maths\Maths.cpp" />
-    <ClCompile Include="src\Zahra\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\CommandBuffer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\IndexBuffer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Pipeline.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RenderCommandQueue.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererContext.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Shader.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Texture.cpp" />
     <ClCompile Include="src\Zahra\Renderer\UniformBuffer.cpp" />
-    <ClCompile Include="src\Zahra\Renderer\VertexArray.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\VertexBuffer.cpp" />
     <ClCompile Include="src\Zahra\Scene\Entity.cpp" />
     <ClCompile Include="src\Zahra\Scene\Scene.cpp" />
     <ClCompile Include="src\Zahra\Scene\SceneCamera.cpp" />

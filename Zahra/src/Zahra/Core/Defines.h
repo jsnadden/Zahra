@@ -41,3 +41,5 @@
 
 
 #define Z_BIND_EVENT_FN(f) [this](auto&&... args)->decltype(auto) { return this->f(std::forward<decltype(args)>(args)...); }
+
+

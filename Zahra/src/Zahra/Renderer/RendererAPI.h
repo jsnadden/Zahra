@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Zahra/Renderer/Pipeline.h"
-#include "Zahra/Renderer/VertexArray.h"
 
 #include <glm/glm.hpp>
 

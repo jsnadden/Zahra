@@ -21,7 +21,8 @@
 #include "Zahra/ImGui/ImGuiLayer.h"
 
 //------------RENDERING----------------
-#include "Zahra/Renderer/Buffer.h"
+#include "Zahra/Renderer/VertexBuffer.h"
+#include "Zahra/Renderer/IndexBuffer.h"
 #include "Zahra/Renderer/Camera.h"
 #include "Zahra/Renderer/CommandBuffer.h"
 #include "Zahra/Renderer/EditorCamera.h"
@@ -31,7 +32,6 @@
 #include "Zahra/Renderer/RenderCommandQueue.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/Texture.h"
-#include "Zahra/Renderer/VertexArray.h"
 
 //------------SCENE--------------------
 #include "Zahra/Scene/Scene.h"

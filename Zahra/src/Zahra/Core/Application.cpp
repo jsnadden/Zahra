@@ -2,6 +2,7 @@
 #include "Application.h"
 
 #include "Zahra/Core/Input.h"
+#include "Zahra/Core/Memory.h"
 #include "Zahra/Renderer/Renderer.h"
 #include "Zahra/Utils/PlatformUtils.h"
 #include "Zahra/Scripting/ScriptEngine.h"
