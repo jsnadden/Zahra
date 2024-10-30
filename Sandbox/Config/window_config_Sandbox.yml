@@ -1,8 +1,8 @@
 WindowRectangle:
-  Width: 1010
+  Width: 1006
   Height: 751
-  XPosition: 182
-  YPosition: 71
+  XPosition: 392
+  YPosition: 80
 WindowState: 0
 Fullscreen: false
 VSync: false
