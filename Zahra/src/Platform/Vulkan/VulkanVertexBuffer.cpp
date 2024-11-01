@@ -19,6 +19,17 @@ namespace Zahra
 		VulkanContext::GetCurrentDevice()->CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VulkanVertexBuffer, m_VulkanVertexBufferMemory);
 	}
+
+	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint64_t size)
+	{
+		m_VertexData.Allocate(size);
+		m_VertexData.ZeroInitialise();
+
+		VulkanContext::GetCurrentDevice()->CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VulkanVertexBuffer, m_VulkanVertexBufferMemory);
+
+		SetData(data, size);
+	}
 	
 	VulkanVertexBuffer::~VulkanVertexBuffer()
 	{

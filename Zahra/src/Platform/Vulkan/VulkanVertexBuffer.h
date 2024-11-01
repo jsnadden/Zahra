@@ -12,6 +12,7 @@ namespace Zahra
 	public:
 		// TODO: there should be an additional argument to choose static/dynamic drawing
 		VulkanVertexBuffer(uint64_t size);
+		VulkanVertexBuffer(const void* data, uint64_t size);
 		~VulkanVertexBuffer();
 
 		virtual void SetData(const void* data, uint64_t size) override;

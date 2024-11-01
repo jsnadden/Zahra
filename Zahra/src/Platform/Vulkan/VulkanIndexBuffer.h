@@ -1,23 +1,28 @@
 #pragma once
 
+#include "Zahra/Core/Buffer.h"
 #include "Zahra/Renderer/IndexBuffer.h"
+
+#include "vulkan/vulkan.h"
 
 namespace Zahra
 {
 	class VulkanIndexBuffer : public IndexBuffer
 	{
 	public:
-		VulkanIndexBuffer(uint32_t* indices, uint32_t count);
+		VulkanIndexBuffer(const uint32_t* indices, uint64_t count);
 		~VulkanIndexBuffer();
 
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
+		virtual void SetData(const uint32_t* data, uint64_t size) override;
 
-		virtual uint32_t GetCount() const { return m_Count; }
+		virtual uint64_t GetCount() const { return m_IndexData.GetSize() / sizeof(uint32_t); }
+
+		VkBuffer GetVulkanBuffer() { return m_VulkanIndexBuffer; }
 
 	private:
-		uint32_t m_RendererID;
-		uint32_t m_Count;
+		Buffer m_IndexData;
+		VkBuffer m_VulkanIndexBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory m_VulkanIndexBufferMemory = VK_NULL_HANDLE;
 
 	};
 }

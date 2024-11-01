@@ -134,6 +134,7 @@ namespace Zahra
 		virtual void SetData(const void* data, uint64_t size) = 0;
 
 		static Ref<VertexBuffer> Create(uint64_t size);
+		static Ref<VertexBuffer> Create(const void* data, uint64_t size);
 	};
 
 }

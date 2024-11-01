@@ -2,10 +2,11 @@
 #include "Renderer.h"
 
 #include "Zahra/Core/Types.h"
-#include "Zahra/Renderer/VertexBuffer.h"
+#include "Zahra/Renderer/IndexBuffer.h"
 #include "Zahra/Renderer/Pipeline.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/UniformBuffer.h"
+#include "Zahra/Renderer/VertexBuffer.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -59,6 +60,9 @@ namespace Zahra
 		Ref<Pipeline> Pipeline;
 
 		Ref<VertexBuffer> TutorialVertexBuffer;
+		Ref<VertexBuffer> TutorialVertexBuffer2;
+		Ref<IndexBuffer> TutorialIndexBuffer;
+		Ref<IndexBuffer> TutorialIndexBuffer2;
 
 
 		// TODO: ressurect stuff from here
@@ -152,17 +156,28 @@ namespace Zahra
 		pipelineSpec.VertexLayout = layout;
 		s_Data.Pipeline = Pipeline::Create(pipelineSpec);
 
-		// TODO: vertex buffers should be created by a mesh object or whatever, not here (except for like... primitives I guess)
 		const std::vector<TutorialVertex> vertices =
 		{
-			{ {  .0f, -.5f }, { 1.0f, 0.0f, 0.0f } },
-			{ {  .5f,  .5f }, { 0.0f, 1.0f, 0.0f } },
-			{ { -.5f,  .5f }, { 0.0f, 0.0f, 1.0f } }
+			{ { -.5f, -.5f }, { 1.0f, 0.0f, 0.0f } },
+			{ {  .5f, -.5f }, { 0.0f, 1.0f, 0.0f } },
+			{ {  .5f,  .5f }, { 0.0f, 0.0f, 1.0f } },
+			{ { -.5f,  .5f }, { 1.0f, 1.0f, 1.0f } }
 		};
+		s_Data.TutorialVertexBuffer = VertexBuffer::Create((void*)vertices.data(), vertices.size() * sizeof(TutorialVertex));
 
-		uint32_t vertexBufferSize = vertices.size() * sizeof(TutorialVertex);
-		s_Data.TutorialVertexBuffer = VertexBuffer::Create(vertexBufferSize);
-		s_Data.TutorialVertexBuffer->SetData(vertices.data(), vertexBufferSize);
+		const std::vector<uint32_t> indices = { 0, 1, 2, 2, 3, 0 };
+		s_Data.TutorialIndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+
+		const std::vector<TutorialVertex> vertices2 =
+		{
+			{ {  0.f, -1.f }, { 0.0f, 0.0f, 0.0f } },
+			{ {  1.f,  1.f }, { 0.0f, 0.0f, 0.0f } },
+			{ { -1.f,  1.f }, { 0.0f, 0.0f, 0.0f } }
+		};
+		s_Data.TutorialVertexBuffer2 = VertexBuffer::Create((void*)vertices2.data(), vertices2.size() * sizeof(TutorialVertex));
+
+		const std::vector<uint32_t> indices2 = { 0, 1, 2 };
+		s_Data.TutorialIndexBuffer2 = IndexBuffer::Create(indices2.data(), indices2.size());
 
 
 		// TODO: ressurect stuff from here
@@ -283,6 +298,9 @@ namespace Zahra
 	{
 		// TEMPORARY
 		s_Data.TutorialVertexBuffer.Reset();
+		s_Data.TutorialVertexBuffer2.Reset();
+		s_Data.TutorialIndexBuffer.Reset();
+		s_Data.TutorialIndexBuffer2.Reset();
 		s_Data.Pipeline.Reset();
 		s_Data.Shader.Reset();
 
@@ -311,7 +329,8 @@ namespace Zahra
 	void Renderer::DrawTutorialScene()
 	{
 		s_RendererAPI->BeginRenderPass(s_Data.Pipeline);
-		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialVertexBuffer);
+		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialVertexBuffer2, s_Data.TutorialIndexBuffer2);
+		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer);
 		s_RendererAPI->EndRenderPass();
 	}
 

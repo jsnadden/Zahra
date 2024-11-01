@@ -2,6 +2,7 @@
 #include "VulkanRendererAPI.h"
 
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanIndexBuffer.h"
 #include "Platform/Vulkan/VulkanPipeline.h"
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
 
@@ -76,16 +77,16 @@ namespace Zahra
 		m_Swapchain->PresentImage();
 	}
 
-	void VulkanRendererAPI::TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer)
+	void VulkanRendererAPI::TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
-		Ref<VulkanVertexBuffer> vulkanVertexBuffer = vertexBuffer.As<VulkanVertexBuffer>();
-
-		VkBuffer vertexBufferArray[] = { vulkanVertexBuffer->GetVulkanBuffer() };
+		VkBuffer vulkanVertexBufferArray[] = { vertexBuffer.As<VulkanVertexBuffer>()->GetVulkanBuffer() };
 		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vulkanVertexBufferArray, offsets);
 
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBufferArray, offsets);
+		VkBuffer vulkanIndexBuffer = indexBuffer.As<VulkanIndexBuffer>()->GetVulkanBuffer();
+		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		// set dynamic state
 		auto& extent = m_Swapchain->GetExtent();
@@ -104,7 +105,7 @@ namespace Zahra
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 		// FINALLY A DRAW CALL!!!
-		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, (uint32_t)indexBuffer->GetCount(), 1, 0, 0, 0);
 	}
 
 	
