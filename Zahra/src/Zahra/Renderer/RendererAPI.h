@@ -36,7 +36,7 @@ namespace Zahra
 		static RendererAPI* Create();
 		
 		// TEMPORARY
-		virtual void TutorialDrawCalls() = 0;
+		virtual void TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer) = 0;
 
 
 	private:

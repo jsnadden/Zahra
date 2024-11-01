@@ -27,7 +27,7 @@ namespace Zahra
 		virtual void PresentImage() override;
 
 		// TEMPORARY
-		virtual void TutorialDrawCalls() override;
+		virtual void TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer) override;
 
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;

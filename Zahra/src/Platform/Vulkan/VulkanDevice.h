@@ -74,6 +74,20 @@ namespace Zahra
 		VkPhysicalDeviceProperties Properties;
 		VkPhysicalDeviceMemoryProperties Memory;
 		VulkanDeviceSwapchainSupport SwapchainSupport;
+
+		std::map<std::thread::id, VkCommandPool> m_CommandPools;
+
+		void Shutdown();
+
+		void CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags flags);
+
+		void CopyVulkanBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+		VkCommandBuffer GetTemporaryCommandBuffer();
+		void FreeTemporaryCommandBuffer(VkCommandBuffer commandBuffer);
+		VkCommandPool GetOrCreateCommandPool();
+
 	};
 	
 }

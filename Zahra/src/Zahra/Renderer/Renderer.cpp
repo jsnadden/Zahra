@@ -1,6 +1,7 @@
 #include "zpch.h"
 #include "Renderer.h"
 
+#include "Zahra/Core/Types.h"
 #include "Zahra/Renderer/VertexBuffer.h"
 #include "Zahra/Renderer/Pipeline.h"
 #include "Zahra/Renderer/Shader.h"
@@ -42,15 +43,26 @@ namespace Zahra
 		int EntityID = -1;
 	};
 
+	struct TutorialVertex
+	{
+		glm::vec2 Position;
+		glm::vec3 Colour;
+	};
+
 	struct RendererData
 	{
 		Ref<Shader> Shader;
 
 		RendererConfig Config;
 
-		// TODO: set pipelines externally?
+		// TEMPORARY:
 		Ref<Pipeline> Pipeline;
 
+		Ref<VertexBuffer> TutorialVertexBuffer;
+
+
+		// TODO: ressurect stuff from here
+		#pragma region
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// PARAMETERS
 		//static const uint32_t MaxQuadsPerBuffer = 10000;
@@ -105,13 +117,14 @@ namespace Zahra
 
 		//CameraData CameraBuffer;
 		//Ref<UniformBuffer> CameraUniformBuffer;
+		#pragma endregion
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// STATS
 		Renderer::Statistics Stats;
 	};
 
-	static RendererData s_RendererData;
+	static RendererData s_Data;
 
 	static RendererAPI* s_RendererAPI;
 
@@ -120,27 +133,47 @@ namespace Zahra
 		s_RendererAPI = RendererAPI::Create();
 		s_RendererAPI->Init();
 
-		// TEMPORARY
+		// TODO: obtain this shader, pre-compiled, from a shaderlibrary instead
 		ShaderSpecification shaderSpec{};
 		// TODO: the app should send the shader details prior to this (in Renderer::Init() e.g.)
 		// (and they should really be owned by a shader library)
 		shaderSpec.Name = "vulkan_tutorial";
 		shaderSpec.SourceDirectory = "Resources/Shaders";
-		s_RendererData.Shader = Shader::Create(shaderSpec);
+		s_Data.Shader = Shader::Create(shaderSpec);
+
+		const VertexBufferLayout layout =
+		{
+			{ShaderDataType::Float2, "a_Position"},
+			{ShaderDataType::Float3, "a_Colour"}
+		};
 
 		PipelineSpecification pipelineSpec{};
-		pipelineSpec.Shader = s_RendererData.Shader;
-		s_RendererData.Pipeline = Pipeline::Create(pipelineSpec);
+		pipelineSpec.Shader = s_Data.Shader;
+		pipelineSpec.VertexLayout = layout;
+		s_Data.Pipeline = Pipeline::Create(pipelineSpec);
 
-		// TODO: ressurect these bits
+		// TODO: vertex buffers should be created by a mesh object or whatever, not here (except for like... primitives I guess)
+		const std::vector<TutorialVertex> vertices =
+		{
+			{ {  .0f, -.5f }, { 1.0f, 0.0f, 0.0f } },
+			{ {  .5f,  .5f }, { 0.0f, 1.0f, 0.0f } },
+			{ { -.5f,  .5f }, { 0.0f, 0.0f, 1.0f } }
+		};
+
+		uint32_t vertexBufferSize = vertices.size() * sizeof(TutorialVertex);
+		s_Data.TutorialVertexBuffer = VertexBuffer::Create(vertexBufferSize);
+		s_Data.TutorialVertexBuffer->SetData(vertices.data(), vertexBufferSize);
+
+
+		// TODO: ressurect stuff from here
 		#pragma region
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//	QUAD VERTEX ARRAY
-		//s_RendererData.QuadVertexArray = VertexArray::Create();
+		//s_Data.QuadVertexArray = VertexArray::Create();
 		//
 		//// VERTEX BUFFER
-		//s_RendererData.QuadVertexBuffer = VertexBuffer::Create(s_RendererData.MaxVerticesPerBuffer * sizeof(QuadVertex));
-		//s_RendererData.QuadVertexBuffer->SetLayout({
+		//s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(QuadVertex));
+		//s_Data.QuadVertexBuffer->SetLayout({
 		//	{ ShaderDataType::Float3, "a_Position"	   },
 		//	{ ShaderDataType::Float4, "a_Colour"	   },
 		//	{ ShaderDataType::Float2, "a_TextureCoord" },
@@ -148,15 +181,15 @@ namespace Zahra
 		//	{ ShaderDataType::Float,  "a_TilingFactor" },
 		//	{ ShaderDataType::Int,	  "a_EntityID"	   }
 		//	});
-		//s_RendererData.QuadVertexArray->AddVertexBuffer(s_RendererData.QuadVertexBuffer);
+		//s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
-		//s_RendererData.QuadVertexBufferBase = new QuadVertex[s_RendererData.MaxVerticesPerBuffer];
+		//s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVerticesPerBuffer];
 
 		//// INDEX BUFFER
-		//uint32_t* quadIndices = new uint32_t[s_RendererData.MaxIndicesPerBuffer];
+		//uint32_t* quadIndices = new uint32_t[s_Data.MaxIndicesPerBuffer];
 
 		//uint32_t offset = 0;
-		//for (uint32_t i = 0; i < s_RendererData.MaxIndicesPerBuffer; i += 6)
+		//for (uint32_t i = 0; i < s_Data.MaxIndicesPerBuffer; i += 6)
 		//{
 		//	quadIndices[i + 0] = offset + 0;
 		//	quadIndices[i + 1] = offset + 1;
@@ -169,19 +202,19 @@ namespace Zahra
 		//	offset += 4;
 		//}
 
-		//Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, s_RendererData.MaxIndicesPerBuffer);
-		//s_RendererData.QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
+		//Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndicesPerBuffer);
+		//s_Data.QuadVertexArray->SetIndexBuffer(quadIndexBuffer);
 		//
 		//// TODO: later we'll be adding these to a queue, in which case they'll need a dynamic lifetime, ideally managed by a reference counting system
 		//delete[] quadIndices;
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////	CIRCLE VERTEX ARRAY
-		//s_RendererData.CircleVertexArray = VertexArray::Create();
+		//s_Data.CircleVertexArray = VertexArray::Create();
 		//
 		//// VERTEX BUFFER
-		//s_RendererData.CircleVertexBuffer = VertexBuffer::Create(s_RendererData.MaxVerticesPerBuffer * sizeof(CircleVertex));
-		//s_RendererData.CircleVertexBuffer->SetLayout({
+		//s_Data.CircleVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(CircleVertex));
+		//s_Data.CircleVertexBuffer->SetLayout({
 		//	{ ShaderDataType::Float3,	"a_WorldPosition"	},
 		//	{ ShaderDataType::Float2,	"a_LocalPosition"	},
 		//	{ ShaderDataType::Float4,	"a_Colour"			},
@@ -189,82 +222,83 @@ namespace Zahra
 		//	{ ShaderDataType::Float,	"a_Fade"			},
 		//	{ ShaderDataType::Int,		"a_EntityID"		}
 		//	});
-		//s_RendererData.CircleVertexArray->AddVertexBuffer(s_RendererData.CircleVertexBuffer);
+		//s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
 
-		//s_RendererData.CircleVertexBufferBase = new CircleVertex[s_RendererData.MaxVerticesPerBuffer];
+		//s_Data.CircleVertexBufferBase = new CircleVertex[s_Data.MaxVerticesPerBuffer];
 
 		//// INDEX BUFFER (reused from quads)
-		//s_RendererData.CircleVertexArray->SetIndexBuffer(quadIndexBuffer);
+		//s_Data.CircleVertexArray->SetIndexBuffer(quadIndexBuffer);
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////	LINE VERTEX BUFFER/ARRAY
-		//s_RendererData.LineVertexArray = VertexArray::Create();
+		//s_Data.LineVertexArray = VertexArray::Create();
 
-		//s_RendererData.LineVertexBuffer = VertexBuffer::Create(s_RendererData.MaxVerticesPerBuffer * sizeof(LineVertex));
-		//s_RendererData.LineVertexBuffer->SetLayout({
+		//s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(LineVertex));
+		//s_Data.LineVertexBuffer->SetLayout({
 		//	{ ShaderDataType::Float3, "a_Position" },
 		//	{ ShaderDataType::Float4, "a_Colour"   },
 		//	{ ShaderDataType::Int,		"a_EntityID"		}
 		//	});
-		//s_RendererData.LineVertexArray->AddVertexBuffer(s_RendererData.LineVertexBuffer);
-		//s_RendererData.LineVertexBufferBase = new LineVertex[s_RendererData.MaxVerticesPerBuffer];
+		//s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
+		//s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVerticesPerBuffer];
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//// TEXTURES
-		//s_RendererData.TextureSlots[0] = Texture2D::Create(1, 1);
+		//s_Data.TextureSlots[0] = Texture2D::Create(1, 1);
 		//uint32_t flatWhite = 0xffffffff;
-		//s_RendererData.TextureSlots[0]->SetData(&flatWhite, sizeof(uint32_t));
+		//s_Data.TextureSlots[0]->SetData(&flatWhite, sizeof(uint32_t));
 
-		//int textureSamplers[s_RendererData.MaxTextureSlots];
-		//for (int i = 0; i < s_RendererData.MaxTextureSlots; i++) textureSamplers[i] = i;
+		//int textureSamplers[s_Data.MaxTextureSlots];
+		//for (int i = 0; i < s_Data.MaxTextureSlots; i++) textureSamplers[i] = i;
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//// SHADERS
 
 		//// TODO: free ourselves from hardcoded shaders?
-		//s_RendererData.QuadShader = Shader::Create("Resources/Shaders/renderer_quad.glsl");
-		//s_RendererData.CircleShader = Shader::Create("Resources/Shaders/renderer_circle.glsl");
-		//s_RendererData.LineShader = Shader::Create("Resources/Shaders/renderer_line.glsl");
+		//s_Data.QuadShader = Shader::Create("Resources/Shaders/renderer_quad.glsl");
+		//s_Data.CircleShader = Shader::Create("Resources/Shaders/renderer_circle.glsl");
+		//s_Data.LineShader = Shader::Create("Resources/Shaders/renderer_line.glsl");
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//// DEFAULT QUAD
-		//s_RendererData.QuadVertexPositions[0] = { -.5f, -.5f, .0f, 1.0f };
-		//s_RendererData.QuadVertexPositions[1] = { .5f, -.5f, .0f, 1.0f };
-		//s_RendererData.QuadVertexPositions[2] = { .5f,  .5f, .0f, 1.0f };
-		//s_RendererData.QuadVertexPositions[3] = { -.5f,  .5f, .0f, 1.0f };
+		//s_Data.QuadVertexPositions[0] = { -.5f, -.5f, .0f, 1.0f };
+		//s_Data.QuadVertexPositions[1] = { .5f, -.5f, .0f, 1.0f };
+		//s_Data.QuadVertexPositions[2] = { .5f,  .5f, .0f, 1.0f };
+		//s_Data.QuadVertexPositions[3] = { -.5f,  .5f, .0f, 1.0f };
 
-		//s_RendererData.QuadTextureCoords[0] = { 0.0f, 0.0f };
-		//s_RendererData.QuadTextureCoords[1] = { 1.0f, 0.0f };
-		//s_RendererData.QuadTextureCoords[2] = { 1.0f, 1.0f };
-		//s_RendererData.QuadTextureCoords[3] = { 0.0f, 1.0f };
+		//s_Data.QuadTextureCoords[0] = { 0.0f, 0.0f };
+		//s_Data.QuadTextureCoords[1] = { 1.0f, 0.0f };
+		//s_Data.QuadTextureCoords[2] = { 1.0f, 1.0f };
+		//s_Data.QuadTextureCoords[3] = { 0.0f, 1.0f };
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//// CAMERA BUFFER
-		//s_RendererData.CameraUniformBuffer = UniformBuffer::Create(sizeof(RendererData::CameraData), 0);
+		//s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(RendererData::CameraData), 0);
 		#pragma endregion
 	}
 
 	void Renderer::Shutdown()
 	{
 		// TEMPORARY
-		s_RendererData.Pipeline.Reset();
-		s_RendererData.Shader.Reset();
+		s_Data.TutorialVertexBuffer.Reset();
+		s_Data.Pipeline.Reset();
+		s_Data.Shader.Reset();
 
-		//delete[] s_RendererData.QuadVertexBufferBase;
+		//delete[] s_Data.QuadVertexBufferBase;
 
 		s_RendererAPI->Shutdown();
 	}
 
 	RendererConfig& Renderer::GetConfig()
 	{
-		return s_RendererData.Config;
+		return s_Data.Config;
 	}
 
 	void Renderer::SetConfig(const RendererConfig& config)
 	{
-		s_RendererData.Config = config;
+		s_Data.Config = config;
 	}
 
 	void Renderer::NewFrame()
@@ -276,23 +310,23 @@ namespace Zahra
 
 	void Renderer::DrawTutorialScene()
 	{
-		s_RendererAPI->BeginRenderPass(s_RendererData.Pipeline);
-		s_RendererAPI->TutorialDrawCalls();
+		s_RendererAPI->BeginRenderPass(s_Data.Pipeline);
+		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialVertexBuffer);
 		s_RendererAPI->EndRenderPass();
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
-		/*s_RendererData.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBuffer, sizeof(RendererData::CameraData));
+		/*s_Data.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(RendererData::CameraData));
 
 		NewBatch();*/
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
-		/*s_RendererData.CameraBuffer.ViewProjection = camera.GetPVMatrix();
-		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBuffer, sizeof(RendererData::CameraData));
+		/*s_Data.CameraBuffer.ViewProjection = camera.GetPVMatrix();
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(RendererData::CameraData));
 
 		NewBatch();*/
 	}
@@ -314,64 +348,64 @@ namespace Zahra
 
 	/*float Renderer::GetLineThickness()
 	{
-		return s_RendererData.LineThickness;
+		return s_Data.LineThickness;
 	}
 
 	void Renderer::SetLineThickness(float thickness)
 	{
-		//s_RendererData.LineThickness = thickness;
+		//s_Data.LineThickness = thickness;
 	}*/
 
 	//void Renderer::SubmitBatch()
 	//{
-	//	if (s_RendererData.QuadIndexCount)
+	//	if (s_Data.QuadIndexCount)
 	//	{
-	//		uint32_t dataSize = (uint32_t)((uint8_t*)s_RendererData.QuadVertexBufferPtr - (uint8_t*)s_RendererData.QuadVertexBufferBase);
-	//		s_RendererData.QuadVertexBuffer->SetData(s_RendererData.QuadVertexBufferBase, dataSize);
+	//		uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
+	//		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
 	//		// Bind textures
-	//		for (uint32_t i = 0; i < s_RendererData.TextureSlotIndex; i++)
-	//			s_RendererData.TextureSlots[i]->Bind(i);
+	//		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+	//			s_Data.TextureSlots[i]->Bind(i);
 
-	//		s_RendererData.QuadShader->Bind();
-	//		//RenderCommandQueue::DrawIndexed(s_RendererData.QuadVertexArray, s_RendererData.QuadIndexCount);
-	//		s_RendererData.Stats.DrawCalls++;
+	//		s_Data.QuadShader->Bind();
+	//		//RenderCommandQueue::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+	//		s_Data.Stats.DrawCalls++;
 	//	}
 
-	//	if (s_RendererData.CircleIndexCount)
+	//	if (s_Data.CircleIndexCount)
 	//	{
-	//		uint32_t dataSize = (uint32_t)((uint8_t*)s_RendererData.CircleVertexBufferPtr - (uint8_t*)s_RendererData.CircleVertexBufferBase);
-	//		s_RendererData.CircleVertexBuffer->SetData(s_RendererData.CircleVertexBufferBase, dataSize);
+	//		uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase);
+	//		s_Data.CircleVertexBuffer->SetData(s_Data.CircleVertexBufferBase, dataSize);
 
-	//		s_RendererData.CircleShader->Bind();
-	//		//RenderCommandQueue::DrawIndexed(s_RendererData.CircleVertexArray, s_RendererData.CircleIndexCount);
-	//		s_RendererData.Stats.DrawCalls++;
+	//		s_Data.CircleShader->Bind();
+	//		//RenderCommandQueue::DrawIndexed(s_Data.CircleVertexArray, s_Data.CircleIndexCount);
+	//		s_Data.Stats.DrawCalls++;
 	//	}
 
-	//	//if (s_RendererData.LineVertexCount)
+	//	//if (s_Data.LineVertexCount)
 	//	//{
-	//	//	uint32_t dataSize = (uint32_t)((uint8_t*)s_RendererData.LineVertexBufferPtr - (uint8_t*)s_RendererData.LineVertexBufferBase);
-	//	//	s_RendererData.LineVertexBuffer->SetData(s_RendererData.LineVertexBufferBase, dataSize);
+	//	//	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase);
+	//	//	s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
 
-	//	//	s_RendererData.LineShader->Bind();
-	//	//	RenderCommandQueue::SetLineThickness(s_RendererData.LineThickness);
-	//	//	//RenderCommandQueue::DrawLines(s_RendererData.LineVertexArray, s_RendererData.LineVertexCount);
-	//	//	s_RendererData.Stats.DrawCalls++;
+	//	//	s_Data.LineShader->Bind();
+	//	//	RenderCommandQueue::SetLineThickness(s_Data.LineThickness);
+	//	//	//RenderCommandQueue::DrawLines(s_Data.LineVertexArray, s_Data.LineVertexCount);
+	//	//	s_Data.Stats.DrawCalls++;
 	//	//}
 	//}
 
 	//void Renderer::NewBatch()
 	//{
-	//	s_RendererData.QuadIndexCount = 0;
-	//	s_RendererData.QuadVertexBufferPtr = s_RendererData.QuadVertexBufferBase;
+	//	s_Data.QuadIndexCount = 0;
+	//	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
-	//	s_RendererData.CircleIndexCount = 0;
-	//	s_RendererData.CircleVertexBufferPtr = s_RendererData.CircleVertexBufferBase;
+	//	s_Data.CircleIndexCount = 0;
+	//	s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
 
-	//	s_RendererData.LineVertexCount = 0;
-	//	s_RendererData.LineVertexBufferPtr = s_RendererData.LineVertexBufferBase;
+	//	s_Data.LineVertexCount = 0;
+	//	s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 
-	//	s_RendererData.TextureSlotIndex = 1;
+	//	s_Data.TextureSlotIndex = 1;
 	//}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -380,7 +414,7 @@ namespace Zahra
 	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID)
 	{
 		//// TODO: separate maxima for each primitive type
-		//if (s_RendererData.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
+		//if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
 		//{
 		//	SubmitBatch();
 		//	NewBatch();
@@ -388,24 +422,24 @@ namespace Zahra
 
 		//for (int i = 0; i < 4; i++)
 		//{
-		//	s_RendererData.QuadVertexBufferPtr->Position = transform * s_RendererData.QuadVertexPositions[i];
-		//	s_RendererData.QuadVertexBufferPtr->Tint = colour;
-		//	s_RendererData.QuadVertexBufferPtr->TextureCoord = s_RendererData.QuadTextureCoords[i];
-		//	s_RendererData.QuadVertexBufferPtr->TextureIndex = 0.0f;
-		//	s_RendererData.QuadVertexBufferPtr->TilingFactor = 1.0f;
-		//	s_RendererData.QuadVertexBufferPtr->EntityID = entityID;
+		//	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
+		//	s_Data.QuadVertexBufferPtr->Tint = colour;
+		//	s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
+		//	s_Data.QuadVertexBufferPtr->TextureIndex = 0.0f;
+		//	s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
+		//	s_Data.QuadVertexBufferPtr->EntityID = entityID;
 
-		//	s_RendererData.QuadVertexBufferPtr++;
+		//	s_Data.QuadVertexBufferPtr++;
 		//}
 
-		//s_RendererData.QuadIndexCount += 6;
-		//s_RendererData.Stats.QuadCount++;
+		//s_Data.QuadIndexCount += 6;
+		//s_Data.Stats.QuadCount++;
 	}
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling, int entityID)
 	{
 		//// TODO: separate maxima for each primitive type
-		//if (s_RendererData.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
+		//if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBuffer)
 		//{
 		//	SubmitBatch();
 		//	NewBatch();
@@ -415,10 +449,10 @@ namespace Zahra
 		//float textureIndex = 0.0f;
 		//{
 
-		//	for (uint32_t i = 1; i < s_RendererData.TextureSlotIndex; i++)
+		//	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		//	{
 		//		// TODO: this comparison is horrendous, refactor it once we have a general asset UUID system
-		//		if (*s_RendererData.TextureSlots[i].Raw() == *texture.Raw())
+		//		if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 		//		{
 		//			textureIndex = (float)i;
 		//			break;
@@ -427,38 +461,38 @@ namespace Zahra
 
 		//	if (textureIndex == 0.0f)
 		//	{
-		//		if (s_RendererData.TextureSlotIndex >= RendererData::MaxTextureSlots)
+		//		if (s_Data.TextureSlotIndex >= RendererData::MaxTextureSlots)
 		//		{
 		//			SubmitBatch();
 		//			NewBatch();
 		//		}
 
-		//		textureIndex = (float)s_RendererData.TextureSlotIndex;
-		//		s_RendererData.TextureSlots[s_RendererData.TextureSlotIndex] = texture;
-		//		s_RendererData.TextureSlotIndex++;
+		//		textureIndex = (float)s_Data.TextureSlotIndex;
+		//		s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+		//		s_Data.TextureSlotIndex++;
 		//	}
 		//}
 
 		//for (int i = 0; i < 4; i++)
 		//{
-		//	s_RendererData.QuadVertexBufferPtr->Position = transform * s_RendererData.QuadVertexPositions[i];
-		//	s_RendererData.QuadVertexBufferPtr->Tint = tint;
-		//	s_RendererData.QuadVertexBufferPtr->TextureCoord = s_RendererData.QuadTextureCoords[i];
-		//	s_RendererData.QuadVertexBufferPtr->TextureIndex = textureIndex;
-		//	s_RendererData.QuadVertexBufferPtr->TilingFactor = tiling;
-		//	s_RendererData.QuadVertexBufferPtr->EntityID = entityID;
+		//	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
+		//	s_Data.QuadVertexBufferPtr->Tint = tint;
+		//	s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
+		//	s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
+		//	s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
+		//	s_Data.QuadVertexBufferPtr->EntityID = entityID;
 
-		//	s_RendererData.QuadVertexBufferPtr++;
+		//	s_Data.QuadVertexBufferPtr++;
 		//}
 
-		//s_RendererData.QuadIndexCount += 6;
-		//s_RendererData.Stats.QuadCount++;
+		//s_Data.QuadIndexCount += 6;
+		//s_Data.Stats.QuadCount++;
 	}
 
 	void Renderer::DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID)
 	{
 		//// TODO: separate maxima for each primitive type
-		//if (s_RendererData.CircleIndexCount >= RendererData::MaxIndicesPerBuffer)
+		//if (s_Data.CircleIndexCount >= RendererData::MaxIndicesPerBuffer)
 		//{
 		//	SubmitBatch();
 		//	NewBatch();
@@ -466,40 +500,40 @@ namespace Zahra
 
 		//for (int i = 0; i < 4; i++)
 		//{
-		//	s_RendererData.CircleVertexBufferPtr->WorldPosition = transform * s_RendererData.QuadVertexPositions[i];
-		//	s_RendererData.CircleVertexBufferPtr->LocalPosition = s_RendererData.QuadVertexPositions[i] * 2.0f;
-		//	s_RendererData.CircleVertexBufferPtr->Colour = colour;
-		//	s_RendererData.CircleVertexBufferPtr->Thickness = thickness;
-		//	s_RendererData.CircleVertexBufferPtr->Fade = fade;
-		//	s_RendererData.CircleVertexBufferPtr->EntityID = entityID;
+		//	s_Data.CircleVertexBufferPtr->WorldPosition = transform * s_Data.QuadVertexPositions[i];
+		//	s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.QuadVertexPositions[i] * 2.0f;
+		//	s_Data.CircleVertexBufferPtr->Colour = colour;
+		//	s_Data.CircleVertexBufferPtr->Thickness = thickness;
+		//	s_Data.CircleVertexBufferPtr->Fade = fade;
+		//	s_Data.CircleVertexBufferPtr->EntityID = entityID;
 
-		//	s_RendererData.CircleVertexBufferPtr++;
+		//	s_Data.CircleVertexBufferPtr++;
 		//}
 
-		//s_RendererData.CircleIndexCount += 6;
-		//s_RendererData.Stats.QuadCount++;
+		//s_Data.CircleIndexCount += 6;
+		//s_Data.Stats.QuadCount++;
 	}
 
 	void Renderer::DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID)
 	{
 		//// TODO: separate maxima for each primitive type
-		//if (s_RendererData.LineVertexCount >= RendererData::MaxVerticesPerBuffer)
+		//if (s_Data.LineVertexCount >= RendererData::MaxVerticesPerBuffer)
 		//{
 		//	SubmitBatch();
 		//	NewBatch();
 		//}
 
-		//s_RendererData.LineVertexBufferPtr->Position = end0;
-		//s_RendererData.LineVertexBufferPtr->Colour = colour;
-		//s_RendererData.LineVertexBufferPtr->EntityID = entityID;
-		//s_RendererData.LineVertexBufferPtr++;
+		//s_Data.LineVertexBufferPtr->Position = end0;
+		//s_Data.LineVertexBufferPtr->Colour = colour;
+		//s_Data.LineVertexBufferPtr->EntityID = entityID;
+		//s_Data.LineVertexBufferPtr++;
 
-		//s_RendererData.LineVertexBufferPtr->Position = end1;
-		//s_RendererData.LineVertexBufferPtr->Colour = colour;
-		//s_RendererData.LineVertexBufferPtr->EntityID = entityID;
-		//s_RendererData.LineVertexBufferPtr++;
+		//s_Data.LineVertexBufferPtr->Position = end1;
+		//s_Data.LineVertexBufferPtr->Colour = colour;
+		//s_Data.LineVertexBufferPtr->EntityID = entityID;
+		//s_Data.LineVertexBufferPtr++;
 
-		//s_RendererData.LineVertexCount += 2;
+		//s_Data.LineVertexCount += 2;
 	}
 
 	void Renderer::DrawRect(const glm::mat4& transform, const glm::vec4& colour, int entityID)
@@ -529,12 +563,12 @@ namespace Zahra
 
 	Renderer::Statistics Renderer::GetStats()
 	{
-		return s_RendererData.Stats;
+		return s_Data.Stats;
 	}
 
 	void Renderer::ResetStats()
 	{
-		memset(&s_RendererData.Stats, 0, sizeof(Renderer::Statistics));
+		memset(&s_Data.Stats, 0, sizeof(Renderer::Statistics));
 	}
 	
 

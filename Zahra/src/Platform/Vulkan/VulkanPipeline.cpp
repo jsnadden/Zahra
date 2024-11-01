@@ -8,6 +8,23 @@
 
 namespace Zahra
 {
+	static VkFormat ShaderDataTypeToVulkanFormat(ShaderDataType type)
+	{
+		switch (type)
+		{
+			case ShaderDataType::Int:       return VK_FORMAT_R32_SINT;
+			case ShaderDataType::Int2:      return VK_FORMAT_R32G32_SINT;
+			case ShaderDataType::Int3:      return VK_FORMAT_R32G32B32_SINT;
+			case ShaderDataType::Int4:      return VK_FORMAT_R32G32B32A32_SINT;
+
+			case ShaderDataType::Float:     return VK_FORMAT_R32_SFLOAT;
+			case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
+			case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
+			case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
+		}
+		Z_CORE_ASSERT(false);
+		return VK_FORMAT_UNDEFINED;
+	}
 	
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& specification)
 		: m_Specification(specification)
@@ -29,37 +46,71 @@ namespace Zahra
 
 	void VulkanPipeline::Invalidate()
 	{
-		// gather data
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// GATHER DATA
 		Ref<VulkanShader> shader = Ref<VulkanShader>(m_Specification.Shader);
 		const auto& shaderStageInfos = shader->GetPipelineShaderStageInfos();
 		Ref<VulkanSwapchain> swapchain = VulkanContext::Get()->GetSwapchain();
 		VkDevice device = swapchain->GetDevice()->LogicalDevice;
 		VkRenderPass renderPass = swapchain->GetVkRenderPass();
+		VertexBufferLayout vertexLayout = m_Specification.VertexLayout;
 		// TODO: get descriptor set layouts
 		// TODO: get push constant ranges
 
-		// specify which pipeline properties will be dynamically set (at draw time)
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// CONFIGURE DYNAMIC STATE
 		std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 		VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
 		dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		dynamicStateInfo.dynamicStateCount = (uint32_t)dynamicStates.size();
 		dynamicStateInfo.pDynamicStates = dynamicStates.data();
 
-		// specify layout for vertex input data
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// CONFIGURE VERTEX INPUT
+		std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions;
+
+		VkVertexInputBindingDescription& vertexInputBinding = vertexInputBindingDescriptions.emplace_back();
+		vertexInputBinding.binding = 0;
+		vertexInputBinding.stride = vertexLayout.GetStride();
+		vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		// TODO: add other layouts for instanced transforms etc.
+
+		std::vector<VkVertexInputAttributeDescription> vertexInputAttributes(vertexLayout.GetElementCount()); // TODO: add other layout counts here
+
+		uint32_t binding = 0;
+		uint32_t location = 0;
+		for (const auto& layout : { vertexLayout }) // TODO: any other layouts (e.g. instancing) should be listed here
+		{
+			for (const auto& element : layout)
+			{
+				vertexInputAttributes[location].binding = binding;
+				vertexInputAttributes[location].location = location;
+				vertexInputAttributes[location].format = ShaderDataTypeToVulkanFormat(element.Type);
+				vertexInputAttributes[location].offset = element.Offset;
+
+				location++;
+			}
+
+			binding++;
+		}
+
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
-		vertexInputInfo.pVertexBindingDescriptions = nullptr;
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
-		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-		// TODO: fill these out based on m_Specification.VertexBufferLayout?
+		vertexInputInfo.vertexBindingDescriptionCount = 1; // TODO: increase to account for additional buffers
+		vertexInputInfo.pVertexBindingDescriptions = vertexInputBindingDescriptions.data();
+		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexInputAttributes.size();
+		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributes.data();
 
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// CONFIGURE PRIMITIVE ASSEMBLY
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
 		inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; // TODO: fill this out based on m_Specification.Topology
 		inputAssemblyInfo.primitiveRestartEnable = VK_FALSE; // TODO: figure out what this should be set to
 
-		// TODO: decide if these should be dynamically set, or fixed state
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// SET VIEWPORT/SCISSOR STATE (IF NOT DYNAMIC)
 		//VkExtent2D extent = swapchain->GetExtent();
 		//VkViewport viewport{};
 		//viewport.x = 0.0f;
@@ -81,6 +132,8 @@ namespace Zahra
 		viewportStateInfo.pViewports = nullptr; // nullptr because these are dynamic states
 		viewportStateInfo.pScissors = nullptr;
 
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// CONFIGURE RASTERISATION STAGE
 		VkPipelineRasterizationStateCreateInfo rasterizationStateInfo{};
 		rasterizationStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizationStateInfo.depthClampEnable = VK_FALSE;
@@ -95,6 +148,8 @@ namespace Zahra
 		rasterizationStateInfo.depthBiasSlopeFactor = 0.0f;
 		// TODO: figure out where these data come from
 
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// CONFIGURE MULTISAMPLING
 		VkPipelineMultisampleStateCreateInfo multisampleStateInfo{};
 		multisampleStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampleStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -106,6 +161,8 @@ namespace Zahra
 		multisampleStateInfo.alphaToOneEnable = VK_FALSE;
 		// TODO: figure out where these data need to come from
 
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// CONFIGURE DEPTH/STENCIL BUFFER USAGE
 		// TODO: fill out a VkPipelineDepthStencilStateCreateInfo depthStencilStateInfo{};
 		// (for now we'll just use a nullptr in its place)
 
@@ -130,7 +187,8 @@ namespace Zahra
 		colorBlendState.blendConstants[2] = 0.0f;
 		colorBlendState.blendConstants[3] = 0.0f;
 
-		// configure pipeline layout
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		// WITH EVERYTHING IN PLACE, BUILD THE PIPELINE!
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.pNext = nullptr;
@@ -142,7 +200,6 @@ namespace Zahra
 		VulkanUtils::ValidateVkResult(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout),
 			"Vulkan pipeline layout creation failed");
 
-		// create pipeline!!
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = static_cast<uint32_t>(shaderStageInfos.size());;

@@ -3,6 +3,7 @@
 
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanPipeline.h"
+#include "Platform/Vulkan/VulkanVertexBuffer.h"
 
 namespace Zahra
 {
@@ -75,9 +76,16 @@ namespace Zahra
 		m_Swapchain->PresentImage();
 	}
 
-	void VulkanRendererAPI::TutorialDrawCalls()
+	void VulkanRendererAPI::TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
+
+		Ref<VulkanVertexBuffer> vulkanVertexBuffer = vertexBuffer.As<VulkanVertexBuffer>();
+
+		VkBuffer vertexBufferArray[] = { vulkanVertexBuffer->GetVulkanBuffer() };
+		VkDeviceSize offsets[] = { 0 };
+
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBufferArray, offsets);
 
 		// set dynamic state
 		auto& extent = m_Swapchain->GetExtent();

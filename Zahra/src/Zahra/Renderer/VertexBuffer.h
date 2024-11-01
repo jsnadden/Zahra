@@ -93,7 +93,7 @@ namespace Zahra
 		VertexBufferLayout(const std::initializer_list<VertexBufferElement>& elements)
 			: m_Elements(elements)
 		{
-			CalculateOffsetAndStride();
+			CalculateOffsetsAndStride();
 		}
 
 		const std::vector<VertexBufferElement>& GetElements() const { return m_Elements; }
@@ -107,7 +107,10 @@ namespace Zahra
 		[[nodiscard]] std::vector<VertexBufferElement>::const_iterator end() const { return m_Elements.end(); }
 
 	private:
-		void CalculateOffsetAndStride()
+		std::vector<VertexBufferElement> m_Elements;
+		uint32_t m_Stride = 0;
+
+		void CalculateOffsetsAndStride()
 		{
 			uint32_t offset = 0;
 			m_Stride = 0;
@@ -121,10 +124,6 @@ namespace Zahra
 			m_Stride = offset;
 		}
 
-		std::vector<VertexBufferElement> m_Elements;
-
-		uint32_t m_Stride = 0;
-
 	};
 
 	class VertexBuffer : public RefCounted
@@ -132,13 +131,9 @@ namespace Zahra
 	public:
 		virtual ~VertexBuffer() = default;
 
-		/*virtual void SetLayout(const VertexBufferLayout& layout) = 0;
-		virtual const VertexBufferLayout& GetLayout() const = 0;*/
+		virtual void SetData(const void* data, uint64_t size) = 0;
 
-		virtual void SetData(const void* data, uint32_t size) = 0;
-
-		static Ref<VertexBuffer> Create(uint32_t size);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t count);
+		static Ref<VertexBuffer> Create(uint64_t size);
 	};
 
 }

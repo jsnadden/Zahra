@@ -57,8 +57,7 @@ namespace Zahra
 
 		vkDestroyCommandPool(m_Device->LogicalDevice, m_CommandPool, nullptr);
 
-		vkDestroyDevice(m_Device->LogicalDevice, nullptr);
-		m_Device->LogicalDevice = VK_NULL_HANDLE;
+		m_Device->Shutdown();
 
 		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
 		m_Surface = VK_NULL_HANDLE;

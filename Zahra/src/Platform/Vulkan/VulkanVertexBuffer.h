@@ -1,6 +1,9 @@
 #pragma once
 
+#include "Zahra/Core/Buffer.h"
 #include "Zahra/Renderer/VertexBuffer.h"
+
+#include "vulkan/vulkan.h"
 
 namespace Zahra
 {
@@ -8,17 +11,18 @@ namespace Zahra
 	{
 	public:
 		// TODO: there should be an additional argument to choose static/dynamic drawing
-		VulkanVertexBuffer(uint32_t size);
-		VulkanVertexBuffer(float* vertices, uint32_t size);
+		VulkanVertexBuffer(uint64_t size);
 		~VulkanVertexBuffer();
 
-		/*virtual void SetLayout(const VertexBufferLayout& layout) override { m_Layout = layout; }
-		virtual const VertexBufferLayout& GetLayout() const override { return m_Layout; }*/
+		virtual void SetData(const void* data, uint64_t size) override;
 
-		virtual void SetData(const void* data, uint32_t size) override;
+		VkBuffer GetVulkanBuffer() { return m_VulkanVertexBuffer; }
 
 	private:
-		//VertexBufferLayout m_Layout;
+		Buffer m_VertexData;
+		VkBuffer m_VulkanVertexBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory m_VulkanVertexBufferMemory = VK_NULL_HANDLE;
+
 
 	};
 }

@@ -58,13 +58,13 @@ namespace Zahra
 		}
 
 		template <typename T>
-		T& Read(uint64_t offset = 0)
+		T& ReadAs(uint64_t offset = 0)
 		{
 			return *(T*)((byte*)Data + offset);
 		}
 
 		template <typename T>
-		const T& Read(uint64_t offset = 0) const
+		const T& ReadAs(uint64_t offset = 0) const
 		{
 			return *(T*)((byte*)Data + offset);
 		}
@@ -102,7 +102,7 @@ namespace Zahra
 		}
 
 		template <typename T>
-		T* As() const
+		T* GetData() const
 		{
 			return (T*)Data;
 		}

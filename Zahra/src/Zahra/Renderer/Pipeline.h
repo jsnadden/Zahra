@@ -20,7 +20,7 @@ namespace Zahra
 	struct PipelineSpecification
 	{
 		Ref<Shader> Shader;
-		VertexBufferLayout VertexBufferLayout;
+		VertexBufferLayout VertexLayout;
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
 	};
 
