@@ -7,7 +7,22 @@
 
 namespace Zahra
 {
+	namespace VulkanShaderResources
+	{
+		struct UniformBuffer
+		{
+			std::string Name;
+			uint32_t Binding;
+			size_t ByteSize;
+			size_t MemberCount;
+		};
+		
+	}
 
+	struct VulkanShaderReflectionData
+	{
+		std::vector<VulkanShaderResources::UniformBuffer> UniformBuffers;
+	};
 
 	class VulkanShader : public Shader
 	{
@@ -26,12 +41,15 @@ namespace Zahra
 		ShaderSpecification m_Specification;
 
 		std::unordered_map<ShaderStage, std::string> m_GLSLSource;
-		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_SPIRVBytecode;
+		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_SPIRVBytecode, m_SPIRVBytecode_Debug;
+		std::unordered_map<ShaderStage, VulkanShaderReflectionData> m_ReflectionData;
+
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageInfos;
 
 		bool ReadShaderSource(ShaderStage stage);
-		void CompileOrGetSPIRV(const std::unordered_map<ShaderStage, std::string>& shaderSources, const std::filesystem::path& cacheDirectory);
-		void CreateModules(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode);
+		void CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, const std::filesystem::path& cacheDirectory, bool debug);
+		void Reflect();
+		void CreateModules();
 
 		std::string GetSourceFilename(ShaderStage stage);
 	};

@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <shaderc/shaderc.hpp>
+#include <spirv_cross/spirv_cross.hpp>
 
 namespace Zahra
 {
@@ -278,8 +279,10 @@ namespace Zahra
 		
 		Timer shaderCreationTimer;
 		{
-			CompileOrGetSPIRV(m_GLSLSource, cacheDirectory);
-			CreateModules(m_SPIRVBytecode);
+			CompileOrGetSPIRV(m_SPIRVBytecode, cacheDirectory, false);
+			CompileOrGetSPIRV(m_SPIRVBytecode_Debug, cacheDirectory, true);
+			Reflect();
+			CreateModules();
 		}
 		Z_CORE_TRACE("Shader creation took {0} ms", shaderCreationTimer.ElapsedMillis());
 
@@ -295,8 +298,6 @@ namespace Zahra
 
 	bool VulkanShader::ReadShaderSource(ShaderStage stage)
 	{
-		bool success = true;
-
 		std::filesystem::path sourceFilepath = m_Specification.SourceDirectory / GetSourceFilename(stage);
 
 		if (!std::filesystem::exists(sourceFilepath))
@@ -314,27 +315,35 @@ namespace Zahra
 		}
 		else
 		{
-			success = false;
-			//Z_CORE_ERROR("Failed to read shader source file '{0}'", sourceFilepath.c_str());
+			return false;
 		}
 
-		return success;
+		return true;
 	}
 
-	void VulkanShader::CompileOrGetSPIRV(const std::unordered_map<ShaderStage, std::string>& shaderSources, const std::filesystem::path& cacheDirectory)
+	void VulkanShader::CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, const std::filesystem::path& cacheDirectory, bool debug)
 	{
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
 		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
-		const bool optimize = true;
-		if (optimize) options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		if (debug) 
+		{
+			options.SetGenerateDebugInfo();
+			options.SetOptimizationLevel(shaderc_optimization_level_zero);
+		}
+		else
+		{
+			options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		}
 
-		auto& bytecode = m_SPIRVBytecode;
 		bytecode.clear();
 
-		for (auto&& [stage, source] : shaderSources)
+		for (auto&& [stage, source] : m_GLSLSource)
 		{
-			std::filesystem::path spirvFilename = m_Specification.Name + "_" + VulkanUtils::ShaderStageToFileExtension(stage) + ".spv";
+
+			std::filesystem::path spirvFilename = m_Specification.Name + "_" + VulkanUtils::ShaderStageToFileExtension(stage);
+			if (debug) spirvFilename += "_debug";
+ 			spirvFilename += ".spv";
 			std::filesystem::path spirvFilepath = cacheDirectory / spirvFilename;
 
 			std::ifstream filestream(spirvFilepath, std::ios::in | std::ios::binary | std::ios::ate);
@@ -377,11 +386,33 @@ namespace Zahra
 
 	}
 
-	void VulkanShader::CreateModules(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode)
+	void VulkanShader::Reflect()
+	{
+		for (auto&& [stage, data] : m_SPIRVBytecode_Debug)
+		{
+			spirv_cross::Compiler compiler(data);
+			spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+
+			for (const auto& resource : resources.uniform_buffers)
+			{
+				auto& buffer = m_ReflectionData[stage].UniformBuffers.emplace_back();
+
+				const auto& bufferType = compiler.get_type(resource.base_type_id);
+
+				buffer.Name = resource.name;
+				buffer.ByteSize = compiler.get_declared_struct_size(bufferType);
+				buffer.Binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+				buffer.MemberCount = bufferType.member_types.size();
+			}
+		}
+
+	}
+
+	void VulkanShader::CreateModules()
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->LogicalDevice;
 		
-		for (const auto& [stage, bytes] : bytecode)
+		for (const auto& [stage, bytes] : m_SPIRVBytecode)
 		{
 			VkPipelineShaderStageCreateInfo& shaderStageInfo = m_PipelineShaderStageInfos.emplace_back();
 			shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
