@@ -23,3 +23,10 @@ I want to replicate this stuff eventually, but for now I'm just going to keep to
 5) Update layers
 6) Render ImGui
 7) Present rendered image
+
+Rendering resource hierarchy:
+1) A Mesh object should be able to load in triangular mesh data (stored in e.g. a .obj or .dat) and inputs this data into a a VertexBuffer and IndexBuffer that it can provide to the renderer.
+2) A DynamicMesh object should augment a Mesh with all skeleton/animation data, and must manage their dynamic state
+3) A Material object should contain a reference to an appropriate Shader, and a ShaderResourceSet, which builds layouts from the Shader reflection and manages the corresponding UniformBuffers, Textures etc.
+4) A Scene should have an additional ShaderResourceSet that specifies the environmental data: lights, skybox, camera etc. Basically all the stuff that a Shader may need, independent of the particular mesh being drawn
+5) Scene rendering should begin with submitting the environmental data, followed by a sequence of submissions of (Mesh, Material) pairs (with additional passes between/after for various effects and interactions e.g. shadow mapping and GUI overlays).

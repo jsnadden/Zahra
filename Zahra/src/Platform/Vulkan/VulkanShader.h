@@ -9,19 +9,24 @@ namespace Zahra
 {
 	namespace VulkanShaderResources
 	{
-		struct UniformBuffer
+		struct UniformBufferData
 		{
 			std::string Name;
+			VkShaderStageFlagBits Stages;
+			uint32_t Set;
 			uint32_t Binding;
-			size_t ByteSize;
-			size_t MemberCount;
+			uint64_t ByteSize;
+			uint64_t MemberCount;
+			uint64_t ArrayLength = 1;
 		};
 		
 	}
 
 	struct VulkanShaderReflectionData
 	{
-		std::vector<VulkanShaderResources::UniformBuffer> UniformBuffers;
+		std::vector<VulkanShaderResources::UniformBufferData> UniformBuffers;
+
+		uint32_t MaxSetIndex = 0;
 	};
 
 	class VulkanShader : public Shader
@@ -36,19 +41,22 @@ namespace Zahra
 		virtual const std::string& GetName() const override { return m_Specification.Name; }
 
 		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageInfos() const { return m_PipelineShaderStageInfos; }
+		const std::vector<VkDescriptorSetLayout>& GetDescriptorSetLayouts() const { return m_DescriptorSetLayouts; }
 
 	private:
 		ShaderSpecification m_Specification;
 
 		std::unordered_map<ShaderStage, std::string> m_GLSLSource;
 		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_SPIRVBytecode, m_SPIRVBytecode_Debug;
-		std::unordered_map<ShaderStage, VulkanShaderReflectionData> m_ReflectionData;
+		VulkanShaderReflectionData m_ReflectionData;
 
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageInfos;
+		std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts;
 
 		bool ReadShaderSource(ShaderStage stage);
 		void CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, const std::filesystem::path& cacheDirectory, bool debug);
 		void Reflect();
+		void CreateDescriptorSetLayouts();
 		void CreateModules();
 
 		std::string GetSourceFilename(ShaderStage stage);

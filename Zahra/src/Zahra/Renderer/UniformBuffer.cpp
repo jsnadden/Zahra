@@ -2,18 +2,31 @@
 #include "UniformBuffer.h"
 
 #include "Zahra/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLUniformBuffer.h"
+#include "Platform/Vulkan/VulkanUniformBuffer.h"
 
 namespace Zahra
 {
-	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
+	Ref<UniformBuffer> UniformBuffer::Create(uint64_t size)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
-		case RendererAPI::API::OpenGL:    return Ref<OpenGLUniformBuffer>::Create(size, binding);
-		case RendererAPI::API::DX12:  Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
-		case RendererAPI::API::Vulkan:    Z_CORE_ASSERT(false, "RendererAPI::API::Vulkan is not currently supported"); return nullptr;
+			case RendererAPI::API::None:	Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
+			case RendererAPI::API::OpenGL:	Z_CORE_ASSERT(false, "RendererAPI::API::OpenGL is no longer supported"); return nullptr;
+			case RendererAPI::API::DX12:	Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
+			case RendererAPI::API::Vulkan:	return Ref<VulkanUniformBuffer>::Create(size);
+		}
+		Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
+		return nullptr;
+	}
+
+	Ref<UniformBuffer> UniformBuffer::Create(const void* data, uint64_t size, uint64_t offset)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None:	Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
+		case RendererAPI::API::OpenGL:	Z_CORE_ASSERT(false, "RendererAPI::API::OpenGL is no longer supported"); return nullptr;
+		case RendererAPI::API::DX12:	Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
+		case RendererAPI::API::Vulkan:	return Ref<VulkanUniformBuffer>::Create(data, size, offset);
 		}
 		Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
 		return nullptr;

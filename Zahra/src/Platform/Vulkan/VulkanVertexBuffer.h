@@ -3,7 +3,7 @@
 #include "Zahra/Core/Buffer.h"
 #include "Zahra/Renderer/VertexBuffer.h"
 
-#include "vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
 
 namespace Zahra
 {
@@ -24,6 +24,7 @@ namespace Zahra
 		VkBuffer m_VulkanVertexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory m_VulkanVertexBufferMemory = VK_NULL_HANDLE;
 
+		void Init(uint64_t size);
 
 	};
 }

@@ -2,6 +2,7 @@
 
 #include "Zahra/Renderer/Pipeline.h"
 #include "Zahra/Renderer/IndexBuffer.h"
+#include "Zahra/Renderer/UniformBuffer.h"
 
 #include <glm/glm.hpp>
 
@@ -24,6 +25,12 @@ namespace Zahra
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 		virtual void OnWindowResize() = 0;
 
+		virtual uint32_t GetSwapchainWidth() = 0;
+		virtual uint32_t GetSwapchainHeight() = 0;
+		virtual uint32_t GetFramesInFlight() = 0;
+		virtual uint32_t GetCurrentFrameIndex() = 0;
+		virtual uint32_t GetCurrentImageIndex() = 0;
+
 		virtual void SetClearColour(const glm::vec4& colour) = 0;
 
 		virtual void NewFrame() = 0;
@@ -37,7 +44,7 @@ namespace Zahra
 		static RendererAPI* Create();
 		
 		// TEMPORARY
-		virtual void TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer) = 0;
+		virtual void TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<UniformBuffer> mvpBuffer) = 0;
 
 
 	private:

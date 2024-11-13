@@ -255,6 +255,20 @@ namespace Zahra
 				}
 			}
 		}
+
+		static VkDescriptorType ShaderResourceTypeToVkDescriptorType(ShaderResourceType type)
+		{
+			switch (type)
+			{
+				case ShaderResourceType::UniformBuffer: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				case ShaderResourceType::StorageBuffer: return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				case ShaderResourceType::Texture2D: return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+				default: Z_CORE_ASSERT(false, "Unknown or unsupported ShaderResourceType"); break;
+			}
+
+			return VK_DESCRIPTOR_TYPE_MAX_ENUM;
+		}
 	}
 
 	VulkanShader::VulkanShader(ShaderSpecification& specification)
@@ -281,19 +295,28 @@ namespace Zahra
 		{
 			CompileOrGetSPIRV(m_SPIRVBytecode, cacheDirectory, false);
 			CompileOrGetSPIRV(m_SPIRVBytecode_Debug, cacheDirectory, true);
-			Reflect();
 			CreateModules();
 		}
 		Z_CORE_TRACE("Shader creation took {0} ms", shaderCreationTimer.ElapsedMillis());
 
+		Reflect();
+		CreateDescriptorSetLayouts();
 	}
 
 	VulkanShader::~VulkanShader()
 	{
+		VkDevice& device = VulkanContext::Get()->GetDevice()->LogicalDevice;
+
 		for (auto& stageInfo : m_PipelineShaderStageInfos)
 		{
-			vkDestroyShaderModule(VulkanContext::Get()->GetDevice()->LogicalDevice, stageInfo.module, nullptr);
+			vkDestroyShaderModule(device, stageInfo.module, nullptr);
 		}
+
+		for (auto& layout : m_DescriptorSetLayouts)
+		{
+			vkDestroyDescriptorSetLayout(device, layout, nullptr);
+		}
+
 	}
 
 	bool VulkanShader::ReadShaderSource(ShaderStage stage)
@@ -395,15 +418,59 @@ namespace Zahra
 
 			for (const auto& resource : resources.uniform_buffers)
 			{
-				auto& buffer = m_ReflectionData[stage].UniformBuffers.emplace_back();
+				auto& bufferData = m_ReflectionData.UniformBuffers.emplace_back();
 
 				const auto& bufferType = compiler.get_type(resource.base_type_id);
 
-				buffer.Name = resource.name;
-				buffer.ByteSize = compiler.get_declared_struct_size(bufferType);
-				buffer.Binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-				buffer.MemberCount = bufferType.member_types.size();
+				uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+				if (set > m_ReflectionData.MaxSetIndex) m_ReflectionData.MaxSetIndex = set;
+
+				bufferData.Name = resource.name;
+				bufferData.Set = set;
+				bufferData.Binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+				bufferData.Stages = VulkanUtils::ShaderStageToVkFlagBit(stage);
+				bufferData.ByteSize = compiler.get_declared_struct_size(bufferType);
+				bufferData.MemberCount = bufferType.member_types.size();
+
+				if (!bufferType.array.empty()) bufferData.ArrayLength = bufferType.array[0]; // TODO: account for multidimensional (i.e. nested) arrays?
+
 			}
+
+			// TODO: additional for loops for other shader resources. For details see:
+			// https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide
+
+		}
+
+	}
+
+	void VulkanShader::CreateDescriptorSetLayouts()
+	{
+		uint32_t setCount = m_ReflectionData.MaxSetIndex + 1;
+		std::vector<std::vector<VkDescriptorSetLayoutBinding>> layoutBindings(setCount);
+
+		for (auto& bufferData : m_ReflectionData.UniformBuffers)
+		{
+			auto& layoutBinding = layoutBindings[bufferData.Set].emplace_back();
+
+			layoutBinding.binding = bufferData.Binding;
+			layoutBinding.stageFlags = bufferData.Stages;
+			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			layoutBinding.descriptorCount = bufferData.ArrayLength;
+			layoutBinding.pImmutableSamplers = nullptr;
+		}
+
+		m_DescriptorSetLayouts.resize(setCount);
+
+		VkDevice& device = VulkanContext::GetCurrentDevice()->LogicalDevice;
+
+		for (int i = 0; i < setCount; i++)
+		{
+			VkDescriptorSetLayoutCreateInfo layoutInfo{};
+			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			layoutInfo.bindingCount = layoutBindings[i].size();
+			layoutInfo.pBindings = layoutBindings[i].data();
+
+			VulkanUtils::ValidateVkResult(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &m_DescriptorSetLayouts[i]));
 		}
 
 	}

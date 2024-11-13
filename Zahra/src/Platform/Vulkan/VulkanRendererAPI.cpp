@@ -29,6 +29,31 @@ namespace Zahra
 		VulkanContext::Get()->GetSwapchain()->OnWindowResize();
 	}
 
+	uint32_t VulkanRendererAPI::GetSwapchainWidth()
+	{
+		return VulkanContext::Get()->GetSwapchain()->GetExtent().width;
+	}
+
+	uint32_t VulkanRendererAPI::GetSwapchainHeight()
+	{
+		return VulkanContext::Get()->GetSwapchain()->GetExtent().height;
+	}
+
+	uint32_t VulkanRendererAPI::GetFramesInFlight()
+	{
+		return VulkanContext::Get()->GetSwapchain()->GetFramesInFlight();
+	}
+
+	uint32_t VulkanRendererAPI::GetCurrentFrameIndex()
+	{
+		return VulkanContext::Get()->GetSwapchain()->GetFrameIndex();
+	}
+
+	uint32_t VulkanRendererAPI::GetCurrentImageIndex()
+	{
+		return VulkanContext::Get()->GetSwapchain()->GetImageIndex();
+	}
+
 	void VulkanRendererAPI::NewFrame()
 	{
 		m_Swapchain->GetNextImage();
@@ -77,7 +102,7 @@ namespace Zahra
 		m_Swapchain->PresentImage();
 	}
 
-	void VulkanRendererAPI::TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer)
+	void VulkanRendererAPI::TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<UniformBuffer> mvpBuffer)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 

@@ -54,7 +54,7 @@ namespace Zahra
 		VkDevice device = swapchain->GetDevice()->LogicalDevice;
 		VkRenderPass renderPass = swapchain->GetVkRenderPass();
 		VertexBufferLayout vertexLayout = m_Specification.VertexLayout;
-		// TODO: get descriptor set layouts
+		std::vector<VkDescriptorSetLayout> layouts = shader->GetDescriptorSetLayouts();
 		// TODO: get push constant ranges
 
 		/////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,8 +192,8 @@ namespace Zahra
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.pNext = nullptr;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
+		pipelineLayoutInfo.setLayoutCount = layouts.size();
+		pipelineLayoutInfo.pSetLayouts = layouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 

@@ -19,7 +19,9 @@ project "Zahra"
 		"vendor/ImGuizmo/ImGuizmo.h",
 		"vendor/ImGuizmo/ImGuizmo.cpp",
 		"vendor/stb_image/**.h",
-		"vendor/stb_image/**.cpp"
+		"vendor/stb_image/**.cpp",
+		"vendor/VMA/**.h",
+		"vendor/VMA/**.cpp",
 	}
 
 	defines 
@@ -43,6 +45,7 @@ project "Zahra"
 		"%{IncludeDir.yaml_cpp}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.VulkanSDK}",
+		"%{IncludeDir.VMA}",
 		"%{IncludeDir.mono}"
 	}
 

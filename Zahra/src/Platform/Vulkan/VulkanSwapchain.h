@@ -39,6 +39,10 @@ namespace Zahra
 
 		VkCommandBuffer GetDrawCommandBuffer(uint32_t index);
 		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentFrameIndex); }
+
+		uint32_t GetFramesInFlight() { return m_FramesInFlight; }
+		uint32_t GetFrameIndex() { return m_CurrentFrameIndex; }
+		uint32_t GetImageIndex() { return m_CurrentImageIndex; }
 		
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;

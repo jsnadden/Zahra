@@ -50,7 +50,7 @@ namespace Zahra
 		glm::vec3 Colour;
 	};
 
-	struct TutorialMatrixUniformBuffer
+	struct MVPTransforms
 	{
 		glm::mat4 Model;
 		glm::mat4 View;
@@ -69,6 +69,7 @@ namespace Zahra
 		Ref<VertexBuffer> TutorialVertexBuffer;
 		Ref<IndexBuffer> TutorialIndexBuffer;
 
+		std::vector<Ref<UniformBuffer>> TutorialUniformBuffers;
 
 		// TODO: ressurect stuff from here
 		#pragma region
@@ -125,7 +126,7 @@ namespace Zahra
 		//};
 
 		//CameraData CameraBuffer;
-		//Ref<UniformBuffer> CameraUniformBuffer;
+		//Ref<UniformBufferData> CameraUniformBuffer;
 		#pragma endregion
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,6 +173,18 @@ namespace Zahra
 
 		const std::vector<uint32_t> indices = { 0, 1, 2, 2, 3, 0 };
 		s_Data.TutorialIndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+
+		MVPTransforms transforms{};
+
+		uint32_t frames = s_RendererAPI->GetFramesInFlight();
+		s_Data.TutorialUniformBuffers.resize(frames);
+
+		for (int i = 0; i < frames; i++)
+		{
+			s_Data.TutorialUniformBuffers[i] = UniformBuffer::Create(&transforms, sizeof(MVPTransforms));
+		}
+
+		
 
 
 		// TODO: ressurect stuff from here
@@ -284,13 +297,20 @@ namespace Zahra
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//// CAMERA BUFFER
-		//s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(RendererData::CameraData), 0);
+		//s_Data.CameraUniformBuffer = UniformBufferData::Create(sizeof(RendererData::CameraData), 0);
 		#pragma endregion
 	}
 
 	void Renderer::Shutdown()
 	{
 		// TEMPORARY
+
+		uint32_t frames = s_RendererAPI->GetFramesInFlight();
+		for (int i = 0; i < frames; i++)
+		{
+			s_Data.TutorialUniformBuffers[i].Reset();
+		}
+
 		s_Data.TutorialVertexBuffer.Reset();
 		s_Data.TutorialIndexBuffer.Reset();
 		s_Data.Pipeline.Reset();
@@ -320,8 +340,24 @@ namespace Zahra
 
 	void Renderer::DrawTutorialScene()
 	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float timeSinceStart = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+		float width = s_RendererAPI->GetSwapchainWidth();
+		float height = s_RendererAPI->GetSwapchainHeight();
+
+		MVPTransforms transforms{};
+		transforms.Model = glm::rotate(glm::mat4(1.0f), timeSinceStart * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		transforms.View = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		transforms.Projection = glm::perspective(glm::radians(45.0f), width/height, 0.1f, 10.0f);
+		transforms.Projection[1][1] *= -1.f; // because screenspace is left-handed....
+
+		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
+		s_Data.TutorialUniformBuffers[frameIndex]->SetData(&transforms, sizeof(MVPTransforms));
+
 		s_RendererAPI->BeginRenderPass(s_Data.Pipeline);
-		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer);
+		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer, s_Data.TutorialUniformBuffers[frameIndex]);
 		s_RendererAPI->EndRenderPass();
 	}
 

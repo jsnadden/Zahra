@@ -10,9 +10,10 @@ namespace Zahra
 	public:
 		virtual ~UniformBuffer() {}
 
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void SetData(const void* data, uint64_t size, uint64_t offset = 0) = 0;
 
-		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);
+		static Ref<UniformBuffer> Create(uint64_t size);
+		static Ref<UniformBuffer> Create(const void* data, uint64_t size, uint64_t offset = 0);
 	};
 
 }

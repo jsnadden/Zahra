@@ -2,3 +2,4 @@
  - An external database (ideally with an import tool, or automatic directory scanning) of all available resources (including file-paths and GUIDs)
  - An internal hash table of "loaded" resources, to avoid duplicate loading
  - A ref-counting scheme to handle scene transitions. These transitions would ideally be [[Parallelisation|on a separate thread]]. Also it would be nice if a new scene can be (partially) loaded when the player "approaches" a scene transition, cutting down on load-screen time.
+ - 

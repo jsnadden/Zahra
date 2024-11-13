@@ -17,6 +17,12 @@ namespace Zahra
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 		virtual void OnWindowResize() override;
 
+		virtual uint32_t GetSwapchainWidth() override;
+		virtual uint32_t GetSwapchainHeight() override;
+		virtual uint32_t GetFramesInFlight() override;
+		virtual uint32_t GetCurrentFrameIndex() override;
+		virtual uint32_t GetCurrentImageIndex() override;
+
 		virtual void SetClearColour(const glm::vec4& colour) override { m_ClearColour = { { { colour.r, colour.g, colour.b, colour.a } } }; }
 		
 		virtual void NewFrame() override;
@@ -27,7 +33,7 @@ namespace Zahra
 		virtual void PresentImage() override;
 
 		// TEMPORARY
-		virtual void TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer) override;
+		virtual void TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<UniformBuffer> mvpBuffer) override;
 
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;

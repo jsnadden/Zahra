@@ -4,26 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "5183b20851ef14e8",
+        "id": "452bb4d95dbe3fd9",
         "type": "tabs",
         "children": [
           {
-            "id": "6d0e9411287ab3e2",
-            "type": "leaf",
-            "state": {
-              "type": "canvas",
-              "state": {
-                "file": "Planning & Learning/Renderer architecture.canvas",
-                "viewState": {
-                  "x": 783.0947922134069,
-                  "y": -330.9495368542736,
-                  "zoom": -0.333333333333333
-                }
-              }
-            }
-          },
-          {
-            "id": "a8f1ab397bc0c1a0",
+            "id": "a0dc6ef2d0f35371",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -31,11 +16,12 @@
                 "file": "Planning & Learning/Renderer architecture.md",
                 "mode": "source",
                 "source": false
-              }
+              },
+              "icon": "lucide-file",
+              "title": "Renderer architecture"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -55,7 +41,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical"
-              }
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
             }
           },
           {
@@ -70,7 +58,9 @@
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical"
-              }
+              },
+              "icon": "lucide-search",
+              "title": "Search"
             }
           },
           {
@@ -78,7 +68,9 @@
             "type": "leaf",
             "state": {
               "type": "bookmarks",
-              "state": {}
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
             }
           }
         ]
@@ -109,7 +101,9 @@
                 "searchQuery": "",
                 "backlinkCollapsed": false,
                 "unlinkedCollapsed": true
-              }
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Renderer architecture"
             }
           },
           {
@@ -121,7 +115,9 @@
                 "file": "Planning & Learning/Renderer architecture.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
-              }
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Renderer architecture"
             }
           },
           {
@@ -132,7 +128,9 @@
               "state": {
                 "sortOrder": "frequency",
                 "useHierarchy": true
-              }
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
             }
           },
           {
@@ -142,7 +140,9 @@
               "type": "outline",
               "state": {
                 "file": "Planning & Learning/Renderer architecture.md"
-              }
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Renderer architecture"
             }
           }
         ]
@@ -162,14 +162,15 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "a8f1ab397bc0c1a0",
+  "active": "a0dc6ef2d0f35371",
   "lastOpenFiles": [
-    "Planning & Learning/Renderer architecture.canvas",
+    "Planning & Learning/Resource Management.md",
     "Planning & Learning/Renderer architecture.md",
+    "Planning & Learning/Renderer architecture.canvas",
+    "Planning & Learning/Hazel initialisation details.canvas",
     "Untitled",
     "Planning & Learning/VULKAN.md",
     "Planning & Learning/Vulkan pipeline.md",
-    "Planning & Learning/Resource Management.md",
     "Planning & Learning/Parallelisation.md",
     "Planning & Learning/Memory Management.md",
     "Planning & Learning/Audio engine.md",

@@ -9,25 +9,12 @@ namespace Zahra
 
 	VulkanVertexBuffer::VulkanVertexBuffer(uint64_t size)
 	{
-		m_VertexData.Allocate(size);
-		m_VertexData.ZeroInitialise();
-
-		// TODO: for optimal dynamic memory allocation, I should rewrite this class to use the
-		// VulkanMemoryAllocator library (https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
-		// in place of VkAllocateMemory calls, which is fairly limited
-
-		VulkanContext::GetCurrentDevice()->CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VulkanVertexBuffer, m_VulkanVertexBufferMemory);
+		Init(size);
 	}
 
 	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint64_t size)
 	{
-		m_VertexData.Allocate(size);
-		m_VertexData.ZeroInitialise();
-
-		VulkanContext::GetCurrentDevice()->CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VulkanVertexBuffer, m_VulkanVertexBufferMemory);
-
+		Init(size);
 		SetData(data, size);
 	}
 	
@@ -66,6 +53,19 @@ namespace Zahra
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
 
+	}
+
+	void VulkanVertexBuffer::Init(uint64_t size)
+	{
+		m_VertexData.Allocate(size);
+		m_VertexData.ZeroInitialise();
+
+		// TODO: for optimal dynamic memory allocation, I should rewrite this class to use the
+		// VulkanMemoryAllocator library (https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+		// in place of VkAllocateMemory calls, which is fairly limited
+
+		VulkanContext::GetCurrentDevice()->CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VulkanVertexBuffer, m_VulkanVertexBufferMemory);
 	}
 
 

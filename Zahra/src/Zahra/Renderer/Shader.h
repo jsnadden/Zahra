@@ -30,6 +30,29 @@ namespace Zahra
 		AllGraphics = 0x0000001f
 	};
 
+	enum class ShaderResourceType
+	{
+		None,
+		UniformBuffer,
+		StorageBuffer,
+		Image,
+		Texture2D,
+		Texture3D
+	};
+
+	struct ShaderResource
+	{
+		std::string Name;
+		ShaderResourceType Type = ShaderResourceType::None;
+		std::vector<Ref<RefCounted>> Data; // a vector to account for arrays in the shader
+		ShaderStageBits StageBitMask = ShaderStageBits::VertexBit;
+
+		uint32_t GetCount() { return Data.size(); }
+
+		template <typename T>
+		Ref<T> GetData(uint32_t index) { return Data[index].As<T>(); }
+	};
+
 	struct ShaderSpecification
 	{
 		std::string Name;
