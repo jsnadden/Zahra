@@ -69,7 +69,7 @@ namespace Zahra
 		Ref<VertexBuffer> TutorialVertexBuffer;
 		Ref<IndexBuffer> TutorialIndexBuffer;
 
-		std::vector<Ref<UniformBuffer>> TutorialUniformBuffers;
+		Ref<UniformBufferSet> TutorialUniformBuffers;
 
 		// TODO: ressurect stuff from here
 		#pragma region
@@ -176,16 +176,13 @@ namespace Zahra
 
 		MVPTransforms transforms{};
 
-		uint32_t frames = s_RendererAPI->GetFramesInFlight();
-		s_Data.TutorialUniformBuffers.resize(frames);
+		uint32_t framesInFlight = s_RendererAPI->GetFramesInFlight();
+		uint32_t uniformBufferSize = sizeof(MVPTransforms);
 
-		for (int i = 0; i < frames; i++)
-		{
-			s_Data.TutorialUniformBuffers[i] = UniformBuffer::Create(&transforms, sizeof(MVPTransforms));
-		}
+		s_Data.TutorialUniformBuffers = UniformBufferSet::Create(uniformBufferSize, framesInFlight);
 
-		
-
+		for (int i = 0; i < framesInFlight; i++)
+			s_Data.TutorialUniformBuffers->SetData(i, &transforms, uniformBufferSize);
 
 		// TODO: ressurect stuff from here
 		#pragma region
@@ -305,12 +302,7 @@ namespace Zahra
 	{
 		// TEMPORARY
 
-		uint32_t frames = s_RendererAPI->GetFramesInFlight();
-		for (int i = 0; i < frames; i++)
-		{
-			s_Data.TutorialUniformBuffers[i].Reset();
-		}
-
+		s_Data.TutorialUniformBuffers.Reset();
 		s_Data.TutorialVertexBuffer.Reset();
 		s_Data.TutorialIndexBuffer.Reset();
 		s_Data.Pipeline.Reset();
@@ -354,10 +346,10 @@ namespace Zahra
 		transforms.Projection[1][1] *= -1.f; // because screenspace is left-handed....
 
 		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
-		s_Data.TutorialUniformBuffers[frameIndex]->SetData(&transforms, sizeof(MVPTransforms));
+		s_Data.TutorialUniformBuffers->SetData(frameIndex, &transforms, sizeof(MVPTransforms));
 
 		s_RendererAPI->BeginRenderPass(s_Data.Pipeline);
-		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer, s_Data.TutorialUniformBuffers[frameIndex]);
+		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer, s_Data.TutorialUniformBuffers->Get(frameIndex));
 		s_RendererAPI->EndRenderPass();
 	}
 
@@ -390,6 +382,16 @@ namespace Zahra
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
 		s_RendererAPI->OnWindowResize();
+	}
+
+	uint32_t Renderer::GetCurrentFrameIndex()
+	{
+		return s_RendererAPI->GetCurrentFrameIndex();
+	}
+
+	uint32_t Renderer::GetFramesInFlight()
+	{
+		return s_RendererAPI->GetFramesInFlight();
 	}
 
 	/*float Renderer::GetLineThickness()

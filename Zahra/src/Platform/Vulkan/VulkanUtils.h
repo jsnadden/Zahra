@@ -8,9 +8,18 @@ namespace Zahra
 {
 	namespace VulkanUtils
 	{
-		static void ValidateVkResult(VkResult result, const std::string& errorMessage = "")
+		// TODO: go through every use of this function and decide if it really needs
+		//  to end execution, or if it should just write an error to the log (i.e. setting crash = false)
+		static void ValidateVkResult(VkResult result, const std::string& errorMessage = "", bool crash = true)
 		{
-			if (result != VK_SUCCESS) throw std::runtime_error(errorMessage);
+			if (crash)
+			{
+				if (result != VK_SUCCESS) throw std::runtime_error(errorMessage);
+			}
+			else
+			{
+				Z_VULKAN_ERROR("VkResult != VK_SUCCESS: ", errorMessage);
+			}
 		}
 
 		static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

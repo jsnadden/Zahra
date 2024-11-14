@@ -208,6 +208,7 @@
     <ClInclude Include="src\Zahra\Renderer\RendererContext.h" />
     <ClInclude Include="src\Zahra\Renderer\SceneRenderer.h" />
     <ClInclude Include="src\Zahra\Renderer\Shader.h" />
+    <ClInclude Include="src\Zahra\Renderer\ShaderTypes.h" />
     <ClInclude Include="src\Zahra\Renderer\Texture.h" />
     <ClInclude Include="src\Zahra\Renderer\UniformBuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\VertexBuffer.h" />

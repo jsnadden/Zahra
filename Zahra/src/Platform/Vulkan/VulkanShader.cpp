@@ -26,48 +26,6 @@ namespace Zahra
 			return s_CacheDirectory;
 		}
 
-		static ShaderStageBits ShaderStageToStageBit(ShaderStage stage)
-		{
-			switch (stage)
-			{
-				case ShaderStage::Vertex:
-				{
-					return ShaderStageBits::VertexBit;
-				}
-
-				case ShaderStage::TesselationControl:
-				{
-					return ShaderStageBits::TesselationControlBit;
-				}
-
-				case ShaderStage::TesselationEvaluation:
-				{
-					return ShaderStageBits::TesselationEvaluationBit;
-				}
-
-				case ShaderStage::Geometry:
-				{
-					return ShaderStageBits::GeometryBit;
-				}
-
-				case ShaderStage::Fragment:
-				{
-					return ShaderStageBits::FragmentBit;
-				}
-
-				case ShaderStage::Compute:
-				{
-					return ShaderStageBits::ComputeBit;
-				}
-
-				default:
-				{
-					Z_CORE_ASSERT(false, "Unrecognised shader stage");
-					break;
-				}
-			}
-		}
-
 		static const char* ShaderStageToFileExtension(ShaderStage stage)
 		{
 			const char* extension;
@@ -260,9 +218,19 @@ namespace Zahra
 		{
 			switch (type)
 			{
-				case ShaderResourceType::UniformBuffer: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				case ShaderResourceType::StorageBuffer: return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				case ShaderResourceType::Texture2D: return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				case ShaderResourceType::UniformBuffer:
+				case ShaderResourceType::UniformBufferSet:
+				{
+					return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				}
+				case ShaderResourceType::StorageBuffer:
+				{
+					return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				}
+				case ShaderResourceType::Texture2D:
+				{
+					return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				}
 
 				default: Z_CORE_ASSERT(false, "Unknown or unsupported ShaderResourceType"); break;
 			}
@@ -277,10 +245,10 @@ namespace Zahra
 		bool loaded = true;
 
 		// TODO: include other shader stages
-		if (specification.StageBitMask & ShaderStageBits::VertexBit)
+		if (specification.StageBitMask & ShaderStageBits::VertexStageBit)
 			loaded &= ReadShaderSource(ShaderStage::Vertex);
 
-		if (specification.StageBitMask & ShaderStageBits::FragmentBit)
+		if (specification.StageBitMask & ShaderStageBits::FragmentStageBit)
 			loaded &= ReadShaderSource(ShaderStage::Fragment);
 	
 		if (!loaded)
@@ -418,7 +386,7 @@ namespace Zahra
 
 			for (const auto& resource : resources.uniform_buffers)
 			{
-				auto& bufferData = m_ReflectionData.UniformBuffers.emplace_back();
+				auto& bufferData = m_ReflectionData.UniformBufferLayouts.emplace_back();
 
 				const auto& bufferType = compiler.get_type(resource.base_type_id);
 
@@ -448,7 +416,7 @@ namespace Zahra
 		uint32_t setCount = m_ReflectionData.MaxSetIndex + 1;
 		std::vector<std::vector<VkDescriptorSetLayoutBinding>> layoutBindings(setCount);
 
-		for (auto& bufferData : m_ReflectionData.UniformBuffers)
+		for (auto& bufferData : m_ReflectionData.UniformBufferLayouts)
 		{
 			auto& layoutBinding = layoutBindings[bufferData.Set].emplace_back();
 

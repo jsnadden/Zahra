@@ -20,7 +20,7 @@ namespace Zahra
 		VkBuffer GetVulkanBuffer() { return m_VulkanVertexBuffer; }
 
 	private:
-		Buffer m_VertexData;
+		Buffer m_VertexData; // TODO: do I need local storage?
 		VkBuffer m_VulkanVertexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory m_VulkanVertexBufferMemory = VK_NULL_HANDLE;
 

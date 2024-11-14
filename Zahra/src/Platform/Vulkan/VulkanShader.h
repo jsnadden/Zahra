@@ -9,7 +9,7 @@ namespace Zahra
 {
 	namespace VulkanShaderResources
 	{
-		struct UniformBufferData
+		struct UniformBufferLayout
 		{
 			std::string Name;
 			VkShaderStageFlagBits Stages;
@@ -19,12 +19,23 @@ namespace Zahra
 			uint64_t MemberCount;
 			uint64_t ArrayLength = 1;
 		};
+
+		struct Texture2DLayout
+		{
+			std::string Name;
+			VkShaderStageFlagBits Stages;
+			// TODO: fill this out properly
+		};
+
+		// TODO: add other resource types
 		
 	}
 
 	struct VulkanShaderReflectionData
 	{
-		std::vector<VulkanShaderResources::UniformBufferData> UniformBuffers;
+		std::vector<VulkanShaderResources::UniformBufferLayout> UniformBufferLayouts;
+		std::vector<VulkanShaderResources::Texture2DLayout> Texture2DLayouts;
+		// TODO: add other resource types
 
 		uint32_t MaxSetIndex = 0;
 	};
@@ -60,6 +71,8 @@ namespace Zahra
 		void CreateModules();
 
 		std::string GetSourceFilename(ShaderStage stage);
+
+		friend class VulkanShaderResourceManager;
 	};
 
 }

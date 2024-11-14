@@ -33,6 +33,9 @@ namespace Zahra
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
+		static uint32_t GetCurrentFrameIndex();
+		static uint32_t GetFramesInFlight();
+
 		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 		static Ref<RendererContext> GetContext() { return Application::Get().GetWindow().GetRendererContext(); }
