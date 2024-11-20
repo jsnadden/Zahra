@@ -7,35 +7,21 @@
 
 namespace Zahra
 {
-	namespace VulkanShaderResources
+	struct VulkanShaderResourceMetadata
 	{
-		struct UniformBufferLayout
-		{
-			std::string Name;
-			VkShaderStageFlagBits Stages;
-			uint32_t Set;
-			uint32_t Binding;
-			uint64_t ByteSize;
-			uint64_t MemberCount;
-			uint64_t ArrayLength = 1;
-		};
-
-		struct Texture2DLayout
-		{
-			std::string Name;
-			VkShaderStageFlagBits Stages;
-			// TODO: fill this out properly
-		};
-
-		// TODO: add other resource types
-		
-	}
+		std::string Name;
+		ShaderResourceType Type;
+		ShaderStage Stage;
+		uint32_t Set;
+		uint32_t Binding;
+		uint64_t ByteSize;
+		uint64_t MemberCount;
+		uint64_t ArrayLength = 1; // 1 for non-array types
+	};
 
 	struct VulkanShaderReflectionData
 	{
-		std::vector<VulkanShaderResources::UniformBufferLayout> UniformBufferLayouts;
-		std::vector<VulkanShaderResources::Texture2DLayout> Texture2DLayouts;
-		// TODO: add other resource types
+		std::vector<VulkanShaderResourceMetadata> ResourceMetadata;
 
 		uint32_t MaxSetIndex = 0;
 	};
@@ -43,11 +29,8 @@ namespace Zahra
 	class VulkanShader : public Shader
 	{
 	public:
-		VulkanShader(ShaderSpecification& specification);
+		VulkanShader(ShaderSpecification& specification, bool forceCompile);
 		~VulkanShader();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
 
 		virtual const std::string& GetName() const override { return m_Specification.Name; }
 
@@ -65,7 +48,7 @@ namespace Zahra
 		std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts;
 
 		bool ReadShaderSource(ShaderStage stage);
-		void CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, const std::filesystem::path& cacheDirectory, bool debug);
+		void CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, const std::filesystem::path& cacheDirectory, bool debug, bool forceCompile);
 		void Reflect();
 		void CreateDescriptorSetLayouts();
 		void CreateModules();

@@ -16,7 +16,7 @@ namespace Zahra
 
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
-		VkDevice device = m_Swapchain->GetDevice()->LogicalDevice;
+		VkDevice device = m_Swapchain->GetDevice()->GetVkDevice();
 
 		vkDestroyCommandPool(device, m_CommandPool, nullptr);
 	}
@@ -81,14 +81,14 @@ namespace Zahra
 	void VulkanCommandBuffer::CreateCommandPool()
 	{		
 		Ref<VulkanDevice> device = m_Swapchain->GetDevice();
-		QueueFamilyIndices queueFamilyIndices = m_Swapchain->GetDevice()->QueueFamilyIndices;
+		QueueFamilyIndices& queueFamilyIndices = device->GetQueueFamilyIndices();
 
 		VkCommandPoolCreateInfo graphicsPoolInfo{};
 		graphicsPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		graphicsPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		graphicsPoolInfo.queueFamilyIndex = queueFamilyIndices.GraphicsIndex.value();
 
-		VulkanUtils::ValidateVkResult(vkCreateCommandPool(device->LogicalDevice, &graphicsPoolInfo, nullptr, &m_CommandPool),
+		VulkanUtils::ValidateVkResult(vkCreateCommandPool(device->GetVkDevice(), &graphicsPoolInfo, nullptr, &m_CommandPool),
 			"Vulkan command pool creation failed");
 
 	}
@@ -103,7 +103,7 @@ namespace Zahra
 		commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		commandBufferInfo.commandBufferCount = 1;
 
-		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(device->LogicalDevice, &commandBufferInfo, &m_CommandBuffer),
+		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(device->GetVkDevice(), &commandBufferInfo, &m_CommandBuffer),
 			"Vulkan command buffer allocation failed");
 
 	}

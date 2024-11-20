@@ -16,7 +16,6 @@
 	#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #endif
 
-
 #ifdef Z_DEBUG
 	#ifdef Z_PLATFORM_WINDOWS
 		#define Z_DEBUGBREAK() __debugbreak()

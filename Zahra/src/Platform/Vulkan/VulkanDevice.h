@@ -1,7 +1,11 @@
 #pragma once
 
+#include "Zahra/Core/Ref.h"
+#include "Zahra/Core/Assert.h"
+
 #include <optional>
 #include <vector>
+#include <map>
 #include <vulkan/vulkan.h>
 
 namespace Zahra
@@ -59,35 +63,48 @@ namespace Zahra
 		VkSurfaceCapabilitiesKHR Capabilities;
 	};
 
-	struct VulkanDevice : public RefCounted
+	class VulkanDevice : public RefCounted
 	{
-		VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
-		VkDevice LogicalDevice = VK_NULL_HANDLE;
-
-		VkQueue GraphicsQueue = VK_NULL_HANDLE;
-		VkQueue PresentationQueue = VK_NULL_HANDLE;
-		VkQueue TransferQueue = VK_NULL_HANDLE;
-		VkQueue ComputeQueue = VK_NULL_HANDLE;
-
-		QueueFamilyIndices QueueFamilyIndices;
-		VkPhysicalDeviceFeatures Features;
-		VkPhysicalDeviceProperties Properties;
-		VkPhysicalDeviceMemoryProperties Memory;
-		VulkanDeviceSwapchainSupport SwapchainSupport;
-
-		std::map<std::thread::id, VkCommandPool> m_CommandPools;
+	public:
+		VulkanDevice() = default;
+		~VulkanDevice();
 
 		void Shutdown();
 
 		void CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags flags);
-
 		void CopyVulkanBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		
+		void CreateVulkanImage2D(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
 		VkCommandBuffer GetTemporaryCommandBuffer();
 		void FreeTemporaryCommandBuffer(VkCommandBuffer commandBuffer);
+
+		VkDevice& GetVkDevice() { return m_LogicalDevice; }
+		QueueFamilyIndices& GetQueueFamilyIndices() { return m_QueueFamilyIndices; }
+
+	private:
+		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+		VkDevice m_LogicalDevice = VK_NULL_HANDLE;
+
+		VkQueue m_GraphicsQueue = VK_NULL_HANDLE;
+		VkQueue m_PresentationQueue = VK_NULL_HANDLE;
+		VkQueue m_TransferQueue = VK_NULL_HANDLE;
+		VkQueue m_ComputeQueue = VK_NULL_HANDLE;
+
+		QueueFamilyIndices m_QueueFamilyIndices;
+		VkPhysicalDeviceFeatures m_Features;
+		VkPhysicalDeviceProperties m_Properties;
+		VkPhysicalDeviceMemoryProperties m_MemoryProperties;
+		VulkanDeviceSwapchainSupport m_SwapchainSupport;
+
+		std::map<std::thread::id, VkCommandPool> m_CommandPools;
+
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags flags);
+
 		VkCommandPool GetOrCreateCommandPool();
 
+		friend class VulkanSwapchain;
+		friend class VulkanContext;
 	};
 	
 }

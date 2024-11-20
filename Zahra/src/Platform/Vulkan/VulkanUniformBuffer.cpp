@@ -18,7 +18,7 @@ namespace Zahra
 
 	VulkanUniformBuffer::~VulkanUniformBuffer()
 	{
-		VkDevice& device = VulkanContext::GetCurrentDevice()->LogicalDevice;
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
 		vkDeviceWaitIdle(device);
 
@@ -44,7 +44,11 @@ namespace Zahra
 
 		device->CreateVulkanBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_VulkanBuffer, m_VulkanBufferMemory);
 
-		vkMapMemory(device->LogicalDevice, m_VulkanBufferMemory, 0, size, 0, &m_MappedAddress);
+		vkMapMemory(device->GetVkDevice(), m_VulkanBufferMemory, 0, size, 0, &m_MappedAddress);
+
+		m_BufferInfo.buffer = m_VulkanBuffer;
+		m_BufferInfo.offset = 0; // TODO: for performance it might be better to pack multiple buffers together e.g. for multiple frames-in-flight etc.
+		m_BufferInfo.range = size;
 	}
 
 	VulkanUniformBufferSet::VulkanUniformBufferSet(uint32_t bufferSize, uint32_t framesInFlight)

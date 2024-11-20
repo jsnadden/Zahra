@@ -20,7 +20,7 @@ namespace Zahra
 	
 	VulkanVertexBuffer::~VulkanVertexBuffer()
 	{
-		VkDevice& device = VulkanContext::GetCurrentDevice()->LogicalDevice;
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
 		vkDeviceWaitIdle(device);
 
@@ -34,7 +34,7 @@ namespace Zahra
 	{
 		m_VertexData.Write(data, size, 0);
 
-		VkDevice& device = VulkanContext::GetCurrentDevice()->LogicalDevice;
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -52,6 +52,8 @@ namespace Zahra
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
+
+		m_VertexData.Release();
 
 	}
 

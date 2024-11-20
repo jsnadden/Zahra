@@ -24,13 +24,9 @@ namespace Zahra
 
 		virtual ~Shader() = default;
 
-		// TODO: remove these - Vulkan pipelines are immutable, and all bindings are configured in advance!!
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
-
 		virtual const std::string& GetName() const = 0;
 
-		static Ref<Shader> Create(ShaderSpecification& specification);
+		static Ref<Shader> Create(ShaderSpecification& specification, bool forceCompile = false);
 
 	};
 

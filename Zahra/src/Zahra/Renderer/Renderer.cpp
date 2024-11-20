@@ -5,6 +5,7 @@
 #include "Zahra/Renderer/IndexBuffer.h"
 #include "Zahra/Renderer/Pipeline.h"
 #include "Zahra/Renderer/Shader.h"
+#include "Zahra/Renderer/ShaderResourceManager.h"
 #include "Zahra/Renderer/UniformBuffer.h"
 #include "Zahra/Renderer/VertexBuffer.h"
 
@@ -52,14 +53,16 @@ namespace Zahra
 
 	struct MVPTransforms
 	{
-		glm::mat4 Model;
-		glm::mat4 View;
-		glm::mat4 Projection;
+		// don't forget to align uniform data correctly: https://vulkan-tutorial.com/Uniform_buffers/Descriptor_pool_and_sets
+		alignas(16) glm::mat4 Model;
+		alignas(16) glm::mat4 View;
+		alignas(16) glm::mat4 Projection;
 	};
 
 	struct RendererData
 	{
 		Ref<Shader> Shader;
+		Ref<ShaderResourceManager> ResourceManager;
 
 		RendererConfig Config;
 
@@ -151,6 +154,13 @@ namespace Zahra
 		shaderSpec.SourceDirectory = "Resources/Shaders";
 		s_Data.Shader = Shader::Create(shaderSpec);
 
+		ShaderResourceManagerSpecification resourceManagerSpec{};
+		resourceManagerSpec.Shader = s_Data.Shader;
+		resourceManagerSpec.FirstSet = 0;
+		resourceManagerSpec.LastSet = 0;
+
+		s_Data.ResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
+
 		const VertexBufferLayout layout =
 		{
 			{ShaderDataType::Float2, "a_Position"},
@@ -183,6 +193,9 @@ namespace Zahra
 
 		for (int i = 0; i < framesInFlight; i++)
 			s_Data.TutorialUniformBuffers->SetData(i, &transforms, uniformBufferSize);
+
+		s_Data.ResourceManager->ProvideResource("Matrices", s_Data.TutorialUniformBuffers);
+		s_Data.ResourceManager->Bake();
 
 		// TODO: ressurect stuff from here
 		#pragma region
@@ -275,9 +288,9 @@ namespace Zahra
 		//// SHADERS
 
 		//// TODO: free ourselves from hardcoded shaders?
-		//s_Data.QuadShader = Shader::Create("Resources/Shaders/renderer_quad.glsl");
-		//s_Data.CircleShader = Shader::Create("Resources/Shaders/renderer_circle.glsl");
-		//s_Data.LineShader = Shader::Create("Resources/Shaders/renderer_line.glsl");
+		//s_Data.QuadShader = Shader::Create("ResourceMetadata/Shaders/renderer_quad.glsl");
+		//s_Data.CircleShader = Shader::Create("ResourceMetadata/Shaders/renderer_circle.glsl");
+		//s_Data.LineShader = Shader::Create("ResourceMetadata/Shaders/renderer_line.glsl");
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,6 +319,7 @@ namespace Zahra
 		s_Data.TutorialVertexBuffer.Reset();
 		s_Data.TutorialIndexBuffer.Reset();
 		s_Data.Pipeline.Reset();
+		s_Data.ResourceManager.Reset();
 		s_Data.Shader.Reset();
 
 		//delete[] s_Data.QuadVertexBufferBase;
@@ -349,7 +363,7 @@ namespace Zahra
 		s_Data.TutorialUniformBuffers->SetData(frameIndex, &transforms, sizeof(MVPTransforms));
 
 		s_RendererAPI->BeginRenderPass(s_Data.Pipeline);
-		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer, s_Data.TutorialUniformBuffers->Get(frameIndex));
+		s_RendererAPI->TutorialDrawCalls(s_Data.Pipeline, s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer, s_Data.ResourceManager);
 		s_RendererAPI->EndRenderPass();
 	}
 

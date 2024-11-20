@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Zahra/Renderer/Pipeline.h"
 #include "Zahra/Renderer/IndexBuffer.h"
+#include "Zahra/Renderer/Pipeline.h"
+#include "Zahra/Renderer/ShaderResourceManager.h"
 #include "Zahra/Renderer/UniformBuffer.h"
 
 #include <glm/glm.hpp>
@@ -44,7 +45,7 @@ namespace Zahra
 		static RendererAPI* Create();
 		
 		// TEMPORARY
-		virtual void TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<UniformBuffer> mvpBuffer) = 0;
+		virtual void TutorialDrawCalls(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager) = 0;
 
 
 	private:

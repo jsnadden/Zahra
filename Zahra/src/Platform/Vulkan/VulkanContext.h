@@ -23,7 +23,9 @@ namespace Zahra
 		Ref<VulkanSwapchain> GetSwapchain() { return m_Swapchain; }
 		VkSurfaceKHR& GetSurface() { return m_Swapchain->GetSurface(); }
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
+		VkDevice& GetVkDevice() { return m_Device->m_LogicalDevice; }
 		static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
+		static VkDevice& GetCurrentVkDevice() { return Get()->GetVkDevice(); }
 
 	private:
 

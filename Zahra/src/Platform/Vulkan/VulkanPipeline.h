@@ -19,6 +19,7 @@ namespace Zahra
 
 		virtual Ref<Shader> GetShader() const override { return m_Specification.Shader; }
 
+		const VkPipelineLayout& GetVkPipelineLayout() { return m_PipelineLayout; }
 		const VkPipeline& GetVkPipeline() { return m_Pipeline; }
 
 	private:

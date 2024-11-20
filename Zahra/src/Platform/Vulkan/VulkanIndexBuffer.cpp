@@ -21,7 +21,7 @@ namespace Zahra
 
 	VulkanIndexBuffer::~VulkanIndexBuffer()
 	{
-		VkDevice& device = VulkanContext::GetCurrentDevice()->LogicalDevice;
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
 		vkDeviceWaitIdle(device);
 
@@ -35,7 +35,7 @@ namespace Zahra
 	{
 		m_IndexData.Write((void*)data, size, 0);
 
-		VkDevice& device = VulkanContext::GetCurrentDevice()->LogicalDevice;
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;

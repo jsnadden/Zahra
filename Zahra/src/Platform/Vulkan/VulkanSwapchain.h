@@ -26,7 +26,7 @@ namespace Zahra
 		VkSurfaceKHR& GetSurface() { return m_Surface; }
 
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
-		const VkDevice& GetLogicalDevice() { return m_Device->LogicalDevice; }
+		const VkDevice& GetLogicalDevice() { return m_Device->m_LogicalDevice; }
 
 		const VkExtent2D& GetExtent() { return m_Extent; }
 		const VkFormat& GetImageFormat() { return m_Format.format; }

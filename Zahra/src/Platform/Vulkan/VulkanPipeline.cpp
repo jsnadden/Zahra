@@ -36,7 +36,7 @@ namespace Zahra
 
 	VulkanPipeline::~VulkanPipeline()
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->LogicalDevice;
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
 		vkDeviceWaitIdle(device);
 
@@ -51,7 +51,7 @@ namespace Zahra
 		Ref<VulkanShader> shader = Ref<VulkanShader>(m_Specification.Shader);
 		const auto& shaderStageInfos = shader->GetPipelineShaderStageInfos();
 		Ref<VulkanSwapchain> swapchain = VulkanContext::Get()->GetSwapchain();
-		VkDevice device = swapchain->GetDevice()->LogicalDevice;
+		VkDevice& device = swapchain->GetDevice()->GetVkDevice();
 		VkRenderPass renderPass = swapchain->GetVkRenderPass();
 		VertexBufferLayout vertexLayout = m_Specification.VertexLayout;
 		std::vector<VkDescriptorSetLayout> layouts = shader->GetDescriptorSetLayouts();
@@ -141,7 +141,7 @@ namespace Zahra
 		rasterizationStateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizationStateInfo.lineWidth = 1.0f;
 		rasterizationStateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizationStateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE; // CW oriented, because screen space coords are left-handed ugh...
+		rasterizationStateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizationStateInfo.depthBiasEnable = VK_FALSE;
 		rasterizationStateInfo.depthBiasConstantFactor = 0.0f;
 		rasterizationStateInfo.depthBiasClamp = 0.0f;

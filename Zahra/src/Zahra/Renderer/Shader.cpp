@@ -9,7 +9,7 @@ namespace Zahra
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Shader Class
 
-	Ref<Shader> Shader::Create(ShaderSpecification& specification)
+	Ref<Shader> Shader::Create(ShaderSpecification& specification, bool forceCompile)
 	{
 		Z_CORE_ASSERT(!specification.Name.empty());
 
@@ -17,7 +17,7 @@ namespace Zahra
 		{
 		case RendererAPI::API::None:	Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
 		case RendererAPI::API::DX12:	Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
-		case RendererAPI::API::Vulkan:	return Ref<VulkanShader>::Create(specification);
+		case RendererAPI::API::Vulkan:	return Ref<VulkanShader>::Create(specification, forceCompile);
 		}
 		Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
 		return nullptr;

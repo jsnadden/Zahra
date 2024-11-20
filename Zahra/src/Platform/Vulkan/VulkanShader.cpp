@@ -2,244 +2,19 @@
 #include "VulkanShader.h"
 
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanShaderUtils.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Zahra/Core/Timer.h"
 #include "Zahra/Utils/FileIO.h"
 
 #include <fstream>
-#include <shaderc/shaderc.hpp>
-#include <spirv_cross/spirv_cross.hpp>
+
 
 namespace Zahra
 {
-	namespace VulkanUtils
-	{
-		static std::filesystem::path s_CacheDirectory = "Cache/Shaders/Vulkan";
+	
 
-		static const std::filesystem::path& GetSPIRVCachePath()
-		{
-			if (!std::filesystem::exists(s_CacheDirectory))
-			{
-				std::filesystem::create_directories(s_CacheDirectory);
-			}
-
-			return s_CacheDirectory;
-		}
-
-		static const char* ShaderStageToFileExtension(ShaderStage stage)
-		{
-			const char* extension;
-
-			switch (stage)
-			{
-				case ShaderStage::Vertex:
-				{
-					extension = "vert";
-					break;
-				}
-
-				case ShaderStage::TesselationControl:
-				{
-					extension = "tesc";
-					break;
-				}
-
-				case ShaderStage::TesselationEvaluation:
-				{
-					extension = "tese";
-					break;
-				}
-
-				case ShaderStage::Geometry:
-				{
-					extension = "geom";
-					break;
-				}
-
-				case ShaderStage::Fragment:
-				{
-					extension = "frag";
-					break;
-				}
-
-				case ShaderStage::Compute:
-				{
-					extension = "comp";
-					break;
-				}
-
-				default:
-				{
-					Z_CORE_ASSERT(false, "Unrecognised shader stage");
-					break;
-				}
-			}
-
-			return extension;
-		}
-
-		static std::string ShaderStageToString(ShaderStage stage)
-		{
-			std::string stageName;
-
-			switch (stage)
-			{
-				case ShaderStage::Vertex:
-				{
-					stageName = "vertex";
-					break;
-				}
-
-				case ShaderStage::TesselationControl:
-				{
-					stageName = "tesselation control";
-					break;
-				}
-
-				case ShaderStage::TesselationEvaluation:
-				{
-					stageName = "tesselation evaluation";
-					break;
-				}
-
-				case ShaderStage::Geometry:
-				{
-					stageName = "geometry";
-					break;
-				}
-
-				case ShaderStage::Fragment:
-				{
-					stageName = "fragment";
-					break;
-				}
-
-				case ShaderStage::Compute:
-				{
-					stageName = "compute";
-					break;
-				}
-
-				default:
-				{
-					Z_CORE_ASSERT(false, "Unrecognised shader stage");
-					break;
-				}
-			}
-
-			return stageName;
-		}
-
-		static shaderc_shader_kind ShaderStageToShaderC(ShaderStage stage)
-		{
-			switch (stage)
-			{
-				case ShaderStage::Vertex:
-				{
-					return shaderc_vertex_shader;
-				}
-
-				case ShaderStage::TesselationControl:
-				{
-					return shaderc_tess_control_shader;
-				}
-
-				case ShaderStage::TesselationEvaluation:
-				{
-					return shaderc_tess_evaluation_shader;
-				}
-
-				case ShaderStage::Geometry:
-				{
-					return shaderc_geometry_shader;
-				}
-
-				case ShaderStage::Fragment:
-				{
-					return shaderc_fragment_shader;
-				}
-
-				case ShaderStage::Compute:
-				{
-					return shaderc_compute_shader;
-				}
-
-				default:
-				{
-					Z_CORE_ASSERT(false, "Unrecognised shader stage");
-					break;
-				}
-			}
-		}
-
-		static VkShaderStageFlagBits ShaderStageToVkFlagBit(ShaderStage stage)
-		{
-			switch (stage)
-			{
-				case ShaderStage::Vertex:
-				{
-					return VK_SHADER_STAGE_VERTEX_BIT;
-				}
-
-				case ShaderStage::TesselationControl:
-				{
-					return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-				}
-
-				case ShaderStage::TesselationEvaluation:
-				{
-					return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-				}
-
-				case ShaderStage::Geometry:
-				{
-					return VK_SHADER_STAGE_GEOMETRY_BIT;
-				}
-
-				case ShaderStage::Fragment:
-				{
-					return VK_SHADER_STAGE_FRAGMENT_BIT;
-				}
-
-				case ShaderStage::Compute:
-				{
-					return VK_SHADER_STAGE_COMPUTE_BIT;
-				}
-
-				default:
-				{
-					Z_CORE_ASSERT(false, "Unrecognised shader stage");
-					break;
-				}
-			}
-		}
-
-		static VkDescriptorType ShaderResourceTypeToVkDescriptorType(ShaderResourceType type)
-		{
-			switch (type)
-			{
-				case ShaderResourceType::UniformBuffer:
-				case ShaderResourceType::UniformBufferSet:
-				{
-					return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				}
-				case ShaderResourceType::StorageBuffer:
-				{
-					return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				}
-				case ShaderResourceType::Texture2D:
-				{
-					return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				}
-
-				default: Z_CORE_ASSERT(false, "Unknown or unsupported ShaderResourceType"); break;
-			}
-
-			return VK_DESCRIPTOR_TYPE_MAX_ENUM;
-		}
-	}
-
-	VulkanShader::VulkanShader(ShaderSpecification& specification)
+	VulkanShader::VulkanShader(ShaderSpecification& specification, bool forceCompile)
 		: m_Specification(specification)
 	{
 		bool loaded = true;
@@ -261,8 +36,8 @@ namespace Zahra
 		
 		Timer shaderCreationTimer;
 		{
-			CompileOrGetSPIRV(m_SPIRVBytecode, cacheDirectory, false);
-			CompileOrGetSPIRV(m_SPIRVBytecode_Debug, cacheDirectory, true);
+			CompileOrGetSPIRV(m_SPIRVBytecode, cacheDirectory, false, forceCompile);
+			CompileOrGetSPIRV(m_SPIRVBytecode_Debug, cacheDirectory, true, forceCompile);
 			CreateModules();
 		}
 		Z_CORE_TRACE("Shader creation took {0} ms", shaderCreationTimer.ElapsedMillis());
@@ -273,7 +48,7 @@ namespace Zahra
 
 	VulkanShader::~VulkanShader()
 	{
-		VkDevice& device = VulkanContext::Get()->GetDevice()->LogicalDevice;
+		VkDevice& device = VulkanContext::Get()->GetDevice()->GetVkDevice();
 
 		for (auto& stageInfo : m_PipelineShaderStageInfos)
 		{
@@ -312,7 +87,7 @@ namespace Zahra
 		return true;
 	}
 
-	void VulkanShader::CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, const std::filesystem::path& cacheDirectory, bool debug)
+	void VulkanShader::CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, const std::filesystem::path& cacheDirectory, bool debug, bool forceCompile)
 	{
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
@@ -339,7 +114,7 @@ namespace Zahra
 
 			std::ifstream filestream(spirvFilepath, std::ios::in | std::ios::binary | std::ios::ate);
 
-			if (filestream.is_open())
+			if (filestream.is_open() && !forceCompile)
 			{
 				auto size = filestream.tellg();
 
@@ -386,7 +161,7 @@ namespace Zahra
 
 			for (const auto& resource : resources.uniform_buffers)
 			{
-				auto& bufferData = m_ReflectionData.UniformBufferLayouts.emplace_back();
+				auto& bufferData = m_ReflectionData.ResourceMetadata.emplace_back();
 
 				const auto& bufferType = compiler.get_type(resource.base_type_id);
 
@@ -394,9 +169,10 @@ namespace Zahra
 				if (set > m_ReflectionData.MaxSetIndex) m_ReflectionData.MaxSetIndex = set;
 
 				bufferData.Name = resource.name;
+				bufferData.Type = ShaderResourceType::UniformBuffer;
 				bufferData.Set = set;
 				bufferData.Binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-				bufferData.Stages = VulkanUtils::ShaderStageToVkFlagBit(stage);
+				bufferData.Stage = stage;
 				bufferData.ByteSize = compiler.get_declared_struct_size(bufferType);
 				bufferData.MemberCount = bufferType.member_types.size();
 
@@ -416,20 +192,20 @@ namespace Zahra
 		uint32_t setCount = m_ReflectionData.MaxSetIndex + 1;
 		std::vector<std::vector<VkDescriptorSetLayoutBinding>> layoutBindings(setCount);
 
-		for (auto& bufferData : m_ReflectionData.UniformBufferLayouts)
+		for (auto& bufferData : m_ReflectionData.ResourceMetadata)
 		{
 			auto& layoutBinding = layoutBindings[bufferData.Set].emplace_back();
 
 			layoutBinding.binding = bufferData.Binding;
-			layoutBinding.stageFlags = bufferData.Stages;
-			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			layoutBinding.stageFlags = VulkanUtils::ShaderStageToVkFlagBit(bufferData.Stage);
+			layoutBinding.descriptorType = VulkanUtils::ShaderResourceTypeToVkDescriptorType(bufferData.Type);
 			layoutBinding.descriptorCount = bufferData.ArrayLength;
 			layoutBinding.pImmutableSamplers = nullptr;
 		}
 
 		m_DescriptorSetLayouts.resize(setCount);
 
-		VkDevice& device = VulkanContext::GetCurrentDevice()->LogicalDevice;
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
 		for (int i = 0; i < setCount; i++)
 		{
@@ -445,7 +221,7 @@ namespace Zahra
 
 	void VulkanShader::CreateModules()
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->LogicalDevice;
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 		
 		for (const auto& [stage, bytes] : m_SPIRVBytecode)
 		{
@@ -463,13 +239,6 @@ namespace Zahra
 		}
 	}
 
-	void VulkanShader::Bind() const
-	{
-	}
-
-	void VulkanShader::Unbind() const
-	{
-	}
 
 	std::string VulkanShader::GetSourceFilename(ShaderStage stage)
 	{

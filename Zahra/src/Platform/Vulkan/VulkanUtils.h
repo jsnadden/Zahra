@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-
 #include <vulkan/vulkan.h>
+
+#include "Zahra/Renderer/ShaderTypes.h"
 
 namespace Zahra
 {
@@ -54,7 +55,6 @@ namespace Zahra
 
 			return VK_FALSE;
 		}
-
 
 	}
 }

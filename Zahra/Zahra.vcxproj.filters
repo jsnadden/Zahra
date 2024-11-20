@@ -84,12 +84,6 @@
     <ClInclude Include="src\Platform\OpenGL\OpenGLImGuiLayer.h">
       <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform\OpenGL\OpenGLTexture.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanAllocator.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
@@ -1570,18 +1564,17 @@
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\ShaderTypes.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanShaderUtils.h" />
+    <ClInclude Include="src\Zahra\Renderer\Material.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanMaterial.h" />
+    <ClInclude Include="src\Zahra\Renderer\ShaderResourceManager.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLImGuiLayer.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform\OpenGL\OpenGLTexture.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp">
@@ -1737,5 +1730,8 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\Material.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\ShaderResourceManager.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp" />
   </ItemGroup>
 </Project>

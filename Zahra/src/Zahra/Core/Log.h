@@ -8,7 +8,7 @@
 #pragma warning(pop)
 
 #include <glm/gtx/string_cast.hpp>
-
+GLM_FORCE_DEPTH_ZERO_TO_ONE
 namespace Zahra
 {
 	class Log

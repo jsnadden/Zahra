@@ -4,6 +4,7 @@
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanIndexBuffer.h"
 #include "Platform/Vulkan/VulkanPipeline.h"
+#include "Platform/Vulkan/VulkanShaderResourceManager.h"
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
 
 namespace Zahra
@@ -102,7 +103,7 @@ namespace Zahra
 		m_Swapchain->PresentImage();
 	}
 
-	void VulkanRendererAPI::TutorialDrawCalls(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<UniformBuffer> mvpBuffer)
+	void VulkanRendererAPI::TutorialDrawCalls(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
@@ -128,6 +129,12 @@ namespace Zahra
 		scissor.offset = { 0, 0 };
 		scissor.extent = extent;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+		auto vulkanPipeline = pipeline.As<VulkanPipeline>();
+		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
+		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
+		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 
 		// FINALLY A DRAW CALL!!!
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)indexBuffer->GetCount(), 1, 0, 0, 0);

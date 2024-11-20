@@ -32,7 +32,7 @@ namespace Zahra
 
 	void VulkanSwapchain::Recreate()
 	{
-		vkDeviceWaitIdle(m_Device->LogicalDevice);
+		vkDeviceWaitIdle(m_Device->m_LogicalDevice);
 
 		Cleanup();
 
@@ -45,17 +45,17 @@ namespace Zahra
 	{
 		Cleanup();
 
-		vkDestroyRenderPass(m_Device->LogicalDevice, m_RenderPass, nullptr);
+		vkDestroyRenderPass(m_Device->m_LogicalDevice, m_RenderPass, nullptr);
 		m_RenderPass = VK_NULL_HANDLE;
 
 		for (uint32_t i = 0; i < m_FramesInFlight; i++)
 		{
-			vkDestroySemaphore(m_Device->LogicalDevice, m_ImageAvailableSemaphores[i], nullptr);
-			vkDestroySemaphore(m_Device->LogicalDevice, m_RenderFinishedSemaphores[i], nullptr);
-			vkDestroyFence(m_Device->LogicalDevice, m_InFlightFences[i], nullptr);
+			vkDestroySemaphore(m_Device->m_LogicalDevice, m_ImageAvailableSemaphores[i], nullptr);
+			vkDestroySemaphore(m_Device->m_LogicalDevice, m_RenderFinishedSemaphores[i], nullptr);
+			vkDestroyFence(m_Device->m_LogicalDevice, m_InFlightFences[i], nullptr);
 		}
 
-		vkDestroyCommandPool(m_Device->LogicalDevice, m_CommandPool, nullptr);
+		vkDestroyCommandPool(m_Device->m_LogicalDevice, m_CommandPool, nullptr);
 
 		m_Device->Shutdown();
 
@@ -66,26 +66,26 @@ namespace Zahra
 	void VulkanSwapchain::Cleanup()
 	{
 		for (auto framebuffer : m_Framebuffers) {
-			vkDestroyFramebuffer(m_Device->LogicalDevice, framebuffer, nullptr);
+			vkDestroyFramebuffer(m_Device->m_LogicalDevice, framebuffer, nullptr);
 		}
 		m_Framebuffers.clear();
 
 		for (auto imageView : m_ImageViews)
 		{
-			vkDestroyImageView(m_Device->LogicalDevice, imageView, nullptr);
+			vkDestroyImageView(m_Device->m_LogicalDevice, imageView, nullptr);
 		}
 		m_ImageViews.clear();
 
-		vkDestroySwapchainKHR(m_Device->LogicalDevice, m_Swapchain, nullptr);
+		vkDestroySwapchainKHR(m_Device->m_LogicalDevice, m_Swapchain, nullptr);
 		m_Images.clear();
 		m_Swapchain = VK_NULL_HANDLE;
 	}
 
 	void VulkanSwapchain::GetNextImage()
 	{
-		vkWaitForFences(m_Device->LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
+		vkWaitForFences(m_Device->m_LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
 
-		VkResult result = vkAcquireNextImageKHR(m_Device->LogicalDevice, m_Swapchain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
+		VkResult result = vkAcquireNextImageKHR(m_Device->m_LogicalDevice, m_Swapchain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
@@ -97,7 +97,7 @@ namespace Zahra
 			throw std::runtime_error("Vulkan swapchain failed to acquire next image");
 		}
 
-		vkResetFences(m_Device->LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex]);
+		vkResetFences(m_Device->m_LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex]);
 		vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], 0);
 	}
 
@@ -117,7 +117,7 @@ namespace Zahra
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		VulkanUtils::ValidateVkResult(vkQueueSubmit(m_Device->GraphicsQueue, 1, &submitInfo, m_InFlightFences[m_CurrentFrameIndex]));
+		VulkanUtils::ValidateVkResult(vkQueueSubmit(m_Device->m_GraphicsQueue, 1, &submitInfo, m_InFlightFences[m_CurrentFrameIndex]));
 
 		VkSwapchainKHR swapChains[] = { m_Swapchain };
 
@@ -129,7 +129,7 @@ namespace Zahra
 		presentInfo.pSwapchains = swapChains;
 		presentInfo.pImageIndices = &m_CurrentImageIndex;
 
-		VkResult result = vkQueuePresentKHR(m_Device->PresentationQueue, &presentInfo);
+		VkResult result = vkQueuePresentKHR(m_Device->m_PresentationQueue, &presentInfo);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_Resized)
 		{
@@ -177,8 +177,8 @@ namespace Zahra
 		// queues to the same index will cause device creation to fail
 		std::set<uint32_t> queueIndices =
 		{
-			m_Device->QueueFamilyIndices.GraphicsIndex.value(),
-			m_Device->QueueFamilyIndices.PresentIndex.value()
+			m_Device->m_QueueFamilyIndices.GraphicsIndex.value(),
+			m_Device->m_QueueFamilyIndices.PresentIndex.value()
 		};
 
 		float queuePriority = 1.0f;
@@ -198,16 +198,16 @@ namespace Zahra
 		logicalDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		logicalDeviceInfo.queueCreateInfoCount = (uint32_t)queueInfoList.size();
 		logicalDeviceInfo.pQueueCreateInfos = queueInfoList.data();
-		logicalDeviceInfo.pEnabledFeatures = &m_Device->Features;
+		logicalDeviceInfo.pEnabledFeatures = &m_Device->m_Features;
 		logicalDeviceInfo.enabledExtensionCount = (uint32_t)s_DeviceExtensions.size();
 		logicalDeviceInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
 
-		VulkanUtils::ValidateVkResult(vkCreateDevice(m_Device->PhysicalDevice, &logicalDeviceInfo, nullptr, &m_Device->LogicalDevice), "Vulkan device creation failed");
+		VulkanUtils::ValidateVkResult(vkCreateDevice(m_Device->m_PhysicalDevice, &logicalDeviceInfo, nullptr, &m_Device->m_LogicalDevice), "Vulkan device creation failed");
 		Z_CORE_TRACE("Vulkan device creation succeeded");
-		Z_CORE_INFO("Target GPU: {0}", m_Device->Properties.deviceName);
+		Z_CORE_INFO("Target GPU: {0}", m_Device->m_Properties.deviceName);
 
-		vkGetDeviceQueue(m_Device->LogicalDevice, m_Device->QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device->GraphicsQueue);
-		vkGetDeviceQueue(m_Device->LogicalDevice, m_Device->QueueFamilyIndices.PresentIndex.value(), 0, &m_Device->PresentationQueue);
+		vkGetDeviceQueue(m_Device->m_LogicalDevice, m_Device->m_QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device->m_GraphicsQueue);
+		vkGetDeviceQueue(m_Device->m_LogicalDevice, m_Device->m_QueueFamilyIndices.PresentIndex.value(), 0, &m_Device->m_PresentationQueue);
 	}
 
 	void VulkanSwapchain::TargetPhysicalDevice(VkInstance& instance)
@@ -240,18 +240,18 @@ namespace Zahra
 
 			if (indices.Complete())
 			{
-				m_Device->PhysicalDevice = device;
-				m_Device->QueueFamilyIndices = indices;
-				m_Device->SwapchainSupport = support;
+				m_Device->m_PhysicalDevice = device;
+				m_Device->m_QueueFamilyIndices = indices;
+				m_Device->m_SwapchainSupport = support;
 
-				vkGetPhysicalDeviceFeatures(device, &m_Device->Features);
-				vkGetPhysicalDeviceProperties(device, &m_Device->Properties);
-				vkGetPhysicalDeviceMemoryProperties(device, &m_Device->Memory);
+				vkGetPhysicalDeviceFeatures(device, &m_Device->m_Features);
+				vkGetPhysicalDeviceProperties(device, &m_Device->m_Properties);
+				vkGetPhysicalDeviceMemoryProperties(device, &m_Device->m_MemoryProperties);
 			}
 
 		}
 
-		if (m_Device->PhysicalDevice == VK_NULL_HANDLE)
+		if (m_Device->m_PhysicalDevice == VK_NULL_HANDLE)
 		{
 			const char* errorMessage = "Failed to identify a GPU meeting the minimum required specifications";
 			Z_CORE_CRITICAL(errorMessage);
@@ -376,14 +376,14 @@ namespace Zahra
 
 	void VulkanSwapchain::CreateSwapchain()
 	{
-		QuerySurfaceCapabilities(m_Device->PhysicalDevice, m_Device->SwapchainSupport.Capabilities);
+		QuerySurfaceCapabilities(m_Device->m_PhysicalDevice, m_Device->m_SwapchainSupport.Capabilities);
 
 		m_Format = ChooseSwapchainFormat();
 		m_PresentationMode = ChooseSwapchainPresentationMode();
 		m_Extent = ChooseSwapchainExtent();
 
-		m_ImageCount = m_Device->SwapchainSupport.Capabilities.minImageCount + 1;
-		uint32_t maxImageCount = m_Device->SwapchainSupport.Capabilities.maxImageCount;
+		m_ImageCount = m_Device->m_SwapchainSupport.Capabilities.minImageCount + 1;
+		uint32_t maxImageCount = m_Device->m_SwapchainSupport.Capabilities.maxImageCount;
 		if (maxImageCount > 0 && m_ImageCount > maxImageCount) m_ImageCount = maxImageCount;
 		
 		VkSwapchainCreateInfoKHR swapchainInfo{};
@@ -399,11 +399,11 @@ namespace Zahra
 
 		uint32_t queueFamilyIndices[] =
 		{
-			m_Device->QueueFamilyIndices.GraphicsIndex.value(),
-			m_Device->QueueFamilyIndices.PresentIndex.value()
+			m_Device->m_QueueFamilyIndices.GraphicsIndex.value(),
+			m_Device->m_QueueFamilyIndices.PresentIndex.value()
 		};
 
-		if (m_Device->QueueFamilyIndices.GraphicsIndex = m_Device->QueueFamilyIndices.PresentIndex)
+		if (m_Device->m_QueueFamilyIndices.GraphicsIndex = m_Device->m_QueueFamilyIndices.PresentIndex)
 		{
 			// EXCLUSIVE MODE: An image is owned by one queue family
 			// at a time and ownership must be explicitly transferred
@@ -426,7 +426,7 @@ namespace Zahra
 			swapchainInfo.pQueueFamilyIndices = queueFamilyIndices;
 		}
 
-		swapchainInfo.preTransform = m_Device->SwapchainSupport.Capabilities.currentTransform; // no overall screen rotation/flip
+		swapchainInfo.preTransform = m_Device->m_SwapchainSupport.Capabilities.currentTransform; // no overall screen rotation/flip
 		swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // no alpha blending with other windows
 		swapchainInfo.clipped = VK_TRUE; // ignore pixels obscured by other windows
 
@@ -437,13 +437,13 @@ namespace Zahra
 		// the old one must be specified in this field.
 		swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
 
-		VulkanUtils::ValidateVkResult(vkCreateSwapchainKHR(m_Device->LogicalDevice, &swapchainInfo, nullptr, &m_Swapchain),
+		VulkanUtils::ValidateVkResult(vkCreateSwapchainKHR(m_Device->m_LogicalDevice, &swapchainInfo, nullptr, &m_Swapchain),
 			"Vulkan swap chain creation failed");
 	}
 
 	VkSurfaceFormatKHR VulkanSwapchain::ChooseSwapchainFormat()
 	{
-		for (const auto& format : m_Device->SwapchainSupport.Formats)
+		for (const auto& format : m_Device->m_SwapchainSupport.Formats)
 		{
 			if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			{
@@ -452,12 +452,12 @@ namespace Zahra
 		}
 
 		// TODO: rank formats and return best. For now just...
-		return m_Device->SwapchainSupport.Formats[0];
+		return m_Device->m_SwapchainSupport.Formats[0];
 	}
 
 	VkPresentModeKHR VulkanSwapchain::ChooseSwapchainPresentationMode()
 	{
-		for (const auto& mode : m_Device->SwapchainSupport.PresentationModes)
+		for (const auto& mode : m_Device->m_SwapchainSupport.PresentationModes)
 		{
 			// triple+ buffering
 			if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
@@ -474,7 +474,7 @@ namespace Zahra
 
 	VkExtent2D VulkanSwapchain::ChooseSwapchainExtent()
 	{
-		const auto& capabilities = m_Device->SwapchainSupport.Capabilities;
+		const auto& capabilities = m_Device->m_SwapchainSupport.Capabilities;
 
 		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 		{
@@ -496,9 +496,9 @@ namespace Zahra
 
 	void VulkanSwapchain::CreateImagesAndViews()
 	{
-		vkGetSwapchainImagesKHR(m_Device->LogicalDevice, m_Swapchain, &m_ImageCount, nullptr);
+		vkGetSwapchainImagesKHR(m_Device->m_LogicalDevice, m_Swapchain, &m_ImageCount, nullptr);
 		m_Images.resize(m_ImageCount);
-		vkGetSwapchainImagesKHR(m_Device->LogicalDevice, m_Swapchain, &m_ImageCount, m_Images.data());
+		vkGetSwapchainImagesKHR(m_Device->m_LogicalDevice, m_Swapchain, &m_ImageCount, m_Images.data());
 
 		m_FramesInFlight = Renderer::GetConfig().FramesInFlight;
 		if (m_FramesInFlight > m_ImageCount) m_FramesInFlight = m_ImageCount;
@@ -521,7 +521,7 @@ namespace Zahra
 			imageViewInfo.subresourceRange.baseArrayLayer = 0;
 			imageViewInfo.subresourceRange.layerCount = 1;
 
-			VulkanUtils::ValidateVkResult(vkCreateImageView(m_Device->LogicalDevice, &imageViewInfo, nullptr, &m_ImageViews[i]),
+			VulkanUtils::ValidateVkResult(vkCreateImageView(m_Device->m_LogicalDevice, &imageViewInfo, nullptr, &m_ImageViews[i]),
 				"Vulkan image view creation failed");
 		}
 	}
@@ -568,7 +568,7 @@ namespace Zahra
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
 
-		VulkanUtils::ValidateVkResult(vkCreateRenderPass(m_Device->LogicalDevice, &renderPassInfo, nullptr, &m_RenderPass),
+		VulkanUtils::ValidateVkResult(vkCreateRenderPass(m_Device->m_LogicalDevice, &renderPassInfo, nullptr, &m_RenderPass),
 			"Vulkan swapchain render pass creation failed");
 	}
 
@@ -588,7 +588,7 @@ namespace Zahra
 			framebufferInfo.height = m_Extent.height;
 			framebufferInfo.layers = 1;
 
-			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(m_Device->LogicalDevice, &framebufferInfo, nullptr, &framebuffer),
+			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(m_Device->m_LogicalDevice, &framebufferInfo, nullptr, &framebuffer),
 				"Vulkan swapchain framebuffer creation failed");
 		}
 	}
@@ -598,9 +598,9 @@ namespace Zahra
 		VkCommandPoolCreateInfo graphicsPoolInfo{};
 		graphicsPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		graphicsPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		graphicsPoolInfo.queueFamilyIndex = m_Device->QueueFamilyIndices.GraphicsIndex.value();
+		graphicsPoolInfo.queueFamilyIndex = m_Device->m_QueueFamilyIndices.GraphicsIndex.value();
 
-		VulkanUtils::ValidateVkResult(vkCreateCommandPool(m_Device->LogicalDevice, &graphicsPoolInfo, nullptr, &m_CommandPool),
+		VulkanUtils::ValidateVkResult(vkCreateCommandPool(m_Device->m_LogicalDevice, &graphicsPoolInfo, nullptr, &m_CommandPool),
 			"Vulkan command pool creation failed");
 	}
 
@@ -614,13 +614,13 @@ namespace Zahra
 		commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		commandBufferInfo.commandBufferCount = m_FramesInFlight;
 
-		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(m_Device->LogicalDevice, &commandBufferInfo, m_CommandBuffers.data()),
+		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(m_Device->m_LogicalDevice, &commandBufferInfo, m_CommandBuffers.data()),
 			"Vulkan command buffer allocations failed");
 	}
 
 	void VulkanSwapchain::CreateSyncObjects()
 	{
-		VkDevice device = m_Device->LogicalDevice;
+		VkDevice device = m_Device->m_LogicalDevice;
 
 		m_ImageAvailableSemaphores.resize(m_FramesInFlight);
 		m_RenderFinishedSemaphores.resize(m_FramesInFlight);

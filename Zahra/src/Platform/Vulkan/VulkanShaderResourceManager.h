@@ -2,6 +2,7 @@
 
 #include "Platform/Vulkan/VulkanShader.h"
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
+#include "Zahra/Renderer/ShaderResourceManager.h"
 
 #include <vulkan/vulkan.h>
 
@@ -10,60 +11,38 @@ namespace Zahra
 	
 	struct VulkanShaderResource
 	{
-		std::vector<Ref<RefCounted>> Data;
-		ShaderResourceType Type = ShaderResourceType::None;
+		std::vector<Ref<RefCounted>> Data; // vector to account for array-type resources, size=1 otherwise
+		VulkanShaderResourceMetadata Metadata;
+	};	
 
-		VulkanShaderResource() = default;
-
-		VulkanShaderResource(Ref<VulkanUniformBuffer> uniformBuffer)
-			: Data(uniformBuffer), Type(ShaderResourceType::UniformBuffer) {}
-
-		VulkanShaderResource(Ref<VulkanUniformBufferSet> uniformBufferSet)
-			: Data(uniformBufferSet), Type(ShaderResourceType::UniformBufferSet) {}
-
-		void Set(Ref<VulkanUniformBuffer> uniformBuffer, uint32_t index = 0)
-		{
-			Type = ShaderResourceType::UniformBuffer;
-			Data[index] = uniformBuffer;
-		}
-
-		void Set(Ref<VulkanUniformBufferSet> uniformBufferSet, uint32_t index = 0)
-		{
-			Type = ShaderResourceType::UniformBufferSet;
-			Data[index] = uniformBufferSet;
-		}
-
-		template <typename T>
-		Ref<T> Get() { return Data.As<T>(); }
-	};
-	
-
-	struct VulkanShaderResourceManagerSpecification
-	{
-		Ref<VulkanShader> m_Shader;
-		uint32_t m_FirstSet, m_LastSet; // range of set indices to be managed
-	};
-
-	class VulkanShaderResourceManager
+	class VulkanShaderResourceManager : public ShaderResourceManager
 	{
 	public:
-		VulkanShaderResourceManager(const VulkanShaderResourceManagerSpecification& specification);
+		VulkanShaderResourceManager(const ShaderResourceManagerSpecification& specification);
+		~VulkanShaderResourceManager();
 
-		Ref<VulkanUniformBuffer> GetUniformBuffer(const std::string& name);
-		Ref<VulkanUniformBufferSet> GetUniformBufferSet(const std::string& name);
+		virtual void ProvideResource(const std::string& name, Ref<UniformBufferSet> uniformBufferSet, uint32_t arrayIndex = 0) override;
 
-		bool CheckIfComplete();
-		void Bake();
+		virtual bool CheckIfComplete() override;
+		virtual void Bake() override;
+
+		std::vector<VkDescriptorSet>& GetDescriptorSets();
+		std::vector<VkDescriptorSet>& GetDescriptorSets(uint32_t frame) { return m_DescriptorSets[frame]; }
+
+		uint32_t GetFirstSet() { return m_FirstSet; }
+		uint32_t GetLastSet() { return m_LastSet; }
 
 	private:
-		VulkanShaderResourceManagerSpecification m_Specification;
+		Ref<VulkanShader> m_Shader;
+		uint32_t m_FirstSet, m_LastSet;
 
-		std::map<std::string, VulkanShaderResources::UniformBufferLayout> m_UniformBufferLayouts;
-		std::map<std::string, VulkanShaderResources::Texture2DLayout> m_Texture2DLayouts;
-
-		std::map<uint32_t, std::map<uint32_t, VulkanShaderResource>> m_Resources; // indexed by (set, binding)
-
+		// resources organised by corresponding uniform name in shader code
+		std::map<std::string, VulkanShaderResource> m_Resources;
+		
 		VkDescriptorPool m_DescriptorPool;
+
+		// descriptors organised by (frame-in-flight, set)
+		std::vector<std::vector<VkDescriptorSet>> m_DescriptorSets;
 
 		void Init();
 	};

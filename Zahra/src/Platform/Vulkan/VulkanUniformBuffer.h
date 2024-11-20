@@ -16,11 +16,15 @@ namespace Zahra
 
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
 
+		const VkDescriptorBufferInfo& GetVkDescriptorBufferInfo() { return m_BufferInfo; }
+
 	private:
 		Buffer m_Data; // TODO: do I need local storage?
 		VkBuffer m_VulkanBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory m_VulkanBufferMemory = VK_NULL_HANDLE;
 		void* m_MappedAddress = nullptr;
+
+		VkDescriptorBufferInfo m_BufferInfo{};
 
 		void Init(uint32_t size);
 
@@ -39,6 +43,7 @@ namespace Zahra
 
 	private:
 		uint32_t m_FramesInFlight;
+		// TODO: instead of multiple buffers, replace this with a single buffer and use offsets
 		std::map<uint32_t, Ref<VulkanUniformBuffer>> m_UniformBuffers;
 
 	};
