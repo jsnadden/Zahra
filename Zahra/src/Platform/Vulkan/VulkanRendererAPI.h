@@ -23,7 +23,7 @@ namespace Zahra
 		virtual uint32_t GetCurrentFrameIndex() override;
 		virtual uint32_t GetCurrentImageIndex() override;
 
-		virtual void SetClearColour(const glm::vec4& colour) override { m_ClearColour = { { { colour.r, colour.g, colour.b, colour.a } } }; }
+		virtual void SetClearColour(const glm::vec4& colour) override { m_ClearValues[0] = {{colour.r, colour.g, colour.b, colour.a}}; }
 		
 		virtual void NewFrame() override;
 
@@ -38,7 +38,7 @@ namespace Zahra
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;
 
-		VkClearValue m_ClearColour = { { { 0.01f, 0.02f, 0.01f, 1.0f } } };
+		std::vector<VkClearValue> m_ClearValues = { { { 0.01f, 0.02f, 0.01f, 1.0f } } , { 1.0f, 0 } };
 
 	};
 

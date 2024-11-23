@@ -10,6 +10,8 @@
 
 namespace Zahra
 {
+	
+
 	static const std::vector<const char*> s_DeviceExtensions =
 	{
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -21,6 +23,7 @@ namespace Zahra
 		CreateDevice(instance);
 		CreateSwapchain();
 		CreateImagesAndViews();
+		CreateDepthStencilAttachment();
 		CreateRenderPass();
 		CreateFramebuffers();
 		CreateCommandPool();
@@ -38,6 +41,7 @@ namespace Zahra
 
 		CreateSwapchain();
 		CreateImagesAndViews();
+		CreateDepthStencilAttachment();
 		CreateFramebuffers();
 	}
 
@@ -65,6 +69,10 @@ namespace Zahra
 
 	void VulkanSwapchain::Cleanup()
 	{
+		vkDestroyImageView(m_Device->m_LogicalDevice, m_DepthStencilAttachment.ImageView, nullptr);
+		vkDestroyImage(m_Device->m_LogicalDevice, m_DepthStencilAttachment.Image, nullptr);
+		vkFreeMemory(m_Device->m_LogicalDevice, m_DepthStencilAttachment.Memory, nullptr);
+
 		for (auto framebuffer : m_Framebuffers) {
 			vkDestroyFramebuffer(m_Device->m_LogicalDevice, framebuffer, nullptr);
 		}
@@ -511,12 +519,11 @@ namespace Zahra
 
 		m_ImageViews.resize(m_ImageCount);
 		for (size_t i = 0; i < m_ImageCount; i++)
-			m_ImageViews[i] = m_Device->CreateVulkanImageView(m_Format.format, m_Images[i]);
+			m_ImageViews[i] = m_Device->CreateVulkanImageView(m_Format.format, m_Images[i], VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 	void VulkanSwapchain::CreateRenderPass()
 	{
-		// colour attachment for this render pass
 		VkAttachmentDescription colourAttachment{};
 		colourAttachment.format = m_Format.format;
 		colourAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -527,30 +534,46 @@ namespace Zahra
 		colourAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // expected data layout of the image given to this render pass as input
 		colourAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // data layout of the image this render pass will output
 
-		// for now just a single subpass
+		VkAttachmentDescription depthAttachment{};
+		depthAttachment.format = m_DepthStencilAttachment.Format;
+		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		std::vector<VkAttachmentDescription> attachments = { colourAttachment, depthAttachment };
+
 		VkAttachmentReference colourAttachmentRef{};
 		colourAttachmentRef.attachment = 0;
 		colourAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // data layout the given subpass will treat the image as
+
+		VkAttachmentReference depthAttachmentRef{};
+		depthAttachmentRef.attachment = 1;
+		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		VkSubpassDescription subpass{};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // as opposed to compute
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colourAttachmentRef;
+		subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-		// this subpass dependency sets up waiting until the swapchain has finished
-		// reading the colour attachment (for presentation) before the next frame is written to it
+		// this subpass dependency sets up waiting until the swapchain has finished reading
+		// the colour attachment (for presentation) before the next frame is written to it
 		VkSubpassDependency dependency{};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		dependency.srcAccessMask = 0;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
 		VkRenderPassCreateInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colourAttachment;
+		renderPassInfo.attachmentCount = (uint32_t)attachments.size();
+		renderPassInfo.pAttachments = attachments.data();
 		renderPassInfo.subpassCount = 1;
 		renderPassInfo.pSubpasses = &subpass;
 		renderPassInfo.dependencyCount = 1;
@@ -564,14 +587,14 @@ namespace Zahra
 	{
 		for (auto& imageView : m_ImageViews)
 		{
-			VkImageView attachments[] = { imageView };
+			std::vector<VkImageView> attachments = { imageView, m_DepthStencilAttachment.ImageView };
 			auto& framebuffer = m_Framebuffers.emplace_back();
 
 			VkFramebufferCreateInfo framebufferInfo{};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferInfo.renderPass = m_RenderPass;
-			framebufferInfo.attachmentCount = 1;
-			framebufferInfo.pAttachments = attachments;
+			framebufferInfo.attachmentCount = (uint32_t)attachments.size();
+			framebufferInfo.pAttachments = attachments.data();
 			framebufferInfo.width = m_Extent.width;
 			framebufferInfo.height = m_Extent.height;
 			framebufferInfo.layers = 1;
@@ -579,6 +602,32 @@ namespace Zahra
 			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(m_Device->m_LogicalDevice, &framebufferInfo, nullptr, &framebuffer),
 				"Vulkan swapchain framebuffer creation failed");
 		}
+	}
+
+	void VulkanSwapchain::CreateDepthStencilAttachment()
+	{
+		m_DepthStencilAttachment.Format = ChooseDepthStencilFormat();
+
+		m_Device->CreateVulkanImage(m_Extent.width, m_Extent.height,
+			m_DepthStencilAttachment.Format,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_DepthStencilAttachment.Image, m_DepthStencilAttachment.Memory);
+
+		m_DepthStencilAttachment.ImageView = m_Device->CreateVulkanImageView(m_DepthStencilAttachment.Format,
+			m_DepthStencilAttachment.Image, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+		// this is not truly necessary as the render pass will handle the transition anyway
+		m_Device->TransitionVulkanImageLayout(m_DepthStencilAttachment.Image, m_DepthStencilAttachment.Format,
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+	}
+
+	VkFormat VulkanSwapchain::ChooseDepthStencilFormat()
+	{
+		return m_Device->CheckFormatSupport({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+			VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 	}
 
 	void VulkanSwapchain::CreateCommandPool()

@@ -9,5 +9,5 @@ layout(location = 0) out vec4 o_Colour;
 
 void main()
 {
-    o_Colour = vec4(v_Colour, 1.0) * texture(u_Texture, 2.0 * v_TexCoords);
+    o_Colour = vec4(v_Colour, 1.0) * texture(u_Texture, v_TexCoords);
 }

@@ -76,7 +76,7 @@ namespace Zahra
 		
 		// TODO: expand these to include non-2D images (and other options)
 		void CreateVulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-		VkImageView CreateVulkanImageView(VkFormat format, VkImage& image);
+		VkImageView CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags);
 		VkSampler CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode tilingMode);
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void TransitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -86,6 +86,9 @@ namespace Zahra
 
 		VkDevice& GetVkDevice() { return m_LogicalDevice; }
 		QueueFamilyIndices& GetQueueFamilyIndices() { return m_QueueFamilyIndices; }
+
+		VkFormat CheckFormatSupport(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
 
 	private:
 		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;

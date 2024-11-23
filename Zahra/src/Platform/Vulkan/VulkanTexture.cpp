@@ -9,16 +9,16 @@ namespace Zahra
 {
 	namespace VulkanUtils
 	{
-		VkFilter TextureFilteringModeToVkFilter(TextureFilteringMode mode)
+		VkFilter TextureFilterModeToVkFilter(TextureFilterMode mode)
 		{
 			switch (mode)
 			{
-				case TextureFilteringMode::Nearest:
+				case TextureFilterMode::Nearest:
 				{
 					return VK_FILTER_NEAREST;
 					break;
 				}
-				case TextureFilteringMode::Linear:
+				case TextureFilterMode::Linear:
 				{
 					return VK_FILTER_LINEAR;
 					break;
@@ -30,26 +30,26 @@ namespace Zahra
 			return VK_FILTER_MAX_ENUM;
 		}
 
-		VkSamplerAddressMode TextureTilingModeToVkSamplerAddressMode(TextureTilingMode mode)
+		VkSamplerAddressMode TextureAddressModeToVkSamplerAddressMode(TextureAddressMode mode)
 		{
 			switch (mode)
 			{
-			case TextureTilingMode::Repeat:
+			case TextureAddressMode::Repeat:
 			{
 				return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 				break;
 			}
-			case TextureTilingMode::MirroredRepeat:
+			case TextureAddressMode::MirroredRepeat:
 			{
 				return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 				break;
 			}
-			case TextureTilingMode::ClampToEdge:
+			case TextureAddressMode::ClampToEdge:
 			{
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 				break;
 			}
-			case TextureTilingMode::ClampToBorder:
+			case TextureAddressMode::ClampToBorder:
 			{
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 				break;
@@ -70,7 +70,7 @@ namespace Zahra
 		// TODO: to allow for hdr textures, stbi can query the image metadata, then we'd want to use
 		// stbi_loadf and a float format instead of VK_FORMAT_R8G8B8A8_SRGB
 
-		stbi_uc* pixelData = stbi_load(specification.imageFilepath.string().c_str(), &width, &height, &channels, 4);
+		stbi_uc* pixelData = stbi_load(specification.ImageFilepath.string().c_str(), &width, &height, &channels, 4);
 
 		Z_CORE_ASSERT(pixelData, "Vulkan texture failed to load image.");
 
@@ -145,16 +145,16 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 		// CREATE IMAGE VIEW
 
-		m_ImageView = device->CreateVulkanImageView(m_Format, m_Image);
+		m_ImageView = device->CreateVulkanImageView(m_Format, m_Image, VK_IMAGE_ASPECT_COLOR_BIT);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 		// CREATE SAMPLER
 
-		VkFilter minFilter = VulkanUtils::TextureFilteringModeToVkFilter(m_Specification.minificationFiltering);
-		VkFilter magFilter = VulkanUtils::TextureFilteringModeToVkFilter(m_Specification.magnificationFiltering);
-		VkSamplerAddressMode tilingMode = VulkanUtils::TextureTilingModeToVkSamplerAddressMode(m_Specification.tiling);
+		VkFilter minFilter = VulkanUtils::TextureFilterModeToVkFilter(m_Specification.MinificationFilterMode);
+		VkFilter magFilter = VulkanUtils::TextureFilterModeToVkFilter(m_Specification.MagnificationFilterMode);
+		VkSamplerAddressMode addressMode = VulkanUtils::TextureAddressModeToVkSamplerAddressMode(m_Specification.AddressMode);
 		
-		m_Sampler = device->CreateVulkanImageSampler(minFilter, magFilter, tilingMode);
+		m_Sampler = device->CreateVulkanImageSampler(minFilter, magFilter, addressMode);
 
 		m_ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_ImageInfo.imageView = m_ImageView;

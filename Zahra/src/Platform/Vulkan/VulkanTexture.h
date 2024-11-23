@@ -16,7 +16,7 @@ namespace Zahra
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
-		virtual const std::filesystem::path& GetFilepath() const override { return m_Specification.imageFilepath; }
+		virtual const std::filesystem::path& GetFilepath() const override { return m_Specification.ImageFilepath; }
 		virtual const Texture2DSpecification& GetSpecification() const override { return m_Specification; }
 
 		virtual void SetData(void* data, uint32_t size) override;

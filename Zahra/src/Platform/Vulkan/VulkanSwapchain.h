@@ -43,7 +43,7 @@ namespace Zahra
 		uint32_t GetFramesInFlight() { return m_FramesInFlight; }
 		uint32_t GetFrameIndex() { return m_CurrentFrameIndex; }
 		uint32_t GetImageIndex() { return m_CurrentImageIndex; }
-		
+
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 
@@ -55,6 +55,14 @@ namespace Zahra
 		std::vector<VkImageView> m_ImageViews;
 		std::vector<VkFramebuffer> m_Framebuffers;
 		uint32_t m_CurrentImageIndex = 0;
+
+		struct
+		{
+			VkImage Image;
+			VkDeviceMemory Memory;
+			VkImageView ImageView;
+			VkFormat Format;
+		} m_DepthStencilAttachment;
 
 		uint32_t m_FramesInFlight = 3;
 		uint32_t m_CurrentFrameIndex = 0;
@@ -78,7 +86,7 @@ namespace Zahra
 
 		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
 
-		// TODO: move all this device creation logic into the device class itself...
+		// TODO: move this logic into the VulkanDevice class itself
 		void CreateDevice(VkInstance& instance);
 		void TargetPhysicalDevice(VkInstance& instance);
 		bool MeetsMinimimumRequirements(const VkPhysicalDevice& device);
@@ -95,6 +103,9 @@ namespace Zahra
 		void CreateImagesAndViews();
 		void CreateRenderPass();
 		void CreateFramebuffers();
+
+		void CreateDepthStencilAttachment();
+		VkFormat ChooseDepthStencilFormat();
 
 		void CreateCommandPool();
 		void AllocateCommandBuffer();

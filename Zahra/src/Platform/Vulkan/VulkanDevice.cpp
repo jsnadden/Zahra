@@ -6,6 +6,15 @@
 
 namespace Zahra
 {
+
+	namespace VulkanUtils
+	{
+		static bool FormatHasStencilComponent(VkFormat format)
+		{
+			return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+		}
+	}
+
 	VulkanDevice::~VulkanDevice()
 	{
 		Shutdown();
@@ -105,7 +114,7 @@ namespace Zahra
 
 	}
 
-	VkImageView VulkanDevice::CreateVulkanImageView(VkFormat format, VkImage& image)
+	VkImageView VulkanDevice::CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags)
 	{
 		VkImageView imageView;
 
@@ -118,7 +127,7 @@ namespace Zahra
 		viewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 		viewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 		viewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		viewInfo.subresourceRange.aspectMask = aspectFlags;
 		viewInfo.subresourceRange.baseMipLevel = 0; // TODO: expose mipmapping options
 		viewInfo.subresourceRange.levelCount = 1;
 		viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -187,6 +196,18 @@ namespace Zahra
 		VkPipelineStageFlags srcStage;
 		VkPipelineStageFlags dstStage;
 
+		VkImageAspectFlags aspectFlags;
+		if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+		{
+			aspectFlags = VulkanUtils::FormatHasStencilComponent(format) ?
+				VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT :
+				VK_IMAGE_ASPECT_DEPTH_BIT;
+		}
+		else
+		{
+			aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+		}
+
 		VkImageMemoryBarrier barrier{};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.oldLayout = oldLayout;
@@ -194,7 +215,7 @@ namespace Zahra
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.image = image;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.aspectMask = aspectFlags;
 		barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
 		barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
 		barrier.subresourceRange.baseArrayLayer = 0;
@@ -215,6 +236,14 @@ namespace Zahra
 
 			srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+		{
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+			srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		}
 		else
 		{
@@ -277,6 +306,25 @@ namespace Zahra
 
 		VkCommandPool commandPool = GetOrCreateCommandPool();
 		vkFreeCommandBuffers(m_LogicalDevice, commandPool, 1, &commandBuffer);
+	}
+
+	VkFormat VulkanDevice::CheckFormatSupport(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+	{
+		for (auto& format : candidates)
+		{
+			VkFormatProperties properties;
+			vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &properties);
+
+			if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features)
+			{
+				return format;
+			}
+			else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features)
+			{
+				return format;
+			}
+			throw std::runtime_error("Desired image format was not available");
+		}
 	}
 
 	VkCommandPool VulkanDevice::GetOrCreateCommandPool()

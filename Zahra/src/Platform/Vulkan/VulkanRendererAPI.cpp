@@ -80,8 +80,8 @@ namespace Zahra
 		renderPassBeginInfo.framebuffer = m_Swapchain->GetCurrentFramebuffer();
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };
 		renderPassBeginInfo.renderArea.extent = m_Swapchain->GetExtent();
-		renderPassBeginInfo.clearValueCount = 1;
-		renderPassBeginInfo.pClearValues = &m_ClearColour;
+		renderPassBeginInfo.clearValueCount = (uint32_t)m_ClearValues.size();
+		renderPassBeginInfo.pClearValues = m_ClearValues.data();
 
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 

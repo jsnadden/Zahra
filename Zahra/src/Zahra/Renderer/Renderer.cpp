@@ -47,7 +47,7 @@ namespace Zahra
 
 	struct TutorialVertex
 	{
-		glm::vec2 Position;
+		glm::vec3 Position;
 		glm::vec3 Colour;
 		glm::vec2 TexCoords;
 	};
@@ -166,7 +166,7 @@ namespace Zahra
 
 		const VertexBufferLayout layout =
 		{
-			{	ShaderDataType::Float2, "a_Position"	},
+			{	ShaderDataType::Float3, "a_Position"	},
 			{	ShaderDataType::Float3, "a_Colour"		},
 			{	ShaderDataType::Float2, "a_TexCoords"	}
 		};
@@ -178,14 +178,25 @@ namespace Zahra
 
 		const std::vector<TutorialVertex> vertices =
 		{
-			{ { -.5f, -.5f }, { 1.0f, 0.5f, 0.0f }, { 0.0f, 0.0f } },
-			{ {  .5f, -.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f } },
-			{ {  .5f,  .5f }, { 0.0f, 0.5f, 1.0f }, { 1.0f, 1.0f } },
-			{ { -.5f,  .5f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } }
+			{ { -.5f, -.5f, .0f }, { 1.0f, 0.5f, 0.0f }, { 0.0f, 0.0f } },
+			{ {  .5f, -.5f, .0f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f } },
+			{ {  .5f,  .5f, .0f }, { 0.0f, 0.5f, 1.0f }, { 1.0f, 1.0f } },
+			{ { -.5f,  .5f, .0f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
+
+			{ { -.5f, -.5f, -.5f }, { 1.0f, 0.5f, 0.0f }, { 0.0f, 0.0f } },
+			{ {  .5f, -.5f, -.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f } },
+			{ {  .5f,  .5f, -.5f }, { 0.0f, 0.5f, 1.0f }, { 1.0f, 1.0f } },
+			{ { -.5f,  .5f, -.5f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } }
 		};
 		s_Data.TutorialVertexBuffer = VertexBuffer::Create((void*)vertices.data(), vertices.size() * sizeof(TutorialVertex));
 
-		const std::vector<uint32_t> indices = { 0, 1, 2, 2, 3, 0 };
+		const std::vector<uint32_t> indices =
+		{ 
+			0, 1, 2,
+			2, 3, 0,
+			4, 5, 6,
+			6, 7, 4
+		};
 		s_Data.TutorialIndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 
 		MVPTransforms transforms{};
@@ -199,7 +210,7 @@ namespace Zahra
 			s_Data.TutorialUniformBuffers->SetData(i, &transforms, uniformBufferSize);
 
 		Texture2DSpecification textureSpec{};
-		textureSpec.imageFilepath = "Assets/Textures/yajirobe.png";
+		textureSpec.ImageFilepath = "Assets/Textures/yajirobe.png";
 		s_Data.TutorialTexture = Texture2D::Create(textureSpec);
 
 		s_Data.ResourceManager->ProvideResource("Matrices", s_Data.TutorialUniformBuffers);

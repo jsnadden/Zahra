@@ -23,13 +23,13 @@ namespace Zahra
 		//virtual bool operator==(const Texture& other) const = 0;
 	};
 
-	enum class TextureFilteringMode
+	enum class TextureFilterMode
 	{
 		Nearest,
 		Linear
 	};
 
-	enum class TextureTilingMode
+	enum class TextureAddressMode
 	{
 		Repeat,
 		MirroredRepeat,
@@ -39,11 +39,11 @@ namespace Zahra
 
 	struct Texture2DSpecification
 	{
-		std::filesystem::path imageFilepath;
+		std::filesystem::path ImageFilepath;
 
-		TextureFilteringMode minificationFiltering = TextureFilteringMode::Linear;
-		TextureFilteringMode magnificationFiltering = TextureFilteringMode::Linear;
-		TextureTilingMode tiling = TextureTilingMode::Repeat;
+		TextureFilterMode MinificationFilterMode = TextureFilterMode::Linear;
+		TextureFilterMode MagnificationFilterMode = TextureFilterMode::Linear;
+		TextureAddressMode AddressMode = TextureAddressMode::Repeat;
 		
 		// TODO: add mipmapping options
 	};

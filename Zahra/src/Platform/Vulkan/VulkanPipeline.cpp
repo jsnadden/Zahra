@@ -163,8 +163,17 @@ namespace Zahra
 
 		/////////////////////////////////////////////////////////////////////////////////////////////
 		// CONFIGURE DEPTH/STENCIL BUFFER USAGE
-		// TODO: fill out a VkPipelineDepthStencilStateCreateInfo depthStencilStateInfo{};
-		// (for now we'll just use a nullptr in its place)
+		VkPipelineDepthStencilStateCreateInfo depthStencilStateInfo{};
+		depthStencilStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencilStateInfo.depthTestEnable = VK_TRUE;
+		depthStencilStateInfo.depthWriteEnable = VK_TRUE;
+		depthStencilStateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencilStateInfo.depthBoundsTestEnable = VK_FALSE;
+		depthStencilStateInfo.minDepthBounds = 0.0f;
+		depthStencilStateInfo.maxDepthBounds = 1.0f;
+		depthStencilStateInfo.stencilTestEnable = VK_FALSE;
+		depthStencilStateInfo.front = {};
+		depthStencilStateInfo.back = {};
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachmentState{};
 		colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -209,7 +218,7 @@ namespace Zahra
 		pipelineInfo.pViewportState = &viewportStateInfo;
 		pipelineInfo.pRasterizationState = &rasterizationStateInfo;
 		pipelineInfo.pMultisampleState = &multisampleStateInfo;
-		pipelineInfo.pDepthStencilState = nullptr; // TODO: include depth buffer!!
+		pipelineInfo.pDepthStencilState = &depthStencilStateInfo;
 		pipelineInfo.pColorBlendState = &colorBlendState;
 		pipelineInfo.pDynamicState = &dynamicStateInfo;
 		pipelineInfo.layout = m_PipelineLayout;
