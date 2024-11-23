@@ -2,6 +2,7 @@
 
 #include "Platform/Vulkan/VulkanShader.h"
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
+#include "Platform/Vulkan/VulkanTexture.h"
 #include "Zahra/Renderer/ShaderResourceManager.h"
 
 #include <vulkan/vulkan.h>
@@ -22,6 +23,7 @@ namespace Zahra
 		~VulkanShaderResourceManager();
 
 		virtual void ProvideResource(const std::string& name, Ref<UniformBufferSet> uniformBufferSet, uint32_t arrayIndex = 0) override;
+		virtual void ProvideResource(const std::string& name, Ref<Texture2D> texture, uint32_t arrayIndex = 0) override;
 
 		virtual bool CheckIfComplete() override;
 		virtual void Bake() override;

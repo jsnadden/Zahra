@@ -55,7 +55,8 @@ namespace Zahra
 			float frameStartTime = Time::GetTime();
 			float frameTimeStep = frameStartTime - m_PreviousFrameStartTime; // actual delta time
 			float dt = glm::min<float>(frameTimeStep, 0.0333f); // regularised for some numerical stability
-			//Z_CORE_TRACE("Frame timestep: {0}", dt);
+			//Z_CORE_TRACE("Frame time = {0} ms", dt * 1000.f);
+			//Z_CORE_TRACE("Framerate = {0} fps", 1.0f / dt);
 			m_PreviousFrameStartTime = frameStartTime;
 
 			m_Window->PollEvents();

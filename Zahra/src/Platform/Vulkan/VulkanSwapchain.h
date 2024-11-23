@@ -78,6 +78,7 @@ namespace Zahra
 
 		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
 
+		// TODO: move all this device creation logic into the device class itself...
 		void CreateDevice(VkInstance& instance);
 		void TargetPhysicalDevice(VkInstance& instance);
 		bool MeetsMinimimumRequirements(const VkPhysicalDevice& device);

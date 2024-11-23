@@ -6,6 +6,7 @@ namespace Zahra
 	struct GPURequirements
 	{
 		bool IsDiscreteGPU = false;
+		bool AnisotropicFiltering = false;
 
 		// TODO: add requirements for vram and so forth, and the corresponding
 		// tests in VulkanContext::MeetsMinimimumRequirements

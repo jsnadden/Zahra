@@ -76,13 +76,15 @@ namespace Zahra
 		#pragma endregion
 
 		#pragma region Initialise renderer API debugging
-		#if defined(Z_DEBUG)
+		
 
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::API::OpenGL:
 			{
+			#if defined(Z_DEBUG)
 				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+			#endif
 				break;
 			}
 			case RendererAPI::API::Vulkan:
@@ -95,7 +97,7 @@ namespace Zahra
 			default: break;
 		}
 
-		#endif
+		
 		#pragma endregion
 
 		#pragma region Construct window based on WindowData

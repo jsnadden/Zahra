@@ -23,13 +23,38 @@ namespace Zahra
 		//virtual bool operator==(const Texture& other) const = 0;
 	};
 
+	enum class TextureFilteringMode
+	{
+		Nearest,
+		Linear
+	};
 
+	enum class TextureTilingMode
+	{
+		Repeat,
+		MirroredRepeat,
+		ClampToEdge,
+		ClampToBorder
+	};
+
+	struct Texture2DSpecification
+	{
+		std::filesystem::path imageFilepath;
+
+		TextureFilteringMode minificationFiltering = TextureFilteringMode::Linear;
+		TextureFilteringMode magnificationFiltering = TextureFilteringMode::Linear;
+		TextureTilingMode tiling = TextureTilingMode::Repeat;
+		
+		// TODO: add mipmapping options
+	};
 
 	class Texture2D : public Texture
 	{
 	public:
-		static Ref<Texture2D> Create(const std::filesystem::path& filepath); // TODO: make this (and the implementation) use std::filesystem::path instead
+		static Ref<Texture2D> Create(const Texture2DSpecification& specification);
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
+
+		virtual const Texture2DSpecification& GetSpecification() const = 0;
 
 	};
 

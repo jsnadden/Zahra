@@ -72,9 +72,8 @@ namespace Zahra
 			Z_CORE_ASSERT(false, errorMessage.c_str());
 		}
 
-		uint32_t sourceCodeSize;
-		std::string sourceCode = FileIO::ReadAsString(sourceFilepath, &sourceCodeSize);
-		if (sourceCodeSize)
+		std::string sourceCode = FileIO::ReadAsString(sourceFilepath);
+		if (!sourceCode.empty())
 		{
 			m_GLSLSource[stage] = sourceCode;
 			Z_CORE_TRACE("Successfully loaded shader source file '{0}'", sourceFilepath.string().c_str());
@@ -163,7 +162,8 @@ namespace Zahra
 			{
 				auto& bufferData = m_ReflectionData.ResourceMetadata.emplace_back();
 
-				const auto& bufferType = compiler.get_type(resource.base_type_id);
+				const auto& bufferBaseType = compiler.get_type(resource.base_type_id);
+				const auto& bufferType = compiler.get_type(resource.type_id);
 
 				uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 				if (set > m_ReflectionData.MaxSetIndex) m_ReflectionData.MaxSetIndex = set;
@@ -173,11 +173,33 @@ namespace Zahra
 				bufferData.Set = set;
 				bufferData.Binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 				bufferData.Stage = stage;
-				bufferData.ByteSize = compiler.get_declared_struct_size(bufferType);
-				bufferData.MemberCount = bufferType.member_types.size();
+				bufferData.ByteSize = compiler.get_declared_struct_size(bufferBaseType);
+				bufferData.MemberCount = bufferBaseType.member_types.size();
 
-				if (!bufferType.array.empty()) bufferData.ArrayLength = bufferType.array[0]; // TODO: account for multidimensional (i.e. nested) arrays?
+				if (!bufferType.array.empty()) bufferData.ArrayLength = bufferType.array[0]; // TODO: this only accounts for non-nested arrays
 
+			}
+
+			for (const auto& resource : resources.sampled_images)
+			{
+				auto& textureData = m_ReflectionData.ResourceMetadata.emplace_back();
+
+				const auto& textureBaseType = compiler.get_type(resource.base_type_id);
+				const auto& textureType = compiler.get_type(resource.type_id);
+				const auto& imageType = compiler.get_type(textureType.image.type); // TODO: get int vs float format from here?
+
+				uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+				if (set > m_ReflectionData.MaxSetIndex) m_ReflectionData.MaxSetIndex = set;
+
+				textureData.Name = resource.name;
+				textureData.Type = ShaderResourceType::Texture2D; // TODO: get actual dimensionality from textureType.image.dim
+				textureData.Set = set;
+				textureData.Binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+				textureData.Stage = stage;
+				//textureData.ByteSize = compiler.get_declared_struct_size(textureBaseType);
+				textureData.MemberCount = 1;
+
+				if (!textureType.array.empty()) textureData.ArrayLength = textureType.array[0]; // TODO: this only accounts for non-nested arrays
 			}
 
 			// TODO: additional for loops for other shader resources. For details see:
@@ -192,14 +214,14 @@ namespace Zahra
 		uint32_t setCount = m_ReflectionData.MaxSetIndex + 1;
 		std::vector<std::vector<VkDescriptorSetLayoutBinding>> layoutBindings(setCount);
 
-		for (auto& bufferData : m_ReflectionData.ResourceMetadata)
+		for (auto& resource : m_ReflectionData.ResourceMetadata)
 		{
-			auto& layoutBinding = layoutBindings[bufferData.Set].emplace_back();
+			auto& layoutBinding = layoutBindings[resource.Set].emplace_back();
 
-			layoutBinding.binding = bufferData.Binding;
-			layoutBinding.stageFlags = VulkanUtils::ShaderStageToVkFlagBit(bufferData.Stage);
-			layoutBinding.descriptorType = VulkanUtils::ShaderResourceTypeToVkDescriptorType(bufferData.Type);
-			layoutBinding.descriptorCount = bufferData.ArrayLength;
+			layoutBinding.binding = resource.Binding;
+			layoutBinding.stageFlags = VulkanUtils::ShaderStageToVkFlagBit(resource.Stage);
+			layoutBinding.descriptorType = VulkanUtils::ShaderResourceTypeToVkDescriptorType(resource.Type);
+			layoutBinding.descriptorCount = resource.ArrayLength;
 			layoutBinding.pImmutableSamplers = nullptr;
 		}
 

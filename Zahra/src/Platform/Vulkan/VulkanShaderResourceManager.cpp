@@ -31,6 +31,15 @@ namespace Zahra
 		m_Resources.at(name).Data[arrayIndex] = uniformBufferSet;
 	}
 
+	void VulkanShaderResourceManager::ProvideResource(const std::string& name, Ref<Texture2D> texture, uint32_t arrayIndex)
+	{
+		auto it = m_Resources.find(name);
+		Z_CORE_ASSERT(it != m_Resources.end(), "No expected resource was found with the provided name");
+		Z_CORE_ASSERT(m_Resources[name].Metadata.Type == ShaderResourceType::Texture2D, "Wrong resource type provided");
+
+		m_Resources.at(name).Data[arrayIndex] = texture;
+	}
+
 	bool VulkanShaderResourceManager::CheckIfComplete()
 	{
 		// TODO: check if all managed resources have been correctly submitted
@@ -50,7 +59,8 @@ namespace Zahra
 		// CREATE DESCRIPTOR POOL
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 }
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			1000 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	1000 }
 		}; // TODO: too many? too few? maybe should compute pool size from the metadata input
 
 		VkDescriptorPoolCreateInfo poolInfo{};
@@ -119,11 +129,24 @@ namespace Zahra
 						break;
 					}
 
+					case ShaderResourceType::Texture2D:
+					{
+						for (uint32_t i = 0; i < resource.Metadata.ArrayLength; i++)
+						{
+							imageInfos.emplace_back(resource.Data[i].As<VulkanTexture2D>()->GetVkDescriptorImageInfo());
+						}
+
+						write.pImageInfo = imageInfos.data();
+						break;
+
+					}
+
 					// TODO: other types!
 
 					default: break;
 				}
 
+				// TODO: refactor to queue all these writes up in a single array and submit them together
 				vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 
 			}

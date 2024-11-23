@@ -194,11 +194,14 @@ namespace Zahra
 			queueInfoList.push_back(queueInfo);
 		}
 
+		VkPhysicalDeviceFeatures enabledFeatures{};
+		enabledFeatures.samplerAnisotropy = VK_TRUE;
+
 		VkDeviceCreateInfo logicalDeviceInfo{};
 		logicalDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		logicalDeviceInfo.queueCreateInfoCount = (uint32_t)queueInfoList.size();
 		logicalDeviceInfo.pQueueCreateInfos = queueInfoList.data();
-		logicalDeviceInfo.pEnabledFeatures = &m_Device->m_Features;
+		logicalDeviceInfo.pEnabledFeatures = &enabledFeatures;
 		logicalDeviceInfo.enabledExtensionCount = (uint32_t)s_DeviceExtensions.size();
 		logicalDeviceInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
 
@@ -276,6 +279,9 @@ namespace Zahra
 
 		if (requirements.IsDiscreteGPU)
 			pass &= properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+
+		if (requirements.AnisotropicFiltering)
+			pass &= features.samplerAnisotropy == VK_TRUE;
 
 		// TODO: add checks for other requirements
 
@@ -505,25 +511,7 @@ namespace Zahra
 
 		m_ImageViews.resize(m_ImageCount);
 		for (size_t i = 0; i < m_ImageCount; i++)
-		{
-			VkImageViewCreateInfo imageViewInfo{};
-			imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			imageViewInfo.image = m_Images[i];
-			imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			imageViewInfo.format = m_Format.format;
-			imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-			imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-			imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-			imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-			imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			imageViewInfo.subresourceRange.baseMipLevel = 0;
-			imageViewInfo.subresourceRange.levelCount = 1;
-			imageViewInfo.subresourceRange.baseArrayLayer = 0;
-			imageViewInfo.subresourceRange.layerCount = 1;
-
-			VulkanUtils::ValidateVkResult(vkCreateImageView(m_Device->m_LogicalDevice, &imageViewInfo, nullptr, &m_ImageViews[i]),
-				"Vulkan image view creation failed");
-		}
+			m_ImageViews[i] = m_Device->CreateVulkanImageView(m_Format.format, m_Images[i]);
 	}
 
 	void VulkanSwapchain::CreateRenderPass()

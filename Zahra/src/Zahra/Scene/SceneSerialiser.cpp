@@ -427,7 +427,7 @@ namespace Zahra
 
 					sprite.Tint = spriteNode["Tint"].as<glm::vec4>();
 					if (spriteNode["TexturePath"])
-						sprite.Texture = Texture2D::Create(spriteNode["TexturePath"].as<std::string>());
+						// TODO: sprite.Texture = Texture2D::Create(spriteNode["TexturePath"].as<std::string>());
 					sprite.TextureTiling = spriteNode["TextureTiling"].as<float>();
 					sprite.Animated = spriteNode["Animated"].as<bool>();
 				}

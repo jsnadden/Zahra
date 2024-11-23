@@ -49,6 +49,7 @@ namespace Zahra
 	{
 		glm::vec2 Position;
 		glm::vec3 Colour;
+		glm::vec2 TexCoords;
 	};
 
 	struct MVPTransforms
@@ -73,6 +74,8 @@ namespace Zahra
 		Ref<IndexBuffer> TutorialIndexBuffer;
 
 		Ref<UniformBufferSet> TutorialUniformBuffers;
+
+		Ref<Texture2D> TutorialTexture;
 
 		// TODO: ressurect stuff from here
 		#pragma region
@@ -163,8 +166,9 @@ namespace Zahra
 
 		const VertexBufferLayout layout =
 		{
-			{ShaderDataType::Float2, "a_Position"},
-			{ShaderDataType::Float3, "a_Colour"}
+			{	ShaderDataType::Float2, "a_Position"	},
+			{	ShaderDataType::Float3, "a_Colour"		},
+			{	ShaderDataType::Float2, "a_TexCoords"	}
 		};
 
 		PipelineSpecification pipelineSpec{};
@@ -174,10 +178,10 @@ namespace Zahra
 
 		const std::vector<TutorialVertex> vertices =
 		{
-			{ { -.5f, -.5f }, { 1.0f, 0.0f, 0.0f } },
-			{ {  .5f, -.5f }, { 0.0f, 1.0f, 0.0f } },
-			{ {  .5f,  .5f }, { 0.0f, 0.0f, 1.0f } },
-			{ { -.5f,  .5f }, { 1.0f, 1.0f, 1.0f } }
+			{ { -.5f, -.5f }, { 1.0f, 0.5f, 0.0f }, { 0.0f, 0.0f } },
+			{ {  .5f, -.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f } },
+			{ {  .5f,  .5f }, { 0.0f, 0.5f, 1.0f }, { 1.0f, 1.0f } },
+			{ { -.5f,  .5f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } }
 		};
 		s_Data.TutorialVertexBuffer = VertexBuffer::Create((void*)vertices.data(), vertices.size() * sizeof(TutorialVertex));
 
@@ -194,7 +198,12 @@ namespace Zahra
 		for (int i = 0; i < framesInFlight; i++)
 			s_Data.TutorialUniformBuffers->SetData(i, &transforms, uniformBufferSize);
 
+		Texture2DSpecification textureSpec{};
+		textureSpec.imageFilepath = "Assets/Textures/yajirobe.png";
+		s_Data.TutorialTexture = Texture2D::Create(textureSpec);
+
 		s_Data.ResourceManager->ProvideResource("Matrices", s_Data.TutorialUniformBuffers);
+		s_Data.ResourceManager->ProvideResource("u_Texture", s_Data.TutorialTexture);
 		s_Data.ResourceManager->Bake();
 
 		// TODO: ressurect stuff from here
@@ -315,6 +324,7 @@ namespace Zahra
 	{
 		// TEMPORARY
 
+		s_Data.TutorialTexture.Reset();
 		s_Data.TutorialUniformBuffers.Reset();
 		s_Data.TutorialVertexBuffer.Reset();
 		s_Data.TutorialIndexBuffer.Reset();

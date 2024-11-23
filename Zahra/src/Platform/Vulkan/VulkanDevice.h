@@ -72,12 +72,17 @@ namespace Zahra
 		void Shutdown();
 
 		void CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void CopyVulkanBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void CopyVulkanBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset = 0, VkDeviceSize dstOffset = 0);
 		
-		void CreateVulkanImage2D(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		// TODO: expand these to include non-2D images (and other options)
+		void CreateVulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		VkImageView CreateVulkanImageView(VkFormat format, VkImage& image);
+		VkSampler CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode tilingMode);
+		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void TransitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-		VkCommandBuffer GetTemporaryCommandBuffer();
-		void FreeTemporaryCommandBuffer(VkCommandBuffer commandBuffer);
+		VkCommandBuffer GetTemporaryCommandBuffer(bool begin = true);
+		void ReturnTemporaryCommandBuffer(VkCommandBuffer commandBuffer);
 
 		VkDevice& GetVkDevice() { return m_LogicalDevice; }
 		QueueFamilyIndices& GetQueueFamilyIndices() { return m_QueueFamilyIndices; }

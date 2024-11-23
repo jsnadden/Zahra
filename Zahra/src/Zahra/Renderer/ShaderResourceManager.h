@@ -2,6 +2,7 @@
 
 #include "Zahra/Core/Ref.h"
 #include "Zahra/Renderer/Shader.h"
+#include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/UniformBuffer.h"
 
 namespace Zahra
@@ -18,6 +19,7 @@ namespace Zahra
 		~ShaderResourceManager() {}
 
 		virtual void ProvideResource(const std::string& name, Ref<UniformBufferSet> uniformBufferSet, uint32_t arrayIndex = 0) = 0;
+		virtual void ProvideResource(const std::string& name, Ref<Texture2D> texture, uint32_t arrayIndex = 0) = 0;
 
 		virtual bool CheckIfComplete() = 0;
 		virtual void Bake() = 0;

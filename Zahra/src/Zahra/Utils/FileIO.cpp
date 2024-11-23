@@ -32,7 +32,7 @@ namespace Zahra
 		return buffer;
 	}
 
-	std::string FileIO::ReadAsString(const std::filesystem::path& filepath, uint32_t* outSize)
+	std::string FileIO::ReadAsString(const std::filesystem::path& filepath)
 	{
 		std::string result;
 		std::ifstream in(filepath, std::ios::in | std::ios::binary);
