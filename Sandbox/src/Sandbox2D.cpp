@@ -34,10 +34,10 @@ void Sandbox2DLayer::OnEvent(Zahra::Event& event)
 void Sandbox2DLayer::OnImGuiRender()
 {
 	// TODO: ressurect
-	/*if (ImGui::Begin("Controls"))
+	if (ImGui::Begin("Controls"))
 	{
 		ImGui::End();
-	}*/
+	}
 	
 }
 

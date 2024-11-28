@@ -24,7 +24,12 @@ namespace Zahra
 
 	void VulkanImGuiLayer::OnAttach()
 	{
-		// Setup Dear ImGui context
+		Window& window = Application::Get().GetWindow();
+		GLFWwindow* windowHandle = static_cast<GLFWwindow*>(window.GetWindowHandle());
+		Ref<VulkanContext> context = window.GetRendererContext().As<VulkanContext>();
+		Ref<VulkanSwapchain> swapchain = context->GetSwapchain();
+		Ref<VulkanDevice> device = context->GetDevice();
+
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -35,7 +40,6 @@ namespace Zahra
 
 		ImGui::StyleColorsDark();
 
-		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
@@ -43,20 +47,111 @@ namespace Zahra
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		SetColourTheme();
+		SetColourTheme();		
 
-		Window& window = Application::Get().GetWindow();
+		ImGui_ImplGlfw_InitForVulkan(windowHandle, true);		
 
-		GLFWwindow* windowHandle = static_cast<GLFWwindow*>(window.GetWindowHandle());
-		ImGui_ImplGlfw_InitForVulkan(windowHandle, true);
+		CreateDescriptorPool();
+		CreateRenderPass();
+		CreateFramebuffers();
 
-		Ref<VulkanContext> context = window.GetRendererContext().As<VulkanContext>();
-		Ref<VulkanSwapchain> swapchain = context->GetSwapchain();
-		Ref<VulkanDevice> device = context->GetDevice();
+		ImGui_ImplVulkan_InitInfo imguiInfo = {};
+		imguiInfo.Instance = context->GetVulkanInstance();
+		imguiInfo.PhysicalDevice = device->GetPhysicalDevice();
+		imguiInfo.Device = device->GetVkDevice();
+		imguiInfo.QueueFamily = device->GetQueueFamilyIndices().GraphicsIndex.value();
+		imguiInfo.Queue = device->GetGraphicsQueue();
+		imguiInfo.PipelineCache = VK_NULL_HANDLE; // TODO: not sure if we'll use a pipeline cache, but might have to return here
+		imguiInfo.RenderPass = m_RenderPass;
+		imguiInfo.Subpass = 0;
+		imguiInfo.DescriptorPool = m_DescriptorPool;
+		imguiInfo.MinImageCount = 2;
+		imguiInfo.ImageCount = m_Framebuffers.size();
+		imguiInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		imguiInfo.Allocator = nullptr; // TODO: VMA allocations
+		imguiInfo.CheckVkResultFn = [](VkResult result) { return VulkanUtils::ValidateVkResult(result, "Unsuccessful VkResult within ImGui"); };
+		
+		ImGui_ImplVulkan_Init(&imguiInfo);
 
+		// TODO: write a font library so that I don't have to rely on imgui's internal font vector
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("..\\Meadow\\Resources\\Fonts\\Inter\\Inter-Regular.ttf", 18.0f); // font 0
+		io.Fonts->AddFontFromFileTTF("..\\Meadow\\Resources\\Fonts\\Inter\\Inter-Bold.ttf", 18.0f); // font 1
 
-		//////////////////////////////////////////////////////////////////////////////////////
-		// INITIALISE VULKAN IMGUI IMPLEMENTATION
+	}
+
+	void VulkanImGuiLayer::OnDetach()
+	{
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
+		vkDeviceWaitIdle(device);
+
+		DestroyFramebuffers();
+		vkDestroyRenderPass(device, m_RenderPass, nullptr);
+		vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
+	}
+
+	void VulkanImGuiLayer::OnEvent(Event& event)
+	{
+		if (m_BlockEvents)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			event.Handled |= event.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse;
+			event.Handled |= event.IsInCategory(EventCategoryKeyboard) && io.WantCaptureKeyboard;
+		}
+
+	}
+
+	void VulkanImGuiLayer::Begin()
+	{
+		if (FramebuffersNeedResizing())
+		{
+			DestroyFramebuffers();
+			CreateFramebuffers();
+		}
+
+		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
+	}
+
+	void VulkanImGuiLayer::End()
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		Application& app = Application::Get();
+		Ref<VulkanSwapchain> swapchain = VulkanContext::Get()->GetSwapchain();
+		VkCommandBuffer commandBuffer = swapchain->GetCurrentDrawCommandBuffer();
+
+		ImGui::Render();
+		auto drawData = ImGui::GetDrawData();
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.renderPass = m_RenderPass;
+		renderPassBeginInfo.framebuffer = m_Framebuffers[swapchain->GetImageIndex()];
+		renderPassBeginInfo.renderArea.extent = swapchain->GetExtent();
+		renderPassBeginInfo.clearValueCount = 0;
+		renderPassBeginInfo.pClearValues = nullptr;
+		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer);
+
+		vkCmdEndRenderPass(commandBuffer);
+	}
+
+	void VulkanImGuiLayer::CreateDescriptorPool()
+	{
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
+
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
 			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
@@ -81,178 +176,100 @@ namespace Zahra
 		poolInfo.pPoolSizes = poolSizes.data();
 
 		// TODO: VMA allocations
-		VulkanUtils::ValidateVkResult(vkCreateDescriptorPool(device->GetVkDevice(), &poolInfo, nullptr, &m_DescriptorPool),
+		VulkanUtils::ValidateVkResult(vkCreateDescriptorPool(device, &poolInfo, nullptr, &m_DescriptorPool),
 			"Vulkan descriptor pool creation failed");
+	}
 
-		/*VkAttachmentDescription attachment = {};
-		attachment.format = swapchain->GetImageFormat();
-		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	void VulkanImGuiLayer::CreateRenderPass()
+	{
+		Ref<VulkanSwapchain> swapchain = VulkanContext::Get()->GetSwapchain();
+		VkDevice& device = swapchain->GetDevice()->GetVkDevice();
 
-		VkAttachmentReference colourAttachment = {};
-		colourAttachment.attachment = 0;
-		colourAttachment.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		// TODO: multisampling?
 
-		VkSubpassDescription subpass = {};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		VkAttachmentDescription colourAttachment{};
+		colourAttachment.format = swapchain->GetSwapchainImageFormat();
+		colourAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colourAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		colourAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colourAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colourAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colourAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colourAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		VkAttachmentReference colourAttachmentRef{};
+		colourAttachmentRef.attachment = 0;
+		colourAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // data layout the given subpass will treat the image as
+
+		VkSubpassDescription subpass{};
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // as opposed to compute
 		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &colourAttachment;
+		subpass.pColorAttachments = &colourAttachmentRef;
 
-		VkSubpassDependency dependency = {};
+		VkSubpassDependency dependency{};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependency.srcAccessMask = 0;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-		VkRenderPassCreateInfo renderPassInfo = {};
+		VkRenderPassCreateInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &attachment;
+		renderPassInfo.pAttachments = &colourAttachment;
 		renderPassInfo.subpassCount = 1;
 		renderPassInfo.pSubpasses = &subpass;
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
-		VulkanUtils::ValidateVkResult(vkCreateRenderPass(device->GetVkDevice(), &renderPassInfo, nullptr, &m_RenderPass),
-			"ImGui render pass creation failed");*/
 
-		ImGui_ImplVulkan_InitInfo imguiInfo = {};
-		imguiInfo.Instance = context->GetVulkanInstance();
-		imguiInfo.PhysicalDevice = device->GetPhysicalDevice();
-		imguiInfo.Device = device->GetVkDevice();
-		imguiInfo.QueueFamily = device->GetQueueFamilyIndices().GraphicsIndex.value();
-		imguiInfo.Queue = device->GetGraphicsQueue();
-		imguiInfo.PipelineCache = VK_NULL_HANDLE; // TODO: not sure if we'll use a pipeline cache, but might have to return here
-		//imguiInfo.RenderPass = swapchain->GetVkRenderPass();
-		imguiInfo.Subpass = 0;
-		imguiInfo.DescriptorPool = m_DescriptorPool;
-		imguiInfo.MinImageCount = swapchain->GetImageCount();
-		imguiInfo.ImageCount = swapchain->GetImageCount();
-		imguiInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-		imguiInfo.Allocator = nullptr; // TODO: VMA allocations
-		imguiInfo.CheckVkResultFn = [](VkResult result) { return VulkanUtils::ValidateVkResult(result, "Unsuccessful VkResult within ImGui"); };
-		
-		ImGui_ImplVulkan_Init(&imguiInfo);
-
-		// TODO: write a font library so that I don't have to rely on imgui's internal font vector
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("..\\Meadow\\Resources\\Fonts\\Inter\\Inter-Regular.ttf", 18.0f); // font 0
-		io.Fonts->AddFontFromFileTTF("..\\Meadow\\Resources\\Fonts\\Inter\\Inter-Bold.ttf", 18.0f); // font 1
-
-		//////////////////////////////////////////////////////////////////////////////////////
-		// CREATE IMGUI FRAMEBUFFERS
-		/*uint32_t framesInFlight = swapchain->GetFramesInFlight();
-		m_Framebuffers.resize(framesInFlight);
-		VkImageView???
-		VkFramebufferCreateInfo framebufferInfo = {};
-		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = m_RenderPass;
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.width = swapchain->GetExtent().width;
-		framebufferInfo.height = swapchain->GetExtent().height;
-		framebufferInfo.layers = 1;
-
-		for (uint32_t i = 0; i < framesInFlight; i++)
-		{
-			VkImageView imageView???
-			framebufferInfo.pAttachments = &[i];???
-			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device->GetVkDevice(), &framebufferInfo, nullptr, &m_Framebuffers[i]));
-		}*/
-
+		VulkanUtils::ValidateVkResult(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass),
+			"Main render pass creation failed");
 	}
 
-	void VulkanImGuiLayer::OnDetach()
+	void VulkanImGuiLayer::CreateFramebuffers()
 	{
-		ImGui_ImplVulkan_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
+		Ref<VulkanSwapchain> swapchain = VulkanContext::Get()->GetSwapchain();
+		auto& swapchainImageviews = swapchain->GetSwapchainImageViews();
+		m_FramebufferSize = swapchain->GetExtent();
 
+		for (auto& view : swapchainImageviews)
+		{
+			auto& framebuffer = m_Framebuffers.emplace_back();
+
+			VkFramebufferCreateInfo framebufferInfo{};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = m_RenderPass;
+			framebufferInfo.attachmentCount = 1;
+			framebufferInfo.pAttachments = &view;
+			framebufferInfo.width = m_FramebufferSize.width;
+			framebufferInfo.height = m_FramebufferSize.height;
+			framebufferInfo.layers = 1;
+
+			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer),
+				"Vulkan framebuffer creation failed");
+		}
+	}
+
+	void VulkanImGuiLayer::DestroyFramebuffers()
+	{
 		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
-		/*for (auto& fb : m_Framebuffers)
-		{
-			vkDestroyFramebuffer(device, fb, nullptr);
+		for (auto framebuffer : m_Framebuffers) {
+			vkDestroyFramebuffer(device, framebuffer, nullptr);
 		}
 		m_Framebuffers.clear();
-
-		vkDestroyRenderPass(device, m_RenderPass, nullptr);*/
-		vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
 	}
 
-	void VulkanImGuiLayer::OnEvent(Event& event)
+	bool VulkanImGuiLayer::FramebuffersNeedResizing()
 	{
-		if (m_BlockEvents)
-		{
-			ImGuiIO& io = ImGui::GetIO();
-			event.Handled |= event.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse;
-			event.Handled |= event.IsInCategory(EventCategoryKeyboard) && io.WantCaptureKeyboard;
-		}
-
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowResizedEvent>(Z_BIND_EVENT_FN(VulkanImGuiLayer::OnWindowResizedEvent));
-
+		VkExtent2D swapchainSize = VulkanContext::Get()->GetSwapchain()->GetExtent();
+		return (m_FramebufferSize.width != swapchainSize.width) || (m_FramebufferSize.height != swapchainSize.height);
 	}
 
-	void VulkanImGuiLayer::Begin()
-	{
-		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		ImGuizmo::BeginFrame();
-	}
-
-	void VulkanImGuiLayer::End()
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		Application& app = Application::Get();
-		Ref<VulkanSwapchain> swapchain = VulkanContext::Get()->GetSwapchain();
-		VkCommandBuffer commandBuffer = swapchain->GetCurrentDrawCommandBuffer();
-
-		ImGui::Render();
-		auto drawData = ImGui::GetDrawData();
-
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-		}
-
-		// TODO: need to set things up so that the main app renderer targets a non-swapchain
-		// framebuffer, which is ultimately passed into here for ImGui to draw on top of. The
-		// following should be modified to receive that (as well as the VulkanRendererAPI code):
-
-		/*VkClearValue clearColour = { { 0.01f, 0.02f, 0.01f, 1.0f } };
-
-		VkRenderPassBeginInfo renderPassBeginInfo = {};
-		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.renderPass = m_RenderPass;
-		renderPassBeginInfo.framebuffer = m_Framebuffers[frameIndex];
-		renderPassBeginInfo.renderArea.extent.width = width;
-		renderPassBeginInfo.renderArea.extent.height = height;
-		renderPassBeginInfo.clearValueCount = 1;
-		renderPassBeginInfo.pClearValues = &clearColour;
-		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);*/
-
-		//ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer);
-
-		//vkCmdEndRenderPass(commandBuffer);
-	}
-
-	bool VulkanImGuiLayer::OnWindowResizedEvent(WindowResizedEvent& event)
-	{
-		// TODO: come back to this if imgui has difficulties with swapchain recreation...
-		/*if (event.GetWidth() > 0 || event.GetHeight() > 0)
-		{
-			
-		}*/
-
-		return false;
-	}
 
 }
+
+	
 

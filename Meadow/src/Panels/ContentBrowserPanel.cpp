@@ -16,11 +16,11 @@ namespace Zahra
 	{
 		m_RefreshTimer.Reset();
 
-		m_Icons["DirectoryThumb"] = Texture2D::Create("Resources/Icons/Browser/folder.png");
+		/*m_Icons["DirectoryThumb"] = Texture2D::Create("Resources/Icons/Browser/folder.png");
 		m_Icons["DefaultFileThumb"] = Texture2D::Create("Resources/Icons/Browser/blank_file.png");
 		m_Icons["BrokenImage"] = Texture2D::Create("Resources/Icons/Browser/broken_image.png");
 		m_Icons["Back"] = Texture2D::Create("Resources/Icons/Browser/back_arrow.png");
-		m_Icons["Forward"] = Texture2D::Create("Resources/Icons/Browser/forward_arrow.png");
+		m_Icons["Forward"] = Texture2D::Create("Resources/Icons/Browser/forward_arrow.png");*/
 	}
 
 	void ContentBrowserPanel::OnEvent(Event& event)

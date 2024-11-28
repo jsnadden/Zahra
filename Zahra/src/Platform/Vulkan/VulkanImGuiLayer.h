@@ -20,12 +20,18 @@ namespace Zahra
 		virtual void Begin() override;
 		virtual void End() override;
 
-		bool OnWindowResizedEvent(WindowResizedEvent& event);
-
 	private:
-		VkDescriptorPool m_DescriptorPool;
-		VkRenderPass m_RenderPass;
+		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
+		void CreateDescriptorPool();
+
+		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+		void CreateRenderPass();
+
 		std::vector<VkFramebuffer> m_Framebuffers;
+		VkExtent2D m_FramebufferSize;
+		void CreateFramebuffers();
+		void DestroyFramebuffers();
+		bool FramebuffersNeedResizing();
 
 	};
 

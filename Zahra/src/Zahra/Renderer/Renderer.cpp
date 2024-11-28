@@ -175,7 +175,7 @@ namespace Zahra
 		renderPassSpecification.LoadOp = AttachmentLoadOp::Clear;
 		renderPassSpecification.StoreOp = AttachmentStoreOp::Store;
 		renderPassSpecification.InitialLayout = AttachmentLayout::Undefined;
-		renderPassSpecification.FinalLayout = AttachmentLayout::Present;
+		renderPassSpecification.FinalLayout = AttachmentLayout::Colour;
 		renderPassSpecification.HasDepthStencil = true;
 
 		s_Data.TutorialRenderPass = RenderPass::Create(renderPassSpecification);
