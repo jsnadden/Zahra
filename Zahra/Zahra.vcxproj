@@ -203,11 +203,12 @@
     <ClInclude Include="src\Zahra\Renderer\Material.h" />
     <ClInclude Include="src\Zahra\Renderer\Pipeline.h" />
     <ClInclude Include="src\Zahra\Renderer\RenderCommandQueue.h" />
-    <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
     <ClInclude Include="src\Zahra\Renderer\Renderer.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererConfig.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererContext.h" />
+    <ClInclude Include="src\Zahra\Renderer\RendererTypes.h" />
+    <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
     <ClInclude Include="src\Zahra\Renderer\SceneRenderer.h" />
     <ClInclude Include="src\Zahra\Renderer\Shader.h" />
     <ClInclude Include="src\Zahra\Renderer\ShaderResourceManager.h" />
@@ -656,6 +657,7 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanIndexBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanPipeline.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererAPI.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanRenderPass.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanShader.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanShaderResourceManager.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanSwapchain.cpp" />
@@ -686,6 +688,7 @@
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererContext.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\RenderPass.cpp" />
     <ClCompile Include="src\Zahra\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Shader.cpp" />
     <ClCompile Include="src\Zahra\Renderer\ShaderResourceManager.cpp" />

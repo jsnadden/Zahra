@@ -13,6 +13,11 @@ namespace Zahra
 	void VulkanRendererAPI::Init()
 	{
 		m_Swapchain = VulkanContext::Get()->GetSwapchain();
+		m_Device = m_Swapchain->GetDevice();
+		m_FramesInFlight = m_Swapchain->GetFramesInFlight();
+
+		
+		
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -55,15 +60,10 @@ namespace Zahra
 		return VulkanContext::Get()->GetSwapchain()->GetImageIndex();
 	}
 
-	void VulkanRendererAPI::NewFrame()
+	void VulkanRendererAPI::BeginFrame()
 	{
 		m_Swapchain->GetNextImage();
 
-		// TODO: reset descriptor pools
-	}
-
-	void VulkanRendererAPI::BeginRenderPass(Ref<Pipeline> pipeline)
-	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
 		VkCommandBufferBeginInfo commandBufferBeginInfo{};
@@ -73,19 +73,36 @@ namespace Zahra
 
 		VulkanUtils::ValidateVkResult(vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo),
 			"Vulkan command buffer failed to begin recording");
+		// TODO: reset descriptor pools
+	}
+
+	void VulkanRendererAPI::EndFrame()
+	{
+		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
+
+		VulkanUtils::ValidateVkResult(vkEndCommandBuffer(commandBuffer),
+			"Vulkan command buffer failed to end recording");
+	}
+
+	void VulkanRendererAPI::BeginRenderPass(Ref<RenderPass> renderpass)
+	{
+		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
+
+		Ref<VulkanRenderPass> vulkanRenderPass = renderpass.As<VulkanRenderPass>();
+		if (vulkanRenderPass->NeedsResizing()) vulkanRenderPass->RefreshFramebuffers();
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.renderPass = m_Swapchain->GetVkRenderPass();
-		renderPassBeginInfo.framebuffer = m_Swapchain->GetCurrentFramebuffer();
+		renderPassBeginInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
+		renderPassBeginInfo.framebuffer = vulkanRenderPass->GetFramebuffer(m_Swapchain->GetImageIndex());
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };
 		renderPassBeginInfo.renderArea.extent = m_Swapchain->GetExtent();
-		renderPassBeginInfo.clearValueCount = (uint32_t)m_ClearValues.size();
+		renderPassBeginInfo.clearValueCount = vulkanRenderPass->GetSpecification().HasDepthStencil ? 2 : 1;
 		renderPassBeginInfo.pClearValues = m_ClearValues.data();
 
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.As<VulkanPipeline>()->GetVkPipeline());		
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipeline());
 	}
 
 	void VulkanRendererAPI::EndRenderPass()
@@ -93,17 +110,14 @@ namespace Zahra
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
 		vkCmdEndRenderPass(commandBuffer);
-
-		VulkanUtils::ValidateVkResult(vkEndCommandBuffer(commandBuffer),
-			"Vulkan command buffer failed to end recording");
 	}
 
-	void VulkanRendererAPI::PresentImage()
+	void VulkanRendererAPI::Present()
 	{
-		m_Swapchain->PresentImage();
+		m_Swapchain->PresentImage();			
 	}
 
-	void VulkanRendererAPI::TutorialDrawCalls(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager)
+	void VulkanRendererAPI::TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
@@ -130,19 +144,15 @@ namespace Zahra
 		scissor.extent = extent;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		auto vulkanPipeline = pipeline.As<VulkanPipeline>();
+		auto vulkanRenderPass = renderPass.As<VulkanRenderPass>();
 		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
 		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 
 		// FINALLY A DRAW CALL!!!
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)indexBuffer->GetCount(), 1, 0, 0, 0);
 	}
-
-	
-
-	
 
 }
 

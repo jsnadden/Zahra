@@ -15,7 +15,7 @@ namespace Zahra
 	public:
 		virtual ~CommandBuffer() = default;
 
-		virtual void Record() = 0;
+		//virtual void Record() = 0;
 
 		static Ref<CommandBuffer> Create(const CommandBufferSpecification& specification);
 	};

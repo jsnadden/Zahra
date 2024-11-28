@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Zahra/Renderer/ShaderTypes.h"
+
 #include <filesystem>
 
 #include <shaderc/shaderc.hpp>
@@ -232,6 +234,24 @@ namespace Zahra
 			}
 
 			return VK_DESCRIPTOR_TYPE_MAX_ENUM;
+		}
+
+		static VkFormat ShaderDataTypeToVulkanFormat(ShaderDataType type)
+		{
+			switch (type)
+			{
+			case ShaderDataType::Int:       return VK_FORMAT_R32_SINT;
+			case ShaderDataType::Int2:      return VK_FORMAT_R32G32_SINT;
+			case ShaderDataType::Int3:      return VK_FORMAT_R32G32B32_SINT;
+			case ShaderDataType::Int4:      return VK_FORMAT_R32G32B32A32_SINT;
+
+			case ShaderDataType::Float:     return VK_FORMAT_R32_SFLOAT;
+			case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
+			case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
+			case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
+			}
+			Z_CORE_ASSERT(false);
+			return VK_FORMAT_UNDEFINED;
 		}
 
 	}

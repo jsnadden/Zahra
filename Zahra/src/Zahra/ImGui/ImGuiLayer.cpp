@@ -24,7 +24,6 @@ namespace Zahra
 
 	void ImGuiLayer::SetColourTheme()
 	{
-		// TODO: customise this default scheme, and figure out what the rest of the options are in ImGuiCol_
 		auto& colours = ImGui::GetStyle().Colors;
 
 		// Text

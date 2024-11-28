@@ -22,12 +22,7 @@ namespace Zahra
 
 		static void NewFrame()
 		{
-			s_RendererAPI->NewFrame();
-		}
-
-		static void BeginRenderPass(Ref<Pipeline> pipeline)
-		{
-			s_RendererAPI->BeginRenderPass(pipeline);
+			s_RendererAPI->BeginFrame();
 		}
 
 		static void EndRenderPass()
@@ -37,18 +32,13 @@ namespace Zahra
 
 		static void PresentImage()
 		{
-			s_RendererAPI->PresentImage();
+			s_RendererAPI->Present();
 		}
 
 
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 		{
 			s_RendererAPI->SetViewport(x, y, width, height);
-		}
-
-		static void SetClearColour(const glm::vec4& colour)
-		{
-			s_RendererAPI->SetClearColour(colour);
 		}
 
 		/*static void Clear()

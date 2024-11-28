@@ -19,11 +19,14 @@ namespace Zahra
 		virtual void Init() override;
 		virtual void Shutdown() override;
 		
-		static Ref<VulkanContext> Get() { return Ref<VulkanContext>(Renderer::GetContext()); }
+		VkInstance& GetVulkanInstance() { return m_VulkanInstance; }
 		Ref<VulkanSwapchain> GetSwapchain() { return m_Swapchain; }
 		VkSurfaceKHR& GetSurface() { return m_Swapchain->GetSurface(); }
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
+		VkPhysicalDevice& GetPhysicalDevice() { return m_Device->m_PhysicalDevice; }
 		VkDevice& GetVkDevice() { return m_Device->m_LogicalDevice; }
+
+		static Ref<VulkanContext> Get() { return Ref<VulkanContext>(Renderer::GetContext()); }
 		static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
 		static VkDevice& GetCurrentVkDevice() { return Get()->GetVkDevice(); }
 

@@ -32,8 +32,8 @@ namespace Zahra
 		// TODO: ressurect
 		//ScriptEngine::Init();
 
-		m_ImGuiLayer = ImGuiLayer::Create();
-		PushOverlay(m_ImGuiLayer);
+		/*m_ImGuiLayer = ImGuiLayer::Create();
+		PushOverlay(m_ImGuiLayer);*/
 
 		m_Window->ReadConfig();
 	}
@@ -63,20 +63,21 @@ namespace Zahra
 
 			if (!m_Minimised)
 			{
-				Renderer::NewFrame();
+				Renderer::BeginFrame();
 
 				// Update layers
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(dt);
 
-				// Render ImGui layers
-				m_ImGuiLayer->Begin();
+				// Record ImGui draw calls
+				/*m_ImGuiLayer->Begin();
 				for (Layer* layer : m_LayerStack)
 					layer->OnImGuiRender();
-				m_ImGuiLayer->End();
+				m_ImGuiLayer->End();*/
 
-
-				Renderer::PresentImage();
+				// Submit draw calls and present to screen
+				Renderer::EndFrame();
+				Renderer::Present();
 			}
 			
 		}

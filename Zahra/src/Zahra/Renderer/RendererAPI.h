@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Zahra/Renderer/IndexBuffer.h"
-#include "Zahra/Renderer/Pipeline.h"
+#include "Zahra/Renderer/RenderPass.h"
 #include "Zahra/Renderer/ShaderResourceManager.h"
 #include "Zahra/Renderer/UniformBuffer.h"
 
@@ -32,20 +32,19 @@ namespace Zahra
 		virtual uint32_t GetCurrentFrameIndex() = 0;
 		virtual uint32_t GetCurrentImageIndex() = 0;
 
-		virtual void SetClearColour(const glm::vec4& colour) = 0;
+		virtual void BeginFrame() = 0;
+		virtual void EndFrame() = 0;
 
-		virtual void NewFrame() = 0;
-
-		virtual void BeginRenderPass(Ref<Pipeline> pipeline) = 0;
+		virtual void BeginRenderPass(Ref<RenderPass> renderPass) = 0;
 		virtual void EndRenderPass() = 0;
 
-		virtual void PresentImage() = 0;
+		virtual void Present() = 0;
 
 		inline static API GetAPI() { return s_API; }
 		static RendererAPI* Create();
 		
 		// TEMPORARY
-		virtual void TutorialDrawCalls(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager) = 0;
+		virtual void TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager) = 0;
 
 
 	private:

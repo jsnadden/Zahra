@@ -13,8 +13,7 @@ namespace Zahra
 		VulkanCommandBuffer(const CommandBufferSpecification& specification);
 		virtual ~VulkanCommandBuffer();
 
-		// TODO: these will be heavily refactored across the Zahra::Renderer system
-		virtual void Record() override;
+		//virtual void Record() override;
 
 	private:
 		CommandBufferSpecification m_Specification;

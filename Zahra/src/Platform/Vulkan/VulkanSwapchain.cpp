@@ -22,10 +22,8 @@ namespace Zahra
 		CreateSurface(instance, windowHandle);
 		CreateDevice(instance);
 		CreateSwapchain();
-		CreateImagesAndViews();
-		CreateDepthStencilAttachment();
-		CreateRenderPass();
-		CreateFramebuffers();
+		GetSwapchainImagesAndCreateImageViews();
+		CreateDepthStencil();
 		CreateCommandPool();
 		AllocateCommandBuffer();
 		CreateSyncObjects();
@@ -40,17 +38,13 @@ namespace Zahra
 		Cleanup();
 
 		CreateSwapchain();
-		CreateImagesAndViews();
-		CreateDepthStencilAttachment();
-		CreateFramebuffers();
+		GetSwapchainImagesAndCreateImageViews();
+		CreateDepthStencil();
 	}
 
 	void VulkanSwapchain::Shutdown(VkInstance& instance)
 	{
 		Cleanup();
-
-		vkDestroyRenderPass(m_Device->m_LogicalDevice, m_RenderPass, nullptr);
-		m_RenderPass = VK_NULL_HANDLE;
 
 		for (uint32_t i = 0; i < m_FramesInFlight; i++)
 		{
@@ -69,14 +63,14 @@ namespace Zahra
 
 	void VulkanSwapchain::Cleanup()
 	{
-		vkDestroyImageView(m_Device->m_LogicalDevice, m_DepthStencilAttachment.ImageView, nullptr);
-		vkDestroyImage(m_Device->m_LogicalDevice, m_DepthStencilAttachment.Image, nullptr);
-		vkFreeMemory(m_Device->m_LogicalDevice, m_DepthStencilAttachment.Memory, nullptr);
+		vkDestroyImageView(m_Device->GetVkDevice(), m_DepthStencilAttachment.ImageView, nullptr);
+		m_DepthStencilAttachment.ImageView = VK_NULL_HANDLE;
 
-		for (auto framebuffer : m_Framebuffers) {
-			vkDestroyFramebuffer(m_Device->m_LogicalDevice, framebuffer, nullptr);
-		}
-		m_Framebuffers.clear();
+		vkFreeMemory(m_Device->GetVkDevice(), m_DepthStencilAttachment.Memory, nullptr);
+		m_DepthStencilAttachment.Memory = VK_NULL_HANDLE;
+
+		vkDestroyImage(m_Device->GetVkDevice(), m_DepthStencilAttachment.Image, nullptr);
+		m_DepthStencilAttachment.Image = VK_NULL_HANDLE;
 
 		for (auto imageView : m_ImageViews)
 		{
@@ -87,6 +81,11 @@ namespace Zahra
 		vkDestroySwapchainKHR(m_Device->m_LogicalDevice, m_Swapchain, nullptr);
 		m_Images.clear();
 		m_Swapchain = VK_NULL_HANDLE;
+	}
+
+	void VulkanSwapchain::OnWindowResize()
+	{
+		m_WindowResized = true;
 	}
 
 	void VulkanSwapchain::GetNextImage()
@@ -106,11 +105,19 @@ namespace Zahra
 		}
 
 		vkResetFences(m_Device->m_LogicalDevice, 1, &m_InFlightFences[m_CurrentFrameIndex]);
-		vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], 0);
+		vkResetCommandBuffer(m_DrawCommandBuffers[m_CurrentFrameIndex], 0);
+	}
+
+	void VulkanSwapchain::ExecuteDrawCommandBuffer()
+	{
+
 	}
 
 	void VulkanSwapchain::PresentImage()
 	{
+
+		/////////////////////////////////////////////////////////////////////////////////////////
+		// SUBMIT DRAW COMMAND BUFFER FOR EXECUTION
 		VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[m_CurrentFrameIndex] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[m_CurrentFrameIndex] };
@@ -121,11 +128,14 @@ namespace Zahra
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentFrameIndex];
+		submitInfo.pCommandBuffers = &m_DrawCommandBuffers[m_CurrentFrameIndex];
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
 		VulkanUtils::ValidateVkResult(vkQueueSubmit(m_Device->m_GraphicsQueue, 1, &submitInfo, m_InFlightFences[m_CurrentFrameIndex]));
+
+		/////////////////////////////////////////////////////////////////////////////////////////
+		// WAIT FOR RENDERING TO COMPLETE, THEN DISPLAY SWAPCHAIN IMAGE
 
 		VkSwapchainKHR swapChains[] = { m_Swapchain };
 
@@ -139,9 +149,12 @@ namespace Zahra
 
 		VkResult result = vkQueuePresentKHR(m_Device->m_PresentationQueue, &presentInfo);
 
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_Resized)
+		m_SwapchainRecreated = false;
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_WindowResized)
 		{
-			m_Resized = false;
+			m_WindowResized = false;
+			m_SwapchainRecreated = true;
 			Recreate();
 		}
 		else if (result != VK_SUCCESS)
@@ -153,18 +166,11 @@ namespace Zahra
 
 	}
 
-	VkFramebuffer VulkanSwapchain::GetFramebuffer(uint32_t index)
-	{
-		Z_CORE_ASSERT(index < m_Framebuffers.size());
-
-		return m_Framebuffers[index];
-	}
-
 	VkCommandBuffer VulkanSwapchain::GetDrawCommandBuffer(uint32_t index)
 	{
-		Z_CORE_ASSERT(index < m_CommandBuffers.size());
+		Z_CORE_ASSERT(index < m_DrawCommandBuffers.size());
 
-		return m_CommandBuffers[index];
+		return m_DrawCommandBuffers[index];
 	}
 
 	void VulkanSwapchain::CreateSurface(VkInstance& instance, GLFWwindow* windowHandle)
@@ -392,7 +398,7 @@ namespace Zahra
 	{
 		QuerySurfaceCapabilities(m_Device->m_PhysicalDevice, m_Device->m_SwapchainSupport.Capabilities);
 
-		m_Format = ChooseSwapchainFormat();
+		m_SurfaceFormat = ChooseSwapchainFormat();
 		m_PresentationMode = ChooseSwapchainPresentationMode();
 		m_Extent = ChooseSwapchainExtent();
 
@@ -404,8 +410,8 @@ namespace Zahra
 		swapchainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		swapchainInfo.surface = m_Surface;
 		swapchainInfo.minImageCount = m_ImageCount;
-		swapchainInfo.imageFormat = m_Format.format;
-		swapchainInfo.imageColorSpace = m_Format.colorSpace;
+		swapchainInfo.imageFormat = m_SurfaceFormat.format;
+		swapchainInfo.imageColorSpace = m_SurfaceFormat.colorSpace;
 		swapchainInfo.presentMode = m_PresentationMode;
 		swapchainInfo.imageExtent = m_Extent;
 		swapchainInfo.imageArrayLayers = 1;
@@ -508,7 +514,7 @@ namespace Zahra
 		return extent;
 	}
 
-	void VulkanSwapchain::CreateImagesAndViews()
+	void VulkanSwapchain::GetSwapchainImagesAndCreateImageViews()
 	{
 		vkGetSwapchainImagesKHR(m_Device->m_LogicalDevice, m_Swapchain, &m_ImageCount, nullptr);
 		m_Images.resize(m_ImageCount);
@@ -519,115 +525,7 @@ namespace Zahra
 
 		m_ImageViews.resize(m_ImageCount);
 		for (size_t i = 0; i < m_ImageCount; i++)
-			m_ImageViews[i] = m_Device->CreateVulkanImageView(m_Format.format, m_Images[i], VK_IMAGE_ASPECT_COLOR_BIT);
-	}
-
-	void VulkanSwapchain::CreateRenderPass()
-	{
-		VkAttachmentDescription colourAttachment{};
-		colourAttachment.format = m_Format.format;
-		colourAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colourAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colourAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colourAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colourAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colourAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // expected data layout of the image given to this render pass as input
-		colourAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // data layout of the image this render pass will output
-
-		VkAttachmentDescription depthAttachment{};
-		depthAttachment.format = m_DepthStencilAttachment.Format;
-		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		std::vector<VkAttachmentDescription> attachments = { colourAttachment, depthAttachment };
-
-		VkAttachmentReference colourAttachmentRef{};
-		colourAttachmentRef.attachment = 0;
-		colourAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // data layout the given subpass will treat the image as
-
-		VkAttachmentReference depthAttachmentRef{};
-		depthAttachmentRef.attachment = 1;
-		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass{};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // as opposed to compute
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &colourAttachmentRef;
-		subpass.pDepthStencilAttachment = &depthAttachmentRef;
-
-		// this subpass dependency sets up waiting until the swapchain has finished reading
-		// the colour attachment (for presentation) before the next frame is written to it
-		VkSubpassDependency dependency{};
-		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.srcAccessMask = 0;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-		VkRenderPassCreateInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = (uint32_t)attachments.size();
-		renderPassInfo.pAttachments = attachments.data();
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpass;
-		renderPassInfo.dependencyCount = 1;
-		renderPassInfo.pDependencies = &dependency;
-
-		VulkanUtils::ValidateVkResult(vkCreateRenderPass(m_Device->m_LogicalDevice, &renderPassInfo, nullptr, &m_RenderPass),
-			"Vulkan swapchain render pass creation failed");
-	}
-
-	void VulkanSwapchain::CreateFramebuffers()
-	{
-		for (auto& imageView : m_ImageViews)
-		{
-			std::vector<VkImageView> attachments = { imageView, m_DepthStencilAttachment.ImageView };
-			auto& framebuffer = m_Framebuffers.emplace_back();
-
-			VkFramebufferCreateInfo framebufferInfo{};
-			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass = m_RenderPass;
-			framebufferInfo.attachmentCount = (uint32_t)attachments.size();
-			framebufferInfo.pAttachments = attachments.data();
-			framebufferInfo.width = m_Extent.width;
-			framebufferInfo.height = m_Extent.height;
-			framebufferInfo.layers = 1;
-
-			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(m_Device->m_LogicalDevice, &framebufferInfo, nullptr, &framebuffer),
-				"Vulkan swapchain framebuffer creation failed");
-		}
-	}
-
-	void VulkanSwapchain::CreateDepthStencilAttachment()
-	{
-		m_DepthStencilAttachment.Format = ChooseDepthStencilFormat();
-
-		m_Device->CreateVulkanImage(m_Extent.width, m_Extent.height,
-			m_DepthStencilAttachment.Format,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_DepthStencilAttachment.Image, m_DepthStencilAttachment.Memory);
-
-		m_DepthStencilAttachment.ImageView = m_Device->CreateVulkanImageView(m_DepthStencilAttachment.Format,
-			m_DepthStencilAttachment.Image, VK_IMAGE_ASPECT_DEPTH_BIT);
-
-		// this is not truly necessary as the render pass will handle the transition anyway
-		m_Device->TransitionVulkanImageLayout(m_DepthStencilAttachment.Image, m_DepthStencilAttachment.Format,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
-	}
-
-	VkFormat VulkanSwapchain::ChooseDepthStencilFormat()
-	{
-		return m_Device->CheckFormatSupport({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-			VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+			m_ImageViews[i] = m_Device->CreateVulkanImageView(m_SurfaceFormat.format, m_Images[i], VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 	void VulkanSwapchain::CreateCommandPool()
@@ -643,7 +541,7 @@ namespace Zahra
 
 	void VulkanSwapchain::AllocateCommandBuffer()
 	{
-		m_CommandBuffers.resize(m_FramesInFlight);
+		m_DrawCommandBuffers.resize(m_FramesInFlight);
 
 		VkCommandBufferAllocateInfo commandBufferInfo{};
 		commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -651,7 +549,7 @@ namespace Zahra
 		commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		commandBufferInfo.commandBufferCount = m_FramesInFlight;
 
-		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(m_Device->m_LogicalDevice, &commandBufferInfo, m_CommandBuffers.data()),
+		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(m_Device->m_LogicalDevice, &commandBufferInfo, m_DrawCommandBuffers.data()),
 			"Vulkan command buffer allocations failed");
 	}
 
@@ -681,6 +579,31 @@ namespace Zahra
 				"Vulkan fence creation failed");
 		}		
 
+	}
+
+	void VulkanSwapchain::CreateDepthStencil()
+	{
+		m_DepthStencilAttachment.Format = ChooseDepthStencilFormat();
+
+		m_Device->CreateVulkanImage(m_Extent.width, m_Extent.height,
+			m_DepthStencilAttachment.Format,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_DepthStencilAttachment.Image, m_DepthStencilAttachment.Memory);
+
+		m_DepthStencilAttachment.ImageView = m_Device->CreateVulkanImageView(m_DepthStencilAttachment.Format,
+			m_DepthStencilAttachment.Image, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+		// this is not truly necessary as the render pass will handle the transition anyway
+		m_Device->TransitionVulkanImageLayout(m_DepthStencilAttachment.Image, m_DepthStencilAttachment.Format,
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	}
+
+	VkFormat VulkanSwapchain::ChooseDepthStencilFormat()
+	{
+		return m_Device->CheckFormatSupport({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+			VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 	}
 
 }

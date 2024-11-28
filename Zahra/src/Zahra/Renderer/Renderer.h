@@ -19,7 +19,8 @@ namespace Zahra
 		static RendererConfig& GetConfig();
 		static void SetConfig(const RendererConfig& config);
 
-		static void NewFrame();
+		static void BeginFrame();
+		static void EndFrame();
 
 		// TEMPORARY
 		static void DrawTutorialScene();
@@ -29,7 +30,7 @@ namespace Zahra
 		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
 
-		static void PresentImage();
+		static void Present();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 

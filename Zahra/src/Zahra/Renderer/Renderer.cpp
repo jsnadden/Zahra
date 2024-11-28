@@ -3,7 +3,7 @@
 
 #include "Zahra/Core/Types.h"
 #include "Zahra/Renderer/IndexBuffer.h"
-#include "Zahra/Renderer/Pipeline.h"
+#include "Zahra/Renderer/RenderPass.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/ShaderResourceManager.h"
 #include "Zahra/Renderer/UniformBuffer.h"
@@ -63,18 +63,15 @@ namespace Zahra
 	struct RendererData
 	{
 		Ref<Shader> Shader;
-		Ref<ShaderResourceManager> ResourceManager;
+		Ref<ShaderResourceManager> TutorialResourceManager;
 
 		RendererConfig Config;
 
 		// TEMPORARY:
-		Ref<Pipeline> Pipeline;
-
+		Ref<RenderPass> TutorialRenderPass;
 		Ref<VertexBuffer> TutorialVertexBuffer;
 		Ref<IndexBuffer> TutorialIndexBuffer;
-
 		Ref<UniformBufferSet> TutorialUniformBuffers;
-
 		Ref<Texture2D> TutorialTexture;
 
 		// TODO: ressurect stuff from here
@@ -162,7 +159,7 @@ namespace Zahra
 		resourceManagerSpec.FirstSet = 0;
 		resourceManagerSpec.LastSet = 0;
 
-		s_Data.ResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
+		s_Data.TutorialResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
 		const VertexBufferLayout layout =
 		{
@@ -171,10 +168,17 @@ namespace Zahra
 			{	ShaderDataType::Float2, "a_TexCoords"	}
 		};
 
-		PipelineSpecification pipelineSpec{};
-		pipelineSpec.Shader = s_Data.Shader;
-		pipelineSpec.VertexLayout = layout;
-		s_Data.Pipeline = Pipeline::Create(pipelineSpec);
+		RenderPassSpecification renderPassSpecification{};
+		renderPassSpecification.Shader = s_Data.Shader;
+		renderPassSpecification.Topology = PrimitiveTopology::Triangles;
+		renderPassSpecification.VertexLayout = layout;
+		renderPassSpecification.LoadOp = AttachmentLoadOp::Clear;
+		renderPassSpecification.StoreOp = AttachmentStoreOp::Store;
+		renderPassSpecification.InitialLayout = AttachmentLayout::Undefined;
+		renderPassSpecification.FinalLayout = AttachmentLayout::Present;
+		renderPassSpecification.HasDepthStencil = true;
+
+		s_Data.TutorialRenderPass = RenderPass::Create(renderPassSpecification);
 
 		const std::vector<TutorialVertex> vertices =
 		{
@@ -213,9 +217,9 @@ namespace Zahra
 		textureSpec.ImageFilepath = "Assets/Textures/yajirobe.png";
 		s_Data.TutorialTexture = Texture2D::Create(textureSpec);
 
-		s_Data.ResourceManager->ProvideResource("Matrices", s_Data.TutorialUniformBuffers);
-		s_Data.ResourceManager->ProvideResource("u_Texture", s_Data.TutorialTexture);
-		s_Data.ResourceManager->Bake();
+		s_Data.TutorialResourceManager->ProvideResource("Matrices", s_Data.TutorialUniformBuffers);
+		s_Data.TutorialResourceManager->ProvideResource("u_Texture", s_Data.TutorialTexture);
+		s_Data.TutorialResourceManager->Bake();
 
 		// TODO: ressurect stuff from here
 		#pragma region
@@ -339,8 +343,8 @@ namespace Zahra
 		s_Data.TutorialUniformBuffers.Reset();
 		s_Data.TutorialVertexBuffer.Reset();
 		s_Data.TutorialIndexBuffer.Reset();
-		s_Data.Pipeline.Reset();
-		s_Data.ResourceManager.Reset();
+		s_Data.TutorialRenderPass.Reset();
+		s_Data.TutorialResourceManager.Reset();
 		s_Data.Shader.Reset();
 
 		//delete[] s_Data.QuadVertexBufferBase;
@@ -358,11 +362,16 @@ namespace Zahra
 		s_Data.Config = config;
 	}
 
-	void Renderer::NewFrame()
+	void Renderer::BeginFrame()
 	{
-		s_RendererAPI->NewFrame();
+		s_RendererAPI->BeginFrame();
 
 		// TODO: reset descriptor pools
+	}
+
+	void Renderer::EndFrame()
+	{
+		s_RendererAPI->EndFrame();
 	}
 
 	void Renderer::DrawTutorialScene()
@@ -383,8 +392,8 @@ namespace Zahra
 		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
 		s_Data.TutorialUniformBuffers->SetData(frameIndex, &transforms, sizeof(MVPTransforms));
 
-		s_RendererAPI->BeginRenderPass(s_Data.Pipeline);
-		s_RendererAPI->TutorialDrawCalls(s_Data.Pipeline, s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer, s_Data.ResourceManager);
+		s_RendererAPI->BeginRenderPass(s_Data.TutorialRenderPass);
+		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialRenderPass, s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer, s_Data.TutorialResourceManager);
 		s_RendererAPI->EndRenderPass();
 	}
 
@@ -409,9 +418,9 @@ namespace Zahra
 		//SubmitBatch();
 	}
 
-	void Renderer::PresentImage()
+	void Renderer::Present()
 	{
-		s_RendererAPI->PresentImage();
+		s_RendererAPI->Present();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)

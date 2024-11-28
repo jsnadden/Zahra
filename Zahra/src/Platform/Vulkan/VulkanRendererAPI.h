@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Zahra/Renderer/RendererAPI.h"
+
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanPipeline.h"
+#include "Platform/Vulkan/VulkanRenderPass.h"
 
 namespace Zahra
 {
@@ -22,24 +25,26 @@ namespace Zahra
 		virtual uint32_t GetFramesInFlight() override;
 		virtual uint32_t GetCurrentFrameIndex() override;
 		virtual uint32_t GetCurrentImageIndex() override;
-
-		virtual void SetClearColour(const glm::vec4& colour) override { m_ClearValues[0] = {{colour.r, colour.g, colour.b, colour.a}}; }
 		
-		virtual void NewFrame() override;
+		virtual void BeginFrame() override;
+		virtual void EndFrame() override;
 
-		virtual void BeginRenderPass(Ref<Pipeline> pipeline) override;
+		virtual void BeginRenderPass(Ref<RenderPass> renderPass) override;
 		virtual void EndRenderPass() override;
 
-		virtual void PresentImage() override;
+		virtual void Present() override;
 
 		// TEMPORARY
-		virtual void TutorialDrawCalls(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager) override;
+		virtual void TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager) override;
 
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;
+		Ref<VulkanDevice> m_Device;
 
-		std::vector<VkClearValue> m_ClearValues = { { { 0.01f, 0.02f, 0.01f, 1.0f } } , { 1.0f, 0 } };
+		uint32_t m_FramesInFlight;
 
+		std::vector<VkClearValue> m_ClearValues = { { { 0.0f, 0.0f, 0.0f, 1.0f } } , { 1.0f, 0 } };
+				
 	};
 
 }

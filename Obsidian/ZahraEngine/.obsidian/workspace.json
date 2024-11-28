@@ -4,21 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "452bb4d95dbe3fd9",
+        "id": "d95406788f4c956f",
         "type": "tabs",
         "children": [
           {
-            "id": "a0dc6ef2d0f35371",
+            "id": "f086f97a765209d2",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "Planning & Learning/Renderer architecture.md",
-                "mode": "source",
-                "source": false
+                "file": "Planning & Learning/Vulkan resources.canvas",
+                "viewState": {
+                  "x": -1012.0967705020088,
+                  "y": -348.56506029758117,
+                  "zoom": -1.3220893911263514
+                }
               },
-              "icon": "lucide-file",
-              "title": "Renderer architecture"
+              "icon": "lucide-layout-dashboard",
+              "title": "Vulkan resources"
             }
           }
         ]
@@ -162,11 +165,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "a0dc6ef2d0f35371",
+  "active": "f086f97a765209d2",
   "lastOpenFiles": [
-    "Planning & Learning/Resource Management.md",
+    "Planning & Learning/Rendering pipeline.canvas",
     "Planning & Learning/Renderer architecture.md",
-    "Planning & Learning/Renderer architecture.canvas",
+    "Planning & Learning/Vulkan resources.canvas",
+    "Planning & Learning/Vulkan resource hierarchy.md",
+    "Planning & Learning/Resource Management.md",
     "Planning & Learning/Hazel initialisation details.canvas",
     "Untitled",
     "Planning & Learning/VULKAN.md",

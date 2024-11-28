@@ -308,6 +308,21 @@ namespace Zahra
 		vkFreeCommandBuffers(m_LogicalDevice, commandPool, 1, &commandBuffer);
 	}
 
+	VkCommandBuffer VulkanDevice::GetSecondaryCommandBuffer()
+	{
+		VkCommandBuffer cmdBuffer;
+
+		VkCommandBufferAllocateInfo commandBufferAllocInfo = {};
+		commandBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		commandBufferAllocInfo.commandPool = GetOrCreateCommandPool();
+		commandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+		commandBufferAllocInfo.commandBufferCount = 1;
+
+		VulkanUtils::ValidateVkResult(vkAllocateCommandBuffers(m_LogicalDevice, &commandBufferAllocInfo, &cmdBuffer));
+
+		return cmdBuffer;
+	}
+
 	VkFormat VulkanDevice::CheckFormatSupport(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 	{
 		for (auto& format : candidates)

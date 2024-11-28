@@ -18,9 +18,11 @@ namespace Zahra
 		void Shutdown(VkInstance& instance);
 		void Cleanup();
 
-		void OnWindowResize() { m_Resized = true; }
+		void OnWindowResize();
+		bool HasResized() { return m_SwapchainRecreated; }
 
 		void GetNextImage();
+		void ExecuteDrawCommandBuffer();
 		void PresentImage();
 
 		VkSurfaceKHR& GetSurface() { return m_Surface; }
@@ -29,60 +31,56 @@ namespace Zahra
 		const VkDevice& GetLogicalDevice() { return m_Device->m_LogicalDevice; }
 
 		const VkExtent2D& GetExtent() { return m_Extent; }
-		const VkFormat& GetImageFormat() { return m_Format.format; }
-		const std::vector<VkImageView>& GetImageViews() { return m_ImageViews; }
+		const VkFormat& GetSwapchainImageFormat() { return m_SurfaceFormat.format; }
+		const std::vector<VkImageView>& GetSwapchainImageViews() { return m_ImageViews; }
 
-		const VkRenderPass& GetVkRenderPass() { return m_RenderPass; }
-
-		VkFramebuffer GetFramebuffer(uint32_t index);
-		VkFramebuffer GetCurrentFramebuffer() { return GetFramebuffer(m_CurrentImageIndex); }
+		const VkFormat& GetDepthStencilFormat() { return m_DepthStencilAttachment.Format; }
+		const VkImageView& GetDepthStencilImageView() { return m_DepthStencilAttachment.ImageView; }
 
 		VkCommandBuffer GetDrawCommandBuffer(uint32_t index);
 		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentFrameIndex); }
 
 		uint32_t GetFramesInFlight() { return m_FramesInFlight; }
+		uint32_t GetImageCount() { return m_ImageCount; }
 		uint32_t GetFrameIndex() { return m_CurrentFrameIndex; }
 		uint32_t GetImageIndex() { return m_CurrentImageIndex; }
 
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 
-		bool m_Resized = false;
-		bool m_Invalidated = false;
+		bool m_WindowResized = false;
+		bool m_SwapchainRecreated = false;
 
 		uint32_t m_ImageCount = 0;
-		std::vector<VkImage> m_Images;
-		std::vector<VkImageView> m_ImageViews;
-		std::vector<VkFramebuffer> m_Framebuffers;
 		uint32_t m_CurrentImageIndex = 0;
-
-		struct
-		{
-			VkImage Image;
-			VkDeviceMemory Memory;
-			VkImageView ImageView;
-			VkFormat Format;
-		} m_DepthStencilAttachment;
+		std::vector<VkImage> m_Images;
+		VkFormat m_ImageFormat;
+		std::vector<VkImageView> m_ImageViews;
 
 		uint32_t m_FramesInFlight = 3;
 		uint32_t m_CurrentFrameIndex = 0;
 
 		Ref<VulkanDevice> m_Device;
 
-		VkSurfaceFormatKHR m_Format;
+		VkSurfaceFormatKHR m_SurfaceFormat;
 		VkPresentModeKHR m_PresentationMode;
 		VkExtent2D m_Extent;
 		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 
-		// TODO: does this belong here?
-		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
-
 		VkCommandPool m_CommandPool = VK_NULL_HANDLE;
-		std::vector<VkCommandBuffer> m_CommandBuffers;
+		std::vector<VkCommandBuffer> m_DrawCommandBuffers;
 
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 		std::vector<VkFence> m_InFlightFences;
+
+		struct
+		{
+			VkFormat Format;
+			VkImage Image;
+			VkDeviceMemory Memory;
+			VkImageView ImageView;
+		} m_DepthStencilAttachment;
 
 		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
 
@@ -100,17 +98,15 @@ namespace Zahra
 		VkPresentModeKHR ChooseSwapchainPresentationMode();
 		VkExtent2D ChooseSwapchainExtent();
 
-		void CreateImagesAndViews();
-		void CreateRenderPass();
-		void CreateFramebuffers();
-
-		void CreateDepthStencilAttachment();
-		VkFormat ChooseDepthStencilFormat();
+		void GetSwapchainImagesAndCreateImageViews();
 
 		void CreateCommandPool();
 		void AllocateCommandBuffer();
 
 		void CreateSyncObjects();
+
+		void CreateDepthStencil();
+		VkFormat ChooseDepthStencilFormat();
 
 		friend class VulkanContext;
 	};

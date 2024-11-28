@@ -243,9 +243,6 @@
     <ClInclude Include="src\Zahra\Renderer\RenderCommandQueue.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\RenderPass.h">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Renderer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
@@ -1569,6 +1566,8 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanMaterial.h" />
     <ClInclude Include="src\Zahra\Renderer\ShaderResourceManager.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h" />
+    <ClInclude Include="src\Zahra\Renderer\RendererTypes.h" />
+    <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp">
@@ -1733,5 +1732,7 @@
     <ClCompile Include="src\Zahra\Renderer\Material.cpp" />
     <ClCompile Include="src\Zahra\Renderer\ShaderResourceManager.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanRenderPass.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\RenderPass.cpp" />
   </ItemGroup>
 </Project>

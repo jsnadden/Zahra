@@ -1,22 +1,11 @@
 #pragma once
 
-#include "Zahra/Renderer/Framebuffer.h"
-#include "Zahra/Renderer/RenderPass.h"
+#include "Zahra/Renderer/RendererTypes.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/VertexBuffer.h"
 
 namespace Zahra
 {
-	enum class PrimitiveTopology
-	{
-		Triangles,
-		TriangleStrip,
-		TriangleFan,
-		Lines,
-		LineStrip,
-		Points
-	};
-
 	struct PipelineSpecification
 	{
 		Ref<Shader> Shader;

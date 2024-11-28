@@ -84,8 +84,12 @@ namespace Zahra
 		VkCommandBuffer GetTemporaryCommandBuffer(bool begin = true);
 		void ReturnTemporaryCommandBuffer(VkCommandBuffer commandBuffer);
 
+		VkCommandBuffer GetSecondaryCommandBuffer();
+
+		VkPhysicalDevice& GetPhysicalDevice() { return m_PhysicalDevice; }
 		VkDevice& GetVkDevice() { return m_LogicalDevice; }
 		QueueFamilyIndices& GetQueueFamilyIndices() { return m_QueueFamilyIndices; }
+		VkQueue& GetGraphicsQueue() { return m_GraphicsQueue; }
 
 		VkFormat CheckFormatSupport(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
