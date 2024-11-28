@@ -125,11 +125,11 @@ namespace Zahra
 
 	bool Application::OnWindowResized(WindowResizedEvent& e)
 	{
-		if (e.GetWidth() == 0 || e.GetHeight() == 0)
-		{
-			//m_Minimised = true;
-			return false;
-		}
+		//if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		//{
+		//	//m_Minimised = true;
+		//	return false;
+		//}
 		
 		//m_Minimised = false;
 

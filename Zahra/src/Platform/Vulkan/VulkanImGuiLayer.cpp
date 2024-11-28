@@ -106,7 +106,7 @@ namespace Zahra
 
 	void VulkanImGuiLayer::Begin()
 	{
-		if (FramebuffersNeedResizing())
+		if (VulkanContext::Get()->GetSwapchain()->WasRecreated())
 		{
 			DestroyFramebuffers();
 			CreateFramebuffers();
@@ -260,12 +260,6 @@ namespace Zahra
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
 		}
 		m_Framebuffers.clear();
-	}
-
-	bool VulkanImGuiLayer::FramebuffersNeedResizing()
-	{
-		VkExtent2D swapchainSize = VulkanContext::Get()->GetSwapchain()->GetExtent();
-		return (m_FramebufferSize.width != swapchainSize.width) || (m_FramebufferSize.height != swapchainSize.height);
 	}
 
 

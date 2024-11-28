@@ -19,7 +19,7 @@ namespace Zahra
 		void Cleanup();
 
 		void OnWindowResize();
-		bool HasResized() { return m_SwapchainRecreated; }
+		bool WasRecreated() { return m_SwapchainRecreated; }
 
 		void GetNextImage();
 		void ExecuteDrawCommandBuffer();

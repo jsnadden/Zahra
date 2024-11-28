@@ -40,6 +40,8 @@ namespace Zahra
 		CreateSwapchain();
 		GetSwapchainImagesAndCreateImageViews();
 		CreateDepthStencil();
+
+		m_SwapchainRecreated = true;
 	}
 
 	void VulkanSwapchain::Shutdown(VkInstance& instance)
@@ -154,7 +156,6 @@ namespace Zahra
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_WindowResized)
 		{
 			m_WindowResized = false;
-			m_SwapchainRecreated = true;
 			Recreate();
 		}
 		else if (result != VK_SUCCESS)

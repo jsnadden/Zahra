@@ -89,7 +89,7 @@ namespace Zahra
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
 		Ref<VulkanRenderPass> vulkanRenderPass = renderpass.As<VulkanRenderPass>();
-		if (vulkanRenderPass->NeedsResizing()) vulkanRenderPass->RefreshFramebuffers();
+		if (m_Swapchain->WasRecreated()) vulkanRenderPass->RefreshFramebuffers();
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

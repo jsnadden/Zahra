@@ -31,7 +31,6 @@ namespace Zahra
 		VkExtent2D m_FramebufferSize;
 		void CreateFramebuffers();
 		void DestroyFramebuffers();
-		bool FramebuffersNeedResizing();
 
 	};
 
