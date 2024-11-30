@@ -31,7 +31,7 @@ namespace Zahra
 		Z_CORE_TRACE("Vulkan swap chain creation succeeded");
 	}
 
-	void VulkanSwapchain::Recreate()
+	void VulkanSwapchain::Invalidate()
 	{
 		vkDeviceWaitIdle(m_Device->m_LogicalDevice);
 
@@ -41,7 +41,7 @@ namespace Zahra
 		GetSwapchainImagesAndCreateImageViews();
 		CreateDepthStencil();
 
-		m_SwapchainRecreated = true;
+		m_Invalidated = true;
 	}
 
 	void VulkanSwapchain::Shutdown(VkInstance& instance)
@@ -85,7 +85,7 @@ namespace Zahra
 		m_Swapchain = VK_NULL_HANDLE;
 	}
 
-	void VulkanSwapchain::OnWindowResize()
+	void VulkanSwapchain::SignalResize()
 	{
 		m_WindowResized = true;
 	}
@@ -98,7 +98,7 @@ namespace Zahra
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
-			Recreate();
+			Invalidate();
 			return;
 		}
 		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -151,12 +151,12 @@ namespace Zahra
 
 		VkResult result = vkQueuePresentKHR(m_Device->m_PresentationQueue, &presentInfo);
 
-		m_SwapchainRecreated = false;
+		m_Invalidated = false;
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_WindowResized)
 		{
 			m_WindowResized = false;
-			Recreate();
+			Invalidate();
 		}
 		else if (result != VK_SUCCESS)
 		{

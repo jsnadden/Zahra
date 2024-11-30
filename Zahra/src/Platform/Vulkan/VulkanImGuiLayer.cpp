@@ -106,7 +106,7 @@ namespace Zahra
 
 	void VulkanImGuiLayer::Begin()
 	{
-		if (VulkanContext::Get()->GetSwapchain()->WasRecreated())
+		if (VulkanContext::Get()->GetSwapchain()->Invalidated())
 		{
 			DestroyFramebuffers();
 			CreateFramebuffers();

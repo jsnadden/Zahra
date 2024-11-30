@@ -36,6 +36,7 @@ namespace Zahra
 
 		// TEMPORARY
 		virtual void TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager) override;
+		virtual void TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<Mesh> mesh, Ref<ShaderResourceManager> resourceManager) override;
 
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;

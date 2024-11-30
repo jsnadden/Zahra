@@ -14,12 +14,12 @@ namespace Zahra
 		VulkanSwapchain() = default;
 
 		void Init(VkInstance& instance, GLFWwindow* windowHandle);
-		void Recreate();
+		void Invalidate();
 		void Shutdown(VkInstance& instance);
 		void Cleanup();
 
-		void OnWindowResize();
-		bool WasRecreated() { return m_SwapchainRecreated; }
+		void SignalResize();
+		bool Invalidated() { return m_Invalidated; }
 
 		void GetNextImage();
 		void ExecuteDrawCommandBuffer();
@@ -49,7 +49,7 @@ namespace Zahra
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 
 		bool m_WindowResized = false;
-		bool m_SwapchainRecreated = false;
+		bool m_Invalidated = false;
 
 		uint32_t m_ImageCount = 0;
 		uint32_t m_CurrentImageIndex = 0;

@@ -3,6 +3,7 @@
 
 #include "Zahra/Core/Types.h"
 #include "Zahra/Renderer/IndexBuffer.h"
+#include "Zahra/Renderer/Mesh.h"
 #include "Zahra/Renderer/RenderPass.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/ShaderResourceManager.h"
@@ -45,13 +46,6 @@ namespace Zahra
 		int EntityID = -1;
 	};
 
-	struct TutorialVertex
-	{
-		glm::vec3 Position;
-		glm::vec3 Colour;
-		glm::vec2 TexCoords;
-	};
-
 	struct MVPTransforms
 	{
 		// don't forget to align uniform data correctly: https://vulkan-tutorial.com/Uniform_buffers/Descriptor_pool_and_sets
@@ -71,6 +65,7 @@ namespace Zahra
 		Ref<RenderPass> TutorialRenderPass;
 		Ref<VertexBuffer> TutorialVertexBuffer;
 		Ref<IndexBuffer> TutorialIndexBuffer;
+		Ref<Mesh> TutorialMesh;
 		Ref<UniformBufferSet> TutorialUniformBuffers;
 		Ref<Texture2D> TutorialTexture;
 
@@ -177,10 +172,11 @@ namespace Zahra
 		renderPassSpecification.InitialLayout = AttachmentLayout::Undefined;
 		renderPassSpecification.FinalLayout = AttachmentLayout::Colour;
 		renderPassSpecification.HasDepthStencil = true;
+		renderPassSpecification.BackfaceCulling = false;
 
 		s_Data.TutorialRenderPass = RenderPass::Create(renderPassSpecification);
 
-		const std::vector<TutorialVertex> vertices =
+		/*const std::vector<MeshVertex> vertices =
 		{
 			{ { -.5f, -.5f, .0f }, { 1.0f, 0.5f, 0.0f }, { 0.0f, 0.0f } },
 			{ {  .5f, -.5f, .0f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f } },
@@ -192,16 +188,20 @@ namespace Zahra
 			{ {  .5f,  .5f, -.5f }, { 0.0f, 0.5f, 1.0f }, { 1.0f, 1.0f } },
 			{ { -.5f,  .5f, -.5f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } }
 		};
-		s_Data.TutorialVertexBuffer = VertexBuffer::Create((void*)vertices.data(), vertices.size() * sizeof(TutorialVertex));
+		s_Data.TutorialVertexBuffer = VertexBuffer::Create((void*)vertices.data(), vertices.size() * sizeof(MeshVertex));*/
 
-		const std::vector<uint32_t> indices =
+		/*const std::vector<uint32_t> indices =
 		{ 
 			0, 1, 2,
 			2, 3, 0,
 			4, 5, 6,
 			6, 7, 4
 		};
-		s_Data.TutorialIndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+		s_Data.TutorialIndexBuffer = IndexBuffer::Create(indices.data(), indices.size());*/
+
+		MeshSpecification meshSpecification{};
+		meshSpecification.Filepath = "Assets/Models/viking_room.obj";
+		s_Data.TutorialMesh = Mesh::Create(meshSpecification);
 
 		MVPTransforms transforms{};
 
@@ -214,7 +214,7 @@ namespace Zahra
 			s_Data.TutorialUniformBuffers->SetData(i, &transforms, uniformBufferSize);
 
 		Texture2DSpecification textureSpec{};
-		textureSpec.ImageFilepath = "Assets/Textures/yajirobe.png";
+		textureSpec.ImageFilepath = "Assets/Textures/viking_room.png";
 		s_Data.TutorialTexture = Texture2D::Create(textureSpec);
 
 		s_Data.TutorialResourceManager->ProvideResource("Matrices", s_Data.TutorialUniformBuffers);
@@ -343,6 +343,7 @@ namespace Zahra
 		s_Data.TutorialUniformBuffers.Reset();
 		s_Data.TutorialVertexBuffer.Reset();
 		s_Data.TutorialIndexBuffer.Reset();
+		s_Data.TutorialMesh.Reset();
 		s_Data.TutorialRenderPass.Reset();
 		s_Data.TutorialResourceManager.Reset();
 		s_Data.Shader.Reset();
@@ -393,7 +394,7 @@ namespace Zahra
 		s_Data.TutorialUniformBuffers->SetData(frameIndex, &transforms, sizeof(MVPTransforms));
 
 		s_RendererAPI->BeginRenderPass(s_Data.TutorialRenderPass);
-		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialRenderPass, s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer, s_Data.TutorialResourceManager);
+		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialRenderPass, s_Data.TutorialMesh, s_Data.TutorialResourceManager);
 		s_RendererAPI->EndRenderPass();
 	}
 

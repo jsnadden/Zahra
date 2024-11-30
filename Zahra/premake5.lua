@@ -46,7 +46,8 @@ project "Zahra"
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.VMA}",
-		"%{IncludeDir.mono}"
+		"%{IncludeDir.mono}",
+		"%{IncludeDir.tinyobjloader}"
 	}
 
 	links

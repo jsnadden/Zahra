@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Zahra/Renderer/IndexBuffer.h"
+#include "Zahra/Renderer/Mesh.h"
 #include "Zahra/Renderer/RenderPass.h"
 #include "Zahra/Renderer/ShaderResourceManager.h"
 #include "Zahra/Renderer/UniformBuffer.h"
@@ -45,6 +46,7 @@ namespace Zahra
 		
 		// TEMPORARY
 		virtual void TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager) = 0;
+		virtual void TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<Mesh> mesh, Ref<ShaderResourceManager> resourceManager) = 0;
 
 
 	private:

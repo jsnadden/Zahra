@@ -255,7 +255,7 @@ namespace Zahra
 		rasterizationStateInfo.rasterizerDiscardEnable = VK_FALSE;
 		rasterizationStateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizationStateInfo.lineWidth = 1.0f;
-		rasterizationStateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+		rasterizationStateInfo.cullMode = m_Specification.BackfaceCulling ? VK_CULL_MODE_BACK_BIT : VK_CULL_MODE_NONE;
 		rasterizationStateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizationStateInfo.depthBiasEnable = VK_FALSE;
 		rasterizationStateInfo.depthBiasConstantFactor = 0.0f;

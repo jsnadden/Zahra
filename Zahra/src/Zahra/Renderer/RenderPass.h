@@ -37,6 +37,7 @@ namespace Zahra
 		AttachmentLayout FinalLayout;
 
 		bool HasDepthStencil = true;
+		bool BackfaceCulling = true;
 	};
 
 	class RenderPass : public RefCounted
