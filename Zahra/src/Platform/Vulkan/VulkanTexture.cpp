@@ -79,7 +79,7 @@ namespace Zahra
 		m_Width = width;
 		m_Height = height;
 		
-		VkDeviceSize size = width * height * 4;
+		VkDeviceSize size = width * height * 4;  // 4 because currently we're just using 1 byte per channel
 
 		Init(size);
 		SetData((void*)pixelData, size);
@@ -89,10 +89,14 @@ namespace Zahra
 
 	VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height)
 	{
+		m_Format = VK_FORMAT_R8G8B8A8_SRGB;
+
 		m_Width = width;
 		m_Height = height;
 
-		Init(width * height * 4); // 4 because currently we're just using 1 byte per channel
+		VkDeviceSize size = width * height * 4;  // 4 because currently we're just using 1 byte per channel
+
+		Init(size);
 	}
 
 	VulkanTexture2D::~VulkanTexture2D()

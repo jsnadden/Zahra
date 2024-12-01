@@ -9,7 +9,7 @@ namespace Zahra
 		bool IsDiscreteGPU = false;
 		bool AnisotropicFiltering = false;
 
-		uint32_t MinBoundTextureSlots = 1;
+		int MinBoundTextureSlots = 1;
 	};
 
 	//struct GeneralRequirements

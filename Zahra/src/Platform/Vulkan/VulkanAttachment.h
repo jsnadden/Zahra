@@ -136,6 +136,7 @@ namespace Zahra
 		}
 	}
 
+	// TODO: when I make an Image class as a rendering resource, a lot of this stuff can move there
 	class VulkanAttachment : public RefCounted
 	{
 	public:

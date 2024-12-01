@@ -29,42 +29,46 @@ namespace Zahra
 
 	struct RendererData
 	{
-		RendererConfig Config;
+		#pragma region(VULKAN TUTORIAL)
+		Ref<Shader> TutorialShader;
+		Ref<ShaderResourceManager> TutorialResourceManager;
+		Ref<RenderPass> TutorialRenderPass;
+		Ref<StaticMesh> TutorialMesh;
+		Ref<UniformBufferSet> TutorialUniformBuffers;
+		Ref<Texture2D> TutorialTexture;
+		#pragma endregion
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// PARAMETERS
-		// TODO: can these be moved to rendererconfig?
+		// CONFIG
+		RendererConfig Config;
+
+		// TODO: migrate these into RenderConfig
 		static const uint32_t MaxQuadsPerBuffer = 10000;
 		static const uint32_t MaxVerticesPerBuffer = MaxQuadsPerBuffer * 4;
 		static const uint32_t MaxIndicesPerBuffer = MaxQuadsPerBuffer * 6;
-		static const uint32_t MaxTextureSlots = 32; // TODO: query the actual value via the graphics API
+		static const uint32_t MaxTextureSlots = 32;
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// TEXTURES
-		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots; // TODO: why not a std::vector?
-		uint32_t TextureSlotIndex = 1; // start at 1, because slot 0 will be our default WhiteTexture
-
+		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
+		uint32_t TextureSlotIndex = 1; // start at 1, because slot 0 will be our default 1x1 white texture
+		
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// QUADS
-		Ref<Shader>					QuadShader;
-		Ref<ShaderResourceManager>	QuadResourceManager;
-
-		Ref<RenderPass>				QuadRenderPass;
+		Ref<Shader> QuadShader;
+		Ref<ShaderResourceManager> QuadResourceManager;
+		Ref<RenderPass> QuadPass;
+		std::vector<Ref<VertexBuffer>>	QuadVertexBuffers; // one per frame-in-flight
+		std::vector<QuadVertex*> QuadVertexBufferBases;
+		std::vector<QuadVertex*> QuadVertexBufferPtrs;
+		glm::vec4 QuadVertexPositions[4];
+		glm::vec2 QuadTextureCoords[4];
+		Ref<IndexBuffer> QuadIndexBuffer;
+		uint32_t QuadIndexCount = 0;
 
 		// TODO: redesign the renderer architecture to use a single small vertex
 		// buffer, sending dynamic data in as uniforms/push constants, and use INSTANCING!!
-		std::vector<Ref<VertexBuffer>>	QuadVertexBuffers; // one per frame-in-flight
-		std::vector<QuadVertex*>		QuadVertexBufferBases;
-		std::vector<QuadVertex*>		QuadVertexBufferPtrs;
-		glm::vec4						QuadVertexPositions[4];
-		glm::vec2						QuadTextureCoords[4];
 
-		Ref<IndexBuffer>				QuadIndexBuffer;
-		uint32_t						QuadIndexCount = 0;
-
-
-		// TODO: ressurect stuff from here
-		#pragma region
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CIRCLES
 		//Ref<VertexArray>	CircleVertexArray;
@@ -87,7 +91,6 @@ namespace Zahra
 
 		//float LineThickness = 2.f;
 
-		#pragma endregion
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CAMERA
 		struct CameraData
@@ -114,6 +117,51 @@ namespace Zahra
 
 		uint32_t framesInFlight = s_RendererAPI->GetFramesInFlight();
 		
+		#pragma region(VULKAN TUTORIAL)
+		ShaderSpecification tutorialShaderSpec{};
+		tutorialShaderSpec.Name = "vulkan_tutorial";
+		tutorialShaderSpec.SourceDirectory = "Resources/Shaders";
+		s_Data.TutorialShader = Shader::Create(tutorialShaderSpec);
+
+		ShaderResourceManagerSpecification tutorialResourceManagerSpec{};
+		tutorialResourceManagerSpec.Shader = s_Data.TutorialShader;
+		tutorialResourceManagerSpec.FirstSet = 0;
+		tutorialResourceManagerSpec.LastSet = 0;
+		s_Data.TutorialResourceManager = ShaderResourceManager::Create(tutorialResourceManagerSpec);
+
+		RenderPassSpecification tutorialRenderPassSpecification{};
+		tutorialRenderPassSpecification.Shader = s_Data.TutorialShader;
+		tutorialRenderPassSpecification.Topology = PrimitiveTopology::Triangles;
+		tutorialRenderPassSpecification.HasDepthStencil = true;
+		tutorialRenderPassSpecification.TargetSwapchain = true;
+		tutorialRenderPassSpecification.PrimaryAttachment.LoadOp = AttachmentLoadOp::Clear;
+		tutorialRenderPassSpecification.PrimaryAttachment.StoreOp = AttachmentStoreOp::Store;
+		tutorialRenderPassSpecification.PrimaryAttachment.InitialLayout = AttachmentLayout::Undefined;
+		tutorialRenderPassSpecification.PrimaryAttachment.FinalLayout = AttachmentLayout::Colour;
+		tutorialRenderPassSpecification.BackfaceCulling = false;
+		s_Data.TutorialRenderPass = RenderPass::Create(tutorialRenderPassSpecification);
+
+		MeshSpecification tutorialMeshSpecification{};
+		tutorialMeshSpecification.Filepath = "Assets/Models/viking_room.obj";
+		s_Data.TutorialMesh = StaticMesh::Create(tutorialMeshSpecification);
+
+		uint32_t mvpSize = sizeof(MVPTransforms);
+
+		s_Data.TutorialUniformBuffers = UniformBufferSet::Create(mvpSize, framesInFlight);
+
+		MVPTransforms transforms{};
+		for (int i = 0; i < framesInFlight; i++)
+			s_Data.TutorialUniformBuffers->SetData(i, &transforms, mvpSize);
+
+		Texture2DSpecification tutorialTextureSpec{};
+		tutorialTextureSpec.ImageFilepath = "Assets/Textures/viking_room.png";
+		s_Data.TutorialTexture = Texture2D::Create(tutorialTextureSpec);
+
+		s_Data.TutorialResourceManager->ProvideResource("Matrices", s_Data.TutorialUniformBuffers);
+		s_Data.TutorialResourceManager->ProvideResource("u_Texture", s_Data.TutorialTexture);
+		s_Data.TutorialResourceManager->Bake();
+		#pragma endregion
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// TEXTURES
 		s_Data.TextureSlots[0] = Texture2D::Create(1, 1);
@@ -160,7 +208,7 @@ namespace Zahra
 		quadRenderPassSpec.PrimaryAttachment.InitialLayout = AttachmentLayout::Undefined;
 		quadRenderPassSpec.PrimaryAttachment.FinalLayout = AttachmentLayout::Colour;
 		quadRenderPassSpec.BackfaceCulling = false;
-		s_Data.QuadRenderPass = RenderPass::Create(quadRenderPassSpec);
+		s_Data.QuadPass = RenderPass::Create(quadRenderPassSpec);
 
 		s_Data.QuadVertexBuffers.resize(framesInFlight);
 		s_Data.QuadVertexBufferBases.resize(framesInFlight);
@@ -213,7 +261,7 @@ namespace Zahra
 			s_Data.QuadVertexBuffers[frame].Reset();
 		}
 		s_Data.QuadIndexBuffer.Reset();
-		s_Data.QuadRenderPass.Reset();
+		s_Data.QuadPass.Reset();
 		s_Data.QuadResourceManager.Reset();
 		s_Data.QuadShader.Reset();
 
@@ -223,6 +271,15 @@ namespace Zahra
 
 		for (int i = 0; i < s_Data.MaxTextureSlots; i++)
 			s_Data.TextureSlots[i].Reset();
+
+		#pragma region(VULKAN TUTORIAL)
+		s_Data.TutorialTexture.Reset();
+		s_Data.TutorialUniformBuffers.Reset();
+		s_Data.TutorialMesh.Reset();
+		s_Data.TutorialRenderPass.Reset();
+		s_Data.TutorialResourceManager.Reset();
+		s_Data.TutorialShader.Reset();
+		#pragma endregion
 
 		s_RendererAPI->Shutdown();
 	}
@@ -247,30 +304,28 @@ namespace Zahra
 		s_RendererAPI->EndFrame();
 	}
 
-	//void Renderer::DrawTutorialScene()
-	//{
-	//	static auto startTime = std::chrono::high_resolution_clock::now();
-	//	auto currentTime = std::chrono::high_resolution_clock::now();
-	//	float timeSinceStart = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+	void Renderer::DrawTutorialScene()
+	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float timeSinceStart = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	//	float width = s_RendererAPI->GetSwapchainWidth();
-	//	float height = s_RendererAPI->GetSwapchainHeight();
+		float width = s_RendererAPI->GetSwapchainWidth();
+		float height = s_RendererAPI->GetSwapchainHeight();
 
-	//	MVPTransforms transforms{};
-	//	transforms.Model = glm::rotate(glm::mat4(1.0f), timeSinceStart * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	//	transforms.View = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	//	transforms.Projection = glm::perspective(glm::radians(45.0f), width/height, 0.1f, 10.0f);
-	//	transforms.Projection[1][1] *= -1.f; // because screenspace is left-handed....
+		MVPTransforms transforms{};
+		transforms.Model = glm::rotate(glm::mat4(1.0f), timeSinceStart * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		transforms.View = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		transforms.Projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 10.0f);
+		transforms.Projection[1][1] *= -1.f; // because screenspace is left-handed....
 
-	//	glm::mat4 MVP = transforms.Projection * transforms.View * transforms.Model;
+		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
+		s_Data.TutorialUniformBuffers->SetData(frameIndex, &transforms, sizeof(MVPTransforms));
 
-	//	uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
-	//	s_Data.TutorialUniformBuffers->SetData(frameIndex, &MVP, sizeof(glm::mat4));
-
-	//	s_RendererAPI->BeginRenderPass(s_Data.TutorialRenderPass);
-	//	s_RendererAPI->TutorialDrawCalls(s_Data.TutorialRenderPass, s_Data.TutorialVertexBuffer, s_Data.TutorialIndexBuffer, s_Data.TutorialResourceManager);
-	//	s_RendererAPI->EndRenderPass();
-	//}
+		s_RendererAPI->BeginRenderPass(s_Data.TutorialRenderPass);
+		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialRenderPass, s_Data.TutorialMesh, s_Data.TutorialResourceManager);
+		s_RendererAPI->EndRenderPass();
+	}
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
@@ -327,19 +382,19 @@ namespace Zahra
 	{
 		uint32_t frame = s_RendererAPI->GetCurrentFrameIndex();
 
-		if (s_Data.QuadIndexCount)
-		{
-			uint32_t dataSize = (uint32_t)((byte*)s_Data.QuadVertexBufferPtrs[frame] - (byte*)s_Data.QuadVertexBufferBases[frame]);
-			s_Data.QuadVertexBuffers[frame]->SetData(s_Data.QuadVertexBufferBases[frame], dataSize);
+		//if (s_Data.QuadIndexCount)
+		//{
+		//	uint32_t dataSize = (uint32_t)((byte*)s_Data.QuadVertexBufferPtrs[frame] - (byte*)s_Data.QuadVertexBufferBases[frame]);
+		//	s_Data.QuadVertexBuffers[frame]->SetData(s_Data.QuadVertexBufferBases[frame], dataSize);
 
-			// Bind textures
-			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-				s_Data.TextureSlots[i]->Bind(i);
+		//	// Bind textures
+		//	for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+		//		s_Data.TextureSlots[i]->Bind(i);
 
-			s_Data.QuadShader->Bind();
-			//RenderCommandQueue::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
-			s_Data.Stats.DrawCalls++;
-		}
+		//	s_Data.QuadShader->Bind();
+		//	//RenderCommandQueue::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+		//	s_Data.Stats.DrawCalls++;
+		//}
 
 		//if (s_Data.CircleIndexCount)
 		//{
@@ -365,7 +420,7 @@ namespace Zahra
 
 	void Renderer::NewBatch()
 	{
-		s_Data.QuadIndexCount = 0;
+		/*s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
 		s_Data.CircleIndexCount = 0;
@@ -374,7 +429,7 @@ namespace Zahra
 		s_Data.LineVertexCount = 0;
 		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 
-		s_Data.TextureSlotIndex = 1;
+		s_Data.TextureSlotIndex = 1;*/
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
