@@ -86,16 +86,20 @@ namespace Zahra
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
 		Ref<VulkanRenderPass> vulkanRenderPass = renderpass.As<VulkanRenderPass>();
-		if (m_Swapchain->Invalidated()) vulkanRenderPass->RefreshFramebuffers();
+		if (m_Swapchain->Invalidated()) vulkanRenderPass->Refresh();
+
+		std::vector<VkClearValue> clearValues = { m_ClearColour };
+		// TODO: add clear values for other attachments
+		if (vulkanRenderPass->GetSpecification().HasDepthStencil) clearValues.emplace_back(m_ClearDepthStencil);
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
 		renderPassBeginInfo.framebuffer = vulkanRenderPass->GetFramebuffer(m_Swapchain->GetImageIndex());
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };
-		renderPassBeginInfo.renderArea.extent = m_Swapchain->GetExtent();
-		renderPassBeginInfo.clearValueCount = vulkanRenderPass->GetSpecification().HasDepthStencil ? 2 : 1;
-		renderPassBeginInfo.pClearValues = m_ClearValues.data();
+		renderPassBeginInfo.renderArea.extent = vulkanRenderPass->GetAttachmentSize();
+		renderPassBeginInfo.clearValueCount = clearValues.size();
+		renderPassBeginInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 

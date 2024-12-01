@@ -23,7 +23,6 @@ namespace Zahra
 		CreateDevice(instance);
 		CreateSwapchain();
 		GetSwapchainImagesAndCreateImageViews();
-		CreateDepthStencil();
 		CreateCommandPool();
 		AllocateCommandBuffer();
 		CreateSyncObjects();
@@ -39,7 +38,6 @@ namespace Zahra
 
 		CreateSwapchain();
 		GetSwapchainImagesAndCreateImageViews();
-		CreateDepthStencil();
 
 		m_Invalidated = true;
 	}
@@ -65,15 +63,6 @@ namespace Zahra
 
 	void VulkanSwapchain::Cleanup()
 	{
-		vkDestroyImageView(m_Device->GetVkDevice(), m_DepthStencilAttachment.ImageView, nullptr);
-		m_DepthStencilAttachment.ImageView = VK_NULL_HANDLE;
-
-		vkFreeMemory(m_Device->GetVkDevice(), m_DepthStencilAttachment.Memory, nullptr);
-		m_DepthStencilAttachment.Memory = VK_NULL_HANDLE;
-
-		vkDestroyImage(m_Device->GetVkDevice(), m_DepthStencilAttachment.Image, nullptr);
-		m_DepthStencilAttachment.Image = VK_NULL_HANDLE;
-
 		for (auto imageView : m_ImageViews)
 		{
 			vkDestroyImageView(m_Device->m_LogicalDevice, imageView, nullptr);
@@ -580,31 +569,6 @@ namespace Zahra
 				"Vulkan fence creation failed");
 		}		
 
-	}
-
-	void VulkanSwapchain::CreateDepthStencil()
-	{
-		m_DepthStencilAttachment.Format = ChooseDepthStencilFormat();
-
-		m_Device->CreateVulkanImage(m_Extent.width, m_Extent.height,
-			m_DepthStencilAttachment.Format,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_DepthStencilAttachment.Image, m_DepthStencilAttachment.Memory);
-
-		m_DepthStencilAttachment.ImageView = m_Device->CreateVulkanImageView(m_DepthStencilAttachment.Format,
-			m_DepthStencilAttachment.Image, VK_IMAGE_ASPECT_DEPTH_BIT);
-
-		// this is not truly necessary as the render pass will handle the transition anyway
-		m_Device->TransitionVulkanImageLayout(m_DepthStencilAttachment.Image, m_DepthStencilAttachment.Format,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-	}
-
-	VkFormat VulkanSwapchain::ChooseDepthStencilFormat()
-	{
-		return m_Device->CheckFormatSupport({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-			VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 	}
 
 }

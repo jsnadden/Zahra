@@ -1583,6 +1583,7 @@
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Mesh.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanMesh.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanAttachment.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp">
@@ -1762,5 +1763,6 @@
     <ClCompile Include="vendor\tinyobjloader\tiny_obj_loader.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Mesh.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanMesh.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanAttachment.cpp" />
   </ItemGroup>
 </Project>

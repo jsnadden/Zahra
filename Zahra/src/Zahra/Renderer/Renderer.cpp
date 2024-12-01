@@ -167,11 +167,12 @@ namespace Zahra
 		renderPassSpecification.Shader = s_Data.Shader;
 		renderPassSpecification.Topology = PrimitiveTopology::Triangles;
 		renderPassSpecification.VertexLayout = layout;
-		renderPassSpecification.LoadOp = AttachmentLoadOp::Clear;
-		renderPassSpecification.StoreOp = AttachmentStoreOp::Store;
-		renderPassSpecification.InitialLayout = AttachmentLayout::Undefined;
-		renderPassSpecification.FinalLayout = AttachmentLayout::Colour;
 		renderPassSpecification.HasDepthStencil = true;
+		renderPassSpecification.TargetSwapchain = true;
+		renderPassSpecification.PrimaryAttachment.LoadOp = AttachmentLoadOp::Clear;
+		renderPassSpecification.PrimaryAttachment.StoreOp = AttachmentStoreOp::Store;
+		renderPassSpecification.PrimaryAttachment.InitialLayout = AttachmentLayout::Undefined;
+		renderPassSpecification.PrimaryAttachment.FinalLayout = AttachmentLayout::Colour;
 		renderPassSpecification.BackfaceCulling = false;
 
 		s_Data.TutorialRenderPass = RenderPass::Create(renderPassSpecification);

@@ -34,9 +34,6 @@ namespace Zahra
 		const VkFormat& GetSwapchainImageFormat() { return m_SurfaceFormat.format; }
 		const std::vector<VkImageView>& GetSwapchainImageViews() { return m_ImageViews; }
 
-		const VkFormat& GetDepthStencilFormat() { return m_DepthStencilAttachment.Format; }
-		const VkImageView& GetDepthStencilImageView() { return m_DepthStencilAttachment.ImageView; }
-
 		VkCommandBuffer GetDrawCommandBuffer(uint32_t index);
 		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentFrameIndex); }
 
@@ -74,14 +71,6 @@ namespace Zahra
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 		std::vector<VkFence> m_InFlightFences;
 
-		struct
-		{
-			VkFormat Format;
-			VkImage Image;
-			VkDeviceMemory Memory;
-			VkImageView ImageView;
-		} m_DepthStencilAttachment;
-
 		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
 
 		// TODO: move this logic into the VulkanDevice class itself
@@ -104,9 +93,6 @@ namespace Zahra
 		void AllocateCommandBuffer();
 
 		void CreateSyncObjects();
-
-		void CreateDepthStencil();
-		VkFormat ChooseDepthStencilFormat();
 
 		friend class VulkanContext;
 	};

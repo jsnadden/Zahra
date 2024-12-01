@@ -24,19 +24,52 @@ namespace Zahra
 		Present
 	};
 
-	struct RenderPassSpecification
+	enum class AttachmentFormat
 	{
-		Ref<Shader> Shader;
-		VertexBufferLayout VertexLayout;
-		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
+		R8UN,
+		R8UI,
+		R16UI,
+		R32UI,
+		R32F,
 
-		// currently assuming only one colour attachment
+		RG8,
+		RG16F,
+		RG32F,
+
+		RGB,
+		SRGB,
+
+		RGBA,
+		SRGBA,
+		RGBA16F,
+		RGBA32F,
+
+		B10R11G11UF
+	};
+
+	struct AttachmentSpecification
+	{
+		AttachmentFormat Format; // ignored if attachment is using a swapchain image
 		AttachmentLoadOp LoadOp;
 		AttachmentStoreOp StoreOp;
 		AttachmentLayout InitialLayout;
 		AttachmentLayout FinalLayout;
+	};
 
+	struct RenderPassSpecification
+	{
+		Ref<Shader> Shader;
+
+		VertexBufferLayout VertexLayout;
+
+		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
+
+		bool TargetSwapchain = true;
 		bool HasDepthStencil = true;
+		uint32_t AttachmentWidth, AttachmentHeight; // ignored if attachment is using a swapchain image
+		AttachmentSpecification PrimaryAttachment; // ignored if attachment is using a swapchain image
+		std::vector<AttachmentSpecification> AdditionalAttachments;
+
 		bool BackfaceCulling = true;
 	};
 
@@ -48,7 +81,7 @@ namespace Zahra
 		virtual RenderPassSpecification& GetSpecification() = 0;
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
 
-		virtual void RefreshFramebuffers() = 0;
+		virtual void Refresh() = 0;
 
 		static Ref<RenderPass> Create(const RenderPassSpecification& specification);
 	};

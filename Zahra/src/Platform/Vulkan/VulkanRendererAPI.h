@@ -25,7 +25,7 @@ namespace Zahra
 		virtual uint32_t GetFramesInFlight() override;
 		virtual uint32_t GetCurrentFrameIndex() override;
 		virtual uint32_t GetCurrentImageIndex() override;
-		
+
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
 
@@ -44,8 +44,8 @@ namespace Zahra
 
 		uint32_t m_FramesInFlight;
 
-		std::vector<VkClearValue> m_ClearValues = { { { 0.0f, 0.0f, 0.0f, 1.0f } } , { 1.0f, 0 } };
-				
+		VkClearValue m_ClearColour = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+		VkClearValue m_ClearDepthStencil = { 1.0f, 0 };
 	};
 
 }
