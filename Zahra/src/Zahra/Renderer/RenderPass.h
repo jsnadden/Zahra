@@ -60,8 +60,6 @@ namespace Zahra
 	{
 		Ref<Shader> Shader;
 
-		VertexBufferLayout VertexLayout;
-
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
 
 		bool TargetSwapchain = true;

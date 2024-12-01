@@ -2,14 +2,14 @@
 
 namespace Zahra
 {
-	// default values should trivialise checks
+	// choose default values to trivialise checks, and make sure to add the
+	// corresponding tests in VulkanSwapchain::MeetsMinimimumRequirements
 	struct GPURequirements
 	{
 		bool IsDiscreteGPU = false;
 		bool AnisotropicFiltering = false;
 
-		// TODO: add requirements for vram and so forth, and the corresponding
-		// tests in VulkanContext::MeetsMinimimumRequirements
+		uint32_t MinBoundTextureSlots = 1;
 	};
 
 	//struct GeneralRequirements

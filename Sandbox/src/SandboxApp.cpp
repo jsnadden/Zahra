@@ -29,7 +29,11 @@ Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
 	spec.WorkingDirectory = ".";
 	spec.CommandLineArgs = args;
 
+	spec.RendererConfig.ForceShaderCompilation = true;
+
 	spec.GPURequirements.IsDiscreteGPU = true;
+	spec.GPURequirements.AnisotropicFiltering = true;
+	spec.GPURequirements.MinBoundTextureSlots = 32;
 
 	return new Sandbox(spec);
 }

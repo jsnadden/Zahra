@@ -62,6 +62,12 @@ namespace Zahra
 			CalculateOffsetsAndStride();
 		}
 
+		VertexBufferLayout(const std::vector<VertexBufferElement>& elements)
+			: m_Elements(elements)
+		{
+			CalculateOffsetsAndStride();
+		}
+
 		const std::vector<VertexBufferElement>& GetElements() const { return m_Elements; }
 		uint32_t GetElementCount() const { return (uint32_t)m_Elements.size(); }
 

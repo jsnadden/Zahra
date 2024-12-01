@@ -9,6 +9,9 @@ namespace Zahra
 		uint32_t FramesInFlight = 3;
 
 		std::filesystem::path ShaderPath;
+		bool ForceShaderCompilation = false;
+
+		uint32_t MaxTextureSlots;
 	};
 
 }

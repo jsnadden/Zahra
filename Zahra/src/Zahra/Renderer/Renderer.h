@@ -22,9 +22,6 @@ namespace Zahra
 		static void BeginFrame();
 		static void EndFrame();
 
-		// TEMPORARY
-		static void DrawTutorialScene();
-
 		// TODO: move this stuff to SceneRenderer
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
@@ -45,8 +42,8 @@ namespace Zahra
 		static void SetLineThickness(float thickness);*/
 
 	private:
-		/*static void SubmitBatch();
-		static void NewBatch();*/
+		static void SubmitBatch();
+		static void NewBatch();
 
 	public:
 		///////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -6,11 +6,11 @@
 
 namespace Zahra
 {
-	class VulkanMesh : public Mesh
+	class VulkanStaticMesh : public StaticMesh
 	{
 	public:
-		VulkanMesh(MeshSpecification specification);
-		virtual ~VulkanMesh();
+		VulkanStaticMesh(MeshSpecification specification);
+		virtual ~VulkanStaticMesh();
 
 		virtual Ref<VertexBuffer> GetVertexBuffer() override { return m_VertexBuffer.As<VertexBuffer>(); }
 		virtual Ref<IndexBuffer> GetIndexBuffer() override { return m_IndexBuffer.As<IndexBuffer>(); }

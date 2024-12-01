@@ -43,6 +43,7 @@ namespace Zahra
 		Z_CORE_TRACE("Shader creation took {0} ms", shaderCreationTimer.ElapsedMillis());
 
 		Reflect();
+		CreateVertexLayout();
 		CreateDescriptorSetLayouts();
 	}
 
@@ -158,6 +159,20 @@ namespace Zahra
 			spirv_cross::Compiler compiler(data);
 			spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
+			for (const auto& resource : resources.stage_inputs)
+			{
+				auto& attribute = m_ReflectionData.Attributes.emplace_back();
+
+				const auto& baseType = compiler.get_type(resource.base_type_id);
+				const auto& type = compiler.get_type(resource.type_id);
+
+				attribute.Name = resource.name;
+				attribute.Type = VulkanUtils::SPIRTypeToShaderDataType(baseType);
+				attribute.Stage = stage;
+				attribute.Location = compiler.get_decoration(resource.id, spv::DecorationLocation);
+				attribute.ArrayLength = type.array.empty() ? 1 : type.array[0]; // TODO: this only accounts for non-nested arrays
+			}
+
 			for (const auto& resource : resources.uniform_buffers)
 			{
 				auto& bufferData = m_ReflectionData.ResourceMetadata.emplace_back();
@@ -207,6 +222,26 @@ namespace Zahra
 
 		}
 
+	}
+
+	void VulkanShader::CreateVertexLayout()
+	{
+		auto& attributes = m_ReflectionData.Attributes;
+		std::sort(attributes.begin(), attributes.end(),
+			[](const VulkanShaderAttribute& first, const VulkanShaderAttribute& second)
+			{
+				return first.Location < second.Location;
+			}
+		);
+
+		std::vector<VertexBufferElement> elements;
+		for (auto& attribute : attributes)
+		{
+			if (attribute.Stage == ShaderStage::Vertex)
+				elements.emplace_back(attribute.Type, attribute.Name);
+		}
+
+		m_VertexLayout = VertexBufferLayout(elements);
 	}
 
 	void VulkanShader::CreateDescriptorSetLayouts()

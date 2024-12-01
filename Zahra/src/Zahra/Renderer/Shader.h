@@ -2,6 +2,7 @@
 
 #include "Zahra/Core/Ref.h"
 #include "Zahra/Renderer/ShaderTypes.h"
+#include "Zahra/Renderer/VertexBuffer.h"
 
 #include <string>
 #include <unordered_map>
@@ -25,6 +26,7 @@ namespace Zahra
 		virtual ~Shader() = default;
 
 		virtual const std::string& GetName() const = 0;
+		virtual const VertexBufferLayout& GetVertexLayout() const = 0;
 
 		static Ref<Shader> Create(ShaderSpecification& specification, bool forceCompile = false);
 

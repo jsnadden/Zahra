@@ -119,7 +119,7 @@ namespace Zahra
 		Ref<VulkanShader> shader = Ref<VulkanShader>(m_Specification.Shader);
 		const auto& shaderStageInfos = shader->GetPipelineShaderStageInfos();
 		VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
-		VertexBufferLayout vertexLayout = m_Specification.VertexLayout;
+		VertexBufferLayout vertexLayout = shader->GetVertexLayout();
 		std::vector<VkDescriptorSetLayout> layouts = shader->GetDescriptorSetLayouts();
 		// TODO: get push constant ranges
 

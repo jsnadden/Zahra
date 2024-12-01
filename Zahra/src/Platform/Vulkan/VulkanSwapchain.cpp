@@ -279,17 +279,18 @@ namespace Zahra
 
 		const GPURequirements& requirements = Application::Get().GetSpecification().GPURequirements;
 
-		bool pass = true;
+		if (requirements.IsDiscreteGPU && properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+			return false;
 
-		if (requirements.IsDiscreteGPU)
-			pass &= properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+		if (requirements.AnisotropicFiltering && features.samplerAnisotropy == VK_FALSE)
+			return false;
 
-		if (requirements.AnisotropicFiltering)
-			pass &= features.samplerAnisotropy == VK_TRUE;
+		if (properties.limits.maxDescriptorSetSampledImages < requirements.MinBoundTextureSlots)
+			return false;
 
 		// TODO: add checks for other requirements
 
-		return pass;
+		return true;
 	}
 
 	bool VulkanSwapchain::CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions)

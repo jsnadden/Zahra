@@ -92,7 +92,7 @@ namespace Zahra
 		m_Width = width;
 		m_Height = height;
 
-		Init(width * height * 4);
+		Init(width * height * 4); // 4 because currently we're just using 1 byte per channel
 	}
 
 	VulkanTexture2D::~VulkanTexture2D()

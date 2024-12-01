@@ -11,7 +11,7 @@
 
 namespace Zahra
 {
-	VulkanMesh::VulkanMesh(MeshSpecification specification)
+	VulkanStaticMesh::VulkanStaticMesh(MeshSpecification specification)
 		: m_Specification(specification)
 	{
 		if (strcmp(specification.Filepath.extension().string().c_str(), ".obj") == 0)
@@ -24,12 +24,12 @@ namespace Zahra
 		}
 	}
 
-	VulkanMesh::~VulkanMesh()
+	VulkanStaticMesh::~VulkanStaticMesh()
 	{
 
 	}
 
-	void VulkanMesh::LoadFromObj()
+	void VulkanStaticMesh::LoadFromObj()
 	{
 		std::vector<MeshVertex> vertices;
 		std::unordered_map<MeshVertex, uint32_t> vertexToIndexMap; // used to avoid vertex duplication

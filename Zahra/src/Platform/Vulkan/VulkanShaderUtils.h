@@ -170,6 +170,114 @@ namespace Zahra
 			}
 		}
 
+		static ShaderDataType SPIRTypeToShaderDataType(spirv_cross::SPIRType type)
+		{
+			// TODO: currently only works for non-struct attributes of limited types
+			if (type.columns == 1)
+			{
+				switch (type.vecsize)
+				{
+					case 1: // scalar attribute
+					{
+						switch (type.basetype)
+						{
+							case spirv_cross::SPIRType::BaseType::Boolean:
+							{
+								return ShaderDataType::Bool;
+								break;
+							}
+							case spirv_cross::SPIRType::BaseType::Int:
+							{
+								return ShaderDataType::Int;
+								break;
+							}
+							case spirv_cross::SPIRType::BaseType::Float:
+							{
+								return ShaderDataType::Float;
+								break;
+							}
+						}
+						break;
+					}
+					case 2:
+					{
+						switch (type.basetype)
+						{
+							case spirv_cross::SPIRType::BaseType::Int:
+							{
+								return ShaderDataType::Int2;
+								break;
+							}
+							case spirv_cross::SPIRType::BaseType::Float:
+							{
+								return ShaderDataType::Float2;
+								break;
+							}
+						}
+						break;
+					}
+					case 3:
+					{
+						switch (type.basetype)
+						{
+							case spirv_cross::SPIRType::BaseType::Int:
+							{
+								return ShaderDataType::Int3;
+								break;
+							}
+							case spirv_cross::SPIRType::BaseType::Float:
+							{
+								return ShaderDataType::Float3;
+								break;
+							}
+						}
+						break;
+					}
+					case 4:
+					{
+						switch (type.basetype)
+						{
+							case spirv_cross::SPIRType::BaseType::Int:
+							{
+								return ShaderDataType::Int4;
+								break;
+							}
+							case spirv_cross::SPIRType::BaseType::Float:
+							{
+								return ShaderDataType::Float4;
+								break;
+							}
+						}
+						break;
+					}
+				}
+			}
+			else
+			{
+				switch (type.columns)
+				{
+					case 2:
+					{
+						return ShaderDataType::Mat2;
+						break;
+					}
+					case 3:
+					{
+						return ShaderDataType::Mat3;
+						break;
+					}
+					case 4:
+					{
+						return ShaderDataType::Mat4;
+						break;
+					}
+				}
+			}
+			
+			Z_CORE_ASSERT(false, "Unsupported attribute type");
+			return ShaderDataType::None;
+		}
+
 		static VkShaderStageFlagBits ShaderStageToVkFlagBit(ShaderStage stage)
 		{
 			switch (stage)
