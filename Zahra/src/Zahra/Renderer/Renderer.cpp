@@ -133,11 +133,14 @@ namespace Zahra
 		tutorialRenderPassSpecification.Shader = s_Data.TutorialShader;
 		tutorialRenderPassSpecification.Topology = PrimitiveTopology::Triangles;
 		tutorialRenderPassSpecification.HasDepthStencil = true;
-		tutorialRenderPassSpecification.TargetSwapchain = true;
+		tutorialRenderPassSpecification.TargetSwapchain = false;
+		tutorialRenderPassSpecification.AttachmentWidth = s_RendererAPI->GetSwapchainWidth();
+		tutorialRenderPassSpecification.AttachmentHeight = s_RendererAPI->GetSwapchainHeight();
 		tutorialRenderPassSpecification.PrimaryAttachment.LoadOp = AttachmentLoadOp::Clear;
 		tutorialRenderPassSpecification.PrimaryAttachment.StoreOp = AttachmentStoreOp::Store;
-		tutorialRenderPassSpecification.PrimaryAttachment.InitialLayout = AttachmentLayout::Undefined;
-		tutorialRenderPassSpecification.PrimaryAttachment.FinalLayout = AttachmentLayout::Colour;
+		tutorialRenderPassSpecification.PrimaryAttachment.Format = ImageFormat::SRGBA;
+		/*tutorialRenderPassSpecification.PrimaryAttachment.InitialLayout = ImageLayout::Undefined;
+		tutorialRenderPassSpecification.PrimaryAttachment.FinalLayout = ImageLayout::ColourAttachment;*/
 		tutorialRenderPassSpecification.BackfaceCulling = false;
 		s_Data.TutorialRenderPass = RenderPass::Create(tutorialRenderPassSpecification);
 
@@ -205,8 +208,8 @@ namespace Zahra
 		quadRenderPassSpec.TargetSwapchain = true;
 		quadRenderPassSpec.PrimaryAttachment.LoadOp = AttachmentLoadOp::Clear;
 		quadRenderPassSpec.PrimaryAttachment.StoreOp = AttachmentStoreOp::Store;
-		quadRenderPassSpec.PrimaryAttachment.InitialLayout = AttachmentLayout::Undefined;
-		quadRenderPassSpec.PrimaryAttachment.FinalLayout = AttachmentLayout::Colour;
+		/*quadRenderPassSpec.PrimaryAttachment.InitialLayout = ImageUsage::Undefined;
+		quadRenderPassSpec.PrimaryAttachment.FinalLayout = ImageUsage::ColourAttachment;*/
 		quadRenderPassSpec.BackfaceCulling = false;
 		s_Data.QuadPass = RenderPass::Create(quadRenderPassSpec);
 
@@ -304,7 +307,7 @@ namespace Zahra
 		s_RendererAPI->EndFrame();
 	}
 
-	void Renderer::DrawTutorialScene()
+	void Renderer::DrawTutorialScene(Ref<Texture2D>& outputTexture)
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -325,6 +328,8 @@ namespace Zahra
 		s_RendererAPI->BeginRenderPass(s_Data.TutorialRenderPass);
 		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialRenderPass, s_Data.TutorialMesh, s_Data.TutorialResourceManager);
 		s_RendererAPI->EndRenderPass();
+
+		outputTexture = s_Data.TutorialRenderPass->TextureFromPrimaryAttachment();
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)

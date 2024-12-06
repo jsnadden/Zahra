@@ -76,7 +76,7 @@ namespace Zahra
 		copyRegion.size = size;
 		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-		ReturnTemporaryCommandBuffer(commandBuffer);
+		EndTemporaryCommandBuffer(commandBuffer);
 	}
 
 	void VulkanDevice::CreateVulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
@@ -183,9 +183,9 @@ namespace Zahra
 		copyInfo.imageExtent = { width, height, 1 };
 
 		vkCmdCopyBufferToImage(commandBuffer, buffer, image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyInfo); // this assumes we've already transitioned the image layout!
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyInfo); // this assumes we've already transitioned the image layout to TRANSFER_DST_OPTIMAL;
 
-		ReturnTemporaryCommandBuffer(commandBuffer);
+		EndTemporaryCommandBuffer(commandBuffer);
 
 	}
 
@@ -260,7 +260,7 @@ namespace Zahra
 			1, &barrier				// image memory barriers
 		);
 
-		ReturnTemporaryCommandBuffer(commandBuffer);
+		EndTemporaryCommandBuffer(commandBuffer);
 	}
 
 	VkCommandBuffer VulkanDevice::GetTemporaryCommandBuffer(bool begin)
@@ -288,7 +288,7 @@ namespace Zahra
 		return commandBuffer;
 	}
 
-	void VulkanDevice::ReturnTemporaryCommandBuffer(VkCommandBuffer commandBuffer)
+	void VulkanDevice::EndTemporaryCommandBuffer(VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
 

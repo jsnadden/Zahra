@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Zahra/Core/Defines.h"
+#include "Zahra/Renderer/Image.h"
 
 #include <string>
 #include <filesystem>
@@ -53,6 +54,8 @@ namespace Zahra
 	public:
 		static Ref<Texture2D> Create(const Texture2DSpecification& specification);
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
+
+		virtual void SetData(Ref<Image> srcImage) = 0;
 
 		virtual const Texture2DSpecification& GetSpecification() const = 0;
 

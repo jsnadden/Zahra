@@ -4,6 +4,7 @@
 #include "Zahra/Events/ApplicationEvent.h"
 #include "Zahra/Events/KeyEvent.h"
 #include "Zahra/Events/MouseEvent.h"
+#include "Zahra/Renderer/Texture.h"
 
 namespace Zahra
 {
@@ -12,6 +13,8 @@ namespace Zahra
 	public:
 		virtual void Begin() = 0;
 		virtual void End() = 0;
+
+		virtual void* RegisterTexture(Ref<Texture2D> texture) = 0;
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 

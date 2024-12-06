@@ -2,6 +2,7 @@
 #include "VulkanImGuiLayer.h"
 
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanTexture.h"
 #include "Zahra/Core/Application.h"
 
 #include <backends/imgui_impl_glfw.h>
@@ -146,6 +147,18 @@ namespace Zahra
 		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer);
 
 		vkCmdEndRenderPass(commandBuffer);
+	}
+
+	void* VulkanImGuiLayer::RegisterTexture(Ref<Texture2D> texture)
+	{
+		Ref<VulkanTexture2D> vulkanImage = texture.As<VulkanTexture2D>();
+		VkSampler sampler = vulkanImage->GetSampler();
+		VkImageView imageView = vulkanImage->GetImageView();
+		
+		void* imageHandle = ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		Z_CORE_ASSERT(imageHandle);
+
+		return imageHandle;
 	}
 
 	void VulkanImGuiLayer::CreateDescriptorPool()

@@ -74,14 +74,12 @@ namespace Zahra
 
 		Z_CORE_ASSERT(pixelData, "Vulkan texture failed to load image.");
 
-		m_Format = VK_FORMAT_R8G8B8A8_SRGB;
-
 		m_Width = width;
 		m_Height = height;
-		
+
 		VkDeviceSize size = width * height * 4;  // 4 because currently we're just using 1 byte per channel
 
-		Init(size);
+		InitialiseLocalBuffer(size);
 		SetData((void*)pixelData, size);
 
 		stbi_image_free(pixelData);
@@ -89,36 +87,33 @@ namespace Zahra
 
 	VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height)
 	{
-		m_Format = VK_FORMAT_R8G8B8A8_SRGB;
-
 		m_Width = width;
 		m_Height = height;
 
 		VkDeviceSize size = width * height * 4;  // 4 because currently we're just using 1 byte per channel
 
-		Init(size);
+		InitialiseLocalBuffer(size);
 	}
 
 	VulkanTexture2D::~VulkanTexture2D()
 	{
-		VkDevice& device = VulkanContext::GetCurrentVkDevice();
-
 		// TODO: employ VMA
-		vkDestroySampler(device, m_Sampler, nullptr);
-		vkDestroyImageView(device, m_ImageView, nullptr);
-		vkDestroyImage(device, m_Image, nullptr);
-		vkFreeMemory(device, m_ImageMemory, nullptr);
+		vkDestroySampler(VulkanContext::GetCurrentVkDevice(), m_Sampler, nullptr);
+		
+		m_Image.Reset();
+
+		m_LocalImageData.Release();
 	}
 
 	void VulkanTexture2D::SetData(void* data, uint32_t size)
 	{
-		m_ImageData.Write(data, size);
+		CreateImage();
+
+		m_LocalImageData.Write(data, size);
 
 		Ref<VulkanDevice>& device = VulkanContext::GetCurrentDevice();
 		VkDevice& vkDevice = device->GetVkDevice();
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////
-		// CREATE IMAGE
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
@@ -128,49 +123,63 @@ namespace Zahra
 
 		void* mappedAddress;
 		vkMapMemory(vkDevice, stagingBufferMemory, 0, size, 0, &mappedAddress);
-		memcpy(mappedAddress, m_ImageData.GetData<void>(), size);
+		memcpy(mappedAddress, m_LocalImageData.GetData<void>(), size);
 		vkUnmapMemory(vkDevice, stagingBufferMemory);
 
-		device->CreateVulkanImage(m_Width, m_Height, m_Format, VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_Image, m_ImageMemory);
-
-		device->TransitionVulkanImageLayout(m_Image, m_Format,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-		device->CopyVulkanBufferToImage(stagingBuffer, m_Image, m_Width, m_Height);
-
-		device->TransitionVulkanImageLayout(m_Image, m_Format,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		m_Image->TransitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		m_Image->SetData(stagingBuffer);
+		m_Image->TransitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 		vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////
-		// CREATE IMAGE VIEW
+		CreateSampler();
+		CreateDescriptorImageInfo();
+	}
 
-		m_ImageView = device->CreateVulkanImageView(m_Format, m_Image, VK_IMAGE_ASPECT_COLOR_BIT);
+	void VulkanTexture2D::SetData(Ref<Image> srcImage)
+	{
+		CreateImage();
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////
-		// CREATE SAMPLER
+		// TODO: copy srcImage to m_Image (add a virtual method to Image?)
+
+		CreateSampler();
+		CreateDescriptorImageInfo();
+	}
+
+	void VulkanTexture2D::InitialiseLocalBuffer(uint32_t dataSize)
+	{
+		m_LocalImageData.Allocate(dataSize);
+		m_LocalImageData.ZeroInitialise();
+	}
+
+	void VulkanTexture2D::CreateImage()
+	{
+		// TODO: for hdr textures should use a float format instead
+		ImageFormat format = ImageFormat::SRGBA;
+		m_Image = Ref<VulkanImage>::Create(m_Width, m_Height, format, ImageUsage::Texture);
+	}
+
+	void VulkanTexture2D::CreateSampler()
+	{
+		if (m_Sampler != VK_NULL_HANDLE)
+		{
+			// TODO: employ VMA
+			vkDestroySampler(VulkanContext::GetCurrentVkDevice(), m_Sampler, nullptr);
+		}
 
 		VkFilter minFilter = VulkanUtils::TextureFilterModeToVkFilter(m_Specification.MinificationFilterMode);
 		VkFilter magFilter = VulkanUtils::TextureFilterModeToVkFilter(m_Specification.MagnificationFilterMode);
 		VkSamplerAddressMode addressMode = VulkanUtils::TextureAddressModeToVkSamplerAddressMode(m_Specification.AddressMode);
-		
-		m_Sampler = device->CreateVulkanImageSampler(minFilter, magFilter, addressMode);
 
-		m_ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		m_ImageInfo.imageView = m_ImageView;
-		m_ImageInfo.sampler = m_Sampler;
-
+		m_Sampler = VulkanContext::GetCurrentDevice()->CreateVulkanImageSampler(minFilter, magFilter, addressMode);
 	}
 
-	void VulkanTexture2D::Init(uint32_t size)
+	void VulkanTexture2D::CreateDescriptorImageInfo()
 	{
-		m_ImageData.Allocate(size);
-		m_ImageData.ZeroInitialise();
-
+		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		m_DescriptorImageInfo.imageView = m_Image->GetImageView();
+		m_DescriptorImageInfo.sampler = m_Sampler;
 	}
 
 }

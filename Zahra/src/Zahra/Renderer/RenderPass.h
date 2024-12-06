@@ -1,7 +1,9 @@
 #pragma once
 
+#include "Zahra/Renderer/Image.h"
 #include "Zahra/Renderer/RendererTypes.h"
 #include "Zahra/Renderer/Shader.h"
+#include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/VertexBuffer.h"
 
 namespace Zahra
@@ -16,44 +18,15 @@ namespace Zahra
 		Store, Unspecified
 	};
 
-	enum class AttachmentLayout
-	{
-		Undefined = 0,
-		Colour,
-		DepthStencil,
-		Present
-	};
-
-	enum class AttachmentFormat
-	{
-		R8UN,
-		R8UI,
-		R16UI,
-		R32UI,
-		R32F,
-
-		RG8,
-		RG16F,
-		RG32F,
-
-		RGB,
-		SRGB,
-
-		RGBA,
-		SRGBA,
-		RGBA16F,
-		RGBA32F,
-
-		B10R11G11UF
-	};
-
 	struct AttachmentSpecification
 	{
-		AttachmentFormat Format; // ignored if attachment is using a swapchain image
+		ImageFormat Format; // ignored if attachment is using a swapchain image
 		AttachmentLoadOp LoadOp;
 		AttachmentStoreOp StoreOp;
-		AttachmentLayout InitialLayout;
-		AttachmentLayout FinalLayout;
+
+		// TODO: not currently used
+		/*ImageLayout InitialLayout;
+		ImageLayout FinalLayout;*/
 	};
 
 	struct RenderPassSpecification
@@ -78,6 +51,8 @@ namespace Zahra
 
 		virtual RenderPassSpecification& GetSpecification() = 0;
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
+
+		virtual Ref<Texture2D> TextureFromPrimaryAttachment() const = 0;
 
 		virtual void Refresh() = 0;
 

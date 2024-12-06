@@ -1,7 +1,7 @@
 #include <Zahra.h>
 #include <Zahra/Core/EntryPoint.h>
 
-#include "Sandbox2D.h"
+#include "Sandbox.h"
 
 class Sandbox : public Zahra::Application
 {
@@ -10,7 +10,7 @@ public:
 	Sandbox(const Zahra::ApplicationSpecification& spec)
 		: Zahra::Application(spec)
 	{
-		PushLayer(new Sandbox2DLayer());
+		PushLayer(new SandboxLayer());
 	}
 
 	~Sandbox()

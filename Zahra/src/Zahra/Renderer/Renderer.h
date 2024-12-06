@@ -48,7 +48,7 @@ namespace Zahra
 	public:
 
 		// TEMPORARY
-		static void DrawTutorialScene();
+		static void DrawTutorialScene(Ref<Texture2D>& outputTexture);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// PRIMITIVES

@@ -2,12 +2,12 @@
 
 #include <Zahra.h>
 
-class Sandbox2DLayer : public Zahra::Layer
+class SandboxLayer : public Zahra::Layer
 {
 public:
-	Sandbox2DLayer();
+	SandboxLayer();
 
-	~Sandbox2DLayer() = default;
+	~SandboxLayer() = default;
 
 	void OnAttach() override;
 	void OnDetach() override;
@@ -18,7 +18,8 @@ public:
 	bool OnKeyPressedEvent(Zahra::KeyPressedEvent& event);
 
 private:
-
+	Zahra::Ref<Zahra::Texture2D> m_ViewportTexture2D;
+	void* m_ViewportImGuiTextureHandle = nullptr;
 
 };
 

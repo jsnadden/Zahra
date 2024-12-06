@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Platform/Vulkan/VulkanImage.h"
 #include "Zahra/Core/Buffer.h"
 #include "Zahra/Renderer/Texture.h"
 
@@ -20,25 +21,27 @@ namespace Zahra
 		virtual const Texture2DSpecification& GetSpecification() const override { return m_Specification; }
 
 		virtual void SetData(void* data, uint32_t size) override;
+		virtual void SetData(Ref<Image> srcImage) override;
 
-		const VkDescriptorImageInfo& GetVkDescriptorImageInfo() { return m_ImageInfo; }
+		const VkImageView& GetImageView() const { return m_Image->GetImageView(); }
+		const VkSampler& GetSampler() const { return m_Sampler; }
+		const VkDescriptorImageInfo& GetVkDescriptorImageInfo() const { return m_DescriptorImageInfo; }
 
 
 	private:
-		Buffer m_ImageData;
+		Buffer m_LocalImageData;
 		
 		uint32_t m_Width, m_Height;
 		Texture2DSpecification m_Specification;
 
-		VkImage m_Image;
-		VkFormat m_Format;
-		VkDeviceMemory m_ImageMemory; // TODO: replace with vma
-		VkImageView m_ImageView;
-		VkSampler m_Sampler;
+		Ref<VulkanImage> m_Image;
+		VkSampler m_Sampler = VK_NULL_HANDLE;
+		VkDescriptorImageInfo m_DescriptorImageInfo;
 
-		VkDescriptorImageInfo m_ImageInfo;
-
-		void Init(uint32_t size);
+		void InitialiseLocalBuffer(uint32_t dataSize);
+		void CreateImage();
+		void CreateSampler();
+		void CreateDescriptorImageInfo();
 		
 	};
 }

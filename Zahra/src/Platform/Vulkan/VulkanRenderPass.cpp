@@ -1,13 +1,63 @@
 #include "zpch.h"
 #include "VulkanRenderPass.h"
 
+#include "Platform/Vulkan/VulkanImage.h"
 #include "Platform/Vulkan/VulkanShader.h"
 #include "Platform/Vulkan/VulkanShaderUtils.h"
+#include "Platform/Vulkan/VulkanTexture.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 
 namespace Zahra
 {
-	
+	namespace VulkanUtils
+	{
+		static VkAttachmentLoadOp VulkanLoadOp(AttachmentLoadOp op)
+		{
+			switch (op)
+			{
+			case AttachmentLoadOp::Load:
+			{
+				return VK_ATTACHMENT_LOAD_OP_LOAD;
+				break;
+			}
+			case AttachmentLoadOp::Clear:
+			{
+				return VK_ATTACHMENT_LOAD_OP_CLEAR;
+				break;
+			}
+			case AttachmentLoadOp::Unspecified:
+			{
+				return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				break;
+			}
+
+			}
+
+			Z_CORE_ASSERT(false, "Unrecognised LoadOp");
+			return VK_ATTACHMENT_LOAD_OP_MAX_ENUM;
+		}
+
+		static VkAttachmentStoreOp VulkanStoreOp(AttachmentStoreOp op)
+		{
+			switch (op)
+			{
+			case AttachmentStoreOp::Store:
+			{
+				return VK_ATTACHMENT_STORE_OP_STORE;
+				break;
+			}
+			case AttachmentStoreOp::Unspecified:
+			{
+				return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				break;
+			}
+
+			}
+
+			Z_CORE_ASSERT(false, "Unrecognised StoreOp");
+			return VK_ATTACHMENT_STORE_OP_MAX_ENUM;
+		}
+	}
 
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& specification)
 		: m_Specification(specification)
@@ -45,16 +95,18 @@ namespace Zahra
 
 		VkAttachmentDescription& colourAttachmentDesc = attachmentDescriptions.emplace_back();
 		colourAttachmentDesc.format = m_Specification.TargetSwapchain ? m_Swapchain->GetSwapchainImageFormat()
-			: VulkanUtils::VulkanAttachmentFormat(m_Specification.PrimaryAttachment.Format);
+			: VulkanUtils::GetColourFormat(m_Specification.PrimaryAttachment.Format);
 		colourAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
 		colourAttachmentDesc.loadOp = VulkanUtils::VulkanLoadOp(m_Specification.PrimaryAttachment.LoadOp);
 		colourAttachmentDesc.storeOp = VulkanUtils::VulkanStoreOp(m_Specification.PrimaryAttachment.StoreOp);
 		colourAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colourAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colourAttachmentDesc.initialLayout = VulkanUtils::VulkanAttachmentLayout(m_Specification.PrimaryAttachment.InitialLayout);
-		colourAttachmentDesc.finalLayout = VulkanUtils::VulkanAttachmentLayout(m_Specification.PrimaryAttachment.FinalLayout);
 
-		// TODO: additional attachment descriptions
+		// TODO: set these from AttachmentSpecification
+		colourAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colourAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		// TODO: create additional attachment descriptions
 
 		if (m_Specification.HasDepthStencil)
 		{
@@ -73,16 +125,17 @@ namespace Zahra
 		primaryAttachmentRef.attachment = 0;
 		primaryAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-		// TODO: additional attachment references
+		// TODO: create additional attachment references
 
 		VkAttachmentReference depthAttachmentRef{};
 		depthAttachmentRef.attachment = 1;
 		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+		// TODO: multiple subpasses?
 		VkSubpassDescription subpass{};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &primaryAttachmentRef;
+		subpass.pColorAttachments = &primaryAttachmentRef; // TODO: additional attachments
 		if (m_Specification.HasDepthStencil) subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
 		VkPipelineStageFlags stageMask = m_Specification.HasDepthStencil ?
@@ -283,14 +336,14 @@ namespace Zahra
 		if (!m_Specification.TargetSwapchain)
 		{
 			// TODO: set usage flags in AttachmentSpecification?
-			m_PrimaryAttachment = Ref<VulkanAttachment>::Create(m_AttachmentSize, VulkanUtils::VulkanAttachmentFormat(m_Specification.PrimaryAttachment.Format), VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+			m_PrimaryAttachment = Ref<VulkanImage>::Create(m_AttachmentSize.width, m_AttachmentSize.height, m_Specification.PrimaryAttachment.Format, ImageUsage::ColourAttachment);
 		}
 
 		// TODO: create additional attachments
 
 		if (m_Specification.HasDepthStencil)
 		{
-			m_DepthStencilAttachment = Ref<VulkanAttachment>::Create(m_AttachmentSize, VulkanUtils::GetSupportedDepthStencilFormat(), VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+			m_DepthStencilAttachment = Ref<VulkanImage>::Create(m_AttachmentSize.width, m_AttachmentSize.height, ImageFormat::Unspecified, ImageUsage::DepthStencilAttachment);
 		}
 	}
 
@@ -370,6 +423,20 @@ namespace Zahra
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
 		}
 		m_Framebuffers.clear();
+	}
+
+	Ref<Texture2D> VulkanRenderPass::TextureFromPrimaryAttachment() const
+	{
+		Z_CORE_ASSERT(!m_Specification.TargetSwapchain, "This method is not supported for render passes targeting the swapchain images");
+
+		Texture2DSpecification textureSpec{};
+		textureSpec.Image = m_PrimaryAttachment.As<Image>();
+		// TODO: specify other fields?
+
+		Ref<Texture2D> texture = Ref<VulkanTexture2D>::Create(textureSpec).As<Texture2D>();
+		Z_CORE_ASSERT(texture);
+
+		return texture;
 	}
 
 	bool VulkanRenderPass::NeedsResizing()

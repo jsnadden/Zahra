@@ -1,7 +1,6 @@
 #include "zpch.h"
 #include "ImGuiLayer.h"
 
-#include "Platform/OpenGL/OpenGLImGuiLayer.h"
 #include "Platform/Vulkan/VulkanImGuiLayer.h"
 #include "Zahra/Renderer/Renderer.h"
 
@@ -14,9 +13,9 @@ namespace Zahra
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:      Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
-		case RendererAPI::API::OpenGL:    return new OpenGLImGuiLayer("OpenGL_ImGui_Layer");
-		case RendererAPI::API::Vulkan:    return new VulkanImGuiLayer("Vulkan_ImGui_Layer");
+		case RendererAPI::API::None:	Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
+		case RendererAPI::API::OpenGL:	Z_CORE_ASSERT(false, "RendererAPI::API::OpenGL is no longer supported"); return nullptr;
+		case RendererAPI::API::Vulkan:	return new VulkanImGuiLayer("Vulkan_ImGui_Layer");
 		}
 		Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
 		return nullptr;

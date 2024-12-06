@@ -82,7 +82,7 @@ namespace Zahra
 		void TransitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 		VkCommandBuffer GetTemporaryCommandBuffer(bool begin = true);
-		void ReturnTemporaryCommandBuffer(VkCommandBuffer commandBuffer);
+		void EndTemporaryCommandBuffer(VkCommandBuffer commandBuffer);
 
 		VkCommandBuffer GetSecondaryCommandBuffer();
 
