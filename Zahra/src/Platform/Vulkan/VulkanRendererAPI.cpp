@@ -106,11 +106,39 @@ namespace Zahra
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipeline());
 	}
 
-	void VulkanRendererAPI::EndRenderPass()
+	void VulkanRendererAPI::EndRenderPass(Ref<RenderPass> renderPass)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
 		vkCmdEndRenderPass(commandBuffer);
+
+		if (renderPass->GetSpecification().OutputTexture)
+		{
+			VkImageMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.image = renderPass.As<VulkanRenderPass>()->GetPrimaryAttachmentVkImage();
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
+			barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
+			barrier.subresourceRange.baseArrayLayer = 0;
+			barrier.subresourceRange.layerCount = 1;
+			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			vkCmdPipelineBarrier(
+				commandBuffer,
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,	// src stage
+				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,			// dst stage
+				0,												// dependency flags
+				0, nullptr,										// memory barriers (irrelevant)
+				0, nullptr,										// buffer memory barriers (irrelevant)
+				1, &barrier										// image memory barriers (this is the one!!)
+			);
+		}
 	}
 
 	void VulkanRendererAPI::Present()

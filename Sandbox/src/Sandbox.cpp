@@ -24,7 +24,8 @@ void SandboxLayer::OnUpdate(float dt)
 {
 	Zahra::Renderer::DrawTutorialScene(m_ViewportTexture2D);
 
-	m_ViewportImGuiTextureHandle = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture2D);
+	/*if (!m_ViewportImGuiTextureHandle)
+		m_ViewportImGuiTextureHandle = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture2D);*/
 }
 
 void SandboxLayer::OnEvent(Zahra::Event& event)
@@ -37,7 +38,7 @@ void SandboxLayer::OnImGuiRender()
 {
 	if (ImGui::Begin("Controls"))
 	{
-		ImGui::Image(m_ViewportImGuiTextureHandle, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+		//ImGui::Image(m_ViewportImGuiTextureHandle, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::End();
 	}
 	

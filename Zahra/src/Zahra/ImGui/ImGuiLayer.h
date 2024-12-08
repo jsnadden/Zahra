@@ -16,6 +16,7 @@ namespace Zahra
 
 		virtual void* RegisterTexture(Ref<Texture2D> texture) = 0;
 
+		void ClearSwapchain(bool clear) { m_ClearSwapchain = clear; }
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
 		void SetColourTheme(); // TODO: make a "theme" struct and pass one in here. Also save the theme to a .yml?
@@ -24,6 +25,7 @@ namespace Zahra
 
 	protected:
 		bool m_BlockEvents = true;
+		bool m_ClearSwapchain = false;
 
 	};
 }

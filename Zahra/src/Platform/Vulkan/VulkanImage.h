@@ -14,11 +14,13 @@ namespace Zahra
 			switch (usage)
 			{
 			case ImageUsage::ColourAttachment:
-				return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+				return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 			case ImageUsage::DepthStencilAttachment:
 				return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 			case ImageUsage::Texture:
 				return VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+			case ImageUsage::RenderToTexture:
+				return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 			}
 			
 			Z_CORE_ASSERT(false, "Unsupported image usage");
@@ -31,6 +33,7 @@ namespace Zahra
 			{
 			case ImageUsage::ColourAttachment:
 			case ImageUsage::Texture:
+			case ImageUsage::RenderToTexture:
 				return VK_IMAGE_ASPECT_COLOR_BIT;
 			case ImageUsage::DepthStencilAttachment:
 				return VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -95,25 +98,28 @@ namespace Zahra
 	class VulkanImage : public Image
 	{
 	public:
-		VulkanImage(uint32_t width, uint32_t height, ImageFormat format, ImageUsage usage);
+		VulkanImage(ImageSpecification specification);
 		virtual ~VulkanImage() override;
 
-		virtual const uint32_t GetWidth() const override { return m_Dimensions.width; }
-		virtual const uint32_t GetHeight() const override { return m_Dimensions.height; }
+		virtual const ImageSpecification GetSpecification() const override { return m_Specification; }
+		virtual const uint32_t GetWidth() const override { return m_Specification.Width; }
+		virtual const uint32_t GetHeight() const override { return m_Specification.Height; }
 
-		void TransitionLayout(VkImageLayout newLayout);
+		//virtual void CopyData(Ref<Image>& source) override;
+
+		void TransitionLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
 
 		void SetData(const VkBuffer& srcBuffer);
 
-		const VkExtent2D GetExtent() const { return m_Dimensions; }
+		const VkExtent2D GetDimensions() const { return { m_Specification.Width, m_Specification.Height }; }
 		const VkFormat& GetVkFormat() const { return m_Format; }
-		const VkImageView& GetImageView() const { return m_ImageView; }
+		const VkImageView& GetVkImageView() const { return m_ImageView; }
+		const VkImage& GetVkImage() const { return m_Image; }
 
 
 	private:
-		VkExtent2D m_Dimensions;
+		ImageSpecification m_Specification;
 		VkFormat m_Format;
-		VkImageLayout m_CurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkImageUsageFlags m_Usage;
 		VkImage m_Image;
 		VkDeviceMemory m_Memory;

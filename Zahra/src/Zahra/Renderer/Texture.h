@@ -18,6 +18,7 @@ namespace Zahra
 		virtual const std::filesystem::path& GetFilepath() const = 0;
 
 		virtual void SetData(void* data, uint32_t size) = 0;
+		virtual void SetData(Ref<Image> srcImage) = 0;
 
 		// this was used (in Renderer.cpp) for checking if a texture had been
 		// bound already, but will likely not be needed anymore
@@ -54,8 +55,6 @@ namespace Zahra
 	public:
 		static Ref<Texture2D> Create(const Texture2DSpecification& specification);
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
-
-		virtual void SetData(Ref<Image> srcImage) = 0;
 
 		virtual const Texture2DSpecification& GetSpecification() const = 0;
 

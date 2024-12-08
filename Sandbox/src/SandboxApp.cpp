@@ -29,7 +29,8 @@ Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
 	spec.WorkingDirectory = ".";
 	spec.CommandLineArgs = args;
 
-	spec.RendererConfig.ForceShaderCompilation = true;
+	spec.RendererConfig.ForceShaderCompilation = false;
+	spec.RendererConfig.ImGuiClearsSwapchainImages = true;
 
 	spec.GPURequirements.IsDiscreteGPU = true;
 	spec.GPURequirements.AnisotropicFiltering = true;

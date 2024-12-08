@@ -37,6 +37,8 @@ namespace Zahra
 
 		bool TargetSwapchain = true;
 		bool HasDepthStencil = true;
+		bool OutputTexture = false;
+
 		uint32_t AttachmentWidth, AttachmentHeight; // ignored if attachment is using a swapchain image
 		AttachmentSpecification PrimaryAttachment; // ignored if attachment is using a swapchain image
 		std::vector<AttachmentSpecification> AdditionalAttachments;
@@ -52,7 +54,7 @@ namespace Zahra
 		virtual RenderPassSpecification& GetSpecification() = 0;
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
 
-		virtual Ref<Texture2D> TextureFromPrimaryAttachment() const = 0;
+		virtual Ref<Texture2D> GetOutputTexture() = 0;
 
 		virtual void Refresh() = 0;
 

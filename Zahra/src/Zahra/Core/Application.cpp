@@ -33,6 +33,7 @@ namespace Zahra
 		//ScriptEngine::Init();
 
 		m_ImGuiLayer = ImGuiLayer::Create();
+		m_ImGuiLayer->ClearSwapchain(m_Specification.RendererConfig.ImGuiClearsSwapchainImages);
 		PushOverlay(m_ImGuiLayer);
 
 		m_Window->ReadConfig();
@@ -65,11 +66,11 @@ namespace Zahra
 			{
 				Renderer::BeginFrame();
 
-				// Update layers
+				// Update layers and record draw calls
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(dt);
 
-				// Record draw calls coming from ImGui
+				// Record ImGui's draw calls
 				m_ImGuiLayer->Begin();
 				for (Layer* layer : m_LayerStack)
 					layer->OnImGuiRender();

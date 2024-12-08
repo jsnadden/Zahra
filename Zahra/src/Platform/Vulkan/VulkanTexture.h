@@ -23,7 +23,7 @@ namespace Zahra
 		virtual void SetData(void* data, uint32_t size) override;
 		virtual void SetData(Ref<Image> srcImage) override;
 
-		const VkImageView& GetImageView() const { return m_Image->GetImageView(); }
+		const VkImageView& GetVkImageView() const { return m_Image->GetVkImageView(); }
 		const VkSampler& GetSampler() const { return m_Sampler; }
 		const VkDescriptorImageInfo& GetVkDescriptorImageInfo() const { return m_DescriptorImageInfo; }
 

@@ -6,7 +6,8 @@ namespace Zahra
 	{
 		ColourAttachment,
 		DepthStencilAttachment,
-		Texture
+		Texture,
+		RenderToTexture
 	};
 
 	enum class ImageFormat
@@ -36,16 +37,29 @@ namespace Zahra
 		Undefined
 	};
 
+	// TODO: make room for 3d images
+
+	struct ImageSpecification
+	{
+		uint32_t Width, Height;
+		ImageFormat Format;
+		ImageUsage Usage;
+		ImageLayout InitialLayout;
+	};
+
 	class Image : public RefCounted
 	{
 	public:
 		
 		virtual ~Image() {}
 
+		virtual const ImageSpecification GetSpecification() const = 0;
 		virtual const uint32_t GetWidth() const = 0;
 		virtual const uint32_t GetHeight() const = 0;
 
-		static Ref<Image> Create(uint32_t width, uint32_t height, ImageFormat format, ImageUsage usage);
+		//virtual void CopyData(Ref<Image>& source) = 0; // TODO: generalise this method with src/dst subregions
+
+		static Ref<Image> Create(ImageSpecification specification);
 
 	};
 

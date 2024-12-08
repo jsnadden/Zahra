@@ -29,7 +29,7 @@ namespace Zahra
 		virtual void EndFrame() override;
 
 		virtual void BeginRenderPass(Ref<RenderPass> renderPass) override;
-		virtual void EndRenderPass() override;
+		virtual void EndRenderPass(Ref<RenderPass> renderPass) override;
 
 		virtual void Present() override;
 

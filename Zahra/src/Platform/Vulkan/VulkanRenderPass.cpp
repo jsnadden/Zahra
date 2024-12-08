@@ -62,6 +62,9 @@ namespace Zahra
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& specification)
 		: m_Specification(specification)
 	{
+		if (m_Specification.OutputTexture)
+			Z_CORE_ASSERT(!m_Specification.TargetSwapchain, "If you want the render pass to output to a texture, it should use a non-swapchain primary attachment")
+
 		m_Swapchain = VulkanContext::Get()->GetSwapchain();
 
 		CreateRenderPass();
@@ -335,15 +338,26 @@ namespace Zahra
 
 		if (!m_Specification.TargetSwapchain)
 		{
-			// TODO: set usage flags in AttachmentSpecification?
-			m_PrimaryAttachment = Ref<VulkanImage>::Create(m_AttachmentSize.width, m_AttachmentSize.height, m_Specification.PrimaryAttachment.Format, ImageUsage::ColourAttachment);
+			ImageSpecification primaryAttachmentSpec{};
+			primaryAttachmentSpec.Format = m_Specification.PrimaryAttachment.Format;
+			primaryAttachmentSpec.Width = m_AttachmentSize.width;
+			primaryAttachmentSpec.Height = m_AttachmentSize.height;
+			primaryAttachmentSpec.Usage =  m_Specification.OutputTexture ?
+				ImageUsage::RenderToTexture :
+				ImageUsage::ColourAttachment;
+
+			m_PrimaryAttachment = Ref<VulkanImage>::Create(primaryAttachmentSpec);
 		}
 
 		// TODO: create additional attachments
 
 		if (m_Specification.HasDepthStencil)
 		{
-			m_DepthStencilAttachment = Ref<VulkanImage>::Create(m_AttachmentSize.width, m_AttachmentSize.height, ImageFormat::Unspecified, ImageUsage::DepthStencilAttachment);
+			ImageSpecification depthStencilAttachmentSpec{};
+			depthStencilAttachmentSpec.Width = m_AttachmentSize.width;
+			depthStencilAttachmentSpec.Height = m_AttachmentSize.height;
+			depthStencilAttachmentSpec.Usage = ImageUsage::DepthStencilAttachment;
+			m_DepthStencilAttachment = Ref<VulkanImage>::Create(depthStencilAttachmentSpec);
 		}
 	}
 
@@ -369,10 +383,10 @@ namespace Zahra
 				std::vector<VkImageView> attachments = { view };
 
 				for (auto& attachment : m_AdditionalAttachments)
-					attachments.emplace_back(attachment->GetImageView());
+					attachments.emplace_back(attachment->GetVkImageView());
 
 				if (m_Specification.HasDepthStencil)
-					attachments.emplace_back(m_DepthStencilAttachment->GetImageView());
+					attachments.emplace_back(m_DepthStencilAttachment->GetVkImageView());
 
 				auto& framebuffer = m_Framebuffers.emplace_back();
 
@@ -391,13 +405,13 @@ namespace Zahra
 		}
 		else
 		{
-			std::vector<VkImageView> attachments = { m_PrimaryAttachment->GetImageView() };
+			std::vector<VkImageView> attachments = { m_PrimaryAttachment->GetVkImageView() };
 
 			for (auto& attachment : m_AdditionalAttachments)
-				attachments.emplace_back(attachment->GetImageView());
+				attachments.emplace_back(attachment->GetVkImageView());
 
 			if (m_Specification.HasDepthStencil)
-				attachments.emplace_back(m_DepthStencilAttachment->GetImageView());
+				attachments.emplace_back(m_DepthStencilAttachment->GetVkImageView());
 
 			auto& framebuffer = m_Framebuffers.emplace_back();
 
@@ -425,18 +439,11 @@ namespace Zahra
 		m_Framebuffers.clear();
 	}
 
-	Ref<Texture2D> VulkanRenderPass::TextureFromPrimaryAttachment() const
+	Ref<Texture2D> VulkanRenderPass::GetOutputTexture()
 	{
-		Z_CORE_ASSERT(!m_Specification.TargetSwapchain, "This method is not supported for render passes targeting the swapchain images");
-
-		Texture2DSpecification textureSpec{};
-		textureSpec.Image = m_PrimaryAttachment.As<Image>();
-		// TODO: specify other fields?
-
-		Ref<Texture2D> texture = Ref<VulkanTexture2D>::Create(textureSpec).As<Texture2D>();
-		Z_CORE_ASSERT(texture);
-
-		return texture;
+		Ref<VulkanTexture2D> outputTexture = Ref<VulkanTexture2D>::Create(1,1);
+		outputTexture->SetData(m_PrimaryAttachment);
+		return outputTexture.As<Texture2D>();
 	}
 
 	bool VulkanRenderPass::NeedsResizing()

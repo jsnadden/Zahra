@@ -3,16 +3,18 @@
 
 namespace Zahra
 {
-	VulkanImage::VulkanImage(uint32_t width, uint32_t height, ImageFormat format, ImageUsage usage)
-		: m_Usage(VulkanUtils::VulkanImageUsage(usage)), m_Dimensions({ width, height })
+	VulkanImage::VulkanImage(ImageSpecification specification)
+		: m_Specification(specification)
 	{
-		m_Format = usage == ImageUsage::DepthStencilAttachment ?
-			VulkanUtils::GetSupportedDepthStencilFormat() : VulkanUtils::GetColourFormat(format);
+		m_Format = specification.Usage == ImageUsage::DepthStencilAttachment ?
+			VulkanUtils::GetSupportedDepthStencilFormat() : VulkanUtils::GetColourFormat(specification.Format);
 
-		VkImageAspectFlags aspect = VulkanUtils::VulkanImageAspect(usage);
+		m_Usage = VulkanUtils::VulkanImageUsage(specification.Usage);
+
+		VkImageAspectFlags aspect = VulkanUtils::VulkanImageAspect(specification.Usage);
 		auto device = VulkanContext::GetCurrentDevice();			
 
-		device->CreateVulkanImage(width, height, m_Format,
+		device->CreateVulkanImage(specification.Width, specification.Height, m_Format,
 			VK_IMAGE_TILING_OPTIMAL, m_Usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			m_Image, m_Memory);
 
@@ -35,20 +37,25 @@ namespace Zahra
 		m_Image = VK_NULL_HANDLE;
 	}
 
-	void VulkanImage::TransitionLayout(VkImageLayout newLayout)
+	//void VulkanImage::CopyData(Ref<Image>& source)
+	//{
+	//	Ref<VulkanImage> srcImage = source.As<VulkanImage>();
+
+	//	Z_CORE_ASSERT(source->GetWidth() == m_Dimensions.width && source->GetHeight() == m_Dimensions.height, "Cannot copy images if their dimensions do not match");
+
+	//	Ref<VulkanDevice> device = VulkanContext::GetCurrentDevice();
+
+	//	device->CopyVulkanImage(srcImage->m_Image, m_Image, m_Dimensions.width, m_Dimensions.height);
+	//}
+
+	void VulkanImage::TransitionLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
 	{
-		if (m_CurrentLayout == newLayout)
-			return;
-
-		VulkanContext::GetCurrentDevice()->TransitionVulkanImageLayout(m_Image, m_Format, m_CurrentLayout, newLayout);
-
-		m_CurrentLayout = newLayout;
-
+		VulkanContext::GetCurrentDevice()->TransitionVulkanImageLayout(m_Image, m_Format, oldLayout, newLayout);
 	}
 
 	void VulkanImage::SetData(const VkBuffer& srcBuffer)
 	{
-		VulkanContext::GetCurrentDevice()->CopyVulkanBufferToImage(srcBuffer, m_Image, m_Dimensions.width, m_Dimensions.height);
+		VulkanContext::GetCurrentDevice()->CopyVulkanBufferToImage(srcBuffer, m_Image, m_Specification.Width, m_Specification.Height);
 	}
 
 }

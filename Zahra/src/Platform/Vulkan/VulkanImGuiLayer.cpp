@@ -70,7 +70,7 @@ namespace Zahra
 		imguiInfo.ImageCount = m_Framebuffers.size();
 		imguiInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		imguiInfo.Allocator = nullptr; // TODO: VMA allocations
-		imguiInfo.CheckVkResultFn = [](VkResult result) { return VulkanUtils::ValidateVkResult(result, "Unsuccessful VkResult within ImGui"); };
+		imguiInfo.CheckVkResultFn = [](VkResult result) { Z_CORE_ASSERT(result == VK_SUCCESS, "Unsuccessful VkResult within ImGui"); };
 		
 		ImGui_ImplVulkan_Init(&imguiInfo);
 
@@ -135,13 +135,15 @@ namespace Zahra
 			ImGui::RenderPlatformWindowsDefault();
 		}
 
+		VkClearValue clearColour = {{ 0.0f, 0.0f, 0.0f }};
+
 		VkRenderPassBeginInfo renderPassBeginInfo = {};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.renderPass = m_RenderPass;
 		renderPassBeginInfo.framebuffer = m_Framebuffers[swapchain->GetImageIndex()];
 		renderPassBeginInfo.renderArea.extent = swapchain->GetExtent();
-		renderPassBeginInfo.clearValueCount = 0;
-		renderPassBeginInfo.pClearValues = nullptr;
+		renderPassBeginInfo.clearValueCount = 1;
+		renderPassBeginInfo.pClearValues = &clearColour;
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer);
@@ -151,14 +153,40 @@ namespace Zahra
 
 	void* VulkanImGuiLayer::RegisterTexture(Ref<Texture2D> texture)
 	{
-		Ref<VulkanTexture2D> vulkanImage = texture.As<VulkanTexture2D>();
-		VkSampler sampler = vulkanImage->GetSampler();
-		VkImageView imageView = vulkanImage->GetImageView();
+		VkDevice device = VulkanContext::GetCurrentVkDevice();
 		
-		void* imageHandle = ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		Z_CORE_ASSERT(imageHandle);
+		//void* imageHandle = ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		
+		VkDescriptorSetLayout layout;
+		VkDescriptorSet descriptorSet;
 
-		return imageHandle;
+		VkDescriptorSetLayoutBinding binding{};
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		binding.descriptorCount = 1;
+		binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = 1;
+		layoutInfo.pBindings = &binding;
+		vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &layout);
+
+		VkDescriptorSetAllocateInfo descriptorSetAllocationInfo{};
+		descriptorSetAllocationInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		descriptorSetAllocationInfo.descriptorPool = m_DescriptorPool;
+		descriptorSetAllocationInfo.descriptorSetCount = 1;
+		descriptorSetAllocationInfo.pSetLayouts = &layout;
+		vkAllocateDescriptorSets(device, &descriptorSetAllocationInfo, &descriptorSet);
+
+		VkWriteDescriptorSet write{};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.dstSet = descriptorSet;
+		write.descriptorCount = 1;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		write.pImageInfo = &texture.As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
+		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+
+		return (void*)descriptorSet;
 	}
 
 	void VulkanImGuiLayer::CreateDescriptorPool()
@@ -167,19 +195,18 @@ namespace Zahra
 
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+			{ VK_DESCRIPTOR_TYPE_SAMPLER,					1000 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	1000 },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,				1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,				1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,		1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,		1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,			1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,	1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,	1000 },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,			1000 }
 		};
-		// TODO: test to see how much of this overkill allocation I actually need
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -203,11 +230,11 @@ namespace Zahra
 		VkAttachmentDescription colourAttachment{};
 		colourAttachment.format = swapchain->GetSwapchainImageFormat();
 		colourAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colourAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		colourAttachment.loadOp = m_ClearSwapchain ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
 		colourAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colourAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colourAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colourAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colourAttachment.initialLayout = m_ClearSwapchain ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colourAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colourAttachmentRef{};

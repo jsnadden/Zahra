@@ -126,9 +126,9 @@ namespace Zahra
 		memcpy(mappedAddress, m_LocalImageData.GetData<void>(), size);
 		vkUnmapMemory(vkDevice, stagingBufferMemory);
 
-		m_Image->TransitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		m_Image->TransitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		m_Image->SetData(stagingBuffer);
-		m_Image->TransitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		m_Image->TransitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 		vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
@@ -139,9 +139,9 @@ namespace Zahra
 
 	void VulkanTexture2D::SetData(Ref<Image> srcImage)
 	{
-		CreateImage();
-
-		// TODO: copy srcImage to m_Image (add a virtual method to Image?)
+		m_Width = srcImage->GetWidth();
+		m_Height = srcImage->GetHeight();
+		m_Image = srcImage.As<VulkanImage>();
 
 		CreateSampler();
 		CreateDescriptorImageInfo();
@@ -155,9 +155,13 @@ namespace Zahra
 
 	void VulkanTexture2D::CreateImage()
 	{
-		// TODO: for hdr textures should use a float format instead
-		ImageFormat format = ImageFormat::SRGBA;
-		m_Image = Ref<VulkanImage>::Create(m_Width, m_Height, format, ImageUsage::Texture);
+		ImageSpecification spec{};
+		spec.Format = ImageFormat::SRGBA; // TODO: for hdr textures should use a float format instead
+		spec.Width = m_Width;
+		spec.Height = m_Height;
+		spec.Usage = ImageUsage::Texture;
+
+		m_Image = Ref<VulkanImage>::Create(spec);
 	}
 
 	void VulkanTexture2D::CreateSampler()
@@ -178,7 +182,7 @@ namespace Zahra
 	void VulkanTexture2D::CreateDescriptorImageInfo()
 	{
 		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		m_DescriptorImageInfo.imageView = m_Image->GetImageView();
+		m_DescriptorImageInfo.imageView = m_Image->GetVkImageView();
 		m_DescriptorImageInfo.sampler = m_Sampler;
 	}
 

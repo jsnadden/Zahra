@@ -134,6 +134,7 @@ namespace Zahra
 		tutorialRenderPassSpecification.Topology = PrimitiveTopology::Triangles;
 		tutorialRenderPassSpecification.HasDepthStencil = true;
 		tutorialRenderPassSpecification.TargetSwapchain = false;
+		tutorialRenderPassSpecification.OutputTexture = true;
 		tutorialRenderPassSpecification.AttachmentWidth = s_RendererAPI->GetSwapchainWidth();
 		tutorialRenderPassSpecification.AttachmentHeight = s_RendererAPI->GetSwapchainHeight();
 		tutorialRenderPassSpecification.PrimaryAttachment.LoadOp = AttachmentLoadOp::Clear;
@@ -327,9 +328,10 @@ namespace Zahra
 
 		s_RendererAPI->BeginRenderPass(s_Data.TutorialRenderPass);
 		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialRenderPass, s_Data.TutorialMesh, s_Data.TutorialResourceManager);
-		s_RendererAPI->EndRenderPass();
+		s_RendererAPI->EndRenderPass(s_Data.TutorialRenderPass);
 
-		outputTexture = s_Data.TutorialRenderPass->TextureFromPrimaryAttachment();
+		outputTexture = s_Data.TutorialRenderPass->GetOutputTexture();
+
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)

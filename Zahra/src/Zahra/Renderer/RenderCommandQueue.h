@@ -27,7 +27,7 @@ namespace Zahra
 
 		static void EndRenderPass()
 		{
-			s_RendererAPI->EndRenderPass();
+			//s_RendererAPI->EndRenderPass();
 		}
 
 		static void PresentImage()

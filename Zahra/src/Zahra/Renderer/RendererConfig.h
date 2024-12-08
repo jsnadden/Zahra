@@ -12,6 +12,8 @@ namespace Zahra
 		bool ForceShaderCompilation = false;
 
 		uint32_t MaxTextureSlots;
+
+		bool ImGuiClearsSwapchainImages = false;
 	};
 
 }

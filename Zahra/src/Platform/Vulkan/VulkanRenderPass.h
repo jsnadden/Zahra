@@ -1,8 +1,9 @@
 #pragma once
 
 
-#include "Platform/Vulkan/VulkanImage.h"
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanImage.h"
+#include "Platform/Vulkan/VulkanTexture.h"
 #include "Zahra/Renderer/RenderPass.h"
 
 #include "vulkan/vulkan.h"
@@ -62,7 +63,7 @@ namespace Zahra
 		virtual RenderPassSpecification& GetSpecification() override { return m_Specification; }
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
 
-		virtual Ref<Texture2D> TextureFromPrimaryAttachment() const override;
+		virtual Ref<Texture2D> GetOutputTexture() override;
 
 		bool NeedsResizing();
 		virtual void Refresh() override;
@@ -72,6 +73,7 @@ namespace Zahra
 		const VkPipelineLayout& GetVkPipelineLayout() const { return m_PipelineLayout; }
 		const VkExtent2D& GetAttachmentSize() const { return m_AttachmentSize; }
 		const VkFramebuffer& GetFramebuffer(uint32_t index) const;
+		const VkImage& GetPrimaryAttachmentVkImage() const { return m_PrimaryAttachment->GetVkImage(); }
 
 	private:
 		RenderPassSpecification m_Specification;
@@ -86,6 +88,7 @@ namespace Zahra
 
 		VkExtent2D m_AttachmentSize;
 		Ref<VulkanImage> m_PrimaryAttachment; // only used if not targeting swapchain
+		Ref<VulkanTexture2D> m_OutputTexture;
 		Ref<VulkanImage> m_DepthStencilAttachment;
 		std::vector<Ref<VulkanImage>> m_AdditionalAttachments; // TODO: implement this
 		void CreateAttachments();

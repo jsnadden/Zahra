@@ -189,6 +189,36 @@ namespace Zahra
 
 	}
 
+	void VulkanDevice::CopyVulkanImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height)
+	{
+		// assumes:
+		//  - appropriate layout transitions have been performed
+		//  - images have the same dimensions
+		//  - images have a colour format (not depth/stencil e.g.)
+
+		VkCommandBuffer commandBuffer = GetTemporaryCommandBuffer();
+
+		VkImageCopy copyRegion{};
+		copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		copyRegion.srcSubresource.mipLevel = 0;
+		copyRegion.srcSubresource.baseArrayLayer = 0;
+		copyRegion.srcSubresource.layerCount = 1;
+		copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		copyRegion.dstSubresource.mipLevel = 0;
+		copyRegion.dstSubresource.baseArrayLayer = 0;
+		copyRegion.dstSubresource.layerCount = 1;
+		copyRegion.extent.width = width;
+		copyRegion.extent.height = height;
+		copyRegion.extent.depth = 1;
+
+		vkCmdCopyImage(commandBuffer,
+			srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1, &copyRegion);
+
+		EndTemporaryCommandBuffer(commandBuffer);
+	}
+
 	void VulkanDevice::TransitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 	{
 		VkCommandBuffer commandBuffer = GetTemporaryCommandBuffer();
@@ -244,6 +274,14 @@ namespace Zahra
 
 			srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 			dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		}
+		else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		{
+			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 		else
 		{
