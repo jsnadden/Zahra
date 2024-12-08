@@ -24,6 +24,8 @@ namespace Zahra
 		AttachmentLoadOp LoadOp;
 		AttachmentStoreOp StoreOp;
 
+		glm::vec3 ClearColour; // ignored if attachment is being used for depth/stencil
+
 		// TODO: not currently used
 		/*ImageLayout InitialLayout;
 		ImageLayout FinalLayout;*/

@@ -155,13 +155,15 @@ namespace Zahra
 	{
 		VkDevice device = VulkanContext::GetCurrentVkDevice();
 		
-		//void* imageHandle = ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		VkDescriptorImageInfo imageInfo = texture.As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
+		VkDescriptorSet descriptorSet = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		
-		VkDescriptorSetLayout layout;
+		/*VkDescriptorSetLayout layout;
 		VkDescriptorSet descriptorSet;
 
 		VkDescriptorSetLayoutBinding binding{};
 		binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		binding.binding = 1;
 		binding.descriptorCount = 1;
 		binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
@@ -184,7 +186,7 @@ namespace Zahra
 		write.descriptorCount = 1;
 		write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		write.pImageInfo = &texture.As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
-		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);*/
 
 		return (void*)descriptorSet;
 	}

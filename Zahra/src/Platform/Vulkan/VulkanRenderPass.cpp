@@ -441,7 +441,7 @@ namespace Zahra
 
 	Ref<Texture2D> VulkanRenderPass::GetOutputTexture()
 	{
-		Ref<VulkanTexture2D> outputTexture = Ref<VulkanTexture2D>::Create(1,1);
+		Ref<VulkanTexture2D> outputTexture = Ref<VulkanTexture2D>::Create(m_AttachmentSize.width, m_AttachmentSize.height);
 		outputTexture->SetData(m_PrimaryAttachment);
 		return outputTexture.As<Texture2D>();
 	}

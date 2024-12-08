@@ -57,6 +57,9 @@ namespace Zahra
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CREATE DESCRIPTOR POOL
+		if(m_DescriptorPool != VK_NULL_HANDLE)
+			vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
+
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
 			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			1000 },

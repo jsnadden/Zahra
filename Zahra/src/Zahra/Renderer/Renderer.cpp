@@ -95,7 +95,8 @@ namespace Zahra
 		// CAMERA
 		struct CameraData
 		{
-			glm::mat4 ViewProjection;
+			alignas(16) glm::mat4 View;
+			alignas(16) glm::mat4 Projection;
 		};
 
 		CameraData CameraBuffer;
@@ -135,13 +136,12 @@ namespace Zahra
 		tutorialRenderPassSpecification.HasDepthStencil = true;
 		tutorialRenderPassSpecification.TargetSwapchain = false;
 		tutorialRenderPassSpecification.OutputTexture = true;
-		tutorialRenderPassSpecification.AttachmentWidth = s_RendererAPI->GetSwapchainWidth();
-		tutorialRenderPassSpecification.AttachmentHeight = s_RendererAPI->GetSwapchainHeight();
+		tutorialRenderPassSpecification.AttachmentWidth = 800;
+		tutorialRenderPassSpecification.AttachmentHeight = 800;
 		tutorialRenderPassSpecification.PrimaryAttachment.LoadOp = AttachmentLoadOp::Clear;
 		tutorialRenderPassSpecification.PrimaryAttachment.StoreOp = AttachmentStoreOp::Store;
 		tutorialRenderPassSpecification.PrimaryAttachment.Format = ImageFormat::SRGBA;
-		/*tutorialRenderPassSpecification.PrimaryAttachment.InitialLayout = ImageLayout::Undefined;
-		tutorialRenderPassSpecification.PrimaryAttachment.FinalLayout = ImageLayout::ColourAttachment;*/
+		tutorialRenderPassSpecification.PrimaryAttachment.ClearColour = { 0.0f, 0.0f, 0.0f };
 		tutorialRenderPassSpecification.BackfaceCulling = false;
 		s_Data.TutorialRenderPass = RenderPass::Create(tutorialRenderPassSpecification);
 
@@ -154,8 +154,8 @@ namespace Zahra
 		s_Data.TutorialUniformBuffers = UniformBufferSet::Create(mvpSize, framesInFlight);
 
 		MVPTransforms transforms{};
-		for (int i = 0; i < framesInFlight; i++)
-			s_Data.TutorialUniformBuffers->SetData(i, &transforms, mvpSize);
+		for (int frame = 0; frame < framesInFlight; frame++)
+			s_Data.TutorialUniformBuffers->SetData(frame, &transforms, mvpSize);
 
 		Texture2DSpecification tutorialTextureSpec{};
 		tutorialTextureSpec.ImageFilepath = "Assets/Textures/viking_room.png";
@@ -171,6 +171,8 @@ namespace Zahra
 		s_Data.TextureSlots[0] = Texture2D::Create(1, 1);
 		uint32_t flatWhite = 0xffffffff;
 		s_Data.TextureSlots[0]->SetData(&flatWhite, sizeof(uint32_t));
+		
+		//s_Data.TextureSlots[1] = s_Data.TutorialRenderPass->GetOutputTexture();
 
 		// TODO: setup Shader reflection and ShaderResourceManager to be capable of using arrays
 		// of textures... until that's set up we'll just use slot 0 (a single pure white pixel)
@@ -179,10 +181,9 @@ namespace Zahra
 		// CAMERA BUFFER
 		s_Data.CameraUniformBuffers = UniformBufferSet::Create(sizeof(RendererData::CameraData), framesInFlight);
 
-		RendererData::CameraData cameraData;
-
-		for (int i = 0; i < framesInFlight; i++)
-			s_Data.CameraUniformBuffers->SetData(i, &cameraData, sizeof(RendererData::CameraData));
+		RendererData::CameraData cameraData{};
+		for (int frame = 0; frame < framesInFlight; frame++)
+			s_Data.CameraUniformBuffers->SetData(frame, &cameraData, sizeof(RendererData::CameraData));
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// QUADS
@@ -198,62 +199,80 @@ namespace Zahra
 		quadResourceManagerSpec.LastSet = 0;
 		s_Data.QuadResourceManager = ShaderResourceManager::Create(quadResourceManagerSpec);
 
+		#pragma region(temporary)
+		std::vector<QuadVertex> vertices
+		{
+			{ { 0.0f,  1.0f,  1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 1.0f, 0.0f } },
+			{ { 0.0f, -1.0f,  1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f } },
+			{ { 0.0f, -1.0f, -1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f } },
+			{ { 0.0f,  1.0f, -1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
+		};
+		for (uint32_t frame = 0; frame < framesInFlight; frame++)
+			s_Data.QuadVertexBuffers.emplace_back(VertexBuffer::Create((void*)vertices.data(), sizeof(QuadVertex) * vertices.size()));
+
+		std::vector<uint32_t> quadIndices{ 0, 1, 2, 2, 3, 0 };
+		s_Data.QuadIndexBuffer = IndexBuffer::Create(quadIndices.data(), quadIndices.size());
+		#pragma endregion
+
 		s_Data.QuadResourceManager->ProvideResource("Camera", s_Data.CameraUniformBuffers);
-		s_Data.QuadResourceManager->ProvideResource("u_Sampler", s_Data.TextureSlots[0]);
-		s_Data.QuadResourceManager->Bake();
+		/*s_Data.QuadResourceManager->ProvideResource("u_Sampler", s_Data.TextureSlots[0]);
+		s_Data.QuadResourceManager->Bake();*/
 
 		RenderPassSpecification quadRenderPassSpec{};
 		quadRenderPassSpec.Shader = s_Data.QuadShader;
 		quadRenderPassSpec.Topology = PrimitiveTopology::Triangles;
 		quadRenderPassSpec.HasDepthStencil = true;
 		quadRenderPassSpec.TargetSwapchain = true;
+		quadRenderPassSpec.OutputTexture = false;
+		quadRenderPassSpec.AttachmentWidth = s_RendererAPI->GetSwapchainWidth();
+		quadRenderPassSpec.AttachmentHeight = s_RendererAPI->GetSwapchainHeight();
 		quadRenderPassSpec.PrimaryAttachment.LoadOp = AttachmentLoadOp::Clear;
 		quadRenderPassSpec.PrimaryAttachment.StoreOp = AttachmentStoreOp::Store;
-		/*quadRenderPassSpec.PrimaryAttachment.InitialLayout = ImageUsage::Undefined;
-		quadRenderPassSpec.PrimaryAttachment.FinalLayout = ImageUsage::ColourAttachment;*/
+		quadRenderPassSpec.PrimaryAttachment.Format = ImageFormat::SRGBA;
+		quadRenderPassSpec.PrimaryAttachment.ClearColour = { 1.0f, 1.0f, 1.0f };
 		quadRenderPassSpec.BackfaceCulling = false;
 		s_Data.QuadPass = RenderPass::Create(quadRenderPassSpec);
 
-		s_Data.QuadVertexBuffers.resize(framesInFlight);
-		s_Data.QuadVertexBufferBases.resize(framesInFlight);
-		s_Data.QuadVertexBufferPtrs.resize(framesInFlight);
+		//s_Data.QuadVertexBuffers.resize(framesInFlight);
+		//s_Data.QuadVertexBufferBases.resize(framesInFlight);
+		//s_Data.QuadVertexBufferPtrs.resize(framesInFlight);
 
-		for (uint32_t frame = 0; frame < framesInFlight; frame++)
-		{
-			s_Data.QuadVertexBuffers[frame] = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(QuadVertex));
-			s_Data.QuadVertexBufferPtrs[frame] = s_Data.QuadVertexBufferBases[frame] = new QuadVertex[s_Data.MaxVerticesPerBuffer];
-		}
+		//for (uint32_t frame = 0; frame < framesInFlight; frame++)
+		//{
+		//	s_Data.QuadVertexBuffers[frame] = VertexBuffer::Create(s_Data.MaxVerticesPerBuffer * sizeof(QuadVertex));
+		//	s_Data.QuadVertexBufferPtrs[frame] = s_Data.QuadVertexBufferBases[frame] = new QuadVertex[s_Data.MaxVerticesPerBuffer];
+		//}
 
-		s_Data.QuadVertexPositions[0] = { -.5f, -.5f, .0f, 1.0f };
-		s_Data.QuadVertexPositions[1] = { .5f, -.5f, .0f, 1.0f };
-		s_Data.QuadVertexPositions[2] = { .5f,  .5f, .0f, 1.0f };
-		s_Data.QuadVertexPositions[3] = { -.5f,  .5f, .0f, 1.0f };
-		
-		s_Data.QuadTextureCoords[0] = { 0.0f, 0.0f };
-		s_Data.QuadTextureCoords[1] = { 1.0f, 0.0f };
-		s_Data.QuadTextureCoords[2] = { 1.0f, 1.0f };
-		s_Data.QuadTextureCoords[3] = { 0.0f, 1.0f };
+		//s_Data.QuadVertexPositions[0] = { -.5f, -.5f, .0f, 1.0f };
+		//s_Data.QuadVertexPositions[1] = { .5f, -.5f, .0f, 1.0f };
+		//s_Data.QuadVertexPositions[2] = { .5f,  .5f, .0f, 1.0f };
+		//s_Data.QuadVertexPositions[3] = { -.5f,  .5f, .0f, 1.0f };
+		//
+		//s_Data.QuadTextureCoords[0] = { 0.0f, 0.0f };
+		//s_Data.QuadTextureCoords[1] = { 1.0f, 0.0f };
+		//s_Data.QuadTextureCoords[2] = { 1.0f, 1.0f };
+		//s_Data.QuadTextureCoords[3] = { 0.0f, 1.0f };
 
-		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndicesPerBuffer];
-		uint32_t offset = 0;
-		for (uint32_t i = 0; i < s_Data.MaxIndicesPerBuffer; i += 6)
-		{
-			quadIndices[i + 0] = offset + 0;
-			quadIndices[i + 1] = offset + 1;
-			quadIndices[i + 2] = offset + 2;
+		//uint32_t* quadIndices = new uint32_t[s_Data.MaxIndicesPerBuffer];
+		//uint32_t offset = 0;
+		//for (uint32_t i = 0; i < s_Data.MaxIndicesPerBuffer; i += 6)
+		//{
+		//	quadIndices[i + 0] = offset + 0;
+		//	quadIndices[i + 1] = offset + 1;
+		//	quadIndices[i + 2] = offset + 2;
 
-			quadIndices[i + 3] = offset + 2;
-			quadIndices[i + 4] = offset + 3;
-			quadIndices[i + 5] = offset + 0;
+		//	quadIndices[i + 3] = offset + 2;
+		//	quadIndices[i + 4] = offset + 3;
+		//	quadIndices[i + 5] = offset + 0;
 
-			offset += 4;
-		}
-		Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndicesPerBuffer);
-		// TODO: in order to implement a render queue, data like these will need a
-		// dynamic lifetime, perhaps using Refs?
-		delete[] quadIndices;
+		//	offset += 4;
+		//}
+		//Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndicesPerBuffer);
+		//// TODO: in order to implement a render queue, data like these will need a
+		//// dynamic lifetime, perhaps using Refs?
+		//delete[] quadIndices;
 
-		// TODO: circles and lines!!
+		//// TODO: circles and lines!!
 
 	}
 
@@ -261,7 +280,7 @@ namespace Zahra
 	{
 		for (uint32_t frame = 0; frame < s_RendererAPI->GetFramesInFlight(); frame++)
 		{
-			delete[] s_Data.QuadVertexBufferBases[frame];
+			//delete[] s_Data.QuadVertexBufferBases[frame];
 			s_Data.QuadVertexBuffers[frame].Reset();
 		}
 		s_Data.QuadIndexBuffer.Reset();
@@ -316,21 +335,35 @@ namespace Zahra
 
 		float width = s_RendererAPI->GetSwapchainWidth();
 		float height = s_RendererAPI->GetSwapchainHeight();
+		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
 
 		MVPTransforms transforms{};
 		transforms.Model = glm::rotate(glm::mat4(1.0f), timeSinceStart * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		transforms.View = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		transforms.Projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 10.0f);
+		transforms.Projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
 		transforms.Projection[1][1] *= -1.f; // because screenspace is left-handed....
-
-		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
+				
 		s_Data.TutorialUniformBuffers->SetData(frameIndex, &transforms, sizeof(MVPTransforms));
 
 		s_RendererAPI->BeginRenderPass(s_Data.TutorialRenderPass);
 		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialRenderPass, s_Data.TutorialMesh, s_Data.TutorialResourceManager);
 		s_RendererAPI->EndRenderPass(s_Data.TutorialRenderPass);
 
-		outputTexture = s_Data.TutorialRenderPass->GetOutputTexture();
+		//////////////////////////////////////////////////////////////////////////////////////////////////////
+		// RENDER TUTORAL SCENE TO QUAD
+
+		RendererData::CameraData cameraData{};
+		cameraData.View = transforms.View;
+		cameraData.Projection = transforms.Projection;
+		s_Data.CameraUniformBuffers->SetData(frameIndex, &cameraData, sizeof(RendererData::CameraData));
+
+		s_Data.QuadResourceManager->ProvideResource("u_Sampler", s_Data.TutorialRenderPass->GetOutputTexture());
+		s_Data.QuadResourceManager->Bake();
+
+		s_RendererAPI->BeginRenderPass(s_Data.QuadPass);
+		s_RendererAPI->TutorialDrawCalls(s_Data.QuadPass, s_Data.QuadVertexBuffers[frameIndex], s_Data.QuadIndexBuffer, s_Data.QuadResourceManager);
+		s_RendererAPI->EndRenderPass(s_Data.QuadPass);
+		//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	}
 

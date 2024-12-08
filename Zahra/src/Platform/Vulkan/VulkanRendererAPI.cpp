@@ -88,8 +88,9 @@ namespace Zahra
 		Ref<VulkanRenderPass> vulkanRenderPass = renderpass.As<VulkanRenderPass>();
 		if (m_Swapchain->Invalidated()) vulkanRenderPass->Refresh();
 
-		std::vector<VkClearValue> clearValues = { m_ClearColour };
-		// TODO: add clear values for other attachments
+		// TODO: get/emplace clear values for additional attachments
+		glm::vec3 clear = vulkanRenderPass->GetSpecification().PrimaryAttachment.ClearColour;
+		std::vector<VkClearValue> clearValues = {{ clear.r, clear.g, clear.b, 1.0f }};
 		if (vulkanRenderPass->GetSpecification().HasDepthStencil) clearValues.emplace_back(m_ClearDepthStencil);
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};

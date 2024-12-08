@@ -43,7 +43,6 @@ namespace Zahra
 
 		uint32_t m_FramesInFlight;
 
-		VkClearValue m_ClearColour = { { 0.0f, 0.0f, 0.0f, 1.0f } };
 		VkClearValue m_ClearDepthStencil = { 1.0f, 0 };
 	};
 

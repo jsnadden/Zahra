@@ -16,11 +16,11 @@ namespace Zahra
 
 	struct QuadVertex
 	{
-		alignas(16) glm::vec3 Position;
-		alignas(16) glm::vec4 Tint;
-		alignas(16) glm::vec2 TextureCoord;
-		alignas(16) float TextureIndex;
-		alignas(16) float TilingFactor;
+		glm::vec3 Position;
+		glm::vec4 Tint;
+		glm::vec2 TextureCoord;
+		//alignas(16) uint32_t TextureIndex;
+		//alignas(16) float TilingFactor;
 		//alignas(16) int EntityID = -1;
 	};
 

@@ -41,7 +41,7 @@ namespace Zahra
 		// resources organised by corresponding uniform name in shader code
 		std::map<std::string, VulkanShaderResource> m_Resources;
 		
-		VkDescriptorPool m_DescriptorPool;
+		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 
 		// descriptors organised by (frame-in-flight, set)
 		std::vector<std::vector<VkDescriptorSet>> m_DescriptorSets;

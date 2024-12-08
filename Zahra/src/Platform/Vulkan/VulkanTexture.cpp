@@ -97,8 +97,12 @@ namespace Zahra
 
 	VulkanTexture2D::~VulkanTexture2D()
 	{
+		VkDevice device = VulkanContext::GetCurrentVkDevice();
+
+		vkDeviceWaitIdle(device);
+
 		// TODO: employ VMA
-		vkDestroySampler(VulkanContext::GetCurrentVkDevice(), m_Sampler, nullptr);
+		vkDestroySampler(device, m_Sampler, nullptr);
 		
 		m_Image.Reset();
 
