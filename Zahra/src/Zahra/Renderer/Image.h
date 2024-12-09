@@ -44,7 +44,6 @@ namespace Zahra
 		uint32_t Width, Height;
 		ImageFormat Format;
 		ImageUsage Usage;
-		ImageLayout InitialLayout;
 	};
 
 	class Image : public RefCounted

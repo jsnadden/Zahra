@@ -20,7 +20,7 @@ namespace Zahra
 			case ImageUsage::Texture:
 				return VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 			case ImageUsage::RenderToTexture:
-				return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+				return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 			}
 			
 			Z_CORE_ASSERT(false, "Unsupported image usage");
@@ -99,6 +99,7 @@ namespace Zahra
 	{
 	public:
 		VulkanImage(ImageSpecification specification);
+		VulkanImage(VkImage image, VkDeviceMemory memory, ImageSpecification specification);
 		virtual ~VulkanImage() override;
 
 		virtual const ImageSpecification GetSpecification() const override { return m_Specification; }
@@ -121,9 +122,12 @@ namespace Zahra
 		ImageSpecification m_Specification;
 		VkFormat m_Format;
 		VkImageUsageFlags m_Usage;
+		
 		VkImage m_Image;
 		VkDeviceMemory m_Memory;
 		VkImageView m_ImageView;
 
+		void InitData();
+		void CreateImageView();
 	};
 }

@@ -151,19 +151,20 @@ namespace Zahra
 		vkCmdEndRenderPass(commandBuffer);
 	}
 
-	void* VulkanImGuiLayer::RegisterTexture(Ref<Texture2D> texture)
+	ImGuiResourceHandle VulkanImGuiLayer::RegisterTexture(Ref<Texture2D> texture)
 	{
 		VkDevice device = VulkanContext::GetCurrentVkDevice();
 		
 		VkDescriptorImageInfo imageInfo = texture.As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
-		VkDescriptorSet descriptorSet = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		VkDescriptorSet descriptorSet = ImGui_ImplVulkan_AddTexture(imageInfo.sampler,
+			imageInfo.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		
 		/*VkDescriptorSetLayout layout;
 		VkDescriptorSet descriptorSet;
 
 		VkDescriptorSetLayoutBinding binding{};
 		binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		binding.binding = 1;
+		binding.binding = 0;
 		binding.descriptorCount = 1;
 		binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
@@ -191,6 +192,12 @@ namespace Zahra
 		return (void*)descriptorSet;
 	}
 
+	void VulkanImGuiLayer::DeregisterTexture(ImGuiResourceHandle textureHandle)
+	{
+		const VkDescriptorSet descriptorSet = (VkDescriptorSet)textureHandle;
+		vkFreeDescriptorSets(VulkanContext::GetCurrentVkDevice(), m_DescriptorPool, 1, &descriptorSet);
+	}
+
 	void VulkanImGuiLayer::CreateDescriptorPool()
 	{
 		VkDevice& device = VulkanContext::GetCurrentVkDevice();
@@ -208,12 +215,12 @@ namespace Zahra
 			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,	1000 },
 			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,	1000 },
 			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,			1000 }
-		};
+		}; // TODO: figure out how many descriptor sets I'll actually need of each type
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		poolInfo.maxSets = 1;
+		poolInfo.maxSets = 10; // TODO: figure out how many descriptor sets I'll actually need in TOTAL
 		poolInfo.poolSizeCount = poolSizes.size();
 		poolInfo.pPoolSizes = poolSizes.data();
 
@@ -251,10 +258,10 @@ namespace Zahra
 		VkSubpassDependency dependency{};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.srcAccessMask = 0;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		VkRenderPassCreateInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;

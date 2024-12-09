@@ -52,6 +52,10 @@ namespace Zahra
 
 		while (m_Running)
 		{
+			static int frameNumber = 0;
+			Z_CORE_TRACE("Began frame number {0}", frameNumber);
+			frameNumber++;
+
 			// Compute frame time
 			float frameStartTime = Time::GetTime();
 			float frameTimeStep = frameStartTime - m_PreviousFrameStartTime; // actual delta time

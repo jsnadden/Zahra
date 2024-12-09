@@ -20,7 +20,8 @@ namespace Zahra
 		virtual void Begin() override;
 		virtual void End() override;
 
-		virtual void* RegisterTexture(Ref<Texture2D> texture) override;
+		virtual ImGuiResourceHandle RegisterTexture(Ref<Texture2D> texture) override;
+		virtual void DeregisterTexture(ImGuiResourceHandle textureHandle) override;
 
 	private:
 		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;

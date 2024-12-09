@@ -8,13 +8,16 @@
 
 namespace Zahra
 {
+	typedef void* ImGuiResourceHandle;
+
 	class ImGuiLayer : public Layer
 	{
 	public:
 		virtual void Begin() = 0;
 		virtual void End() = 0;
 
-		virtual void* RegisterTexture(Ref<Texture2D> texture) = 0;
+		virtual ImGuiResourceHandle RegisterTexture(Ref<Texture2D> texture) = 0;
+		virtual void DeregisterTexture(ImGuiResourceHandle textureHandle) = 0;
 
 		void ClearSwapchain(bool clear) { m_ClearSwapchain = clear; }
 		void BlockEvents(bool block) { m_BlockEvents = block; }

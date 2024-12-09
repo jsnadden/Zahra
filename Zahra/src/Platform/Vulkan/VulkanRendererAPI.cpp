@@ -107,39 +107,144 @@ namespace Zahra
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipeline());
 	}
 
-	void VulkanRendererAPI::EndRenderPass(Ref<RenderPass> renderPass)
+	void VulkanRendererAPI::EndRenderPass()
+	{
+		vkCmdEndRenderPass(m_Swapchain->GetCurrentDrawCommandBuffer());
+	}
+
+	void VulkanRendererAPI::EndRenderPass(Ref<RenderPass> renderPass, Ref<Texture2D>& output)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
 		vkCmdEndRenderPass(commandBuffer);
 
-		if (renderPass->GetSpecification().OutputTexture)
-		{
-			VkImageMemoryBarrier barrier{};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = renderPass.As<VulkanRenderPass>()->GetPrimaryAttachmentVkImage();
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
-			barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		if (!renderPass->GetSpecification().OutputTexture)
+			return;
 
-			vkCmdPipelineBarrier(
-				commandBuffer,
-				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,	// src stage
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,			// dst stage
-				0,												// dependency flags
-				0, nullptr,										// memory barriers (irrelevant)
-				0, nullptr,										// buffer memory barriers (irrelevant)
-				1, &barrier										// image memory barriers (this is the one!!)
-			);
+		bool update = output;
+
+		VkImage attachment = renderPass.As<VulkanRenderPass>()->GetPrimaryAttachmentVkImage();
+
+		///////////////////////////////////////////////////////////////////////////////////////////////
+		// TRANSITION PRIMARY ATTACHMENT TO TRANSFER SOURCE LAYOUT
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = attachment;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
+		barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,					// dst stage
+			0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		VkImage outputImage;
+		VkDeviceMemory outputMemory;
+		VkImageLayout srcLayout;
+		VkPipelineStageFlags srcStageMask;
+		VkAccessFlags srcAccessMask;
+
+		ImageFormat format = renderPass->GetSpecification().PrimaryAttachment.Format;
+		uint32_t width = renderPass->GetSpecification().AttachmentWidth;
+		uint32_t height = renderPass->GetSpecification().AttachmentHeight;
+
+		if (update)
+		{
+			outputImage = output.As<VulkanTexture2D>()->GetVkImage();
+
+			srcLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		}
+		else
+		{
+			///////////////////////////////////////////////////////////////////////////////////////////////
+			// CREATE NEW VULKAN IMAGE/MEMORY
+			VkFormat vulkanFormat = VulkanUtils::GetColourFormat(format);
+			VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+						
+			VulkanContext::GetCurrentDevice()->CreateVulkanImage(width, height, vulkanFormat,
+				VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, outputImage, outputMemory);
+
+			srcLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			srcAccessMask = 0;
+		}		
+
+		///////////////////////////////////////////////////////////////////////////////////////////////
+		// TRANSITION OUTPUT IMAGE TO TRANSFER DESTINATION LAYOUT
+		barrier.oldLayout = srcLayout;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = outputImage;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
+		barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = srcAccessMask;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer, srcStageMask, VK_PIPELINE_STAGE_TRANSFER_BIT,
+			0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		///////////////////////////////////////////////////////////////////////////////////////////////
+		// COPY ATTACHMENT DATA TO NEW IMAGE
+		VkImageCopy copyRegion{};
+		copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		copyRegion.srcSubresource.mipLevel = 0; // TODO: mipmapping
+		copyRegion.srcSubresource.baseArrayLayer = 0;
+		copyRegion.srcSubresource.layerCount = 1;
+		copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		copyRegion.dstSubresource.mipLevel = 0; // TODO: mipmapping
+		copyRegion.dstSubresource.baseArrayLayer = 0;
+		copyRegion.dstSubresource.layerCount = 1;
+		copyRegion.extent.width = width;
+		copyRegion.extent.height = height;
+		copyRegion.extent.depth = 1;
+
+		vkCmdCopyImage(commandBuffer, attachment, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, outputImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+
+		///////////////////////////////////////////////////////////////////////////////////////////////
+		// TRANSITION OUTPUT IMAGE TO TEXTURE LAYOUT
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = outputImage;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
+		barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		if (!update)
+		{
+			///////////////////////////////////////////////////////////////////////////////////////////////
+			// CREATE OUTPUT TEXTURE
+			ImageSpecification outputImageSpecification{};
+			outputImageSpecification.Format = format;
+			outputImageSpecification.Width = width;
+			outputImageSpecification.Height = height;
+			outputImageSpecification.Usage = ImageUsage::Texture;
+
+			output = Ref<VulkanTexture2D>::Create(outputImageSpecification.Width, outputImageSpecification.Height);
+			output->SetData(Ref<VulkanImage>::Create(outputImage, outputMemory, outputImageSpecification));
+		}
+
 	}
 
 	void VulkanRendererAPI::Present()

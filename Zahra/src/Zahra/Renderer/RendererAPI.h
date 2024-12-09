@@ -37,7 +37,8 @@ namespace Zahra
 		virtual void EndFrame() = 0;
 
 		virtual void BeginRenderPass(Ref<RenderPass> renderPass) = 0;
-		virtual void EndRenderPass(Ref<RenderPass> renderPass) = 0;
+		virtual void EndRenderPass() = 0;
+		virtual void EndRenderPass(Ref<RenderPass> renderPass, Ref<Texture2D>& output) = 0;
 
 		virtual void Present() = 0;
 

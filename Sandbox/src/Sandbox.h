@@ -18,8 +18,10 @@ public:
 	bool OnKeyPressedEvent(Zahra::KeyPressedEvent& event);
 
 private:
-	Zahra::Ref<Zahra::Texture2D> m_ViewportTexture2D;
-	void* m_ViewportImGuiTextureHandle = nullptr;
+	uint32_t m_FrameIndex;
+
+	std::vector<Zahra::Ref<Zahra::Texture2D>> m_ViewportTexture2D;
+	std::vector<void*> m_ViewportImGuiTextureHandle;
 
 };
 

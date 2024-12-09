@@ -347,24 +347,25 @@ namespace Zahra
 
 		s_RendererAPI->BeginRenderPass(s_Data.TutorialRenderPass);
 		s_RendererAPI->TutorialDrawCalls(s_Data.TutorialRenderPass, s_Data.TutorialMesh, s_Data.TutorialResourceManager);
-		s_RendererAPI->EndRenderPass(s_Data.TutorialRenderPass);
+		s_RendererAPI->EndRenderPass(s_Data.TutorialRenderPass, outputTexture);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////
 		// RENDER TUTORAL SCENE TO QUAD
 
-		RendererData::CameraData cameraData{};
+		/*RendererData::CameraData cameraData{};
 		cameraData.View = transforms.View;
 		cameraData.Projection = transforms.Projection;
-		s_Data.CameraUniformBuffers->SetData(frameIndex, &cameraData, sizeof(RendererData::CameraData));
+		s_Data.CameraUniformBuffers->SetData(frameIndex, &cameraData, sizeof(RendererData::CameraData));*/
 
-		s_Data.QuadResourceManager->ProvideResource("u_Sampler", s_Data.TutorialRenderPass->GetOutputTexture());
+		/*s_Data.QuadResourceManager->ProvideResource("u_Sampler", outputTexture);
 		s_Data.QuadResourceManager->Bake();
 
 		s_RendererAPI->BeginRenderPass(s_Data.QuadPass);
 		s_RendererAPI->TutorialDrawCalls(s_Data.QuadPass, s_Data.QuadVertexBuffers[frameIndex], s_Data.QuadIndexBuffer, s_Data.QuadResourceManager);
-		s_RendererAPI->EndRenderPass(s_Data.QuadPass);
+		s_RendererAPI->EndRenderPass(s_Data.QuadPass);*/
 		//////////////////////////////////////////////////////////////////////////////////////////////////////
 
+		
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)

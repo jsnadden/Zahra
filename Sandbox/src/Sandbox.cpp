@@ -12,7 +12,9 @@ SandboxLayer::SandboxLayer()
 
 void SandboxLayer::OnAttach()
 {
-	
+	uint32_t framesInFlight = Zahra::Renderer::GetFramesInFlight();
+	m_ViewportTexture2D.resize(framesInFlight);
+	m_ViewportImGuiTextureHandle.resize(framesInFlight);
 }
 
 void SandboxLayer::OnDetach()
@@ -22,10 +24,12 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float dt)
 {
-	Zahra::Renderer::DrawTutorialScene(m_ViewportTexture2D);
+	m_FrameIndex = Zahra::Renderer::GetCurrentFrameIndex();
 
-	/*if (!m_ViewportImGuiTextureHandle)
-		m_ViewportImGuiTextureHandle = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture2D);*/
+	Zahra::Renderer::DrawTutorialScene(m_ViewportTexture2D[m_FrameIndex]);
+
+	if (!m_ViewportImGuiTextureHandle[m_FrameIndex])
+		m_ViewportImGuiTextureHandle[m_FrameIndex] = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture2D[m_FrameIndex]);
 }
 
 void SandboxLayer::OnEvent(Zahra::Event& event)
@@ -36,9 +40,9 @@ void SandboxLayer::OnEvent(Zahra::Event& event)
 
 void SandboxLayer::OnImGuiRender()
 {
-	if (ImGui::Begin("Controls"))
+	if (ImGui::Begin("Example window"))
 	{
-		//ImGui::Image(m_ViewportImGuiTextureHandle, ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image(m_ViewportImGuiTextureHandle[m_FrameIndex], ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::End();
 	}
 	
