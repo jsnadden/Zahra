@@ -252,7 +252,7 @@ namespace Zahra
 		m_Swapchain->PresentImage();			
 	}
 
-	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount, uint32_t startingIndex)
+	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint64_t indexCount, uint64_t startingIndex)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
@@ -285,6 +285,9 @@ namespace Zahra
 		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+
+		if (indexCount == 0)
+			indexCount = indexBuffer->GetCount() - startingIndex;
 
 		vkCmdDrawIndexed(commandBuffer, indexCount, 1, startingIndex, 0, 0);
 	}

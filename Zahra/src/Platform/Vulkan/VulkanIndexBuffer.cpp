@@ -35,6 +35,8 @@ namespace Zahra
 	{
 		m_IndexData.Write((void*)data, size, 0);
 
+		m_IndexCount = size / sizeof(uint32_t);
+
 		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
 		VkBuffer stagingBuffer;
