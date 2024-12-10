@@ -26,10 +26,10 @@ void SandboxLayer::OnUpdate(float dt)
 {
 	m_FrameIndex = Zahra::Renderer::GetCurrentFrameIndex();
 
-	Zahra::Renderer::DrawTutorialScene(m_ViewportTexture2D[m_FrameIndex]);
+	Zahra::Renderer::DrawTutorialScene();
 
-	if (!m_ViewportImGuiTextureHandle[m_FrameIndex])
-		m_ViewportImGuiTextureHandle[m_FrameIndex] = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture2D[m_FrameIndex]);
+	/*if (!m_ViewportImGuiTextureHandle[m_FrameIndex])
+		m_ViewportImGuiTextureHandle[m_FrameIndex] = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture2D[m_FrameIndex]);*/
 }
 
 void SandboxLayer::OnEvent(Zahra::Event& event)
@@ -40,9 +40,9 @@ void SandboxLayer::OnEvent(Zahra::Event& event)
 
 void SandboxLayer::OnImGuiRender()
 {
-	if (ImGui::Begin("Example window"))
+	if (ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoCollapse))
 	{
-		ImGui::Image(m_ViewportImGuiTextureHandle[m_FrameIndex], ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+		//ImGui::Image(m_ViewportImGuiTextureHandle[m_FrameIndex], ImGui::GetContentRegionAvail(), ImVec2(0, 0), ImVec2(1, 1));
 		ImGui::End();
 	}
 	

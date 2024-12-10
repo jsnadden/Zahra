@@ -30,26 +30,26 @@ namespace Zahra
 			return VK_FILTER_MAX_ENUM;
 		}
 
-		VkSamplerAddressMode TextureAddressModeToVkSamplerAddressMode(TextureAddressMode mode)
+		VkSamplerAddressMode TextureAddressModeToVkSamplerAddressMode(TextureWrapMode mode)
 		{
 			switch (mode)
 			{
-			case TextureAddressMode::Repeat:
+			case TextureWrapMode::Repeat:
 			{
 				return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 				break;
 			}
-			case TextureAddressMode::MirroredRepeat:
+			case TextureWrapMode::MirroredRepeat:
 			{
 				return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 				break;
 			}
-			case TextureAddressMode::ClampToEdge:
+			case TextureWrapMode::ClampToEdge:
 			{
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 				break;
 			}
-			case TextureAddressMode::ClampToBorder:
+			case TextureWrapMode::ClampToBorder:
 			{
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 				break;
@@ -60,37 +60,41 @@ namespace Zahra
 			Z_CORE_ASSERT(false, "Unrecognised texture tiling mode");
 			return VK_SAMPLER_ADDRESS_MODE_MAX_ENUM;
 		}
+
+		uint32_t BytesPerPixel(ImageFormat format)
+		{
+			// TODO: make this a switch-case
+			return 4; // 1 byte per channel, currently assuming SRGB
+		}
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification)
+	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, std::filesystem::path filepath)
 		: m_Specification(specification)
 	{
 		int width, height, channels;
 
-		// TODO: to allow for hdr textures, stbi can query the image metadata, then we'd want to use
-		// stbi_loadf and a float format instead of VK_FORMAT_R8G8B8A8_SRGB
+		// TODO: to allow for hdr textures etc., stbi can query the image file to decide on a correct colour format
 
-		stbi_uc* pixelData = stbi_load(specification.ImageFilepath.string().c_str(), &width, &height, &channels, 4);
+		stbi_uc* imageData = stbi_load(filepath.string().c_str(), &width, &height, &channels, 4);
 
-		Z_CORE_ASSERT(pixelData, "Vulkan texture failed to load image.");
+		Z_CORE_ASSERT(imageData, "Vulkan texture failed to load image.");
 
 		m_Width = width;
 		m_Height = height;
-
-		VkDeviceSize size = width * height * 4;  // 4 because currently we're just using 1 byte per channel
+		VkDeviceSize size = width * height * VulkanUtils::BytesPerPixel(ImageFormat::SRGB);
 
 		InitialiseLocalBuffer(size);
-		SetData((void*)pixelData, size);
+		SetData((void*)imageData, size);
 
-		stbi_image_free(pixelData);
+		stbi_image_free(imageData);
 	}
 
-	VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height)
+	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, uint32_t width, uint32_t height)
+		: m_Specification(specification)
 	{
 		m_Width = width;
 		m_Height = height;
-
-		VkDeviceSize size = width * height * 4;  // 4 because currently we're just using 1 byte per channel
+		VkDeviceSize size = width * height * VulkanUtils::BytesPerPixel(ImageFormat::SRGB); // TODO: figure out how to choose the format here
 
 		InitialiseLocalBuffer(size);
 	}
@@ -178,7 +182,7 @@ namespace Zahra
 
 		VkFilter minFilter = VulkanUtils::TextureFilterModeToVkFilter(m_Specification.MinificationFilterMode);
 		VkFilter magFilter = VulkanUtils::TextureFilterModeToVkFilter(m_Specification.MagnificationFilterMode);
-		VkSamplerAddressMode addressMode = VulkanUtils::TextureAddressModeToVkSamplerAddressMode(m_Specification.AddressMode);
+		VkSamplerAddressMode addressMode = VulkanUtils::TextureAddressModeToVkSamplerAddressMode(m_Specification.WrapMode);
 
 		m_Sampler = VulkanContext::GetCurrentDevice()->CreateVulkanImageSampler(minFilter, magFilter, addressMode);
 	}

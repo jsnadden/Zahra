@@ -22,6 +22,15 @@ namespace Zahra
 		static void BeginFrame();
 		static void EndFrame();
 
+	private:
+		static void BeginNewQuadBatch();
+		static void SubmitCurrentQuadBatch();
+		
+		// TODO: similar methods for circle/line batches
+
+		static void FlushDrawCalls();
+
+	public:
 		// TODO: move this stuff to SceneRenderer
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
@@ -38,17 +47,13 @@ namespace Zahra
 
 		static Ref<RendererContext> GetContext() { return Application::Get().GetWindow().GetRendererContext(); }
 
+		// I imagine these are no longer relevant, as Vulkan doesn't maintain state
 		/*static float GetLineThickness();
 		static void SetLineThickness(float thickness);*/
 
-	private:
-		static void SubmitBatch();
-		static void NewBatch();
-
-	public:
-
-		// TEMPORARY
-		static void DrawTutorialScene(Ref<Texture2D>& outputTexture);
+		#pragma region(VULKAN TEST)
+		static void DrawTutorialScene();
+		#pragma endregion
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// PRIMITIVES
@@ -59,9 +64,12 @@ namespace Zahra
 		static void DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID = -1);
 		static void DrawRect(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1);
 
+		// TODO: particles?
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// SPRITES
 
+		// TODO: move to SceneRenderer
 		static void DrawSprite(const glm::mat4& transform, SpriteComponent& sprite, int entityID = -1);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,8 +77,14 @@ namespace Zahra
 
 		struct Statistics
 		{
-			uint32_t DrawCalls;
+			uint32_t QuadBatchCount;
 			uint32_t QuadCount;
+
+			uint32_t CircleBatchCount;
+			uint32_t CircleCount;
+
+			uint32_t LineBatchCount;
+			uint32_t LineCount;
 
 			uint32_t GetTotalVertexCount() { return QuadCount * 4; }
 			uint32_t GetTotalIndexCount() { return QuadCount * 6; }

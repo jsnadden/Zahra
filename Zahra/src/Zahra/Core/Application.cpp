@@ -32,9 +32,11 @@ namespace Zahra
 		// TODO: ressurect
 		//ScriptEngine::Init();
 
-		m_ImGuiLayer = ImGuiLayer::Create();
-		m_ImGuiLayer->ClearSwapchain(m_Specification.RendererConfig.ImGuiClearsSwapchainImages);
-		PushOverlay(m_ImGuiLayer);
+		if (m_Specification.ImGuiConfig.Enabled)
+		{
+			m_ImGuiLayer = ImGuiLayer::Create();
+			PushOverlay(m_ImGuiLayer);
+		}
 
 		m_Window->ReadConfig();
 	}
@@ -52,9 +54,9 @@ namespace Zahra
 
 		while (m_Running)
 		{
-			static int frameNumber = 0;
+			/*static int frameNumber = 0;
 			Z_CORE_TRACE("Began frame number {0}", frameNumber);
-			frameNumber++;
+			frameNumber++;*/
 
 			// Compute frame time
 			float frameStartTime = Time::GetTime();
@@ -70,17 +72,19 @@ namespace Zahra
 			{
 				Renderer::BeginFrame();
 
-				// Update layers and record draw calls
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(dt);
 
-				// Record ImGui's draw calls
-				m_ImGuiLayer->Begin();
-				for (Layer* layer : m_LayerStack)
-					layer->OnImGuiRender();
-				m_ImGuiLayer->End();
+				if (m_Specification.ImGuiConfig.Enabled)
+				{
+					m_ImGuiLayer->Begin();
 
-				// Submit draw calls and present to screen
+					for (Layer* layer : m_LayerStack)
+						layer->OnImGuiRender();
+
+					m_ImGuiLayer->End();
+				}
+
 				Renderer::EndFrame();
 				Renderer::Present();
 			}

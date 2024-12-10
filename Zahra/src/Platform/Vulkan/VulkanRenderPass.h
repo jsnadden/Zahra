@@ -63,7 +63,7 @@ namespace Zahra
 		virtual RenderPassSpecification& GetSpecification() override { return m_Specification; }
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
 
-		virtual Ref<Texture2D> GetOutputTexture() override;
+		//virtual Ref<Texture2D> GetOutputTexture() override;
 
 		bool NeedsResizing();
 		virtual void Refresh() override;

@@ -10,6 +10,12 @@ namespace Zahra
 {
 	typedef void* ImGuiResourceHandle;
 
+	struct ImGuiLayerConfig
+	{
+		bool Enabled = true;
+		bool ClearSwapchain = false;
+	};
+
 	class ImGuiLayer : public Layer
 	{
 	public:
@@ -19,16 +25,14 @@ namespace Zahra
 		virtual ImGuiResourceHandle RegisterTexture(Ref<Texture2D> texture) = 0;
 		virtual void DeregisterTexture(ImGuiResourceHandle textureHandle) = 0;
 
-		void ClearSwapchain(bool clear) { m_ClearSwapchain = clear; }
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
-		void SetColourTheme(); // TODO: make a "theme" struct and pass one in here. Also save the theme to a .yml?
+		void SetColourTheme(); // TODO: options for light/dark modes? (De)Serialising `themes` from a .yml or .ini? This feels out of scope...
 
 		static ImGuiLayer* Create();
 
 	protected:
 		bool m_BlockEvents = true;
-		bool m_ClearSwapchain = false;
 
 	};
 }

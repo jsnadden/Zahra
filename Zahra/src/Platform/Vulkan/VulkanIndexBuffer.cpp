@@ -53,6 +53,7 @@ namespace Zahra
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
+		m_IndexData.Release();
 	}
 
 }

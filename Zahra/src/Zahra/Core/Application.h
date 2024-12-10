@@ -44,6 +44,8 @@ namespace Zahra
 
 		RendererConfig RendererConfig;
 		GPURequirements GPURequirements;
+
+		ImGuiLayerConfig ImGuiConfig;
 	};
 
 	class Application

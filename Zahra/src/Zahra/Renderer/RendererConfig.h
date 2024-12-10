@@ -11,9 +11,7 @@ namespace Zahra
 		std::filesystem::path ShaderPath;
 		bool ForceShaderCompilation = false;
 
-		uint32_t MaxTextureSlots;
-
-		bool ImGuiClearsSwapchainImages = false;
+		uint32_t MaximumBoundTextures;
 	};
 
 }

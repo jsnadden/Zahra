@@ -56,7 +56,7 @@ namespace Zahra
 		virtual RenderPassSpecification& GetSpecification() = 0;
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
 
-		virtual Ref<Texture2D> GetOutputTexture() = 0;
+		//virtual Ref<Texture2D> GetOutputTexture() = 0;
 
 		virtual void Refresh() = 0;
 

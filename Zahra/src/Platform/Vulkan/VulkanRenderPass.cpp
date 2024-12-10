@@ -106,7 +106,7 @@ namespace Zahra
 		colourAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
 		// TODO: set these from AttachmentSpecification
-		colourAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colourAttachmentDesc.initialLayout = m_Specification.PrimaryAttachment.LoadOp == AttachmentLoadOp::Load ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
 		colourAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		// TODO: create additional attachment descriptions
@@ -439,12 +439,12 @@ namespace Zahra
 		m_Framebuffers.clear();
 	}
 
-	Ref<Texture2D> VulkanRenderPass::GetOutputTexture()
+	/*Ref<Texture2D> VulkanRenderPass::GetOutputTexture()
 	{
 		Ref<VulkanTexture2D> outputTexture = Ref<VulkanTexture2D>::Create(m_AttachmentSize.width, m_AttachmentSize.height);
 		outputTexture->SetData(m_PrimaryAttachment);
 		return outputTexture.As<Texture2D>();
-	}
+	}*/
 
 	bool VulkanRenderPass::NeedsResizing()
 	{

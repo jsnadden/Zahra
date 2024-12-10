@@ -30,11 +30,14 @@ Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
 	spec.CommandLineArgs = args;
 
 	spec.RendererConfig.ForceShaderCompilation = false;
-	spec.RendererConfig.ImGuiClearsSwapchainImages = true;
+	spec.RendererConfig.MaximumBoundTextures = 32;
 
 	spec.GPURequirements.IsDiscreteGPU = true;
 	spec.GPURequirements.AnisotropicFiltering = true;
 	spec.GPURequirements.MinBoundTextureSlots = 32;
+
+	spec.ImGuiConfig.Enabled = true;
+	spec.ImGuiConfig.ClearSwapchain = false;
 
 	return new Sandbox(spec);
 }

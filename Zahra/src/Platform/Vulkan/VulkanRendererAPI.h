@@ -30,13 +30,12 @@ namespace Zahra
 
 		virtual void BeginRenderPass(Ref<RenderPass> renderPass) override;
 		virtual void EndRenderPass() override;
-		virtual void EndRenderPass(Ref<RenderPass> renderPass, Ref<Texture2D>& output) override;
+		//virtual void EndRenderPass(Ref<RenderPass> renderPass, Ref<Texture2D>& output) override;
 
 		virtual void Present() override;
 
-		// TEMPORARY
-		virtual void TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager) override;
-		virtual void TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<StaticMesh> mesh, Ref<ShaderResourceManager> resourceManager) override;
+		virtual void DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount, uint32_t startingIndex = 0) override;
+		virtual void DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh) override;
 
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;

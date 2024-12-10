@@ -7,7 +7,7 @@
 namespace Zahra
 {
 
-	Ref<Texture2D> Texture2D::Create(const Texture2DSpecification& specification)
+	Ref<Texture2D> Texture2D::Create(const Texture2DSpecification& specification, std::filesystem::path filepath)
 	{
 
         switch (Renderer::GetAPI())
@@ -15,21 +15,21 @@ namespace Zahra
 			case RendererAPI::API::None:    Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
 			case RendererAPI::API::OpenGL:  Z_CORE_ASSERT(false, "RendererAPI::API::OpenGL is no longer supported"); return nullptr;
 			case RendererAPI::API::DX12:	Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
-			case RendererAPI::API::Vulkan:	return Ref<VulkanTexture2D>::Create(specification);
+			case RendererAPI::API::Vulkan:	return Ref<VulkanTexture2D>::Create(specification, filepath);
 		}
 
         Z_CORE_ASSERT(false, "Unknown RendererAPI::API");
         return nullptr;
 	}
 
-    Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
+    Ref<Texture2D> Texture2D::Create(const Texture2DSpecification& specification, uint32_t width, uint32_t height)
     {
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::API::None:    Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
 			case RendererAPI::API::OpenGL:  Z_CORE_ASSERT(false, "RendererAPI::API::OpenGL is no longer supported"); return nullptr;
 			case RendererAPI::API::DX12:	Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
-			case RendererAPI::API::Vulkan:	return Ref<VulkanTexture2D>::Create(width, height);
+			case RendererAPI::API::Vulkan:	return Ref<VulkanTexture2D>::Create(specification, width, height);
 		}
 
         Z_CORE_ASSERT(false, "Unknown RendererAPI::API");

@@ -21,7 +21,7 @@ namespace Zahra
 		virtual void SetData(Ref<Image> srcImage) = 0;
 
 		// this was used (in Renderer.cpp) for checking if a texture had been
-		// bound already, but will likely not be needed anymore
+		// bound already, but should be replaced with a Resource hash/GUID comparison
 		//virtual bool operator==(const Texture& other) const = 0;
 	};
 
@@ -31,7 +31,7 @@ namespace Zahra
 		Linear
 	};
 
-	enum class TextureAddressMode
+	enum class TextureWrapMode
 	{
 		Repeat,
 		MirroredRepeat,
@@ -41,11 +41,9 @@ namespace Zahra
 
 	struct Texture2DSpecification
 	{
-		std::filesystem::path ImageFilepath;
-
 		TextureFilterMode MinificationFilterMode = TextureFilterMode::Linear;
 		TextureFilterMode MagnificationFilterMode = TextureFilterMode::Linear;
-		TextureAddressMode AddressMode = TextureAddressMode::Repeat;
+		TextureWrapMode WrapMode = TextureWrapMode::Repeat;
 		
 		// TODO: add mipmapping options
 	};
@@ -53,8 +51,8 @@ namespace Zahra
 	class Texture2D : public Texture
 	{
 	public:
-		static Ref<Texture2D> Create(const Texture2DSpecification& specification);
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
+		static Ref<Texture2D> Create(const Texture2DSpecification& specification, std::filesystem::path filepath);
+		static Ref<Texture2D> Create(const Texture2DSpecification& specification, uint32_t width, uint32_t height);
 
 		virtual const Texture2DSpecification& GetSpecification() const = 0;
 

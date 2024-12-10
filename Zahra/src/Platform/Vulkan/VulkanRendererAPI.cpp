@@ -112,147 +112,147 @@ namespace Zahra
 		vkCmdEndRenderPass(m_Swapchain->GetCurrentDrawCommandBuffer());
 	}
 
-	void VulkanRendererAPI::EndRenderPass(Ref<RenderPass> renderPass, Ref<Texture2D>& output)
-	{
-		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
+	//void VulkanRendererAPI::EndRenderPass(Ref<RenderPass> renderPass, Ref<Texture2D>& output)
+	//{
+	//	VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
-		vkCmdEndRenderPass(commandBuffer);
+	//	vkCmdEndRenderPass(commandBuffer);
 
-		if (!renderPass->GetSpecification().OutputTexture)
-			return;
+	//	if (!renderPass->GetSpecification().OutputTexture)
+	//		return;
 
-		bool update = output;
+	//	bool update = output;
 
-		VkImage attachment = renderPass.As<VulkanRenderPass>()->GetPrimaryAttachmentVkImage();
+	//	VkImage attachment = renderPass.As<VulkanRenderPass>()->GetPrimaryAttachmentVkImage();
 
-		///////////////////////////////////////////////////////////////////////////////////////////////
-		// TRANSITION PRIMARY ATTACHMENT TO TRANSFER SOURCE LAYOUT
-		VkImageMemoryBarrier barrier{};
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = attachment;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
-		barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+	//	///////////////////////////////////////////////////////////////////////////////////////////////
+	//	// TRANSITION PRIMARY ATTACHMENT TO TRANSFER SOURCE LAYOUT
+	//	VkImageMemoryBarrier barrier{};
+	//	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	//	barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	//	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+	//	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
+	//	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	//	barrier.image = attachment;
+	//	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//	barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
+	//	barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
+	//	barrier.subresourceRange.baseArrayLayer = 0;
+	//	barrier.subresourceRange.layerCount = 1;
+	//	barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	//	barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,					// dst stage
-			0, 0, nullptr, 0, nullptr, 1, &barrier);
+	//	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,					// dst stage
+	//		0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-		VkImage outputImage;
-		VkDeviceMemory outputMemory;
-		VkImageLayout srcLayout;
-		VkPipelineStageFlags srcStageMask;
-		VkAccessFlags srcAccessMask;
+	//	VkImage outputImage;
+	//	VkDeviceMemory outputMemory;
+	//	VkImageLayout srcLayout;
+	//	VkPipelineStageFlags srcStageMask;
+	//	VkAccessFlags srcAccessMask;
 
-		ImageFormat format = renderPass->GetSpecification().PrimaryAttachment.Format;
-		uint32_t width = renderPass->GetSpecification().AttachmentWidth;
-		uint32_t height = renderPass->GetSpecification().AttachmentHeight;
+	//	ImageFormat format = renderPass->GetSpecification().PrimaryAttachment.Format;
+	//	uint32_t width = renderPass->GetSpecification().AttachmentWidth;
+	//	uint32_t height = renderPass->GetSpecification().AttachmentHeight;
 
-		if (update)
-		{
-			outputImage = output.As<VulkanTexture2D>()->GetVkImage();
+	//	if (update)
+	//	{
+	//		outputImage = output.As<VulkanTexture2D>()->GetVkImage();
 
-			srcLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		}
-		else
-		{
-			///////////////////////////////////////////////////////////////////////////////////////////////
-			// CREATE NEW VULKAN IMAGE/MEMORY
-			VkFormat vulkanFormat = VulkanUtils::GetColourFormat(format);
-			VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-						
-			VulkanContext::GetCurrentDevice()->CreateVulkanImage(width, height, vulkanFormat,
-				VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, outputImage, outputMemory);
+	//		srcLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	//		srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	//		srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	//	}
+	//	else
+	//	{
+	//		///////////////////////////////////////////////////////////////////////////////////////////////
+	//		// CREATE NEW VULKAN IMAGE/MEMORY
+	//		VkFormat vulkanFormat = VulkanUtils::GetColourFormat(format);
+	//		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	//					
+	//		VulkanContext::GetCurrentDevice()->CreateVulkanImage(width, height, vulkanFormat,
+	//			VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, outputImage, outputMemory);
 
-			srcLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			srcAccessMask = 0;
-		}		
+	//		srcLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	//		srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	//		srcAccessMask = 0;
+	//	}		
 
-		///////////////////////////////////////////////////////////////////////////////////////////////
-		// TRANSITION OUTPUT IMAGE TO TRANSFER DESTINATION LAYOUT
-		barrier.oldLayout = srcLayout;
-		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = outputImage;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
-		barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.srcAccessMask = srcAccessMask;
-		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	//	///////////////////////////////////////////////////////////////////////////////////////////////
+	//	// TRANSITION OUTPUT IMAGE TO TRANSFER DESTINATION LAYOUT
+	//	barrier.oldLayout = srcLayout;
+	//	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	//	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
+	//	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	//	barrier.image = outputImage;
+	//	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//	barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
+	//	barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
+	//	barrier.subresourceRange.baseArrayLayer = 0;
+	//	barrier.subresourceRange.layerCount = 1;
+	//	barrier.srcAccessMask = srcAccessMask;
+	//	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-		vkCmdPipelineBarrier(commandBuffer, srcStageMask, VK_PIPELINE_STAGE_TRANSFER_BIT,
-			0, 0, nullptr, 0, nullptr, 1, &barrier);
+	//	vkCmdPipelineBarrier(commandBuffer, srcStageMask, VK_PIPELINE_STAGE_TRANSFER_BIT,
+	//		0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-		///////////////////////////////////////////////////////////////////////////////////////////////
-		// COPY ATTACHMENT DATA TO NEW IMAGE
-		VkImageCopy copyRegion{};
-		copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		copyRegion.srcSubresource.mipLevel = 0; // TODO: mipmapping
-		copyRegion.srcSubresource.baseArrayLayer = 0;
-		copyRegion.srcSubresource.layerCount = 1;
-		copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		copyRegion.dstSubresource.mipLevel = 0; // TODO: mipmapping
-		copyRegion.dstSubresource.baseArrayLayer = 0;
-		copyRegion.dstSubresource.layerCount = 1;
-		copyRegion.extent.width = width;
-		copyRegion.extent.height = height;
-		copyRegion.extent.depth = 1;
+	//	///////////////////////////////////////////////////////////////////////////////////////////////
+	//	// COPY ATTACHMENT DATA TO NEW IMAGE
+	//	VkImageCopy copyRegion{};
+	//	copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//	copyRegion.srcSubresource.mipLevel = 0; // TODO: mipmapping
+	//	copyRegion.srcSubresource.baseArrayLayer = 0;
+	//	copyRegion.srcSubresource.layerCount = 1;
+	//	copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//	copyRegion.dstSubresource.mipLevel = 0; // TODO: mipmapping
+	//	copyRegion.dstSubresource.baseArrayLayer = 0;
+	//	copyRegion.dstSubresource.layerCount = 1;
+	//	copyRegion.extent.width = width;
+	//	copyRegion.extent.height = height;
+	//	copyRegion.extent.depth = 1;
 
-		vkCmdCopyImage(commandBuffer, attachment, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, outputImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+	//	vkCmdCopyImage(commandBuffer, attachment, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, outputImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
-		///////////////////////////////////////////////////////////////////////////////////////////////
-		// TRANSITION OUTPUT IMAGE TO TEXTURE LAYOUT
-		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = outputImage;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
-		barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	//	///////////////////////////////////////////////////////////////////////////////////////////////
+	//	// TRANSITION OUTPUT IMAGE TO TEXTURE LAYOUT
+	//	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	//	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	//	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
+	//	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	//	barrier.image = outputImage;
+	//	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//	barrier.subresourceRange.baseMipLevel = 0; // TODO: mipmapping
+	//	barrier.subresourceRange.levelCount = 1; // TODO: mipmapping
+	//	barrier.subresourceRange.baseArrayLayer = 0;
+	//	barrier.subresourceRange.layerCount = 1;
+	//	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	//	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			0, 0, nullptr, 0, nullptr, 1, &barrier);
+	//	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+	//		0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-		if (!update)
-		{
-			///////////////////////////////////////////////////////////////////////////////////////////////
-			// CREATE OUTPUT TEXTURE
-			ImageSpecification outputImageSpecification{};
-			outputImageSpecification.Format = format;
-			outputImageSpecification.Width = width;
-			outputImageSpecification.Height = height;
-			outputImageSpecification.Usage = ImageUsage::Texture;
+	//	if (!update)
+	//	{
+	//		///////////////////////////////////////////////////////////////////////////////////////////////
+	//		// CREATE OUTPUT TEXTURE
+	//		ImageSpecification outputImageSpecification{};
+	//		outputImageSpecification.Format = format;
+	//		outputImageSpecification.Width = width;
+	//		outputImageSpecification.Height = height;
+	//		outputImageSpecification.Usage = ImageUsage::Texture;
 
-			output = Ref<VulkanTexture2D>::Create(outputImageSpecification.Width, outputImageSpecification.Height);
-			output->SetData(Ref<VulkanImage>::Create(outputImage, outputMemory, outputImageSpecification));
-		}
+	//		output = Ref<VulkanTexture2D>::Create(outputImageSpecification.Width, outputImageSpecification.Height);
+	//		output->SetData(Ref<VulkanImage>::Create(outputImage, outputMemory, outputImageSpecification));
+	//	}
 
-	}
+	//}
 
 	void VulkanRendererAPI::Present()
 	{
 		m_Swapchain->PresentImage();			
 	}
 
-	void VulkanRendererAPI::TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<ShaderResourceManager> resourceManager)
+	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount, uint32_t startingIndex)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
@@ -263,7 +263,8 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = indexBuffer.As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		// set dynamic state
+		// TODO: set the dynamic state based on the renderPass attachment size?
+		// actually these should really be moved to BeginRenderPass!!
 		auto& extent = m_Swapchain->GetExtent();
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -285,11 +286,10 @@ namespace Zahra
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 
-		// FINALLY A DRAW CALL!!!
-		vkCmdDrawIndexed(commandBuffer, (uint32_t)indexBuffer->GetCount(), 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, indexCount, 1, startingIndex, 0, 0);
 	}
 
-	void VulkanRendererAPI::TutorialDrawCalls(Ref<RenderPass> renderPass, Ref<StaticMesh> mesh, Ref<ShaderResourceManager> resourceManager)
+	void VulkanRendererAPI::DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh)
 	{
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
@@ -300,7 +300,8 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = mesh->GetIndexBuffer().As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		// set dynamic state
+		// TODO: set the dynamic state based on the renderPass attachment size?
+		// actually these should really be moved to BeginRenderPass!!
 		auto& extent = m_Swapchain->GetExtent();
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -322,7 +323,6 @@ namespace Zahra
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 
-		// FINALLY A DRAW CALL!!!
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh->GetIndexBuffer()->GetCount(), 1, 0, 0, 0);
 	}
 

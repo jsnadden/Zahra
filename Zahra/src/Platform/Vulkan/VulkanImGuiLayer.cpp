@@ -236,14 +236,16 @@ namespace Zahra
 
 		// TODO: multisampling?
 
+		bool clearSwapchain = Application::Get().GetSpecification().ImGuiConfig.ClearSwapchain;
+
 		VkAttachmentDescription colourAttachment{};
 		colourAttachment.format = swapchain->GetSwapchainImageFormat();
 		colourAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colourAttachment.loadOp = m_ClearSwapchain ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+		colourAttachment.loadOp = clearSwapchain ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
 		colourAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colourAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colourAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colourAttachment.initialLayout = m_ClearSwapchain ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colourAttachment.initialLayout = clearSwapchain ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colourAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colourAttachmentRef{};
