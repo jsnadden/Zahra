@@ -12,6 +12,9 @@ namespace Zahra
 			VK_IMAGE_TILING_OPTIMAL, m_Usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			m_Image, m_Memory);
 
+		VulkanContext::GetCurrentDevice()->TransitionVulkanImageLayout(m_Image, m_Format,
+			VK_IMAGE_LAYOUT_UNDEFINED, VulkanUtils::VulkanImageLayout(m_Specification.Layout));
+
 		CreateImageView();
 	}
 
@@ -53,9 +56,13 @@ namespace Zahra
 		device->CopyVulkanImage(srcImage->m_Image, m_Image, m_Specification.Width, m_Specification.Height);
 	}*/
 
-	void VulkanImage::TransitionLayout(VkImageLayout oldLayout, VkImageLayout newLayout)
+	void VulkanImage::TransitionLayout(ImageLayout layout)
 	{
+		VkImageLayout oldLayout = VulkanUtils::VulkanImageLayout(m_Specification.Layout);
+		VkImageLayout newLayout = VulkanUtils::VulkanImageLayout(layout);
+
 		VulkanContext::GetCurrentDevice()->TransitionVulkanImageLayout(m_Image, m_Format, oldLayout, newLayout);
+		m_Specification.Layout = layout;
 	}
 
 	void VulkanImage::SetData(const VkBuffer& srcBuffer)
@@ -66,7 +73,7 @@ namespace Zahra
 	void VulkanImage::InitData()
 	{
 		m_Format = m_Specification.Usage == ImageUsage::DepthStencilAttachment ?
-			VulkanUtils::GetSupportedDepthStencilFormat() : VulkanUtils::GetColourFormat(m_Specification.Format);
+			VulkanUtils::GetSupportedDepthStencilFormat() : VulkanUtils::VulkanColourFormat(m_Specification.Format);
 
 		m_Usage = VulkanUtils::VulkanImageUsage(m_Specification.Usage);
 	}

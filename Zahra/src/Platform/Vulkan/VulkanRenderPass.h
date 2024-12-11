@@ -2,6 +2,7 @@
 
 
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanFramebuffer.h"
 #include "Platform/Vulkan/VulkanImage.h"
 #include "Platform/Vulkan/VulkanTexture.h"
 #include "Zahra/Renderer/RenderPass.h"
@@ -60,7 +61,6 @@ namespace Zahra
 		VulkanRenderPass(const RenderPassSpecification& specification);
 		~VulkanRenderPass();
 
-		virtual RenderPassSpecification& GetSpecification() override { return m_Specification; }
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
 
 		//virtual Ref<Texture2D> GetOutputTexture() override;
@@ -80,23 +80,16 @@ namespace Zahra
 		Ref<VulkanSwapchain> m_Swapchain;
 
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
-		void CreateRenderPass();
-
 		VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 		VkPipeline m_Pipeline = VK_NULL_HANDLE;
+		std::vector<VulkanFramebuffer> m_Framebuffers;
+
+		void CreateRenderPass();
 		void CreatePipeline();
-
-		VkExtent2D m_AttachmentSize;
-		Ref<VulkanImage> m_PrimaryAttachment; // only used if not targeting swapchain
-		Ref<VulkanTexture2D> m_OutputTexture;
-		Ref<VulkanImage> m_DepthStencilAttachment;
-		std::vector<Ref<VulkanImage>> m_AdditionalAttachments; // TODO: implement this
-		void CreateAttachments();
-		void DestroyAttachments();
-
-		std::vector<VkFramebuffer> m_Framebuffers;
 		void CreateFramebuffers();
 		void DestroyFramebuffers();
+
+		void ValidateSpecification();
 
 	};
 }

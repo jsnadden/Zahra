@@ -167,7 +167,7 @@ namespace Zahra
 	//	{
 	//		///////////////////////////////////////////////////////////////////////////////////////////////
 	//		// CREATE NEW VULKAN IMAGE/MEMORY
-	//		VkFormat vulkanFormat = VulkanUtils::GetColourFormat(format);
+	//		VkFormat vulkanFormat = VulkanUtils::VulkanColourFormat(format);
 	//		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	//					
 	//		VulkanContext::GetCurrentDevice()->CreateVulkanImage(width, height, vulkanFormat,

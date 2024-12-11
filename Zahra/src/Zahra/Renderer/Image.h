@@ -4,6 +4,7 @@ namespace Zahra
 {
 	enum class ImageUsage
 	{
+		Unspecified,
 		ColourAttachment,
 		DepthStencilAttachment,
 		Texture,
@@ -34,7 +35,13 @@ namespace Zahra
 
 	enum class ImageLayout
 	{
-		Undefined
+		Unspecified,
+		ColourAttachment,
+		DepthStencilAttachment,
+		Texture,
+		TransferSource,
+		TransferDestination,
+		Presentation,
 	};
 
 	// TODO: make room for 3d images
@@ -42,8 +49,9 @@ namespace Zahra
 	struct ImageSpecification
 	{
 		uint32_t Width, Height;
-		ImageFormat Format;
-		ImageUsage Usage;
+		ImageFormat Format = ImageFormat::Unspecified;
+		ImageUsage Usage = ImageUsage::Unspecified;
+		ImageLayout Layout = ImageLayout::Unspecified;
 	};
 
 	class Image : public RefCounted

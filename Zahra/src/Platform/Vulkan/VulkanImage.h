@@ -43,7 +43,7 @@ namespace Zahra
 			return VK_IMAGE_USAGE_FLAG_BITS_MAX_ENUM;
 		}
 
-		static VkFormat GetColourFormat(ImageFormat format)
+		static VkFormat VulkanColourFormat(ImageFormat format)
 		{
 			switch (format)
 			{
@@ -71,6 +71,23 @@ namespace Zahra
 				VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 		}
 
+		static VkImageLayout VulkanImageLayout(ImageLayout layout)
+		{
+			switch (layout)
+			{
+				case ImageLayout::Unspecified: return VK_IMAGE_LAYOUT_UNDEFINED;
+				case ImageLayout::ColourAttachment: return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				case ImageLayout::DepthStencilAttachment: return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				case ImageLayout::Texture: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				case ImageLayout::TransferSource: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				case ImageLayout::TransferDestination: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				case ImageLayout::Presentation: return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			}
+
+			Z_CORE_ASSERT(false, "Unsupported image layout");
+			return VK_IMAGE_LAYOUT_MAX_ENUM;
+		}
+
 		static bool IsDepthFormat(VkFormat format)
 		{
 			switch (format)
@@ -80,14 +97,7 @@ namespace Zahra
 				case VK_FORMAT_D16_UNORM_S8_UINT:
 				case VK_FORMAT_D24_UNORM_S8_UINT:
 				case VK_FORMAT_D32_SFLOAT_S8_UINT:
-				{
 					return true;
-					break;
-				}
-				default:
-				{
-					break;
-				}
 			}
 
 			return false;
@@ -108,7 +118,7 @@ namespace Zahra
 
 		//virtual void CopyData(Ref<Image>& source) override;
 
-		void TransitionLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
+		void TransitionLayout(ImageLayout layout);
 
 		void SetData(const VkBuffer& srcBuffer);
 

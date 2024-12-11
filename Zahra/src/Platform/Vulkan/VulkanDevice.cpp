@@ -221,6 +221,9 @@ namespace Zahra
 
 	void VulkanDevice::TransitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 	{
+		if (oldLayout == newLayout)
+			return;
+
 		VkCommandBuffer commandBuffer = GetTemporaryCommandBuffer();
 
 		VkPipelineStageFlags srcStage;

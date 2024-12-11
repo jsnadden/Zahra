@@ -62,6 +62,8 @@ namespace Zahra
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& specification)
 		: m_Specification(specification)
 	{
+		ValidateSpecification(); // just for debugging, maybe macro it out for release build?
+
 		if (m_Specification.OutputTexture)
 			Z_CORE_ASSERT(!m_Specification.TargetSwapchain, "If you want the render pass to output to a texture, it should use a non-swapchain primary attachment")
 
@@ -85,6 +87,87 @@ namespace Zahra
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 
 		vkDestroyRenderPass(device, m_RenderPass, nullptr);
+	}	
+
+	//void VulkanRenderPass::CreateAttachments()
+	//{
+	//	if (m_Specification.TargetSwapchain)
+	//		m_AttachmentSize = m_Swapchain->GetExtent();
+	//	else
+	//		m_AttachmentSize = { m_Specification.AttachmentWidth, m_Specification.AttachmentHeight };
+
+	//	if (!m_Specification.TargetSwapchain)
+	//	{
+	//		ImageSpecification primaryAttachmentSpec{};
+	//		primaryAttachmentSpec.Format = m_Specification.PrimaryAttachment.Format;
+	//		primaryAttachmentSpec.Width = m_AttachmentSize.width;
+	//		primaryAttachmentSpec.Height = m_AttachmentSize.height;
+	//		primaryAttachmentSpec.Usage =  m_Specification.OutputTexture ?
+	//			ImageUsage::RenderToTexture :
+	//			ImageUsage::ColourAttachment;
+
+	//		m_PrimaryAttachment = Ref<VulkanImage>::Create(primaryAttachmentSpec);
+	//	}
+
+	//	// TODO: create additional attachments
+
+	//	if (m_Specification.HasDepthStencil)
+	//	{
+	//		ImageSpecification depthStencilAttachmentSpec{};
+	//		depthStencilAttachmentSpec.Width = m_AttachmentSize.width;
+	//		depthStencilAttachmentSpec.Height = m_AttachmentSize.height;
+	//		depthStencilAttachmentSpec.Usage = ImageUsage::DepthStencilAttachment;
+	//		m_DepthStencilAttachment = Ref<VulkanImage>::Create(depthStencilAttachmentSpec);
+	//	}
+	//}
+
+	//void VulkanRenderPass::DestroyAttachments()
+	//{
+	//	m_PrimaryAttachment.Reset();
+	//	m_DepthStencilAttachment.Reset();
+
+	//	for (auto& attachment : m_AdditionalAttachments)
+	//		attachment.Reset();
+	//}
+
+	/*Ref<Texture2D> VulkanRenderPass::GetOutputTexture()
+	{
+		Ref<VulkanTexture2D> outputTexture = Ref<VulkanTexture2D>::Create(m_AttachmentSize.width, m_AttachmentSize.height);
+		outputTexture->SetData(m_PrimaryAttachment);
+		return outputTexture.As<Texture2D>();
+	}*/
+
+	bool VulkanRenderPass::NeedsResizing()
+	{
+		if (!m_Specification.TargetSwapchain)
+			return false;
+
+		VkExtent2D swapchainSize = m_Swapchain->GetExtent();
+		return (m_AttachmentSize.width != swapchainSize.width) || (m_AttachmentSize.height != swapchainSize.height);
+	}
+
+	void VulkanRenderPass::Refresh()
+	{
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
+		vkDeviceWaitIdle(device);
+
+		DestroyFramebuffers();
+		DestroyAttachments();
+		CreateAttachments();
+		CreateFramebuffers();
+	}
+
+	const VkFramebuffer& VulkanRenderPass::GetFramebuffer(uint32_t index) const
+	{
+		if (!m_Specification.TargetSwapchain)
+		{
+			return m_Framebuffers[0];
+		}
+		else
+		{
+			Z_CORE_ASSERT(index < m_Framebuffers.size());
+			return m_Framebuffers[index];
+		}
 	}
 
 	void VulkanRenderPass::CreateRenderPass()
@@ -98,7 +181,7 @@ namespace Zahra
 
 		VkAttachmentDescription& colourAttachmentDesc = attachmentDescriptions.emplace_back();
 		colourAttachmentDesc.format = m_Specification.TargetSwapchain ? m_Swapchain->GetSwapchainImageFormat()
-			: VulkanUtils::GetColourFormat(m_Specification.PrimaryAttachment.Format);
+			: VulkanUtils::VulkanColourFormat(m_Specification.PrimaryAttachment.Format);
 		colourAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
 		colourAttachmentDesc.loadOp = VulkanUtils::VulkanLoadOp(m_Specification.PrimaryAttachment.LoadOp);
 		colourAttachmentDesc.storeOp = VulkanUtils::VulkanStoreOp(m_Specification.PrimaryAttachment.StoreOp);
@@ -329,54 +412,11 @@ namespace Zahra
 
 	}
 
-	void VulkanRenderPass::CreateAttachments()
-	{
-		if (m_Specification.TargetSwapchain)
-			m_AttachmentSize = m_Swapchain->GetExtent();
-		else
-			m_AttachmentSize = { m_Specification.AttachmentWidth, m_Specification.AttachmentHeight };
-
-		if (!m_Specification.TargetSwapchain)
-		{
-			ImageSpecification primaryAttachmentSpec{};
-			primaryAttachmentSpec.Format = m_Specification.PrimaryAttachment.Format;
-			primaryAttachmentSpec.Width = m_AttachmentSize.width;
-			primaryAttachmentSpec.Height = m_AttachmentSize.height;
-			primaryAttachmentSpec.Usage =  m_Specification.OutputTexture ?
-				ImageUsage::RenderToTexture :
-				ImageUsage::ColourAttachment;
-
-			m_PrimaryAttachment = Ref<VulkanImage>::Create(primaryAttachmentSpec);
-		}
-
-		// TODO: create additional attachments
-
-		if (m_Specification.HasDepthStencil)
-		{
-			ImageSpecification depthStencilAttachmentSpec{};
-			depthStencilAttachmentSpec.Width = m_AttachmentSize.width;
-			depthStencilAttachmentSpec.Height = m_AttachmentSize.height;
-			depthStencilAttachmentSpec.Usage = ImageUsage::DepthStencilAttachment;
-			m_DepthStencilAttachment = Ref<VulkanImage>::Create(depthStencilAttachmentSpec);
-		}
-	}
-
-	void VulkanRenderPass::DestroyAttachments()
-	{
-		m_PrimaryAttachment.Reset();
-		m_DepthStencilAttachment.Reset();
-
-		for (auto& attachment : m_AdditionalAttachments)
-			attachment.Reset();
-	}
-
 	void VulkanRenderPass::CreateFramebuffers()
 	{
-		// TODO: if this gets more complicated make a VulkanFramebuffer class to avoid more code duplication
-
 		VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
 
-		if (m_Specification.TargetSwapchain)
+		/*if (m_Specification.TargetSwapchain)
 		{
 			for (auto& view : m_Swapchain->GetSwapchainImageViews())
 			{
@@ -426,57 +466,26 @@ namespace Zahra
 
 			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer),
 				"Vulkan framebuffer creation failed");
-		}
+		}*/
 	}
 
 	void VulkanRenderPass::DestroyFramebuffers()
 	{
-		VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
+		/*VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
 
 		for (auto framebuffer : m_Framebuffers) {
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
 		}
-		m_Framebuffers.clear();
+		m_Framebuffers.clear();*/
 	}
 
-	/*Ref<Texture2D> VulkanRenderPass::GetOutputTexture()
+	void VulkanRenderPass::ValidateSpecification()
 	{
-		Ref<VulkanTexture2D> outputTexture = Ref<VulkanTexture2D>::Create(m_AttachmentSize.width, m_AttachmentSize.height);
-		outputTexture->SetData(m_PrimaryAttachment);
-		return outputTexture.As<Texture2D>();
-	}*/
-
-	bool VulkanRenderPass::NeedsResizing()
-	{
-		if (!m_Specification.TargetSwapchain)
-			return false;
-
-		VkExtent2D swapchainSize = m_Swapchain->GetExtent();
-		return (m_AttachmentSize.width != swapchainSize.width) || (m_AttachmentSize.height != swapchainSize.height);
-	}
-
-	void VulkanRenderPass::Refresh()
-	{
-		VkDevice& device = VulkanContext::GetCurrentVkDevice();
-		vkDeviceWaitIdle(device);
-
-		DestroyFramebuffers();
-		DestroyAttachments();
-		CreateAttachments();
-		CreateFramebuffers();
-	}
-
-	const VkFramebuffer& VulkanRenderPass::GetFramebuffer(uint32_t index) const
-	{
-		if (!m_Specification.TargetSwapchain)
-		{
-			return m_Framebuffers[0];
-		}
-		else
-		{
-			Z_CORE_ASSERT(index < m_Framebuffers.size());
-			return m_Framebuffers[index];
-		}
+		// TODO: check that the framebuffer attachments make sense:
+		// - Get output data from shader (more reflection!!) and check that we have the right number/type of attachments
+		// - Images should all be of the correct size
+		// - Images should have been created with valid usage flags/formats, and transitioned to compatible layouts
+		// - Anything other compatibilities?
 	}
 
 }

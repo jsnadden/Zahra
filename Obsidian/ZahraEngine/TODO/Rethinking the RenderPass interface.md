@@ -1,0 +1,7 @@
+- ~~Add the `Framebuffer` class back, which can encapsulate the attachment data/logic of `RenderPass`, has a `Ref<Images>` for each attachment (a `std::vector` of colour attachments, plus one depth/stencil)~~
+- ~~In `RenderPassSpecification` get rid of `bool OutputTexture`, and pack stuff like `bool TargetSwapchain` and the `AttachmentSpecification` structs into a `FramebufferSpecification` (specs within specs within specs...)~~
+- ~~The `create` methods for `Framebuffer` can take over the logic for either getting swapchain images, or building them from specification, then constructing a `VkFramebuffer` handle~~
+- ~~Need to think up a systematic way of describing how the attachments get passed from one `RenderPass` to another for compositing. The simplest way I can think of right now is to include a `Ref<Image>` member in `AttachmentSpecification`, which (if non-null) overrides the other spec parameters, bypassing creation.~~
+- `RenderPass` should have a method `ValidateAttachments` to make sure each attachment image was constructed with the expected size, usage flags and format
+- Regardless of whether we target the swapchain or not, `RenderPass` should create a separate framebuffer per frame-in-flight to ensure the `VkImage` remains valid until rendering is complete
+- For "render to texture" uses we can add a method `OutputToTexture2D` to `RendererAPI, taking` a `Ref<RenderPass>` and spitting out a `Ref<Texture2D>`, while recording the appropriate layout transition and image copy commands

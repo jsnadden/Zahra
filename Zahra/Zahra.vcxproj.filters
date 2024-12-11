@@ -78,12 +78,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform\OpenGL\OpenGLImGuiLayer.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanAllocator.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
@@ -1585,14 +1579,9 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanMesh.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanImage.h" />
     <ClInclude Include="src\Zahra\Renderer\Image.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanFramebuffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform\OpenGL\OpenGLImGuiLayer.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
@@ -1766,5 +1755,6 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanMesh.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanImage.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Image.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanFramebuffer.cpp" />
   </ItemGroup>
 </Project>

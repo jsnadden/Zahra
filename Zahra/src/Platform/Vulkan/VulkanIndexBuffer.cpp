@@ -28,7 +28,8 @@ namespace Zahra
 		vkDestroyBuffer(device, m_VulkanIndexBuffer, nullptr);
 		vkFreeMemory(device, m_VulkanIndexBufferMemory, nullptr);
 
-		m_IndexData.Release();
+		// TODO: decide whether local data should be released based on RendererConfig?
+		//m_IndexData.Release();
 	}
 
 	void VulkanIndexBuffer::SetData(const uint32_t* data, uint64_t size)
