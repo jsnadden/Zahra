@@ -9,7 +9,18 @@
 
 namespace Zahra
 {
-	
+	// TODO:
+	// - multiple subpasses (and their associated dependencies)\
+	// - framebuffer attachment aliasing (and thus multiple attachments targeting the swapchain)
+	// - allow separate depth/stencil attachments
+	// - for that matter, we're not using the stencil value at all
+	// - support for instanced rendering
+	// - multisampling
+	// - mipmapping
+	// - blending parameters in specification
+	// - push constants
+	// - resizing
+	// - output to texture
 
 	struct RenderPassSpecification
 	{
@@ -27,12 +38,9 @@ namespace Zahra
 		virtual ~RenderPass() = default;
 
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
+		virtual const Ref<Framebuffer> GetFramebuffer() const = 0;
 
-		virtual const Ref<Framebuffer> GetColourAttachment(uint32_t index) const = 0;
-		virtual const std::vector<Ref<Framebuffer>> GetColourAttachments() const = 0;
-		virtual const Ref<Framebuffer> GetDepthStencilAttachment() const = 0;
-
-		virtual void Refresh() = 0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
 		static Ref<RenderPass> Create(const RenderPassSpecification& specification);
 	};

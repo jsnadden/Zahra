@@ -35,8 +35,8 @@ namespace Zahra
 
 		uint32_t Width, Height; // ignored if attachment is using a swapchain image
 
-		std::vector<AttachmentSpecification> ColourAttachments;
-		AttachmentSpecification DepthStencilAttachment;
+		std::vector<AttachmentSpecification> ColourAttachmentSpecs;
+		AttachmentSpecification DepthStencilAttachmentSpec;
 	};
 
 	class Framebuffer : public RefCounted
@@ -45,11 +45,10 @@ namespace Zahra
 
 		virtual ~Framebuffer() = default;
 
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
-
-		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
+		//virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
 
 		virtual const FramebufferSpecification& GetSpecification() const = 0;
+
 		virtual const Ref<Image>& GetColourAttachment(uint32_t index) const = 0;
 		virtual const Ref<Image>& GetDepthStencilAttachment() const = 0;
 

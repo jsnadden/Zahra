@@ -28,7 +28,7 @@ namespace Zahra
 		VkSurfaceKHR& GetSurface() { return m_Surface; }
 
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
-		const VkDevice& GetLogicalDevice() { return m_Device->m_LogicalDevice; }
+		const VkDevice& GetVkDevice() { return m_Device->m_LogicalDevice; }
 
 		const VkExtent2D& GetExtent() { return m_Extent; }
 		const VkFormat& GetSwapchainImageFormat() { return m_SurfaceFormat.format; }
@@ -37,10 +37,10 @@ namespace Zahra
 		VkCommandBuffer GetDrawCommandBuffer(uint32_t index);
 		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentFrameIndex); }
 
-		uint32_t GetFramesInFlight() { return m_FramesInFlight; }
-		uint32_t GetImageCount() { return m_ImageCount; }
-		uint32_t GetFrameIndex() { return m_CurrentFrameIndex; }
-		uint32_t GetImageIndex() { return m_CurrentImageIndex; }
+		const uint32_t GetFramesInFlight() const { return m_FramesInFlight; }
+		const uint32_t GetImageCount() const { return m_ImageCount; }
+		const uint32_t GetFrameIndex() const { return m_CurrentFrameIndex; }
+		const uint32_t GetImageIndex() const { return m_CurrentImageIndex; }
 
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;

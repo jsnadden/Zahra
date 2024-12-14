@@ -134,9 +134,9 @@ namespace Zahra
 		memcpy(mappedAddress, m_LocalImageData.GetData<void>(), size);
 		vkUnmapMemory(vkDevice, stagingBufferMemory);
 
-		m_Image->TransitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		m_Image->TransitionLayout(ImageLayout::TransferDestination);
 		m_Image->SetData(stagingBuffer);
-		m_Image->TransitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		m_Image->TransitionLayout(ImageLayout::Texture);
 
 		vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 		vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);

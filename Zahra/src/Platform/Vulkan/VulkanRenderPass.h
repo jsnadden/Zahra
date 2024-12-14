@@ -62,18 +62,19 @@ namespace Zahra
 		~VulkanRenderPass();
 
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
+		virtual const Ref<Framebuffer> GetFramebuffer() const override;
 
 		//virtual Ref<Texture2D> GetOutputTexture() override;
 
-		bool NeedsResizing();
-		virtual void Refresh() override;
+		//bool NeedsResizing();
+		virtual void Resize(uint32_t width, uint32_t height) override;
 
 		const VkRenderPass& GetVkRenderPass() const { return m_RenderPass; }
 		const VkPipeline& GetVkPipeline() const { return m_Pipeline; }
 		const VkPipelineLayout& GetVkPipelineLayout() const { return m_PipelineLayout; }
-		const VkExtent2D& GetAttachmentSize() const { return m_AttachmentSize; }
-		const VkFramebuffer& GetFramebuffer(uint32_t index) const;
-		const VkImage& GetPrimaryAttachmentVkImage() const { return m_PrimaryAttachment->GetVkImage(); }
+		const VkFramebuffer& GetVkFramebuffer();
+
+		const std::vector<VkClearValue> const GetClearValues();
 
 	private:
 		RenderPassSpecification m_Specification;
@@ -82,14 +83,19 @@ namespace Zahra
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 		VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 		VkPipeline m_Pipeline = VK_NULL_HANDLE;
-		std::vector<VulkanFramebuffer> m_Framebuffers;
+
+		Ref<VulkanFramebuffer> m_Framebuffer;
+		std::vector<VkFramebuffer> m_VkFramebuffers;
 
 		void CreateRenderPass();
 		void CreatePipeline();
-		void CreateFramebuffers();
-		void DestroyFramebuffers();
+		void CreateFramebuffer();
+		void DestroyFramebuffer();
 
 		void ValidateSpecification();
+
+		std::vector<VkAttachmentDescription> GenerateAttachmentDescriptions();
+		std::vector<VkAttachmentReference> GenerateColourAttachmentReferences();
 
 	};
 }

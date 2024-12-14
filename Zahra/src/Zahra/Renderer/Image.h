@@ -64,8 +64,6 @@ namespace Zahra
 		virtual const uint32_t GetWidth() const = 0;
 		virtual const uint32_t GetHeight() const = 0;
 
-		//virtual void CopyData(Ref<Image>& source) = 0; // TODO: generalise this method with src/dst subregions
-
 		static Ref<Image> Create(ImageSpecification specification);
 
 	};

@@ -8,17 +8,21 @@ namespace Zahra
 	{
 		InitData();
 
-		VulkanContext::GetCurrentDevice()->CreateVulkanImage(specification.Width, specification.Height, m_Format,
+		Ref<VulkanDevice> device = VulkanContext::GetCurrentDevice();
+
+		device->CreateVulkanImage(specification.Width, specification.Height, m_Format,
 			VK_IMAGE_TILING_OPTIMAL, m_Usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			m_Image, m_Memory);
 
-		VulkanContext::GetCurrentDevice()->TransitionVulkanImageLayout(m_Image, m_Format,
+		device->TransitionVulkanImageLayout(m_Image, m_Format,
 			VK_IMAGE_LAYOUT_UNDEFINED, VulkanUtils::VulkanImageLayout(m_Specification.Layout));
+
+		//vkDeviceWaitIdle(device->GetVkDevice());
 
 		CreateImageView();
 	}
 
-	VulkanImage::VulkanImage(VkImage image, VkDeviceMemory memory, ImageSpecification specification)
+	/*VulkanImage::VulkanImage(VkImage image, VkDeviceMemory memory, ImageSpecification specification)
 		: m_Specification(specification)
 	{
 		InitData();
@@ -27,7 +31,7 @@ namespace Zahra
 		m_Memory = memory;
 
 		CreateImageView();
-	}
+	}*/
 
 	VulkanImage::~VulkanImage()
 	{
@@ -45,7 +49,7 @@ namespace Zahra
 		m_Image = VK_NULL_HANDLE;
 	}
 
-	/*void VulkanImage::CopyData(Ref<Image>& source)
+	/*void VulkanImage::CopyFrom(Ref<Image>& source)
 	{
 		Ref<VulkanImage> srcImage = source.As<VulkanImage>();
 
@@ -72,7 +76,7 @@ namespace Zahra
 
 	void VulkanImage::InitData()
 	{
-		m_Format = m_Specification.Usage == ImageUsage::DepthStencilAttachment ?
+		m_Format = (m_Specification.Usage == ImageUsage::DepthStencilAttachment) ?
 			VulkanUtils::GetSupportedDepthStencilFormat() : VulkanUtils::VulkanColourFormat(m_Specification.Format);
 
 		m_Usage = VulkanUtils::VulkanImageUsage(m_Specification.Usage);

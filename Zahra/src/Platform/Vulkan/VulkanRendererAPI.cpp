@@ -86,19 +86,18 @@ namespace Zahra
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
 		Ref<VulkanRenderPass> vulkanRenderPass = renderpass.As<VulkanRenderPass>();
-		if (m_Swapchain->Invalidated()) vulkanRenderPass->Refresh();
+		if (m_Swapchain->Invalidated())
+			vulkanRenderPass->Resize(m_Swapchain->GetExtent().width, m_Swapchain->GetExtent().height);
 
-		// TODO: get/emplace clear values for additional attachments
-		glm::vec3 clear = vulkanRenderPass->GetSpecification().PrimaryAttachment.ClearColour;
-		std::vector<VkClearValue> clearValues = {{ clear.r, clear.g, clear.b, 1.0f }};
-		if (vulkanRenderPass->GetSpecification().HasDepthStencil) clearValues.emplace_back(m_ClearDepthStencil);
+		std::vector<VkClearValue> clearValues = vulkanRenderPass->GetClearValues();
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
-		renderPassBeginInfo.framebuffer = vulkanRenderPass->GetFramebuffer(m_Swapchain->GetImageIndex());
+		renderPassBeginInfo.framebuffer = vulkanRenderPass->GetVkFramebuffer();
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };
-		renderPassBeginInfo.renderArea.extent = vulkanRenderPass->GetAttachmentSize();
+		renderPassBeginInfo.renderArea.extent.width = vulkanRenderPass->GetSpecification().FramebufferSpec.Width;
+		renderPassBeginInfo.renderArea.extent.height = vulkanRenderPass->GetSpecification().FramebufferSpec.Height;
 		renderPassBeginInfo.clearValueCount = clearValues.size();
 		renderPassBeginInfo.pClearValues = clearValues.data();
 

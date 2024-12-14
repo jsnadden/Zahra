@@ -42,8 +42,6 @@ namespace Zahra
 		Ref<VulkanDevice> m_Device;
 
 		uint32_t m_FramesInFlight;
-
-		VkClearValue m_ClearDepthStencil = { 1.0f, 0 };
 	};
 
 }

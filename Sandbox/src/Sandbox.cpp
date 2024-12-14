@@ -24,12 +24,7 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float dt)
 {
-	m_FrameIndex = Zahra::Renderer::GetCurrentFrameIndex();
-
 	Zahra::Renderer::DrawTutorialScene();
-
-	/*if (!m_ViewportImGuiTextureHandle[m_FrameIndex])
-		m_ViewportImGuiTextureHandle[m_FrameIndex] = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture2D[m_FrameIndex]);*/
 }
 
 void SandboxLayer::OnEvent(Zahra::Event& event)

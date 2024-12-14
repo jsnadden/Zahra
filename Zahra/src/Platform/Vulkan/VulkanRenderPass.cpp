@@ -62,17 +62,13 @@ namespace Zahra
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& specification)
 		: m_Specification(specification)
 	{
-		ValidateSpecification(); // just for debugging, maybe macro it out for release build?
-
-		if (m_Specification.OutputTexture)
-			Z_CORE_ASSERT(!m_Specification.TargetSwapchain, "If you want the render pass to output to a texture, it should use a non-swapchain primary attachment")
+		ValidateSpecification();
 
 		m_Swapchain = VulkanContext::Get()->GetSwapchain();
 
 		CreateRenderPass();
 		CreatePipeline();
-		CreateAttachments();
-		CreateFramebuffers();
+		CreateFramebuffer();
 	}
 
 	VulkanRenderPass::~VulkanRenderPass()
@@ -80,155 +76,61 @@ namespace Zahra
 		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 		vkDeviceWaitIdle(device);
 
-		DestroyFramebuffers();
-		DestroyAttachments();
+		DestroyFramebuffer();
 		
 		vkDestroyPipeline(device, m_Pipeline, nullptr);
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 
 		vkDestroyRenderPass(device, m_RenderPass, nullptr);
-	}	
-
-	//void VulkanRenderPass::CreateAttachments()
-	//{
-	//	if (m_Specification.TargetSwapchain)
-	//		m_AttachmentSize = m_Swapchain->GetExtent();
-	//	else
-	//		m_AttachmentSize = { m_Specification.AttachmentWidth, m_Specification.AttachmentHeight };
-
-	//	if (!m_Specification.TargetSwapchain)
-	//	{
-	//		ImageSpecification primaryAttachmentSpec{};
-	//		primaryAttachmentSpec.Format = m_Specification.PrimaryAttachment.Format;
-	//		primaryAttachmentSpec.Width = m_AttachmentSize.width;
-	//		primaryAttachmentSpec.Height = m_AttachmentSize.height;
-	//		primaryAttachmentSpec.Usage =  m_Specification.OutputTexture ?
-	//			ImageUsage::RenderToTexture :
-	//			ImageUsage::ColourAttachment;
-
-	//		m_PrimaryAttachment = Ref<VulkanImage>::Create(primaryAttachmentSpec);
-	//	}
-
-	//	// TODO: create additional attachments
-
-	//	if (m_Specification.HasDepthStencil)
-	//	{
-	//		ImageSpecification depthStencilAttachmentSpec{};
-	//		depthStencilAttachmentSpec.Width = m_AttachmentSize.width;
-	//		depthStencilAttachmentSpec.Height = m_AttachmentSize.height;
-	//		depthStencilAttachmentSpec.Usage = ImageUsage::DepthStencilAttachment;
-	//		m_DepthStencilAttachment = Ref<VulkanImage>::Create(depthStencilAttachmentSpec);
-	//	}
-	//}
-
-	//void VulkanRenderPass::DestroyAttachments()
-	//{
-	//	m_PrimaryAttachment.Reset();
-	//	m_DepthStencilAttachment.Reset();
-
-	//	for (auto& attachment : m_AdditionalAttachments)
-	//		attachment.Reset();
-	//}
-
-	/*Ref<Texture2D> VulkanRenderPass::GetOutputTexture()
-	{
-		Ref<VulkanTexture2D> outputTexture = Ref<VulkanTexture2D>::Create(m_AttachmentSize.width, m_AttachmentSize.height);
-		outputTexture->SetData(m_PrimaryAttachment);
-		return outputTexture.As<Texture2D>();
-	}*/
-
-	bool VulkanRenderPass::NeedsResizing()
-	{
-		if (!m_Specification.TargetSwapchain)
-			return false;
-
-		VkExtent2D swapchainSize = m_Swapchain->GetExtent();
-		return (m_AttachmentSize.width != swapchainSize.width) || (m_AttachmentSize.height != swapchainSize.height);
 	}
 
-	void VulkanRenderPass::Refresh()
+	const Ref<Framebuffer> VulkanRenderPass::GetFramebuffer() const
 	{
-		VkDevice& device = VulkanContext::GetCurrentVkDevice();
-		vkDeviceWaitIdle(device);
-
-		DestroyFramebuffers();
-		DestroyAttachments();
-		CreateAttachments();
-		CreateFramebuffers();
+		return m_Framebuffer;
 	}
 
-	const VkFramebuffer& VulkanRenderPass::GetFramebuffer(uint32_t index) const
+	void VulkanRenderPass::Resize(uint32_t width, uint32_t height)
 	{
-		if (!m_Specification.TargetSwapchain)
-		{
-			return m_Framebuffers[0];
-		}
-		else
-		{
-			Z_CORE_ASSERT(index < m_Framebuffers.size());
-			return m_Framebuffers[index];
-		}
+		m_Specification.FramebufferSpec.Width = width;
+		m_Specification.FramebufferSpec.Height = height;
+		DestroyFramebuffer();
+		CreateFramebuffer();
+	}
+
+	const VkFramebuffer& VulkanRenderPass::GetVkFramebuffer()
+	{
+		return m_VkFramebuffers[m_Swapchain->GetImageIndex()];
+	}
+
+	std::vector<VkClearValue> const VulkanRenderPass::GetClearValues()
+	{
+		return m_Framebuffer->GetClearValues();
 	}
 
 	void VulkanRenderPass::CreateRenderPass()
 	{
 		VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
+		bool hasDepthStencil = m_Specification.FramebufferSpec.HasDepthStencil;
 		VkFormat depthStencilFormat = VulkanUtils::GetSupportedDepthStencilFormat();
 
-		// TODO: multisampling
+		std::vector<VkAttachmentDescription> attachmentDescriptions = GenerateAttachmentDescriptions();
+		std::vector<VkAttachmentReference> colourAttachmentReferences = GenerateColourAttachmentReferences();
 
-		std::vector<VkAttachmentDescription> attachmentDescriptions;
+		VkAttachmentReference depthStencilAttachmentReference{};
+		depthStencilAttachmentReference.attachment = colourAttachmentReferences.size();
+		depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-		VkAttachmentDescription& colourAttachmentDesc = attachmentDescriptions.emplace_back();
-		colourAttachmentDesc.format = m_Specification.TargetSwapchain ? m_Swapchain->GetSwapchainImageFormat()
-			: VulkanUtils::VulkanColourFormat(m_Specification.PrimaryAttachment.Format);
-		colourAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-		colourAttachmentDesc.loadOp = VulkanUtils::VulkanLoadOp(m_Specification.PrimaryAttachment.LoadOp);
-		colourAttachmentDesc.storeOp = VulkanUtils::VulkanStoreOp(m_Specification.PrimaryAttachment.StoreOp);
-		colourAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colourAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-		// TODO: set these from AttachmentSpecification
-		colourAttachmentDesc.initialLayout = m_Specification.PrimaryAttachment.LoadOp == AttachmentLoadOp::Load ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
-		colourAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		// TODO: create additional attachment descriptions
-
-		if (m_Specification.HasDepthStencil)
-		{
-			VkAttachmentDescription& depthAttachmentDesc = attachmentDescriptions.emplace_back();
-			depthAttachmentDesc.format = depthStencilFormat;
-			depthAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-			depthAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			depthAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			depthAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			depthAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		}
-
-		VkAttachmentReference primaryAttachmentRef{};
-		primaryAttachmentRef.attachment = 0;
-		primaryAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		// TODO: create additional attachment references
-
-		VkAttachmentReference depthAttachmentRef{};
-		depthAttachmentRef.attachment = 1;
-		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		// TODO: multiple subpasses?
 		VkSubpassDescription subpass{};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &primaryAttachmentRef; // TODO: additional attachments
-		if (m_Specification.HasDepthStencil) subpass.pDepthStencilAttachment = &depthAttachmentRef;
+		subpass.colorAttachmentCount = colourAttachmentReferences.size();
+		subpass.pColorAttachments = colourAttachmentReferences.data();
+		if (hasDepthStencil) subpass.pDepthStencilAttachment = &depthStencilAttachmentReference;
 
-		VkPipelineStageFlags stageMask = m_Specification.HasDepthStencil ?
+		VkPipelineStageFlags stageMask = hasDepthStencil ?
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
 			: VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
-		VkImageAspectFlags accessMask = m_Specification.HasDepthStencil ?
+		VkImageAspectFlags dstAccessMask = hasDepthStencil ?
 			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
 			: VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
@@ -238,13 +140,13 @@ namespace Zahra
 		dependency.srcStageMask = stageMask;
 		dependency.srcAccessMask = 0;
 		dependency.dstStageMask = stageMask;
-		dependency.dstAccessMask = accessMask;
+		dependency.dstAccessMask = dstAccessMask;
 
 		VkRenderPassCreateInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 		renderPassInfo.attachmentCount = (uint32_t)attachmentDescriptions.size();
 		renderPassInfo.pAttachments = attachmentDescriptions.data();
-		renderPassInfo.subpassCount = 1;
+		renderPassInfo.subpassCount = 1; // TODO: additional subpasses!
 		renderPassInfo.pSubpasses = &subpass;
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
@@ -298,7 +200,7 @@ namespace Zahra
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 1; // TODO: increase to account for additional buffers?
+		vertexInputInfo.vertexBindingDescriptionCount = 1; // TODO: increase to account for additional bindings
 		vertexInputInfo.pVertexBindingDescriptions = vertexInputBindingDescriptions.data();
 		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexInputAttributes.size();
 		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributes.data();
@@ -306,20 +208,20 @@ namespace Zahra
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
 		inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		inputAssemblyInfo.topology = VulkanUtils::VulkanTopology(m_Specification.Topology);
-		inputAssemblyInfo.primitiveRestartEnable = VK_FALSE; // TODO: figure out what this should be set to
+		inputAssemblyInfo.primitiveRestartEnable = VK_FALSE; // TODO: put this to good use?
 
 		VkPipelineViewportStateCreateInfo viewportStateInfo{};
 		viewportStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportStateInfo.viewportCount = 1;
 		viewportStateInfo.scissorCount = 1;
-		// set to nullptr because these are dynamic states:
+		// set to nullptr because these are included in dynamic state:
 		viewportStateInfo.pViewports = nullptr;
 		viewportStateInfo.pScissors = nullptr;
 
 		VkPipelineRasterizationStateCreateInfo rasterizationStateInfo{};
 		rasterizationStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizationStateInfo.depthClampEnable = VK_FALSE;
-		rasterizationStateInfo.rasterizerDiscardEnable = VK_FALSE;
+		rasterizationStateInfo.rasterizerDiscardEnable = VK_FALSE; // if true, the fragment shader is skipped (if we just want the vertex shader output in a later render pass)
 		rasterizationStateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizationStateInfo.lineWidth = 1.0f;
 		rasterizationStateInfo.cullMode = m_Specification.BackfaceCulling ? VK_CULL_MODE_BACK_BIT : VK_CULL_MODE_NONE;
@@ -342,8 +244,8 @@ namespace Zahra
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilStateInfo{};
 		depthStencilStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencilStateInfo.depthTestEnable = m_Specification.HasDepthStencil ? VK_TRUE : VK_FALSE;
-		depthStencilStateInfo.depthWriteEnable = m_Specification.HasDepthStencil ? VK_TRUE : VK_FALSE;
+		depthStencilStateInfo.depthTestEnable = m_Specification.FramebufferSpec.HasDepthStencil ? VK_TRUE : VK_FALSE;
+		depthStencilStateInfo.depthWriteEnable = m_Specification.FramebufferSpec.HasDepthStencil ? VK_TRUE : VK_FALSE;
 		depthStencilStateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
 		depthStencilStateInfo.depthBoundsTestEnable = VK_FALSE;
 		depthStencilStateInfo.minDepthBounds = 0.0f;
@@ -412,71 +314,24 @@ namespace Zahra
 
 	}
 
-	void VulkanRenderPass::CreateFramebuffers()
+	void VulkanRenderPass::CreateFramebuffer()
 	{
-		VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
+		m_Framebuffer = Ref<VulkanFramebuffer>::Create(m_Specification.FramebufferSpec);
 
-		/*if (m_Specification.TargetSwapchain)
-		{
-			for (auto& view : m_Swapchain->GetSwapchainImageViews())
-			{
-				std::vector<VkImageView> attachments = { view };
-
-				for (auto& attachment : m_AdditionalAttachments)
-					attachments.emplace_back(attachment->GetVkImageView());
-
-				if (m_Specification.HasDepthStencil)
-					attachments.emplace_back(m_DepthStencilAttachment->GetVkImageView());
-
-				auto& framebuffer = m_Framebuffers.emplace_back();
-
-				VkFramebufferCreateInfo framebufferInfo{};
-				framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferInfo.renderPass = m_RenderPass;
-				framebufferInfo.attachmentCount = (uint32_t)attachments.size();
-				framebufferInfo.pAttachments = attachments.data();
-				framebufferInfo.width = m_AttachmentSize.width;
-				framebufferInfo.height = m_AttachmentSize.height;
-				framebufferInfo.layers = 1;
-
-				VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer),
-					"Vulkan framebuffer creation failed");
-			}
-		}
-		else
-		{
-			std::vector<VkImageView> attachments = { m_PrimaryAttachment->GetVkImageView() };
-
-			for (auto& attachment : m_AdditionalAttachments)
-				attachments.emplace_back(attachment->GetVkImageView());
-
-			if (m_Specification.HasDepthStencil)
-				attachments.emplace_back(m_DepthStencilAttachment->GetVkImageView());
-
-			auto& framebuffer = m_Framebuffers.emplace_back();
-
-			VkFramebufferCreateInfo framebufferInfo{};
-			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass = m_RenderPass;
-			framebufferInfo.attachmentCount = (uint32_t)attachments.size();
-			framebufferInfo.pAttachments = attachments.data();
-			framebufferInfo.width = m_AttachmentSize.width;
-			framebufferInfo.height = m_AttachmentSize.height;
-			framebufferInfo.layers = 1;
-
-			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer),
-				"Vulkan framebuffer creation failed");
-		}*/
+		m_VkFramebuffers = m_Framebuffer->GenerateVkFramebuffers(m_RenderPass);
+		
 	}
 
-	void VulkanRenderPass::DestroyFramebuffers()
+	void VulkanRenderPass::DestroyFramebuffer()
 	{
-		/*VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
-		for (auto framebuffer : m_Framebuffers) {
-			vkDestroyFramebuffer(device, framebuffer, nullptr);
+		for (auto& fb : m_VkFramebuffers)
+		{
+			vkDestroyFramebuffer(device, fb, nullptr);
 		}
-		m_Framebuffers.clear();*/
+
+		m_Framebuffer.Reset();
 	}
 
 	void VulkanRenderPass::ValidateSpecification()
@@ -485,7 +340,64 @@ namespace Zahra
 		// - Get output data from shader (more reflection!!) and check that we have the right number/type of attachments
 		// - Images should all be of the correct size
 		// - Images should have been created with valid usage flags/formats, and transitioned to compatible layouts
-		// - Anything other compatibilities?
+		// - If targeting swapchain, check framebuffer attachments vector empty
+	}
+
+	std::vector<VkAttachmentDescription> VulkanRenderPass::GenerateAttachmentDescriptions()
+	{
+		std::vector<VkAttachmentDescription> descriptions;
+
+		bool targetSwapchain = m_Specification.FramebufferSpec.TargetSwapchain;
+		auto& colourAttachments = m_Specification.FramebufferSpec.ColourAttachmentSpecs;
+
+		for (AttachmentSpecification& attachment : colourAttachments)
+		{
+			VkAttachmentDescription& description = descriptions.emplace_back();
+			description.format = targetSwapchain ?
+				m_Swapchain->GetSwapchainImageFormat() :
+				VulkanUtils::VulkanColourFormat(attachment.Format);
+			description.samples = VK_SAMPLE_COUNT_1_BIT; // TODO: multisampling
+			description.loadOp = VulkanUtils::VulkanLoadOp(attachment.LoadOp);
+			description.storeOp = VulkanUtils::VulkanStoreOp(attachment.StoreOp);
+			description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			description.initialLayout = VulkanUtils::VulkanImageLayout(attachment.InitialLayout);
+			description.finalLayout = VulkanUtils::VulkanImageLayout(attachment.FinalLayout);
+		}
+
+		if (m_Specification.FramebufferSpec.HasDepthStencil)
+		{
+			AttachmentSpecification& attachment = m_Specification.FramebufferSpec.DepthStencilAttachmentSpec;
+
+			VkAttachmentDescription& description = descriptions.emplace_back();
+			description.format = VulkanUtils::GetSupportedDepthStencilFormat();
+			description.samples = VK_SAMPLE_COUNT_1_BIT;
+			description.loadOp = VulkanUtils::VulkanLoadOp(attachment.LoadOp);
+			description.storeOp = VulkanUtils::VulkanStoreOp(attachment.StoreOp);
+			description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			description.initialLayout = VulkanUtils::VulkanImageLayout(attachment.InitialLayout);
+			description.finalLayout = VulkanUtils::VulkanImageLayout(attachment.FinalLayout);
+		}
+
+		return descriptions;
+	}
+
+	std::vector<VkAttachmentReference> VulkanRenderPass::GenerateColourAttachmentReferences()
+	{
+		std::vector<VkAttachmentReference> references;
+
+		auto& colourAttachments = m_Specification.FramebufferSpec.ColourAttachmentSpecs;
+		uint32_t colourAttachmentCount = colourAttachments.size();
+
+		for (uint32_t i = 0; i < colourAttachmentCount; i++)
+		{
+			auto& reference = references.emplace_back();
+			reference.attachment = i;
+			reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		}
+
+		return references;
 	}
 
 }

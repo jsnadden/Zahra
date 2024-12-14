@@ -104,19 +104,19 @@ namespace Zahra
 		}
 	}
 
-	// TODO: when I make an Image class as a rendering resource, a lot of this stuff can move there
 	class VulkanImage : public Image
 	{
 	public:
+		VulkanImage() = default;
 		VulkanImage(ImageSpecification specification);
-		VulkanImage(VkImage image, VkDeviceMemory memory, ImageSpecification specification);
+		//VulkanImage(VkImage image, VkDeviceMemory memory, ImageSpecification specification);
 		virtual ~VulkanImage() override;
 
 		virtual const ImageSpecification GetSpecification() const override { return m_Specification; }
 		virtual const uint32_t GetWidth() const override { return m_Specification.Width; }
 		virtual const uint32_t GetHeight() const override { return m_Specification.Height; }
 
-		//virtual void CopyData(Ref<Image>& source) override;
+		//virtual void CopyFrom(Ref<Image>& source) override;
 
 		void TransitionLayout(ImageLayout layout);
 
@@ -133,9 +133,9 @@ namespace Zahra
 		VkFormat m_Format;
 		VkImageUsageFlags m_Usage;
 		
-		VkImage m_Image;
-		VkDeviceMemory m_Memory;
-		VkImageView m_ImageView;
+		VkImage m_Image = VK_NULL_HANDLE;
+		VkDeviceMemory m_Memory = VK_NULL_HANDLE;
+		VkImageView m_ImageView = VK_NULL_HANDLE;
 
 		void InitData();
 		void CreateImageView();

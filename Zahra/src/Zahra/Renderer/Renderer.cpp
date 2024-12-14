@@ -134,15 +134,25 @@ namespace Zahra
 		RenderPassSpecification testRenderPassSpecification{};
 		testRenderPassSpecification.Shader = s_Data.TestShader;
 		testRenderPassSpecification.Topology = PrimitiveTopology::Triangles;
-		testRenderPassSpecification.HasDepthStencil = true;
-		testRenderPassSpecification.TargetSwapchain = true;
-		testRenderPassSpecification.OutputTexture = false;
-		testRenderPassSpecification.AttachmentWidth = s_RendererAPI->GetSwapchainWidth();
-		testRenderPassSpecification.AttachmentHeight = s_RendererAPI->GetSwapchainHeight();
-		testRenderPassSpecification.PrimaryAttachment.LoadOp = AttachmentLoadOp::Clear;
-		testRenderPassSpecification.PrimaryAttachment.StoreOp = AttachmentStoreOp::Store;
-		testRenderPassSpecification.PrimaryAttachment.Format = ImageFormat::SRGBA;
-		testRenderPassSpecification.PrimaryAttachment.ClearColour = { 0.0f, 0.0f, 0.0f };
+		testRenderPassSpecification.FramebufferSpec.HasDepthStencil = true;
+		testRenderPassSpecification.FramebufferSpec.TargetSwapchain = true;
+		testRenderPassSpecification.FramebufferSpec.Width = s_RendererAPI->GetSwapchainWidth();
+		testRenderPassSpecification.FramebufferSpec.Height = s_RendererAPI->GetSwapchainHeight();
+		{
+			auto& colourAttachmentSpec = testRenderPassSpecification.FramebufferSpec.ColourAttachmentSpecs.emplace_back();
+			colourAttachmentSpec.Format = ImageFormat::SRGBA;
+			colourAttachmentSpec.ClearColour = { 0.0f, 0.0f, 0.0f };
+			colourAttachmentSpec.LoadOp = AttachmentLoadOp::Clear;
+			colourAttachmentSpec.StoreOp = AttachmentStoreOp::Store;
+			colourAttachmentSpec.InitialLayout = ImageLayout::Unspecified;
+			colourAttachmentSpec.FinalLayout = ImageLayout::ColourAttachment;
+		}
+		{
+			testRenderPassSpecification.FramebufferSpec.DepthStencilAttachmentSpec.LoadOp = AttachmentLoadOp::Clear;
+			testRenderPassSpecification.FramebufferSpec.DepthStencilAttachmentSpec.StoreOp = AttachmentStoreOp::Unspecified;
+			testRenderPassSpecification.FramebufferSpec.DepthStencilAttachmentSpec.InitialLayout = ImageLayout::Unspecified;
+			testRenderPassSpecification.FramebufferSpec.DepthStencilAttachmentSpec.FinalLayout = ImageLayout::DepthStencilAttachment;
+		}
 		testRenderPassSpecification.BackfaceCulling = false;
 		s_Data.TestRenderPass = RenderPass::Create(testRenderPassSpecification);
 
@@ -209,15 +219,25 @@ namespace Zahra
 		RenderPassSpecification quadRenderPassSpec{};
 		quadRenderPassSpec.Shader = s_Data.QuadShader;
 		quadRenderPassSpec.Topology = PrimitiveTopology::Triangles;
-		quadRenderPassSpec.HasDepthStencil = true;
-		quadRenderPassSpec.TargetSwapchain = true;
-		quadRenderPassSpec.OutputTexture = false;
-		quadRenderPassSpec.AttachmentWidth = s_RendererAPI->GetSwapchainWidth();
-		quadRenderPassSpec.AttachmentHeight = s_RendererAPI->GetSwapchainHeight();
-		quadRenderPassSpec.PrimaryAttachment.LoadOp = AttachmentLoadOp::Load;
-		quadRenderPassSpec.PrimaryAttachment.StoreOp = AttachmentStoreOp::Store;
-		quadRenderPassSpec.PrimaryAttachment.Format = ImageFormat::SRGBA;
-		quadRenderPassSpec.PrimaryAttachment.ClearColour = { 1.0f, 1.0f, 1.0f };
+		quadRenderPassSpec.FramebufferSpec.HasDepthStencil = true;
+		quadRenderPassSpec.FramebufferSpec.TargetSwapchain = true;
+		quadRenderPassSpec.FramebufferSpec.Width = s_RendererAPI->GetSwapchainWidth();
+		quadRenderPassSpec.FramebufferSpec.Height = s_RendererAPI->GetSwapchainHeight();
+		{
+			auto& colourAttachmentSpec = quadRenderPassSpec.FramebufferSpec.ColourAttachmentSpecs.emplace_back();
+
+			colourAttachmentSpec.Format = ImageFormat::SRGBA;
+			colourAttachmentSpec.LoadOp = AttachmentLoadOp::Load;
+			colourAttachmentSpec.StoreOp = AttachmentStoreOp::Store;
+			colourAttachmentSpec.InitialLayout = ImageLayout::ColourAttachment;
+			colourAttachmentSpec.FinalLayout = ImageLayout::ColourAttachment;
+		}
+		{
+			quadRenderPassSpec.FramebufferSpec.DepthStencilAttachmentSpec.LoadOp = AttachmentLoadOp::Load;
+			quadRenderPassSpec.FramebufferSpec.DepthStencilAttachmentSpec.StoreOp = AttachmentStoreOp::Unspecified;
+			quadRenderPassSpec.FramebufferSpec.DepthStencilAttachmentSpec.InitialLayout = ImageLayout::DepthStencilAttachment;
+			quadRenderPassSpec.FramebufferSpec.DepthStencilAttachmentSpec.FinalLayout = ImageLayout::DepthStencilAttachment;
+		}
 		quadRenderPassSpec.BackfaceCulling = false;
 		s_Data.QuadRenderPass = RenderPass::Create(quadRenderPassSpec);
 
