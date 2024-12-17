@@ -6,6 +6,14 @@ namespace Zahra
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification& specification)
 		: m_Specification(specification)
 	{
+		Z_CORE_ASSERT(ValidateSpecification());
+
+		if (m_Specification.Width == 0)
+			m_Specification.Width = Renderer::GetSwapchainWidth();
+
+		if (m_Specification.Height == 0)
+			m_Specification.Height = Renderer::GetSwapchainHeight();
+
 		CreateAttachments();
 	}
 
@@ -14,19 +22,28 @@ namespace Zahra
 		DestroyAttachments();
 	}
 
-	/*int VulkanFramebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
+	const Ref<Image2D>& VulkanFramebuffer::GetColourAttachment(uint32_t index) const
 	{
-		
-	}*/
-
-	const Ref<Image>& VulkanFramebuffer::GetColourAttachment(uint32_t index) const
-	{
-		return m_ColourAttachments[index][Renderer::GetCurrentFrameIndex()];
+		Z_CORE_ASSERT(index < m_ColourAttachments.size(), "Invalid attachment index");
+		return m_ColourAttachments[index];
 	}
 
-	const Ref<Image>& VulkanFramebuffer::GetDepthStencilAttachment() const
+	const Ref<Image2D>& VulkanFramebuffer::GetDepthStencilAttachment() const
 	{
-		return m_DepthStencilAttachment[Renderer::GetCurrentFrameIndex()];
+		return m_DepthStencilAttachment;
+	}
+
+	std::vector<VkImageView> const VulkanFramebuffer::GetImageViews()
+	{
+		std::vector<VkImageView> imageViews;
+
+		for (auto& attachment : m_ColourAttachments)
+			imageViews.push_back(attachment->GetVkImageView());
+
+		if (m_Specification.HasDepthStencil)
+			imageViews.push_back(m_DepthStencilAttachment->GetVkImageView());
+
+		return imageViews;
 	}
 
 	std::vector<VkClearValue> const VulkanFramebuffer::GetClearValues()
@@ -48,79 +65,64 @@ namespace Zahra
 		return clearValues;
 	}
 
-	std::vector<VkFramebuffer> VulkanFramebuffer::GenerateVkFramebuffers(const VkRenderPass& renderPass)
+	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height)
 	{
-		std::vector<VkFramebuffer> framebuffers;
-		VkDevice& device = VulkanContext::GetCurrentVkDevice();
+		m_Specification.Width = width;
+		m_Specification.Height = height;
 
-		uint32_t framesInFlight = Renderer::GetFramesInFlight();
-		for (uint32_t frame = 0; frame < framesInFlight; frame++)
+		for (uint32_t i = 0; i < m_ColourAttachments.size(); i++)
 		{
-			auto& fb = framebuffers.emplace_back();
+			if (auto& inheritedImage = m_Specification.ColourAttachmentSpecs[i].InheritFrom)
+			{
+				Z_CORE_ASSERT(inheritedImage->GetWidth() == width && inheritedImage->GetHeight() == height,
+					"A framebuffer should only be resized after all images its attachments inherit from have already been resized");
 
-			std::vector<VkImageView> attachmentImageViews;
-
-			for (auto& attachment : m_ColourAttachments)
-			{	
-				if (attachment.empty()) // should only be true for swapchain-targeting attachments (verify this)
-					attachmentImageViews.emplace_back(m_SwapchainImageViews[frame]);
-				else
-					attachmentImageViews.emplace_back(attachment[frame]->GetVkImageView());
+				continue;
 			}
 
-			if (m_Specification.HasDepthStencil)
-				attachmentImageViews.emplace_back(m_DepthStencilAttachment[frame]->GetVkImageView());
-
-			VkFramebufferCreateInfo framebufferInfo{};
-			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass = renderPass;
-			framebufferInfo.attachmentCount = attachmentImageViews.size();
-			framebufferInfo.pAttachments = attachmentImageViews.data();
-			framebufferInfo.width = m_Specification.Width;
-			framebufferInfo.height = m_Specification.Height;
-			framebufferInfo.layers = 1;
-
-			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &fb),
-				"Vulkan framebuffer creation failed");
+			m_ColourAttachments[i]->Resize(width, height);
 		}
 
-		return framebuffers;
+		if (auto& inheritedImage = m_Specification.DepthStencilAttachmentSpec.InheritFrom)
+		{
+			Z_CORE_ASSERT(inheritedImage->GetWidth() == width && inheritedImage->GetHeight() == height,
+				"A framebuffer should only be resized after all images its attachments inherit from have already been resized");
+
+			return;
+		}
+
+		m_DepthStencilAttachment->Resize(width, height);
 	}
 
 	void VulkanFramebuffer::CreateAttachments()
 	{
 		uint32_t colourAttachmentCount = m_Specification.ColourAttachmentSpecs.size();
-		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 		m_ColourAttachments.resize(colourAttachmentCount);
 
 		for (uint32_t i = 0; i < colourAttachmentCount; i++)
 		{
-			if (i == 0 && m_Specification.TargetSwapchain)
-			{
-				m_SwapchainImageViews = VulkanContext::Get()->GetSwapchain()->GetSwapchainImageViews();
-			}
-			else if (const auto& inheritedImage = m_Specification.ColourAttachmentSpecs[i].InheritFrom)
-			{
-				for (uint32_t frame = 0; frame < framesInFlight; frame++)
-					m_ColourAttachments[i][frame] = inheritedImage.As<VulkanImage>();
-			}
+			if (m_Specification.ColourAttachmentSpecs[i].InheritFrom)
+				m_ColourAttachments[i] = m_Specification.ColourAttachmentSpecs[i].InheritFrom.As<VulkanImage2D>();
 			else
-			{
-				CreateColourAttachmentFromSpecification(i);
-			}
+				CreateColourAttachment(i);
 		}
 
 		if (m_Specification.HasDepthStencil)
-			CreateDepthStencilAttachment();
+		{
+			if (m_Specification.DepthStencilAttachmentSpec.InheritFrom)
+				m_DepthStencilAttachment = m_Specification.DepthStencilAttachmentSpec.InheritFrom.As<VulkanImage2D>();
+			else
+				CreateDepthStencilAttachment();
+		}			
 	}
 
 	void VulkanFramebuffer::DestroyAttachments()
 	{
 		m_ColourAttachments.clear();
-		m_DepthStencilAttachment.clear();
+		m_DepthStencilAttachment.Reset();
 	}
 
-	void VulkanFramebuffer::CreateColourAttachmentFromSpecification(uint32_t index)
+	void VulkanFramebuffer::CreateColourAttachment(uint32_t index)
 	{
 		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
@@ -128,11 +130,9 @@ namespace Zahra
 		imageSpec.Width = m_Specification.Width;
 		imageSpec.Height = m_Specification.Height;
 		imageSpec.Format = m_Specification.ColourAttachmentSpecs[index].Format;
-		imageSpec.Usage = ImageUsage::ColourAttachment;
-		imageSpec.Layout = m_Specification.ColourAttachmentSpecs[index].InitialLayout;
+		imageSpec.Sampled = true; // for now
 
-		for (uint32_t frame = 0; frame < framesInFlight; frame++)
-			m_ColourAttachments[index].emplace_back(Ref<VulkanImage>::Create(imageSpec));
+		m_ColourAttachments[index] = Ref<VulkanImage2D>::Create(imageSpec);
 	}
 
 	void VulkanFramebuffer::CreateDepthStencilAttachment()
@@ -142,10 +142,15 @@ namespace Zahra
 		ImageSpecification imageSpec{};
 		imageSpec.Width = m_Specification.Width;
 		imageSpec.Height = m_Specification.Height;
-		imageSpec.Usage = ImageUsage::DepthStencilAttachment;
-		imageSpec.Layout = m_Specification.DepthStencilAttachmentSpec.InitialLayout;
+		imageSpec.Format = ImageFormat::DepthStencil;
+		imageSpec.Sampled = true; // for now
 
-		for (uint32_t frame = 0; frame < framesInFlight; frame++)
-			m_DepthStencilAttachment.emplace_back(Ref<VulkanImage>::Create(imageSpec));
+		m_DepthStencilAttachment = Ref<VulkanImage2D>::Create(imageSpec);
+	}
+
+	bool VulkanFramebuffer::ValidateSpecification()
+	{
+		// TODO: check attachment specs are sensible
+		return true;
 	}
 }

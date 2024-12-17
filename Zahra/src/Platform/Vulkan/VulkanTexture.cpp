@@ -9,7 +9,7 @@ namespace Zahra
 {
 	namespace VulkanUtils
 	{
-		VkFilter TextureFilterModeToVkFilter(TextureFilterMode mode)
+		VkFilter VulkanFilterMode(TextureFilterMode mode)
 		{
 			switch (mode)
 			{
@@ -30,7 +30,7 @@ namespace Zahra
 			return VK_FILTER_MAX_ENUM;
 		}
 
-		VkSamplerAddressMode TextureAddressModeToVkSamplerAddressMode(TextureWrapMode mode)
+		VkSamplerAddressMode VulkanAddressMode(TextureWrapMode mode)
 		{
 			switch (mode)
 			{
@@ -63,8 +63,25 @@ namespace Zahra
 
 		uint32_t BytesPerPixel(ImageFormat format)
 		{
-			// TODO: make this a switch-case
-			return 4; // 1 byte per channel, currently assuming SRGB
+			switch (format)
+			{
+				//case ImageFormat::R8_UN:				return
+				//case ImageFormat::R8_UI:				return
+				//case ImageFormat::R16_UI:				return
+				//case ImageFormat::R32_UI:				return
+				//case ImageFormat::R32_F:				return
+				//case ImageFormat::RG8_UN:				return
+				//case ImageFormat::RG16_F:				return
+				//case ImageFormat::RG32_F:				return
+				//case ImageFormat::RGBA_UN:			return;
+				case ImageFormat::SRGBA:				return 4;
+				//case ImageFormat::RGBA16_F:			return
+				//case ImageFormat::RGBA32_F:			return
+				//case ImageFormat::B10R11G11_UF:		return
+				//case ImageFormat::DepthStencil:		return
+			}
+			Z_CORE_ASSERT(false, "Unsupported image format");
+			return VK_FORMAT_UNDEFINED;
 		}
 	}
 
@@ -73,30 +90,40 @@ namespace Zahra
 	{
 		int width, height, channels;
 
-		// TODO: to allow for hdr textures etc., stbi can query the image file to decide on a correct colour format
-
 		stbi_uc* imageData = stbi_load(filepath.string().c_str(), &width, &height, &channels, 4);
 
 		Z_CORE_ASSERT(imageData, "Vulkan texture failed to load image.");
 
+		// TODO: to allow for hdr textures etc., stbi can query the image file to decide on a correct colour format
+		m_Format = ImageFormat::SRGB;
 		m_Width = width;
 		m_Height = height;
-		VkDeviceSize size = width * height * VulkanUtils::BytesPerPixel(ImageFormat::SRGB);
 
-		InitialiseLocalBuffer(size);
+		VkDeviceSize size = width * height * VulkanUtils::BytesPerPixel(m_Format);
 		SetData((void*)imageData, size);
 
 		stbi_image_free(imageData);
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, uint32_t width, uint32_t height)
+	VulkanTexture2D::VulkanTexture2D(const Ref<VulkanImage2D>& image)
+		: m_Image(image)
+	{
+		Z_CORE_ASSERT(image->GetSpecification().Sampled);
+
+		m_Format = image->GetSpecification().Format;
+		m_Width = image->GetWidth();
+		m_Height = image->GetHeight();
+	}
+
+	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, uint32_t colour)
 		: m_Specification(specification)
 	{
-		m_Width = width;
-		m_Height = height;
-		VkDeviceSize size = width * height * VulkanUtils::BytesPerPixel(ImageFormat::SRGB); // TODO: figure out how to choose the format here
+		m_Format = ImageFormat::SRGB;
+		m_Width = 1;
+		m_Height = 1;
 
-		InitialiseLocalBuffer(size);
+		VkDeviceSize size = VulkanUtils::BytesPerPixel(m_Format);
+		SetData((void*)&colour, size);
 	}
 
 	VulkanTexture2D::~VulkanTexture2D()
@@ -104,9 +131,6 @@ namespace Zahra
 		VkDevice device = VulkanContext::GetCurrentVkDevice();
 
 		vkDeviceWaitIdle(device);
-
-		// TODO: employ VMA
-		vkDestroySampler(device, m_Sampler, nullptr);
 		
 		m_Image.Reset();
 
@@ -115,13 +139,17 @@ namespace Zahra
 
 	void VulkanTexture2D::SetData(void* data, uint32_t size)
 	{
-		CreateImage();
-
+		///////////////////////////////////////////////////////////////////////////
+		// Create local buffer
+		m_LocalImageData.Allocate(size);
+		m_LocalImageData.ZeroInitialise();
 		m_LocalImageData.Write(data, size);
 
 		Ref<VulkanDevice>& device = VulkanContext::GetCurrentDevice();
 		VkDevice& vkDevice = device->GetVkDevice();
 
+		///////////////////////////////////////////////////////////////////////////
+		// Create staging buffer on device
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
@@ -129,69 +157,38 @@ namespace Zahra
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			stagingBuffer, stagingBufferMemory);
 
+		///////////////////////////////////////////////////////////////////////////
+		// Copy local data to staging buffer
 		void* mappedAddress;
 		vkMapMemory(vkDevice, stagingBufferMemory, 0, size, 0, &mappedAddress);
 		memcpy(mappedAddress, m_LocalImageData.GetData<void>(), size);
 		vkUnmapMemory(vkDevice, stagingBufferMemory);
 
-		m_Image->TransitionLayout(ImageLayout::TransferDestination);
-		m_Image->SetData(stagingBuffer);
-		m_Image->TransitionLayout(ImageLayout::Texture);
+		///////////////////////////////////////////////////////////////////////////
+		// Create sampled image
+		ImageSpecification spec{};
+		spec.Width = m_Width;
+		spec.Height = m_Height;
+		spec.Format = m_Format;
+		spec.Sampled = true;
+		spec.TransferSource = false; // TODO: might want to add to this the spec?
+		spec.TransferDestination = true;
+		m_Image = Ref<VulkanImage2D>::Create(spec);
+		m_Image->SetData(stagingBuffer); // this performs the copy operation, and the desired image layout transitions
 
+		///////////////////////////////////////////////////////////////////////////
+		// Cleanup
 		vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 		vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
 
-		CreateSampler();
-		CreateDescriptorImageInfo();
-	}
+		if (!m_Specification.KeepLocalData)
+			m_LocalImageData.Release();
 
-	void VulkanTexture2D::SetData(Ref<Image> srcImage)
-	{
-		m_Width = srcImage->GetWidth();
-		m_Height = srcImage->GetHeight();
-		m_Image = srcImage.As<VulkanImage>();
-
-		CreateSampler();
-		CreateDescriptorImageInfo();
-	}
-
-	void VulkanTexture2D::InitialiseLocalBuffer(uint32_t dataSize)
-	{
-		m_LocalImageData.Allocate(dataSize);
-		m_LocalImageData.ZeroInitialise();
-	}
-
-	void VulkanTexture2D::CreateImage()
-	{
-		ImageSpecification spec{};
-		spec.Format = ImageFormat::SRGBA; // TODO: for hdr textures should use a float format instead
-		spec.Width = m_Width;
-		spec.Height = m_Height;
-		spec.Usage = ImageUsage::Texture;
-
-		m_Image = Ref<VulkanImage>::Create(spec);
-	}
-
-	void VulkanTexture2D::CreateSampler()
-	{
-		if (m_Sampler != VK_NULL_HANDLE)
-		{
-			// TODO: employ VMA
-			vkDestroySampler(VulkanContext::GetCurrentVkDevice(), m_Sampler, nullptr);
-		}
-
-		VkFilter minFilter = VulkanUtils::TextureFilterModeToVkFilter(m_Specification.MinificationFilterMode);
-		VkFilter magFilter = VulkanUtils::TextureFilterModeToVkFilter(m_Specification.MagnificationFilterMode);
-		VkSamplerAddressMode addressMode = VulkanUtils::TextureAddressModeToVkSamplerAddressMode(m_Specification.WrapMode);
-
-		m_Sampler = VulkanContext::GetCurrentDevice()->CreateVulkanImageSampler(minFilter, magFilter, addressMode);
-	}
-
-	void VulkanTexture2D::CreateDescriptorImageInfo()
-	{
+		///////////////////////////////////////////////////////////////////////////
+		// Populate descriptor info
 		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_DescriptorImageInfo.imageView = m_Image->GetVkImageView();
-		m_DescriptorImageInfo.sampler = m_Sampler;
+		m_DescriptorImageInfo.sampler = m_Image->GetVkSampler();
 	}
 
 }

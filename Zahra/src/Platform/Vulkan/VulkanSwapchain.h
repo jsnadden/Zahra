@@ -31,6 +31,9 @@ namespace Zahra
 		const VkDevice& GetVkDevice() { return m_Device->m_LogicalDevice; }
 
 		const VkExtent2D& GetExtent() { return m_Extent; }
+		uint32_t GetWidth() { return m_Extent.width; }
+		uint32_t GetHeight() { return m_Extent.height; }
+
 		const VkFormat& GetSwapchainImageFormat() { return m_SurfaceFormat.format; }
 		const std::vector<VkImageView>& GetSwapchainImageViews() { return m_ImageViews; }
 

@@ -40,6 +40,9 @@ namespace Zahra
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
+		static uint32_t GetSwapchainWidth();
+		static uint32_t GetSwapchainHeight();
+
 		static uint32_t GetCurrentFrameIndex();
 		static uint32_t GetFramesInFlight();
 

@@ -5,10 +5,8 @@ namespace Zahra
 	enum class ImageUsage
 	{
 		Unspecified,
-		ColourAttachment,
-		DepthStencilAttachment,
-		Texture,
-		RenderToTexture
+		FramebufferAttachment,
+		Texture
 	};
 
 	enum class ImageFormat
@@ -16,21 +14,23 @@ namespace Zahra
 		Unspecified,
 
 		// single channel
-		R8UN,
-		R8UI, R16UI, R32UI,
-		R32F,
+		R8_UN, R8_UI, R16_UI, R32_UI,
+		R32_F,
 
 		// two channels
-		RG8,
-		RG16F, RG32F,
+		RG8_UN,
+		RG16_F, RG32_F,
 
 		// three channels
 		RGB, SRGB,
-		B10R11G11UF,
+		B10R11G11_UF,
 
 		// four channels
-		RGBA, SRGBA,
-		RGBA16F, RGBA32F
+		RGBA_UN, SRGBA,
+		RGBA16_F, RGBA32_F,
+
+		// depth stencil
+		DepthStencil
 	};
 
 	enum class ImageLayout
@@ -50,21 +50,24 @@ namespace Zahra
 	{
 		uint32_t Width, Height;
 		ImageFormat Format = ImageFormat::Unspecified;
-		ImageUsage Usage = ImageUsage::Unspecified;
-		ImageLayout Layout = ImageLayout::Unspecified;
+		bool Sampled;
+		bool TransferSource;
+		bool TransferDestination;
 	};
 
-	class Image : public RefCounted
+	class Image2D : public RefCounted
 	{
 	public:
 		
-		virtual ~Image() {}
+		virtual ~Image2D() {}
 
 		virtual const ImageSpecification GetSpecification() const = 0;
 		virtual const uint32_t GetWidth() const = 0;
 		virtual const uint32_t GetHeight() const = 0;
 
-		static Ref<Image> Create(ImageSpecification specification);
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
+
+		static Ref<Image2D> Create(ImageSpecification specification);
 
 	};
 

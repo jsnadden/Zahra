@@ -77,7 +77,7 @@ namespace Zahra
 		// TODO: expand these to include non-2D images (and other options)
 		void CreateVulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkImageView CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags);
-		VkSampler CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode tilingMode);
+		VkSampler CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode addressMode, VkSamplerMipmapMode mipmapMode);
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void CopyVulkanImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
 		void TransitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);

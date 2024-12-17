@@ -34,12 +34,12 @@ namespace Zahra
 
 	uint32_t VulkanRendererAPI::GetSwapchainWidth()
 	{
-		return VulkanContext::Get()->GetSwapchain()->GetExtent().width;
+		return VulkanContext::Get()->GetSwapchain()->GetWidth();
 	}
 
 	uint32_t VulkanRendererAPI::GetSwapchainHeight()
 	{
-		return VulkanContext::Get()->GetSwapchain()->GetExtent().height;
+		return VulkanContext::Get()->GetSwapchain()->GetHeight();
 	}
 
 	uint32_t VulkanRendererAPI::GetFramesInFlight()
@@ -86,8 +86,12 @@ namespace Zahra
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
 		Ref<VulkanRenderPass> vulkanRenderPass = renderpass.As<VulkanRenderPass>();
-		if (m_Swapchain->Invalidated())
-			vulkanRenderPass->Resize(m_Swapchain->GetExtent().width, m_Swapchain->GetExtent().height);
+		FramebufferSpecification renderTargetSpec = vulkanRenderPass->GetSpecification().RenderTarget->GetSpecification();
+
+		// At least for now we won't be using these to target the swapchain, so resizing
+		// images/framebuffers to fit a viewport should be controlled directly in Renderer
+		/*if (m_Swapchain->Invalidated())
+			vulkanRenderPass->Resize(m_Swapchain->GetExtent().width, m_Swapchain->GetExtent().height);*/
 
 		std::vector<VkClearValue> clearValues = vulkanRenderPass->GetClearValues();
 
@@ -96,8 +100,8 @@ namespace Zahra
 		renderPassBeginInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
 		renderPassBeginInfo.framebuffer = vulkanRenderPass->GetVkFramebuffer();
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };
-		renderPassBeginInfo.renderArea.extent.width = vulkanRenderPass->GetSpecification().FramebufferSpec.Width;
-		renderPassBeginInfo.renderArea.extent.height = vulkanRenderPass->GetSpecification().FramebufferSpec.Height;
+		renderPassBeginInfo.renderArea.extent.width = renderTargetSpec.Width;
+		renderPassBeginInfo.renderArea.extent.height = renderTargetSpec.Height;
 		renderPassBeginInfo.clearValueCount = clearValues.size();
 		renderPassBeginInfo.pClearValues = clearValues.data();
 
@@ -166,7 +170,7 @@ namespace Zahra
 	//	{
 	//		///////////////////////////////////////////////////////////////////////////////////////////////
 	//		// CREATE NEW VULKAN IMAGE/MEMORY
-	//		VkFormat vulkanFormat = VulkanUtils::VulkanColourFormat(format);
+	//		VkFormat vulkanFormat = VulkanUtils::VulkanImageFormat(format);
 	//		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	//					
 	//		VulkanContext::GetCurrentDevice()->CreateVulkanImage(width, height, vulkanFormat,
@@ -241,7 +245,7 @@ namespace Zahra
 	//		outputImageSpecification.Usage = ImageUsage::Texture;
 
 	//		output = Ref<VulkanTexture2D>::Create(outputImageSpecification.Width, outputImageSpecification.Height);
-	//		output->SetData(Ref<VulkanImage>::Create(outputImage, outputMemory, outputImageSpecification));
+	//		output->SetData(Ref<VulkanImage2D>::Create(outputImage, outputMemory, outputImageSpecification));
 	//	}
 
 	//}

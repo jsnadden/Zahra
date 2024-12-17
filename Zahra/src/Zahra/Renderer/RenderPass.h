@@ -10,10 +10,9 @@
 namespace Zahra
 {
 	// TODO:
-	// - multiple subpasses (and their associated dependencies)\
-	// - framebuffer attachment aliasing (and thus multiple attachments targeting the swapchain)
+	// - multiple subpasses (and their associated dependencies)
+	// - framebuffer attachment aliasing
 	// - allow separate depth/stencil attachments
-	// - for that matter, we're not using the stencil value at all
 	// - support for instanced rendering
 	// - multisampling
 	// - mipmapping
@@ -25,10 +24,9 @@ namespace Zahra
 	struct RenderPassSpecification
 	{
 		Ref<Shader> Shader;
-		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
+		Ref<Framebuffer> RenderTarget;
 
-		FramebufferSpecification FramebufferSpec;
-		
+		PrimitiveTopology Topology = PrimitiveTopology::Triangles;		
 		bool BackfaceCulling = true;
 	};
 
@@ -38,7 +36,7 @@ namespace Zahra
 		virtual ~RenderPass() = default;
 
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
-		virtual const Ref<Framebuffer> GetFramebuffer() const = 0;
+		virtual const Ref<Framebuffer> GetRenderTarget() const = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 

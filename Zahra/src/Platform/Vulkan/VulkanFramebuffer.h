@@ -20,27 +20,30 @@ namespace Zahra
 
 		virtual const FramebufferSpecification& GetSpecification() const { return m_Specification; }
 
-		virtual const Ref<Image>& GetColourAttachment(uint32_t index) const;
-		virtual const Ref<Image>& GetDepthStencilAttachment() const;
+		virtual const Ref<Image2D>& GetColourAttachment(uint32_t index) const;
+		virtual const Ref<Image2D>& GetDepthStencilAttachment() const;
 
-		const std::vector<VkClearValue> const GetClearValues();
+		std::vector<VkImageView> const GetImageViews();
+		std::vector<VkClearValue> const GetClearValues();
+		const std::vector<VkAttachmentDescription>& GetAttachmentDescriptions() const { return m_AttachmentDescriptions; }
 
-		std::vector<VkFramebuffer> GenerateVkFramebuffers(const VkRenderPass& renderPass);
+		virtual void Resize(uint32_t width, uint32_t height) override;
 
 	private:
 		FramebufferSpecification m_Specification;
 
-		// Each attachment, except possibly m_ColourAttachments[0], consists of one image per frame-in-flight.
-		// If targeting swapchain, m_ColourAttachments[0] will remain an empty vector
-		std::vector<std::vector<Ref<VulkanImage>>> m_ColourAttachments;
-		std::vector<VkImageView> m_SwapchainImageViews; // only populated if targeting swapchain
-		std::vector<Ref<VulkanImage>> m_DepthStencilAttachment;
+		std::vector<Ref<VulkanImage2D>> m_ColourAttachments;
+		Ref<VulkanImage2D> m_DepthStencilAttachment;
+
+		std::vector<VkAttachmentDescription> m_AttachmentDescriptions;
 		
 		void CreateAttachments();
 		void DestroyAttachments();
 
-		void CreateColourAttachmentFromSpecification(uint32_t index);
+		void CreateColourAttachment(uint32_t index);
 		void CreateDepthStencilAttachment();
+
+		bool ValidateSpecification();
 
 	};
 

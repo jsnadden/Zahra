@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Platform/Vulkan/VulkanImage.h"
+#include "Platform/Vulkan/VulkanTexture.h"
 #include "Zahra/ImGui/ImGuiLayer.h"
 
 #include <vulkan/vulkan.h>
@@ -26,16 +28,22 @@ namespace Zahra
 		virtual ImGuiResourceHandle RegisterTexture(Ref<Texture2D> texture) override;
 		virtual void DeregisterTexture(ImGuiResourceHandle textureHandle) override;
 
+		virtual void SetRenderTarget(Ref<Image2D> m_renderTarget) override;
+
 	private:
 		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 		std::vector<VkFramebuffer> m_Framebuffers;
 		VkExtent2D m_FramebufferSize;
 
+		Ref<VulkanImage2D> m_RenderTarget;
+
 		void CreateDescriptorPool();
 		void CreateRenderPass();
 		void CreateFramebuffers();
 		void DestroyFramebuffers();
+
+		void CreateDefaultRenderTarget();
 
 	};
 

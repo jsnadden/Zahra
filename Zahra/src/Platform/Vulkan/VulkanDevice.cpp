@@ -87,14 +87,14 @@ namespace Zahra
 		imageInfo.extent.width = width;
 		imageInfo.extent.height = height;
 		imageInfo.extent.depth = 1;
-		imageInfo.mipLevels = 1; // TODO: expose this for mipmapping
-		imageInfo.arrayLayers = 1; // I think this is for stereoscopic stuff?
+		imageInfo.mipLevels = 1; // TODO: mipmapping
+		imageInfo.arrayLayers = 1; // TODO: can be used for e.g. shadow map cascades
 		imageInfo.format = format;
 		imageInfo.tiling = tiling;
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = usage;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; // TODO: expose this for multisampling (if using image as framebuffer attachment?)
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; // TODO: MSAA
 		
 		VulkanUtils::ValidateVkResult(vkCreateImage(m_LogicalDevice, &imageInfo, nullptr, &image),
 			"Vulkan image creation failed");
@@ -128,8 +128,8 @@ namespace Zahra
 		viewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 		viewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 		viewInfo.subresourceRange.aspectMask = aspectFlags;
-		viewInfo.subresourceRange.baseMipLevel = 0; // TODO: expose mipmapping options
-		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.baseMipLevel = 0;
+		viewInfo.subresourceRange.levelCount = 1; // TODO: mipmapping
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
 
@@ -139,27 +139,27 @@ namespace Zahra
 		return imageView;
 	}
 
-	VkSampler VulkanDevice::CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode tilingMode)
+	VkSampler VulkanDevice::CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode addressMode, VkSamplerMipmapMode mipmapMode)
 	{
 		VkSampler sampler;
 
 		VkSamplerCreateInfo samplerInfo{};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.minFilter = minFilter;
 		samplerInfo.magFilter = magFilter;
-		samplerInfo.addressModeU = tilingMode;
-		samplerInfo.addressModeV = tilingMode;
-		samplerInfo.addressModeW = tilingMode;
+		samplerInfo.minFilter = minFilter;
+		samplerInfo.mipmapMode = mipmapMode;
+		samplerInfo.addressModeU = addressMode;
+		samplerInfo.addressModeV = addressMode;
+		samplerInfo.addressModeW = addressMode;
 		samplerInfo.anisotropyEnable = VK_TRUE; // TODO: get this from the application's graphics settings
 		samplerInfo.maxAnisotropy = m_Properties.limits.maxSamplerAnisotropy;
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
+		samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
 		samplerInfo.compareEnable = VK_FALSE;
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		samplerInfo.mipLodBias = 0.0f;
 		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = 0.0f;
+		samplerInfo.maxLod = 0.0f; // TODO: mipmapping
 
 		VulkanUtils::ValidateVkResult(vkCreateSampler(m_LogicalDevice, &samplerInfo, nullptr, &sampler),
 			"Vulkan image sampler creation failed");
@@ -378,9 +378,10 @@ namespace Zahra
 			else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features)
 			{
 				return format;
-			}
-			throw std::runtime_error("Desired image format was not available");
+			}			
 		}
+
+		throw std::runtime_error("Failed to identify a supported image format");
 	}
 
 	VkCommandPool VulkanDevice::GetOrCreateCommandPool()

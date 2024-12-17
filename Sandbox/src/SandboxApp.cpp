@@ -36,8 +36,7 @@ Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
 	spec.GPURequirements.AnisotropicFiltering = true;
 	spec.GPURequirements.MinBoundTextureSlots = 32;
 
-	spec.ImGuiConfig.Enabled = true;
-	spec.ImGuiConfig.ClearSwapchain = false;
+	spec.ImGuiConfig.Enabled = false;
 
 	return new Sandbox(spec);
 }

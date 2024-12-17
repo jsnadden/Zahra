@@ -16,27 +16,28 @@ namespace Zahra
 
 	struct AttachmentSpecification
 	{
-		Ref<Image> InheritFrom;
+		Ref<Image2D> InheritFrom;
 
-		ImageFormat Format;
+		ImageFormat Format = ImageFormat::Unspecified;
 
 		glm::vec3 ClearColour;
-		AttachmentLoadOp LoadOp;
-		AttachmentStoreOp StoreOp;
+		AttachmentLoadOp LoadOp = AttachmentLoadOp::Unspecified;
+		AttachmentStoreOp StoreOp = AttachmentStoreOp::Unspecified;
 
-		ImageLayout InitialLayout;
-		ImageLayout FinalLayout;
+		// add blending options
 	};
 	
 	struct FramebufferSpecification
 	{
-		bool TargetSwapchain;
-		bool HasDepthStencil;
+		bool HasDepthStencil = false;
+		float DepthClearValue = 1.0f;
 
 		uint32_t Width, Height; // ignored if attachment is using a swapchain image
 
 		std::vector<AttachmentSpecification> ColourAttachmentSpecs;
 		AttachmentSpecification DepthStencilAttachmentSpec;
+
+		// add multisampling options
 	};
 
 	class Framebuffer : public RefCounted
@@ -49,8 +50,10 @@ namespace Zahra
 
 		virtual const FramebufferSpecification& GetSpecification() const = 0;
 
-		virtual const Ref<Image>& GetColourAttachment(uint32_t index) const = 0;
-		virtual const Ref<Image>& GetDepthStencilAttachment() const = 0;
+		virtual const Ref<Image2D>& GetColourAttachment(uint32_t index) const = 0;
+		virtual const Ref<Image2D>& GetDepthStencilAttachment() const = 0;
+
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
 		static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
 

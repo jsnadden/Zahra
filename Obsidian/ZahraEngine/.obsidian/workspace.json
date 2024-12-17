@@ -8,23 +8,6 @@
         "type": "tabs",
         "children": [
           {
-            "id": "f086f97a765209d2",
-            "type": "leaf",
-            "state": {
-              "type": "canvas",
-              "state": {
-                "file": "Planning & Learning/Vulkan resources.canvas",
-                "viewState": {
-                  "x": -1012.0967705020088,
-                  "y": -348.56506029758117,
-                  "zoom": -1.3220893911263514
-                }
-              },
-              "icon": "lucide-layout-dashboard",
-              "title": "Vulkan resources"
-            }
-          },
-          {
             "id": "e3f6df8361cc3fd2",
             "type": "leaf",
             "state": {
@@ -38,8 +21,7 @@
               "title": "Rethinking the RenderPass interface"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -95,7 +77,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 282.5
   },
   "right": {
     "id": "5422e3072c82463a",
@@ -182,16 +164,16 @@
   },
   "active": "e3f6df8361cc3fd2",
   "lastOpenFiles": [
-    "TODO/Resource Management.md",
-    "TODO/Untitled.md",
+    "Planning & Learning/Renderer architecture.md",
     "TODO/Rethinking the RenderPass interface.md",
+    "Planning & Learning/Vulkan resources.canvas",
     "TODO/Memory Management.md",
+    "TODO/Resource Management.md",
+    "Planning & Learning/Rendering pipeline.canvas",
+    "TODO/Untitled.md",
     "Planning & Learning/Audio engine.md",
     "Planning & Learning/Parallelisation.md",
-    "Planning & Learning/Renderer architecture.md",
     "Untitled",
-    "Planning & Learning/Vulkan resources.canvas",
-    "Planning & Learning/Rendering pipeline.canvas",
     "Planning & Learning/Vulkan resource hierarchy.md",
     "Planning & Learning/Hazel initialisation details.canvas",
     "Planning & Learning/VULKAN.md",

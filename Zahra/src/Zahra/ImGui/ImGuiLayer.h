@@ -4,6 +4,7 @@
 #include "Zahra/Events/ApplicationEvent.h"
 #include "Zahra/Events/KeyEvent.h"
 #include "Zahra/Events/MouseEvent.h"
+#include "Zahra/Renderer/Image.h"
 #include "Zahra/Renderer/Texture.h"
 
 namespace Zahra
@@ -13,7 +14,9 @@ namespace Zahra
 	struct ImGuiLayerConfig
 	{
 		bool Enabled = true;
-		bool ClearSwapchain = false;
+		bool RendersToSwapchain = true;
+
+		// colour scheme stuff?
 	};
 
 	class ImGuiLayer : public Layer
@@ -25,9 +28,11 @@ namespace Zahra
 		virtual ImGuiResourceHandle RegisterTexture(Ref<Texture2D> texture) = 0;
 		virtual void DeregisterTexture(ImGuiResourceHandle textureHandle) = 0;
 
+		virtual void SetRenderTarget(Ref<Image2D> m_renderTarget) = 0;
+
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
-		void SetColourTheme(); // TODO: options for light/dark modes? (De)Serialising `themes` from a .yml or .ini? This feels out of scope...
+		void SetColourTheme(); // TODO: options for light/dark modes? (De)Serialising `themes` from a .yml or .ini? Tbf this feels out of scope...
 
 		static ImGuiLayer* Create();
 

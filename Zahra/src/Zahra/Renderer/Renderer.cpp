@@ -131,7 +131,7 @@ namespace Zahra
 		testResourceManagerSpec.LastSet = 0;
 		s_Data.TestResourceManager = ShaderResourceManager::Create(testResourceManagerSpec);
 
-		RenderPassSpecification testRenderPassSpecification{};
+		/*RenderPassSpecification testRenderPassSpecification{};
 		testRenderPassSpecification.Shader = s_Data.TestShader;
 		testRenderPassSpecification.Topology = PrimitiveTopology::Triangles;
 		testRenderPassSpecification.FramebufferSpec.HasDepthStencil = true;
@@ -149,12 +149,12 @@ namespace Zahra
 		}
 		{
 			testRenderPassSpecification.FramebufferSpec.DepthStencilAttachmentSpec.LoadOp = AttachmentLoadOp::Clear;
-			testRenderPassSpecification.FramebufferSpec.DepthStencilAttachmentSpec.StoreOp = AttachmentStoreOp::Unspecified;
+			testRenderPassSpecification.FramebufferSpec.DepthStencilAttachmentSpec.StoreOp = AttachmentStoreOp::Store;
 			testRenderPassSpecification.FramebufferSpec.DepthStencilAttachmentSpec.InitialLayout = ImageLayout::Unspecified;
 			testRenderPassSpecification.FramebufferSpec.DepthStencilAttachmentSpec.FinalLayout = ImageLayout::DepthStencilAttachment;
 		}
 		testRenderPassSpecification.BackfaceCulling = false;
-		s_Data.TestRenderPass = RenderPass::Create(testRenderPassSpecification);
+		s_Data.TestRenderPass = RenderPass::Create(testRenderPassSpecification);*/
 
 		MeshSpecification tutorialMeshSpecification{};
 		tutorialMeshSpecification.Filepath = "Assets/Models/viking_room.obj";
@@ -169,7 +169,7 @@ namespace Zahra
 			s_Data.TestUniformBuffers->SetData(frame, &transforms, mvpSize);
 
 		Texture2DSpecification tutorialTextureSpec{};
-		s_Data.TestTexture = Texture2D::Create(tutorialTextureSpec, "Assets/Textures/viking_room.png");
+		s_Data.TestTexture = Texture2D::CreateFromFile(tutorialTextureSpec, "Assets/Textures/viking_room.png");
 
 		s_Data.TestResourceManager->ProvideResource("Matrices", s_Data.TestUniformBuffers);
 		s_Data.TestResourceManager->ProvideResource("u_Texture", s_Data.TestTexture);
@@ -180,10 +180,8 @@ namespace Zahra
 		// TEXTURES
 		s_Data.TextureSlots.resize(s_Data.Config.MaximumBoundTextures);
 
-		Texture2DSpecification whiteTextureSpec{};
-		s_Data.TextureSlots[0] = Texture2D::Create(whiteTextureSpec, 1, 1);
-		uint32_t flatWhite = 0xffffffff;
-		s_Data.TextureSlots[0]->SetData(&flatWhite, sizeof(uint32_t));
+		Texture2DSpecification flatWhite{};
+		s_Data.TextureSlots[0] = Texture2D::CreateFlatColourTexture(flatWhite, 1);
 		
 		//s_Data.TextureSlots[1] = s_Data.TestRenderPass->GetOutputTexture();
 
@@ -215,8 +213,8 @@ namespace Zahra
 		s_Data.QuadResourceManager->ProvideResource("Camera", s_Data.CameraUniformBuffers);
 		s_Data.QuadResourceManager->ProvideResource("u_Sampler", s_Data.TextureSlots[0]);
 		s_Data.QuadResourceManager->Bake();
-
-		RenderPassSpecification quadRenderPassSpec{};
+ 
+		/*RenderPassSpecification quadRenderPassSpec{};
 		quadRenderPassSpec.Shader = s_Data.QuadShader;
 		quadRenderPassSpec.Topology = PrimitiveTopology::Triangles;
 		quadRenderPassSpec.FramebufferSpec.HasDepthStencil = true;
@@ -230,16 +228,17 @@ namespace Zahra
 			colourAttachmentSpec.LoadOp = AttachmentLoadOp::Load;
 			colourAttachmentSpec.StoreOp = AttachmentStoreOp::Store;
 			colourAttachmentSpec.InitialLayout = ImageLayout::ColourAttachment;
-			colourAttachmentSpec.FinalLayout = ImageLayout::ColourAttachment;
+			colourAttachmentSpec.FinalLayout = ImageLayout::Presentation;
 		}
 		{
+			quadRenderPassSpec.FramebufferSpec.DepthStencilAttachmentSpec.InheritFrom = s_Data.TestRenderPass->GetFramebuffer()->GetDepthStencilAttachment();
 			quadRenderPassSpec.FramebufferSpec.DepthStencilAttachmentSpec.LoadOp = AttachmentLoadOp::Load;
 			quadRenderPassSpec.FramebufferSpec.DepthStencilAttachmentSpec.StoreOp = AttachmentStoreOp::Unspecified;
 			quadRenderPassSpec.FramebufferSpec.DepthStencilAttachmentSpec.InitialLayout = ImageLayout::DepthStencilAttachment;
 			quadRenderPassSpec.FramebufferSpec.DepthStencilAttachmentSpec.FinalLayout = ImageLayout::DepthStencilAttachment;
 		}
 		quadRenderPassSpec.BackfaceCulling = false;
-		s_Data.QuadRenderPass = RenderPass::Create(quadRenderPassSpec);
+		s_Data.QuadRenderPass = RenderPass::Create(quadRenderPassSpec);*/
 
 		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndicesPerBatch];
 		uint32_t offset = 0;
@@ -255,7 +254,7 @@ namespace Zahra
 
 			offset += 4;
 		}
-		Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndicesPerBatch);
+		s_Data.QuadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndicesPerBatch);
 		delete[] quadIndices; // TODO: if/when I implement a separate render thread, this may need to be dynamically allocated
 
 		s_Data.QuadVertexBuffers.resize(framesInFlight);
@@ -376,13 +375,26 @@ namespace Zahra
 
 	void Renderer::FlushDrawCalls()
 	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float timeSinceStart = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+		float width = s_RendererAPI->GetSwapchainWidth();
+		float height = s_RendererAPI->GetSwapchainHeight();
 		uint32_t frame = s_RendererAPI->GetCurrentFrameIndex();
 
-		// TODO: don't forget to begin/end render passes etc.
-		/*for (auto& batch : s_Data.QuadVertexBuffers[frame])
+		s_Data.CameraBuffer.View = glm::lookAt(glm::vec3(0.0f, 0.001f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		s_Data.CameraBuffer.Projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
+		s_Data.CameraBuffer.Projection[1][1] *= -1.f; // because screenspace is left-handed....
+
+		s_Data.CameraUniformBuffers->SetData(frame, &s_Data.CameraBuffer, sizeof(RendererData::CameraData));
+
+		s_RendererAPI->BeginRenderPass(s_Data.QuadRenderPass);
+		for (auto& batch : s_Data.QuadVertexBuffers[frame])
 		{
 			s_RendererAPI->DrawIndexed(s_Data.QuadRenderPass, s_Data.QuadResourceManager, batch, s_Data.QuadIndexBuffer, s_Data.QuadIndexCount);
-		}*/
+		}
+		s_RendererAPI->EndRenderPass();
 
 		// TODO: circle/line draw calls
 	}
@@ -411,6 +423,16 @@ namespace Zahra
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
 		s_RendererAPI->OnWindowResize();
+	}
+
+	uint32_t Renderer::GetSwapchainWidth()
+	{
+		return s_RendererAPI->GetSwapchainWidth();
+	}
+
+	uint32_t Renderer::GetSwapchainHeight()
+	{
+		return s_RendererAPI->GetSwapchainHeight();
 	}
 
 	uint32_t Renderer::GetCurrentFrameIndex()
@@ -461,27 +483,26 @@ namespace Zahra
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID)
 	{
-		//// TODO: separate maxima for each primitive type
-		//if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBatch)
-		//{
-		//	SubmitCurrentQuadBatch();
-		//	BeginNewQuadBatch();
-		//}
+		if (s_Data.QuadIndexCount >= RendererData::MaxIndicesPerBatch)
+		{
+			SubmitCurrentQuadBatch();
+			BeginNewQuadBatch();
+		}
 
-		//for (int i = 0; i < 4; i++)
-		//{
-		//	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadPositions[i];
-		//	s_Data.QuadVertexBufferPtr->Tint = colour;
-		//	s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
-		//	s_Data.QuadVertexBufferPtr->TextureIndex = 0.0f;
-		//	s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
-		//	s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		for (int i = 0; i < 4; i++)
+		{
+			s_Data.QuadBatchEnd->Position = transform * s_Data.QuadPositions[i];
+			s_Data.QuadBatchEnd->Tint = colour;
+			s_Data.QuadBatchEnd->TextureCoord = s_Data.QuadTextureCoords[i];
+			/*s_Data.QuadBatchEnd->TextureIndex = 0.0f;
+			s_Data.QuadBatchEnd->TilingFactor = 1.0f;
+			s_Data.QuadBatchEnd->EntityID = entityID;*/
 
-		//	s_Data.QuadVertexBufferPtr++;
-		//}
+			s_Data.QuadBatchEnd++;
+		}
 
-		//s_Data.QuadIndexCount += 6;
-		//s_Data.Stats.QuadCount++;
+		s_Data.QuadIndexCount += 6;
+		s_Data.Stats.QuadCount++;
 	}
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling, int entityID)
