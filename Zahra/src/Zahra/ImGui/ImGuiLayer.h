@@ -9,12 +9,11 @@
 
 namespace Zahra
 {
-	typedef void* ImGuiResourceHandle;
+	typedef void* ImGuiTextureHandle;
 
 	struct ImGuiLayerConfig
 	{
 		bool Enabled = true;
-		bool RendersToSwapchain = true;
 
 		// colour scheme stuff?
 	};
@@ -25,14 +24,14 @@ namespace Zahra
 		virtual void Begin() = 0;
 		virtual void End() = 0;
 
-		virtual ImGuiResourceHandle RegisterTexture(Ref<Texture2D> texture) = 0;
-		virtual void DeregisterTexture(ImGuiResourceHandle textureHandle) = 0;
+		virtual ImGuiTextureHandle RegisterTexture(Ref<Texture2D> texture) = 0;
+		virtual void DeregisterTexture(ImGuiTextureHandle textureHandle) = 0;
 
-		virtual void SetRenderTarget(Ref<Image2D> m_renderTarget) = 0;
+		virtual void SetRenderTarget(Ref<Image2D> renderTarget) = 0;
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
-		void SetColourTheme(); // TODO: options for light/dark modes? (De)Serialising `themes` from a .yml or .ini? Tbf this feels out of scope...
+		void SetColourTheme();
 
 		static ImGuiLayer* Create();
 

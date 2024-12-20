@@ -37,6 +37,8 @@ namespace Zahra
 		virtual void DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint64_t indexCount = 0, uint64_t startingIndex = 0) override;
 		virtual void DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh) override;
 
+		
+
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;
 		Ref<VulkanDevice> m_Device;

@@ -95,7 +95,8 @@ namespace Zahra
 		Z_CORE_ASSERT(imageData, "Vulkan texture failed to load image.");
 
 		// TODO: to allow for hdr textures etc., stbi can query the image file to decide on a correct colour format
-		m_Format = ImageFormat::SRGB;
+		m_Format = ImageFormat::SRGBA;
+		m_Format = ImageFormat::SRGBA;
 		m_Width = width;
 		m_Height = height;
 
@@ -113,12 +114,16 @@ namespace Zahra
 		m_Format = image->GetSpecification().Format;
 		m_Width = image->GetWidth();
 		m_Height = image->GetHeight();
+
+		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		m_DescriptorImageInfo.imageView = m_Image->GetVkImageView();
+		m_DescriptorImageInfo.sampler = m_Image->GetVkSampler();
 	}
 
 	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, uint32_t colour)
 		: m_Specification(specification)
 	{
-		m_Format = ImageFormat::SRGB;
+		m_Format = ImageFormat::SRGBA;
 		m_Width = 1;
 		m_Height = 1;
 

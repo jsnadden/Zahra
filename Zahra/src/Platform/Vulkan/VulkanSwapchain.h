@@ -37,8 +37,8 @@ namespace Zahra
 		const VkFormat& GetSwapchainImageFormat() { return m_SurfaceFormat.format; }
 		const std::vector<VkImageView>& GetSwapchainImageViews() { return m_ImageViews; }
 
-		VkCommandBuffer GetDrawCommandBuffer(uint32_t index);
-		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentFrameIndex); }
+		VkCommandBuffer& GetDrawCommandBuffer(uint32_t index);
+		VkCommandBuffer& GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentFrameIndex); }
 
 		const uint32_t GetFramesInFlight() const { return m_FramesInFlight; }
 		const uint32_t GetImageCount() const { return m_ImageCount; }
@@ -96,6 +96,11 @@ namespace Zahra
 		void AllocateCommandBuffer();
 
 		void CreateSyncObjects();
+
+		void CreateShader();
+		void CreatePipeline();
+		void CreateRenderPass();
+		void CreateFramebuffers();
 
 		friend class VulkanContext;
 	};

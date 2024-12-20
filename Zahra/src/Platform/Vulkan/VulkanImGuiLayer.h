@@ -25,25 +25,28 @@ namespace Zahra
 		virtual void Begin() override;
 		virtual void End() override;
 
-		virtual ImGuiResourceHandle RegisterTexture(Ref<Texture2D> texture) override;
-		virtual void DeregisterTexture(ImGuiResourceHandle textureHandle) override;
+		virtual ImGuiTextureHandle RegisterTexture(Ref<Texture2D> texture) override;
+		virtual void DeregisterTexture(ImGuiTextureHandle textureHandle) override;
 
-		virtual void SetRenderTarget(Ref<Image2D> m_renderTarget) override;
+		virtual void SetRenderTarget(Ref<Image2D> renderTarget) override;
 
 	private:
+		Ref<VulkanSwapchain> m_Swapchain;
+
 		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
-		std::vector<VkFramebuffer> m_Framebuffers;
-		VkExtent2D m_FramebufferSize;
+		VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
 
 		Ref<VulkanImage2D> m_RenderTarget;
+		bool m_DefaultRenderTarget = true;
 
 		void CreateDescriptorPool();
 		void CreateRenderPass();
-		void CreateFramebuffers();
-		void DestroyFramebuffers();
-
 		void CreateDefaultRenderTarget();
+		void CreateFramebuffer();
+
+		void DestroyFramebufferAndRenderPass();
+
 
 	};
 

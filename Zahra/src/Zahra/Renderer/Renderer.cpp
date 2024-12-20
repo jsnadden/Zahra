@@ -445,6 +445,11 @@ namespace Zahra
 		return s_RendererAPI->GetFramesInFlight();
 	}
 
+	void Renderer::DrawToSwapchain(Ref<Image2D> frameOutput)
+	{
+
+	}
+
 	void Renderer::DrawTutorialScene()
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();

@@ -97,6 +97,7 @@ namespace Zahra
 		const VkImageView& GetVkImageView() const { return m_ImageView; }
 		const VkImage& GetVkImage() const { return m_Image; }
 		const VkSampler& GetVkSampler() const { return m_Sampler; }
+		const VkImageLayout& GetExpectedLayout() const { return m_CurrentLayout; }
 
 	private:
 		ImageSpecification m_Specification;

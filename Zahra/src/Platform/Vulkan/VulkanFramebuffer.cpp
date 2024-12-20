@@ -3,6 +3,31 @@
 
 namespace Zahra
 {
+	namespace VulkanUtils
+	{
+		static VkAttachmentLoadOp VulkanLoadOp(AttachmentLoadOp loadOp)
+		{
+			switch (loadOp)
+			{
+			case AttachmentLoadOp::Unspecified:		return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			case AttachmentLoadOp::Clear:			return VK_ATTACHMENT_LOAD_OP_CLEAR;
+			case AttachmentLoadOp::Load:			return VK_ATTACHMENT_LOAD_OP_LOAD;
+			}
+			Z_CORE_ASSERT(false, "Unsupported load operation");
+			return VK_ATTACHMENT_LOAD_OP_MAX_ENUM;
+		}
+
+		static VkImageLayout InitialLayoutFromLoadOp(AttachmentLoadOp loadOp, bool depthStencil)
+		{
+			if (loadOp == AttachmentLoadOp::Clear)
+				return VK_IMAGE_LAYOUT_UNDEFINED;
+			else if (depthStencil)
+				return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; // TODO: framebuffer spec should flag whether we'll sample the depth/stencil attachment or not
+			else
+				return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
+	}
+
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification& specification)
 		: m_Specification(specification)
 	{
@@ -105,6 +130,19 @@ namespace Zahra
 				m_ColourAttachments[i] = m_Specification.ColourAttachmentSpecs[i].InheritFrom.As<VulkanImage2D>();
 			else
 				CreateColourAttachment(i);
+
+			// TODO: for now we're setting up all attachments to be used as textures, which may be less-than-optimal
+
+			auto& description = m_AttachmentDescriptions.emplace_back();
+			description.flags = 0;
+			description.format = m_ColourAttachments[i]->GetVkFormat();
+			description.samples = VK_SAMPLE_COUNT_1_BIT;
+			description.loadOp = VulkanUtils::VulkanLoadOp(m_Specification.ColourAttachmentSpecs[i].LoadOp);
+			description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			description.initialLayout = VulkanUtils::InitialLayoutFromLoadOp(m_Specification.ColourAttachmentSpecs[i].LoadOp, false);
+			description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 
 		if (m_Specification.HasDepthStencil)
@@ -113,6 +151,17 @@ namespace Zahra
 				m_DepthStencilAttachment = m_Specification.DepthStencilAttachmentSpec.InheritFrom.As<VulkanImage2D>();
 			else
 				CreateDepthStencilAttachment();
+
+			auto& description = m_AttachmentDescriptions.emplace_back();
+			description.flags = 0;
+			description.format = VulkanUtils::GetSupportedDepthStencilFormat();
+			description.samples = VK_SAMPLE_COUNT_1_BIT;
+			description.loadOp = VulkanUtils::VulkanLoadOp(m_Specification.DepthStencilAttachmentSpec.LoadOp);
+			description.storeOp = VK_ATTACHMENT_STORE_OP_STORE; 
+			description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			description.initialLayout = VulkanUtils::InitialLayoutFromLoadOp(m_Specification.DepthStencilAttachmentSpec.LoadOp, true);
+			description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; // TODO: should depend on a "sampled" flag in spec
 		}			
 	}
 

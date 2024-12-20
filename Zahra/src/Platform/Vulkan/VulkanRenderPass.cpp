@@ -119,11 +119,14 @@ namespace Zahra
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
 			: VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
+		// the following subpass dependencies set up synchronisation barriers within Vulkan's command
+		// queue execution, so that each render pass may use the output attachments of the previous
+		// one as a sampled texture input to their fragment shader stage
 		std::vector<VkSubpassDependency> subpassDependencies;
 		if (colourAttachmentCount > 0)
 		{
-			// these ensure that each render pass will wait to write to its colour attachments
-			// until the previous pass has finished reading all texture data for its fragment shader
+			// this ensures that each render pass will wait to write to its colour attachments,
+			// until all previous passes have finished reading texture data into their fragment shaders
 			auto& previousPass = subpassDependencies.emplace_back();
 			previousPass.srcSubpass = VK_SUBPASS_EXTERNAL;
 			previousPass.dstSubpass = 0;
@@ -133,25 +136,27 @@ namespace Zahra
 			previousPass.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 			previousPass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
+			// this ensures that each render pass will wait to read texture data into its fragment
+			// shader, until all previous passes have finished writing to their colour attachments
 			auto& nextPass = subpassDependencies.emplace_back();
-			nextPass.srcSubpass = VK_SUBPASS_EXTERNAL;
-			nextPass.dstSubpass = 0;
-			nextPass.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			nextPass.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			nextPass.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			nextPass.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			nextPass.srcSubpass = 0;
+			nextPass.dstSubpass = VK_SUBPASS_EXTERNAL;
+			nextPass.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			nextPass.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			nextPass.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			nextPass.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 			nextPass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 		}
 
 		if (hasDepthStencil)
 		{
-			// similar to above, but for depth attachments
+			// similar to above
 			auto& previousPassDepth = subpassDependencies.emplace_back();
 			previousPassDepth.srcSubpass = VK_SUBPASS_EXTERNAL;
 			previousPassDepth.dstSubpass = 0;
 			previousPassDepth.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			previousPassDepth.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 			previousPassDepth.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			previousPassDepth.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 			previousPassDepth.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 			previousPassDepth.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
@@ -159,8 +164,8 @@ namespace Zahra
 			nextPassDepth.srcSubpass = 0;
 			nextPassDepth.dstSubpass = VK_SUBPASS_EXTERNAL;
 			nextPassDepth.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-			nextPassDepth.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			nextPassDepth.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			nextPassDepth.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			nextPassDepth.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 			nextPassDepth.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 		}
