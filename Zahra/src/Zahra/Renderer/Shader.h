@@ -15,7 +15,7 @@ namespace Zahra
 	struct ShaderSpecification
 	{
 		std::string Name;
-		std::filesystem::path SourceDirectory = "Resources/Shaders";
+		std::string SourceSubdirectory = "";
 		uint8_t StageBitMask = ShaderStageBits::MinimumGraphicsStageBits;
 	};
 

@@ -65,18 +65,19 @@ namespace Zahra
 		ValidateSpecification();
 
 		m_Swapchain = VulkanContext::Get()->GetSwapchain();
+		m_TargetSwapchain = !m_Specification.RenderTarget;
 
 		CreateRenderPass();
 		CreatePipeline();
-		CreateFramebuffer();
+		CreateFramebuffers();
 	}
 
 	VulkanRenderPass::~VulkanRenderPass()
 	{
-		VkDevice& device = VulkanContext::GetCurrentVkDevice();
+		VkDevice& device = m_Swapchain->GetVkDevice();
 		vkDeviceWaitIdle(device);
 
-		vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+		DestroyFramebuffers();
 		
 		vkDestroyPipeline(device, m_Pipeline, nullptr);
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
@@ -84,103 +85,185 @@ namespace Zahra
 		vkDestroyRenderPass(device, m_RenderPass, nullptr);
 	}
 
+	const Ref<Framebuffer> VulkanRenderPass::GetRenderTarget() const
+	{
+		Z_CORE_ASSERT(!m_TargetSwapchain, "Do not call this method for swapchain-targetting render passes");
+
+		return m_Specification.RenderTarget;
+	}
+
+	const VkFramebuffer& VulkanRenderPass::GetVkFramebuffer() const
+	{
+		if (m_TargetSwapchain)
+			return m_Framebuffers[m_Swapchain->GetImageIndex()];
+		else
+			return m_Framebuffers[0];
+
+	}
+
+	std::vector<VkClearValue> const VulkanRenderPass::GetClearValues()
+	{
+		if (m_TargetSwapchain)
+		{
+			return {{ 0.0f, 0.0f, 1.0f, 1.0f }};
+		}
+		else
+		{
+			return m_Specification.RenderTarget.As<VulkanFramebuffer>()->GetClearValues();
+		}
+	}
+
+	void VulkanRenderPass::OnResize()
+	{
+		DestroyFramebuffers();
+		CreateFramebuffers();
+	}
+
 	void VulkanRenderPass::CreateRenderPass()
 	{
 		VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
-		bool hasDepthStencil = m_Specification.RenderTarget->GetSpecification().HasDepthStencil;
-		VkFormat depthStencilFormat = VulkanUtils::GetSupportedDepthStencilFormat();
-		Ref<VulkanFramebuffer> renderTarget = m_Specification.RenderTarget.As<VulkanFramebuffer>();
 
-		std::vector<VkAttachmentDescription> attachmentDescriptions = renderTarget->GetAttachmentDescriptions();
-
-		uint32_t colourAttachmentCount = attachmentDescriptions.size();
-		if (hasDepthStencil)
-			colourAttachmentCount--;
-
-		std::vector<VkAttachmentReference> colourAttachmentReferences;
-		for (uint32_t i = 0; i < colourAttachmentCount; i++)
+		if (m_TargetSwapchain)
 		{
-			auto& attachmentReference = colourAttachmentReferences.emplace_back();
-			attachmentReference.attachment = i;
-			attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			VkAttachmentDescription description{};
+			description.flags = 0;
+			description.format = m_Swapchain->GetSwapchainImageFormat();
+			description.samples = VK_SAMPLE_COUNT_1_BIT;
+			description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			description.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+			VkAttachmentReference reference{};
+			reference.attachment = 0;
+			reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescription subpass{};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.colorAttachmentCount = 1;
+			subpass.pColorAttachments = &reference;
+
+			// this subpass dependency sets up waiting until the swapchain has finished
+			// reading the colour attachment (for presentation) before the next frame is written to it
+			VkSubpassDependency dependency{};
+			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependency.dstSubpass = 0;
+			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.srcAccessMask = 0;
+			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+			VkRenderPassCreateInfo renderPassInfo{};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.attachmentCount = 1;
+			renderPassInfo.pAttachments = &description;
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpass;
+			renderPassInfo.dependencyCount = 1;
+			renderPassInfo.pDependencies = &dependency;
+
+			VulkanUtils::ValidateVkResult(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass),
+				"Vulkan swapchain render pass creation failed");
 		}
-
-		VkAttachmentReference depthStencilAttachmentReference{};
-		depthStencilAttachmentReference.attachment = colourAttachmentReferences.size();
-		depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass{};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount = colourAttachmentReferences.size();
-		subpass.pColorAttachments = colourAttachmentReferences.data();
-		if (hasDepthStencil) subpass.pDepthStencilAttachment = &depthStencilAttachmentReference;
-
-		VkPipelineStageFlags stageMask = hasDepthStencil ?
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-			: VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-		// the following subpass dependencies set up synchronisation barriers within Vulkan's command
-		// queue execution, so that each render pass may use the output attachments of the previous
-		// one as a sampled texture input to their fragment shader stage
-		std::vector<VkSubpassDependency> subpassDependencies;
-		if (colourAttachmentCount > 0)
+		else
 		{
-			// this ensures that each render pass will wait to write to its colour attachments,
-			// until all previous passes have finished reading texture data into their fragment shaders
-			auto& previousPass = subpassDependencies.emplace_back();
-			previousPass.srcSubpass = VK_SUBPASS_EXTERNAL;
-			previousPass.dstSubpass = 0;
-			previousPass.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			previousPass.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			previousPass.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			previousPass.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			previousPass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			bool hasDepthStencil = m_Specification.RenderTarget->GetSpecification().HasDepthStencil;
+			VkFormat depthStencilFormat = VulkanUtils::GetSupportedDepthStencilFormat();
+			Ref<VulkanFramebuffer> renderTarget = m_Specification.RenderTarget.As<VulkanFramebuffer>();
 
-			// this ensures that each render pass will wait to read texture data into its fragment
-			// shader, until all previous passes have finished writing to their colour attachments
-			auto& nextPass = subpassDependencies.emplace_back();
-			nextPass.srcSubpass = 0;
-			nextPass.dstSubpass = VK_SUBPASS_EXTERNAL;
-			nextPass.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			nextPass.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			nextPass.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			nextPass.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			nextPass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			std::vector<VkAttachmentDescription> attachmentDescriptions = renderTarget->GetAttachmentDescriptions();
+
+			uint32_t colourAttachmentCount = attachmentDescriptions.size();
+			if (hasDepthStencil)
+				colourAttachmentCount--;
+
+			std::vector<VkAttachmentReference> colourAttachmentReferences;
+			for (uint32_t i = 0; i < colourAttachmentCount; i++)
+			{
+				auto& attachmentReference = colourAttachmentReferences.emplace_back();
+				attachmentReference.attachment = i;
+				attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			}
+
+			VkAttachmentReference depthStencilAttachmentReference{};
+			depthStencilAttachmentReference.attachment = colourAttachmentReferences.size();
+			depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescription subpass{};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.colorAttachmentCount = colourAttachmentReferences.size();
+			subpass.pColorAttachments = colourAttachmentReferences.data();
+			if (hasDepthStencil) subpass.pDepthStencilAttachment = &depthStencilAttachmentReference;
+
+			VkPipelineStageFlags stageMask = hasDepthStencil ?
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+				: VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+			// the following subpass dependencies set up synchronisation barriers within Vulkan's command
+			// queue execution, so that each render pass may use the output attachments of the previous
+			// one as a sampled texture input to their fragment shader stage
+			std::vector<VkSubpassDependency> subpassDependencies;
+			if (colourAttachmentCount > 0)
+			{
+				// this ensures that each render pass will wait to write to its colour attachments,
+				// until all previous passes have finished reading texture data into their fragment shaders
+				auto& previousPass = subpassDependencies.emplace_back();
+				previousPass.srcSubpass = VK_SUBPASS_EXTERNAL;
+				previousPass.dstSubpass = 0;
+				previousPass.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				previousPass.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				previousPass.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				previousPass.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				previousPass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+				// this ensures that each render pass will wait to read texture data into its fragment
+				// shader, until all previous passes have finished writing to their colour attachments
+				auto& nextPass = subpassDependencies.emplace_back();
+				nextPass.srcSubpass = 0;
+				nextPass.dstSubpass = VK_SUBPASS_EXTERNAL;
+				nextPass.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				nextPass.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				nextPass.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				nextPass.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				nextPass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			}
+
+			if (hasDepthStencil)
+			{
+				// similar to above
+				auto& previousPassDepth = subpassDependencies.emplace_back();
+				previousPassDepth.srcSubpass = VK_SUBPASS_EXTERNAL;
+				previousPassDepth.dstSubpass = 0;
+				previousPassDepth.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				previousPassDepth.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				previousPassDepth.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+				previousPassDepth.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				previousPassDepth.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+				auto& nextPassDepth = subpassDependencies.emplace_back();
+				nextPassDepth.srcSubpass = 0;
+				nextPassDepth.dstSubpass = VK_SUBPASS_EXTERNAL;
+				nextPassDepth.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+				nextPassDepth.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				nextPassDepth.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				nextPassDepth.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				nextPassDepth.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			}
+
+			VkRenderPassCreateInfo renderPassInfo{};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.attachmentCount = (uint32_t)attachmentDescriptions.size();
+			renderPassInfo.pAttachments = attachmentDescriptions.data();
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpass;
+			renderPassInfo.dependencyCount = subpassDependencies.size();
+			renderPassInfo.pDependencies = subpassDependencies.data();
+
+			VulkanUtils::ValidateVkResult(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass),
+				"Vulkan render pass creation failed");
 		}
-
-		if (hasDepthStencil)
-		{
-			// similar to above
-			auto& previousPassDepth = subpassDependencies.emplace_back();
-			previousPassDepth.srcSubpass = VK_SUBPASS_EXTERNAL;
-			previousPassDepth.dstSubpass = 0;
-			previousPassDepth.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			previousPassDepth.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			previousPassDepth.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-			previousPassDepth.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			previousPassDepth.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-			auto& nextPassDepth = subpassDependencies.emplace_back();
-			nextPassDepth.srcSubpass = 0;
-			nextPassDepth.dstSubpass = VK_SUBPASS_EXTERNAL;
-			nextPassDepth.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-			nextPassDepth.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			nextPassDepth.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			nextPassDepth.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			nextPassDepth.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-		}
-
-		VkRenderPassCreateInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = (uint32_t)attachmentDescriptions.size();
-		renderPassInfo.pAttachments = attachmentDescriptions.data();
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpass;
-		renderPassInfo.dependencyCount = subpassDependencies.size();
-		renderPassInfo.pDependencies = subpassDependencies.data();
-
-		VulkanUtils::ValidateVkResult(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass),
-			"Vulkan render pass creation failed");
 	}
 
 	void VulkanRenderPass::CreatePipeline()
@@ -191,7 +274,10 @@ namespace Zahra
 		VertexBufferLayout vertexLayout = shader->GetVertexLayout();
 		std::vector<VkDescriptorSetLayout> layouts = shader->GetDescriptorSetLayouts();
 		// TODO: get push constant ranges from shader reflection
-		bool hasDepthStencil = m_Specification.RenderTarget->GetSpecification().HasDepthStencil;
+
+		bool hasDepthStencil = false;
+		if (!m_TargetSwapchain)
+			hasDepthStencil = m_Specification.RenderTarget->GetSpecification().HasDepthStencil;
 
 		///////////////////////////////////////////////////////////////////////////////////////
 		// Dynamic state
@@ -300,18 +386,33 @@ namespace Zahra
 		// Colour blending
 		// TODO: configure blending in specification
 		std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachmentStates;
-		for (auto& attachmentSpec : m_Specification.RenderTarget->GetSpecification().ColourAttachmentSpecs)
+		if (m_TargetSwapchain)
 		{
 			auto& blendState = colourBlendAttachmentStates.emplace_back();
 			blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			blendState.blendEnable = VK_FALSE; // TODO: no translucency!!
+			blendState.blendEnable = VK_FALSE;
 			blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
 			blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
 			blendState.colorBlendOp = VK_BLEND_OP_ADD;
 			blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 			blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 			blendState.alphaBlendOp = VK_BLEND_OP_ADD;
-		}		
+		}
+		else
+		{
+			for (auto& attachmentSpec : m_Specification.RenderTarget->GetSpecification().ColourAttachmentSpecs)
+			{
+				auto& blendState = colourBlendAttachmentStates.emplace_back();
+				blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+				blendState.blendEnable = VK_FALSE; // TODO: no translucency!!
+				blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+				blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+				blendState.colorBlendOp = VK_BLEND_OP_ADD;
+				blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+				blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+				blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+			}
+		}
 
 		VkPipelineColorBlendStateCreateInfo colourBlendState{};
 		colourBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -325,7 +426,7 @@ namespace Zahra
 		colourBlendState.blendConstants[3] = 0.0f;
 
 		///////////////////////////////////////////////////////////////////////////////////////
-		// Pipeline layout creation (describes expected shader resources)
+		// Pipeline layout creation (expected shader resources)
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.pNext = nullptr;
@@ -360,27 +461,66 @@ namespace Zahra
 		VulkanUtils::ValidateVkResult(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_Pipeline),
 			"Vulkan graphics pipeline creation failed");
 
-		Z_CORE_TRACE("Vulkan graphics pipeline creation successful");
-
+		//Z_CORE_TRACE("Vulkan graphics pipeline creation successful");
 	}
 
-	void VulkanRenderPass::CreateFramebuffer()
+	void VulkanRenderPass::CreateFramebuffers()
 	{
 		VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
-		Ref<VulkanFramebuffer> renderTarget = m_Specification.RenderTarget.As<VulkanFramebuffer>();
-		std::vector<VkImageView> attachmentImageViews = renderTarget->GetImageViews();
 
-		VkFramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = m_RenderPass;
-		framebufferInfo.attachmentCount = attachmentImageViews.size();
-		framebufferInfo.pAttachments = attachmentImageViews.data();
-		framebufferInfo.width = renderTarget->GetSpecification().Width;
-		framebufferInfo.height = renderTarget->GetSpecification().Height;
-		framebufferInfo.layers = 1; // TODO: set this in FramebufferSpec
+		if (m_TargetSwapchain)
+		{
+			std::vector<VkImageView> swapchainImageViews = m_Swapchain->GetSwapchainImageViews();
 
-		VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_Framebuffer),
-			"Vulkan framebuffer creation failed");
+			for (auto& imageView : swapchainImageViews)
+			{
+				auto& framebuffer = m_Framebuffers.emplace_back();
+
+				VkFramebufferCreateInfo framebufferInfo{};
+				framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+				framebufferInfo.renderPass = m_RenderPass;
+				framebufferInfo.attachmentCount = 1;
+				framebufferInfo.pAttachments = &imageView;
+				framebufferInfo.width = m_Swapchain->GetWidth();
+				framebufferInfo.height = m_Swapchain->GetHeight();
+				framebufferInfo.layers = 1;
+
+				VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer),
+					"Vulkan swapchain framebuffer creation failed");
+			}
+		}
+		else
+		{
+			Ref<VulkanFramebuffer> renderTarget = m_Specification.RenderTarget.As<VulkanFramebuffer>();
+			std::vector<VkImageView> attachmentImageViews = renderTarget->GetImageViews();
+			auto& framebuffer = m_Framebuffers.emplace_back();
+
+			VkFramebufferCreateInfo framebufferInfo{};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = m_RenderPass;
+			framebufferInfo.attachmentCount = attachmentImageViews.size();
+			framebufferInfo.pAttachments = attachmentImageViews.data();
+			framebufferInfo.width = renderTarget->GetSpecification().Width;
+			framebufferInfo.height = renderTarget->GetSpecification().Height;
+			framebufferInfo.layers = 1; // TODO: set this in FramebufferSpec
+
+			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer),
+				"Vulkan framebuffer creation failed");
+		}
+		
+	}
+
+	void VulkanRenderPass::DestroyFramebuffers()
+	{
+		VkDevice& device = m_Swapchain->GetVkDevice();
+		vkDeviceWaitIdle(device);
+
+		for (auto& framebuffer : m_Framebuffers)
+		{
+			vkDestroyFramebuffer(device, framebuffer, nullptr);
+		}
+
+		m_Framebuffers.clear();
 	}
 
 	void VulkanRenderPass::ValidateSpecification()

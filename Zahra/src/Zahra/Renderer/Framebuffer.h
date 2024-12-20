@@ -29,12 +29,12 @@ namespace Zahra
 	
 	struct FramebufferSpecification
 	{
-		bool HasDepthStencil = false;
-		float DepthClearValue = 1.0f;
-
 		uint32_t Width, Height; // ignored if attachment is using a swapchain image
 
 		std::vector<AttachmentSpecification> ColourAttachmentSpecs;
+
+		bool HasDepthStencil = false;
+		float DepthClearValue = 1.0f;
 		AttachmentSpecification DepthStencilAttachmentSpec;
 
 		// add multisampling options

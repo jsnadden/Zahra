@@ -36,7 +36,7 @@ namespace Zahra
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 
-		virtual void BeginRenderPass(Ref<RenderPass> renderPass) = 0;
+		virtual void BeginRenderPass(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager) = 0;
 		virtual void EndRenderPass() = 0;
 		// TODO: rework the render target interface
 		//virtual void EndRenderPass(Ref<RenderPass> renderPass, Ref<Texture2D>& output) = 0;
@@ -47,10 +47,11 @@ namespace Zahra
 		static RendererAPI* Create();
 		
 		// TODO: these interfaces should/will change over time. Also: need to implement instanced draw calls!!
-		virtual void DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint64_t indexCount = 0, uint64_t startingIndex = 0) = 0;
-		virtual void DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh) = 0;
+		virtual void DrawIndexed(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint64_t indexCount = 0, uint64_t startingIndex = 0) = 0;
+		virtual void DrawMesh(Ref<StaticMesh> mesh) = 0;
+		
+		virtual void FinalDrawCall() = 0;
 
-		//virtual void DrawToSwapchain(Ref<Image2D> frameOutput) = 0;
 
 	private:
 		static API s_API;

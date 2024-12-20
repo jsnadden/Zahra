@@ -62,31 +62,33 @@ namespace Zahra
 		~VulkanRenderPass();
 
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
-		virtual const Ref<Framebuffer> GetRenderTarget() const { return m_Specification.RenderTarget; }
-
-		virtual void Resize(uint32_t width, uint32_t height) override { } // TODO: this would only be necessary if we target the swapchain
+		virtual const Ref<Framebuffer> GetRenderTarget() const override;
 
 		const VkRenderPass& GetVkRenderPass() const { return m_RenderPass; }
 		const VkPipeline& GetVkPipeline() const { return m_Pipeline; }
 		const VkPipelineLayout& GetVkPipelineLayout() const { return m_PipelineLayout; }
-		const VkFramebuffer& GetVkFramebuffer() { return m_Framebuffer; }
+		const VkFramebuffer& GetVkFramebuffer() const;
 
-		const std::vector<VkClearValue> const GetClearValues() { return m_Specification.RenderTarget.As<VulkanFramebuffer>()->GetClearValues(); }
+		const std::vector<VkClearValue> const GetClearValues();
+
+		virtual void OnResize() override;
 
 	private:
 		RenderPassSpecification m_Specification;
 		Ref<VulkanSwapchain> m_Swapchain;
+		bool m_TargetSwapchain = false;
 
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 
 		VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 		VkPipeline m_Pipeline = VK_NULL_HANDLE;
 
-		VkFramebuffer m_Framebuffer;
+		std::vector<VkFramebuffer> m_Framebuffers;
 
 		void CreateRenderPass();
 		void CreatePipeline();
-		void CreateFramebuffer();
+		void CreateFramebuffers();
+		void DestroyFramebuffers();
 
 		void ValidateSpecification();
 

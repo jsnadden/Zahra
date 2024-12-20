@@ -16,12 +16,15 @@ namespace Zahra
 
 	void VulkanImage2D::Resize(uint32_t width, uint32_t height)
 	{
-		Cleanup();
+		if (width > 0 && height > 0)
+		{
+			Cleanup();
 
-		m_Specification.Width = width;
-		m_Specification.Height = height;
+			m_Specification.Width = width;
+			m_Specification.Height = height;
 
-		Init();
+			Init();
+		}
 	}
 
 	void VulkanImage2D::SetData(const VkBuffer& srcBuffer)
@@ -155,7 +158,7 @@ namespace Zahra
 	{
 		auto& device = VulkanContext::GetCurrentDevice();
 
-		VkImageUsageFlags usage;
+		VkImageUsageFlags usage = 0;
 		{
 			if (m_Specification.Format == ImageFormat::DepthStencil)
 				usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -212,7 +215,7 @@ namespace Zahra
 			mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		}
 
-		device->CreateVulkanImageSampler(filter, filter, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, mipmapMode);
+		m_Sampler = device->CreateVulkanImageSampler(filter, filter, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, mipmapMode);
 	}
 
 	void VulkanImage2D::Init()

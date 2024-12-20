@@ -109,24 +109,12 @@ namespace Zahra
 			event.Handled |= event.IsInCategory(EventCategoryKeyboard) && io.WantCaptureKeyboard;
 		}
 
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowResizedEvent>(Z_BIND_EVENT_FN(VulkanImGuiLayer::OnWindowResizedEvent));
 	}
 
 	void VulkanImGuiLayer::Begin()
 	{
-		if (m_Swapchain->Invalidated() && m_DefaultRenderTarget)
-		{
-			const auto& device = m_Swapchain->GetVkDevice();
-			uint32_t width = m_Swapchain->GetWidth();
-			uint32_t height = m_Swapchain->GetHeight();
-
-			vkDeviceWaitIdle(device);
-			vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
-
-			m_RenderTarget->Resize(width, height);
-
-			CreateFramebuffer();
-		}
-
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -135,6 +123,23 @@ namespace Zahra
 
 	void VulkanImGuiLayer::End()
 	{
+		/*if (m_Swapchain->Invalidated())
+		{
+			const auto& device = m_Swapchain->GetVkDevice();
+
+			vkDeviceWaitIdle(device);
+			vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+
+			if (m_DefaultRenderTarget)
+			{
+				uint32_t width = m_Swapchain->GetWidth();
+				uint32_t height = m_Swapchain->GetHeight();
+				m_RenderTarget->Resize(width, height);
+			}
+
+			CreateFramebuffer();
+		}*/
+
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
@@ -150,8 +155,6 @@ namespace Zahra
 
 		VkClearValue clearColour = {{ 0.0f, 0.0f, 0.0f }};
 
-		/////////////////////////////////////////////////////////////////////////////////////
-		// Render ImGui contents
 		VkRenderPassBeginInfo renderPassBeginInfo = {};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.renderPass = m_RenderPass;
@@ -164,10 +167,6 @@ namespace Zahra
 		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer);
 
 		vkCmdEndRenderPass(commandBuffer);
-
-		////////////////////////////////////////////////////////////////////////////////////
-		// Draw final output to swapchain image
-		Renderer::DrawToSwapchain(m_RenderTarget);
 	}
 
 	ImGuiTextureHandle VulkanImGuiLayer::RegisterTexture(Ref<Texture2D> texture)
@@ -226,6 +225,28 @@ namespace Zahra
 
 		CreateRenderPass();
 		CreateFramebuffer();
+	}
+
+	bool VulkanImGuiLayer::OnWindowResizedEvent(WindowResizedEvent& event)
+	{
+		if (event.GetWidth() == 0 || event.GetHeight() == 0)
+			return false;
+
+		const auto& device = m_Swapchain->GetVkDevice();
+
+		vkDeviceWaitIdle(device);
+		vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+
+		if (m_DefaultRenderTarget)
+		{
+			uint32_t width = event.GetWidth();
+			uint32_t height = event.GetHeight();
+			m_RenderTarget->Resize(width, height);
+		}
+
+		CreateFramebuffer();
+		
+		return false;
 	}
 
 	void VulkanImGuiLayer::CreateDescriptorPool()
@@ -323,8 +344,8 @@ namespace Zahra
 		framebufferInfo.renderPass = m_RenderPass;
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = &m_RenderTarget->GetVkImageView();
-		framebufferInfo.width = m_Swapchain->GetWidth();
-		framebufferInfo.height = m_Swapchain->GetHeight();
+		framebufferInfo.width = m_RenderTarget->GetWidth();
+		framebufferInfo.height = m_RenderTarget->GetHeight();
 		framebufferInfo.layers = 1;
 
 		VulkanUtils::ValidateVkResult(vkCreateFramebuffer(m_Swapchain->GetVkDevice(), &framebufferInfo, nullptr, &m_Framebuffer),

@@ -3,7 +3,6 @@
 
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanIndexBuffer.h"
-#include "Platform/Vulkan/VulkanPipeline.h"
 #include "Platform/Vulkan/VulkanShaderResourceManager.h"
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
 
@@ -81,27 +80,37 @@ namespace Zahra
 			"Vulkan command buffer failed to end recording");
 	}
 
-	void VulkanRendererAPI::BeginRenderPass(Ref<RenderPass> renderpass)
+	void VulkanRendererAPI::BeginRenderPass(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
-		Ref<VulkanRenderPass> vulkanRenderPass = renderpass.As<VulkanRenderPass>();
-		FramebufferSpecification renderTargetSpec = vulkanRenderPass->GetSpecification().RenderTarget->GetSpecification();
-
-		// At least for now we won't be using these to target the swapchain, so resizing
-		// images/framebuffers to fit a viewport should be controlled directly in Renderer
-		/*if (m_Swapchain->Invalidated())
-			vulkanRenderPass->Resize(m_Swapchain->GetExtent().width, m_Swapchain->GetExtent().height);*/
-
+		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
+		bool targetSwapchain = !vulkanRenderPass->GetSpecification().RenderTarget;
 		std::vector<VkClearValue> clearValues = vulkanRenderPass->GetClearValues();
+		VkExtent2D renderArea;
+
+		if (targetSwapchain)
+		{
+			if (m_Swapchain->Invalidated())
+			{
+				vulkanRenderPass->OnResize();
+			}
+
+			renderArea = m_Swapchain->GetExtent();
+		}
+		else
+		{
+			FramebufferSpecification renderTargetSpec = vulkanRenderPass->GetSpecification().RenderTarget->GetSpecification();
+			renderArea = { renderTargetSpec.Width, renderTargetSpec.Height };			
+		}
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
 		renderPassBeginInfo.framebuffer = vulkanRenderPass->GetVkFramebuffer();
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };
-		renderPassBeginInfo.renderArea.extent.width = renderTargetSpec.Width;
-		renderPassBeginInfo.renderArea.extent.height = renderTargetSpec.Height;
+		renderPassBeginInfo.renderArea.extent.width = renderArea.width;
+		renderPassBeginInfo.renderArea.extent.height = renderArea.height;
 		renderPassBeginInfo.clearValueCount = clearValues.size();
 		renderPassBeginInfo.pClearValues = clearValues.data();
 
@@ -112,16 +121,21 @@ namespace Zahra
 		VkViewport viewport{};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(renderTargetSpec.Width);
-		viewport.height = static_cast<float>(renderTargetSpec.Height);
+		viewport.width = static_cast<float>(renderArea.width);
+		viewport.height = static_cast<float>(renderArea.height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 		VkRect2D scissor{};
 		scissor.offset = { 0, 0 };
-		scissor.extent = { renderTargetSpec.Width, renderTargetSpec.Height };
+		scissor.extent = renderArea;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
+		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
+		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 	}
 
 	void VulkanRendererAPI::EndRenderPass()
@@ -134,7 +148,7 @@ namespace Zahra
 		m_Swapchain->PresentImage();			
 	}
 
-	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint64_t indexCount, uint64_t startingIndex)
+	void VulkanRendererAPI::DrawIndexed(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint64_t indexCount, uint64_t startingIndex)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
@@ -143,13 +157,7 @@ namespace Zahra
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vulkanVertexBufferArray, offsets);
 
 		VkBuffer vulkanIndexBuffer = indexBuffer.As<VulkanIndexBuffer>()->GetVulkanBuffer();
-		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-		auto vulkanRenderPass = renderPass.As<VulkanRenderPass>();
-		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);		
 
 		if (indexCount == 0)
 			indexCount = indexBuffer->GetCount() - startingIndex;
@@ -157,7 +165,7 @@ namespace Zahra
 		vkCmdDrawIndexed(commandBuffer, indexCount, 1, startingIndex, 0, 0);
 	}
 
-	void VulkanRendererAPI::DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh)
+	void VulkanRendererAPI::DrawMesh(Ref<StaticMesh> mesh)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
@@ -168,30 +176,12 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = mesh->GetIndexBuffer().As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		// TODO: set the dynamic state based on the renderPass attachment size?
-		// actually these should really be moved to BeginRenderPass!!
-		auto& extent = m_Swapchain->GetExtent();
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(extent.width);
-		viewport.height = static_cast<float>(extent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = extent;
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-		auto vulkanRenderPass = renderPass.As<VulkanRenderPass>();
-		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
-
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh->GetIndexBuffer()->GetCount(), 1, 0, 0, 0);
+	}
+
+	void VulkanRendererAPI::FinalDrawCall()
+	{
+		vkCmdDraw(m_Swapchain->GetCurrentDrawCommandBuffer(), 3, 1, 0, 0);
 	}
 
 }

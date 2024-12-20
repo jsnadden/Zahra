@@ -54,10 +54,13 @@ namespace Zahra
 		/*static float GetLineThickness();
 		static void SetLineThickness(float thickness);*/
 
-		static void DrawToSwapchain(Ref<Image2D> frameOutput);
+		static void SetSwapchainOutput(Ref<Image2D> frameImage);
+
+		// TEMPORARY
+		static Ref<Image2D> GetTestRenderPassOutput();		
 
 		#pragma region(VULKAN TEST)
-		static void DrawTutorialScene();
+		static void DrawTestScene();
 		#pragma endregion
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////

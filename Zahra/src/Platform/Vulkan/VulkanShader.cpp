@@ -40,7 +40,7 @@ namespace Zahra
 			CompileOrGetSPIRV(m_SPIRVBytecode_Debug, cacheDirectory, true, forceCompile);
 			CreateModules();
 		}
-		Z_CORE_TRACE("Shader creation took {0} ms", shaderCreationTimer.ElapsedMillis());
+		Z_CORE_TRACE("Shader '{0}' took {1} ms to load/compile", m_Specification.Name, shaderCreationTimer.ElapsedMillis());
 
 		Reflect();
 		CreateVertexLayout();
@@ -65,7 +65,10 @@ namespace Zahra
 
 	bool VulkanShader::ReadShaderSource(ShaderStage stage)
 	{
-		std::filesystem::path sourceFilepath = m_Specification.SourceDirectory / GetSourceFilename(stage);
+		std::filesystem::path sourceFilepath = Application::Get().GetSpecification().RendererConfig.ShaderPath;
+		if (!m_Specification.SourceSubdirectory.empty())
+			sourceFilepath /= m_Specification.SourceSubdirectory;
+		sourceFilepath /= GetSourceFilename(stage);
 
 		if (!std::filesystem::exists(sourceFilepath))
 		{
@@ -77,7 +80,7 @@ namespace Zahra
 		if (!sourceCode.empty())
 		{
 			m_GLSLSource[stage] = sourceCode;
-			Z_CORE_TRACE("Successfully loaded shader source file '{0}'", sourceFilepath.string().c_str());
+			//Z_CORE_TRACE("Successfully loaded shader source file '{0}'", sourceFilepath.string().c_str());
 		}
 		else
 		{
@@ -125,10 +128,8 @@ namespace Zahra
 			}
 			else
 			{
-				std::filesystem::path sourceFilepath = m_Specification.SourceDirectory / GetSourceFilename(stage);
-
 				shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source,
-					VulkanUtils::ShaderStageToShaderC(stage), sourceFilepath.string().c_str(), options);
+					VulkanUtils::ShaderStageToShaderC(stage), GetSourceFilename(stage).c_str(), options);
 
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 				{

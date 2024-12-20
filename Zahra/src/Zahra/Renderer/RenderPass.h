@@ -24,7 +24,7 @@ namespace Zahra
 	struct RenderPassSpecification
 	{
 		Ref<Shader> Shader;
-		Ref<Framebuffer> RenderTarget;
+		Ref<Framebuffer> RenderTarget; // if not set, will target swapchain instead
 
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;		
 		bool BackfaceCulling = true;
@@ -38,7 +38,8 @@ namespace Zahra
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
 		virtual const Ref<Framebuffer> GetRenderTarget() const = 0;
 
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
+		// to be called AFTER swapchain or target framebuffer has already been resized
+		virtual void OnResize() = 0;
 
 		static Ref<RenderPass> Create(const RenderPassSpecification& specification);
 	};

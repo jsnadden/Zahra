@@ -55,13 +55,14 @@ namespace Zahra
 	class Texture2D : public Texture
 	{
 	public:
+		virtual const Texture2DSpecification& GetSpecification() const = 0;
+
+		// this does not resize the image itself, and should only be called after that has been done externally!!
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
+
 		static Ref<Texture2D> CreateFromFile(const Texture2DSpecification& specification, std::filesystem::path filepath);
 		static Ref<Texture2D> CreateFromImage2D(const Ref<Image2D>& image);
 		static Ref<Texture2D> CreateFlatColourTexture(const Texture2DSpecification& specification, uint32_t colour);
-
-		virtual const Texture2DSpecification& GetSpecification() const = 0;
-		//virtual const Ref<Image2D> GetImage() const = 0;
-
 	};
 
 
