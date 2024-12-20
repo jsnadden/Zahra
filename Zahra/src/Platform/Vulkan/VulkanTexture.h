@@ -21,7 +21,7 @@ namespace Zahra
 		virtual const std::filesystem::path& GetFilepath() const override { return m_Filepath.value(); }
 		virtual const Texture2DSpecification& GetSpecification() const override { return m_Specification; }
 
-		//virtual const Ref<Image2D> GetImage() const override { return m_Image; }
+		virtual void Resize(uint32_t width, uint32_t height) override;
 
 		const VkImage& GetVkImage() const { return m_Image->GetVkImage(); }
 		const VkImageView& GetVkImageView() const { return m_Image->GetVkImageView(); }
@@ -37,6 +37,7 @@ namespace Zahra
 		Texture2DSpecification m_Specification{};
 
 		Ref<VulkanImage2D> m_Image;
+		bool m_CreatedFromExistingImage = false;
 
 		VkDescriptorImageInfo m_DescriptorImageInfo{};
 

@@ -14,6 +14,9 @@ SandboxLayer::SandboxLayer()
 
 void SandboxLayer::OnAttach()
 {
+	Zahra::Application::Get().GetImGuiLayer()->SetRenderTarget(Zahra::Renderer::GetTestRenderPassOutput());
+	Zahra::Renderer::SetSwapchainOutput(Zahra::Renderer::GetTestRenderPassOutput());
+
 	/*uint32_t framesInFlight = Zahra::Renderer::GetFramesInFlight();
 	m_ViewportTexture2D.resize(framesInFlight);
 	m_ViewportImGuiTextureHandle.resize(framesInFlight);*/
@@ -26,9 +29,9 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float dt)
 {
-	/*Zahra::Renderer::DrawTutorialScene();
+	Zahra::Renderer::DrawTestScene();
 
-	int n = 20;
+	/*int n = 20;
 	float scale = 10.0f / n;
 
 	for (int i = 0; i < n; i++)

@@ -92,6 +92,11 @@ namespace Zahra
 
 	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height)
 	{
+		if (width == 0 || height == 0)
+			return;
+
+		vkDeviceWaitIdle(VulkanContext::GetCurrentVkDevice());
+
 		m_Specification.Width = width;
 		m_Specification.Height = height;
 
@@ -116,7 +121,8 @@ namespace Zahra
 			return;
 		}
 
-		m_DepthStencilAttachment->Resize(width, height);
+		if (m_Specification.HasDepthStencil)
+			m_DepthStencilAttachment->Resize(width, height);
 	}
 
 	void VulkanFramebuffer::CreateAttachments()

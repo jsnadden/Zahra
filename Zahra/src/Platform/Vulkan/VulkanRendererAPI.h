@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Platform/Vulkan/VulkanContext.h"
-#include "Platform/Vulkan/VulkanPipeline.h"
 #include "Platform/Vulkan/VulkanRenderPass.h"
 #include "Zahra/Renderer/RendererAPI.h"
 
@@ -28,16 +27,16 @@ namespace Zahra
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
 
-		virtual void BeginRenderPass(Ref<RenderPass> renderPass) override;
+		virtual void BeginRenderPass(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager) override;
 		virtual void EndRenderPass() override;
 		//virtual void EndRenderPass(Ref<RenderPass> renderPass, Ref<Texture2D>& output) override;
 
 		virtual void Present() override;
 
-		virtual void DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint64_t indexCount = 0, uint64_t startingIndex = 0) override;
-		virtual void DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh) override;
+		virtual void DrawIndexed(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint64_t indexCount = 0, uint64_t startingIndex = 0) override;
+		virtual void DrawMesh(Ref<StaticMesh> mesh) override;
 
-		
+		virtual void FinalDrawCall() override;
 
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;

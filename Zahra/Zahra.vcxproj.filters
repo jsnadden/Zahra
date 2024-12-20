@@ -81,9 +81,6 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanAllocator.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h">
-      <Filter>src\Platform\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
@@ -97,9 +94,6 @@
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanMaterial.h">
-      <Filter>src\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\VulkanPipeline.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderPass.h">
@@ -225,9 +219,6 @@
     <ClInclude Include="src\Zahra\Renderer\Camera.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\CommandBuffer.h">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\EditorCamera.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
@@ -238,9 +229,6 @@
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Material.h">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Pipeline.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\RenderCommandQueue.h">
@@ -1582,9 +1570,6 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanFramebuffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp">
-      <Filter>src\Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
@@ -1595,9 +1580,6 @@
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanIndexBuffer.cpp">
-      <Filter>src\Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\VulkanPipeline.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanRenderPass.cpp">
@@ -1666,9 +1648,6 @@
     <ClCompile Include="src\Zahra\Maths\Maths.cpp">
       <Filter>src\Zahra\Maths</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\CommandBuffer.cpp">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
@@ -1679,9 +1658,6 @@
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Material.cpp">
-      <Filter>src\Zahra\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Pipeline.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\RenderCommandQueue.cpp">

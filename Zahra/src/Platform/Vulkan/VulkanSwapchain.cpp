@@ -27,7 +27,7 @@ namespace Zahra
 		AllocateCommandBuffer();
 		CreateSyncObjects();
 
-		Z_CORE_TRACE("Vulkan swap chain creation succeeded");
+		//Z_CORE_TRACE("Vulkan swap chain creation succeeded");
 	}
 
 	void VulkanSwapchain::Invalidate()
@@ -156,7 +156,7 @@ namespace Zahra
 
 	}
 
-	VkCommandBuffer VulkanSwapchain::GetDrawCommandBuffer(uint32_t index)
+	VkCommandBuffer& VulkanSwapchain::GetDrawCommandBuffer(uint32_t index)
 	{
 		Z_CORE_ASSERT(index < m_DrawCommandBuffers.size());
 
@@ -166,7 +166,7 @@ namespace Zahra
 	void VulkanSwapchain::CreateSurface(VkInstance& instance, GLFWwindow* windowHandle)
 	{
 		VulkanUtils::ValidateVkResult(glfwCreateWindowSurface(instance, windowHandle, nullptr, &m_Surface), "Vulkan surface creation failed");
-		Z_CORE_TRACE("Vulkan surface creation succeeded");
+		//Z_CORE_TRACE("Vulkan surface creation succeeded");
 	}
 
 	void VulkanSwapchain::CreateDevice(VkInstance& instance)
@@ -210,7 +210,7 @@ namespace Zahra
 		logicalDeviceInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
 
 		VulkanUtils::ValidateVkResult(vkCreateDevice(m_Device->m_PhysicalDevice, &logicalDeviceInfo, nullptr, &m_Device->m_LogicalDevice), "Vulkan device creation failed");
-		Z_CORE_TRACE("Vulkan device creation succeeded");
+		//Z_CORE_TRACE("Vulkan device creation succeeded");
 		Z_CORE_INFO("Target GPU: {0}", m_Device->m_Properties.deviceName);
 
 		vkGetDeviceQueue(m_Device->m_LogicalDevice, m_Device->m_QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device->m_GraphicsQueue);

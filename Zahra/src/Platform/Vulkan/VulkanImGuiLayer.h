@@ -30,6 +30,8 @@ namespace Zahra
 
 		virtual void SetRenderTarget(Ref<Image2D> renderTarget) override;
 
+		bool OnWindowResizedEvent(WindowResizedEvent& event);
+
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;
 

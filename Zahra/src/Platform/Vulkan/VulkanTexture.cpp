@@ -111,6 +111,8 @@ namespace Zahra
 	{
 		Z_CORE_ASSERT(image->GetSpecification().Sampled);
 
+		m_CreatedFromExistingImage = true;
+
 		m_Format = image->GetSpecification().Format;
 		m_Width = image->GetWidth();
 		m_Height = image->GetHeight();
@@ -140,6 +142,18 @@ namespace Zahra
 		m_Image.Reset();
 
 		m_LocalImageData.Release();
+	}
+
+	void VulkanTexture2D::Resize(uint32_t width, uint32_t height)
+	{
+		Z_CORE_ASSERT(m_CreatedFromExistingImage, "Only call this method for a texture created from an existing image");
+
+		m_Width = width;
+		m_Height = height;
+
+		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		m_DescriptorImageInfo.imageView = m_Image->GetVkImageView();
+		m_DescriptorImageInfo.sampler = m_Image->GetVkSampler();
 	}
 
 	void VulkanTexture2D::SetData(void* data, uint32_t size)

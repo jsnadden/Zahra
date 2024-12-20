@@ -28,7 +28,7 @@ namespace Zahra
 		VkSurfaceKHR& GetSurface() { return m_Surface; }
 
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
-		const VkDevice& GetVkDevice() { return m_Device->m_LogicalDevice; }
+		VkDevice& GetVkDevice() { return m_Device->m_LogicalDevice; }
 
 		const VkExtent2D& GetExtent() { return m_Extent; }
 		uint32_t GetWidth() { return m_Extent.width; }
@@ -48,6 +48,8 @@ namespace Zahra
 	private:
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 
+		Ref<VulkanDevice> m_Device;
+
 		bool m_WindowResized = false;
 		bool m_Invalidated = false;
 
@@ -59,8 +61,6 @@ namespace Zahra
 
 		uint32_t m_FramesInFlight = 3;
 		uint32_t m_CurrentFrameIndex = 0;
-
-		Ref<VulkanDevice> m_Device;
 
 		VkSurfaceFormatKHR m_SurfaceFormat;
 		VkPresentModeKHR m_PresentationMode;
@@ -95,12 +95,7 @@ namespace Zahra
 		void CreateCommandPool();
 		void AllocateCommandBuffer();
 
-		void CreateSyncObjects();
-
-		void CreateShader();
-		void CreatePipeline();
-		void CreateRenderPass();
-		void CreateFramebuffers();
+		void CreateSyncObjects();		
 
 		friend class VulkanContext;
 	};

@@ -20,7 +20,7 @@ namespace Zahra
 			{
 				LoadFromObj();
 			}
-			Z_CORE_TRACE("Loading mesh took {0} ms", meshLoadTimer.ElapsedMillis());
+			Z_CORE_TRACE("Mesh '{0}' took {1} ms to load", m_Specification.Name, meshLoadTimer.ElapsedMillis());
 		}
 	}
 

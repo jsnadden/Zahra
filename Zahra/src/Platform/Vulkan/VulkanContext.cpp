@@ -144,7 +144,7 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 		// CREATE INSTANCE
 		VulkanUtils::ValidateVkResult(vkCreateInstance(&instanceCreateInfo, nullptr, &m_VulkanInstance), "Vulkan instance creation failed");
-		Z_CORE_TRACE("Vulkan instance creation succeeded");
+		//Z_CORE_TRACE("Vulkan instance creation succeeded");
 	}
 
 	void VulkanContext::GetGLFWExtensions(std::vector<const char*>& extensions)

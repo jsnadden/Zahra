@@ -6,7 +6,7 @@ layout(location = 1) in vec2 v_TextureCoordinates;
 //layout(location = 3) in float v_TilingFactor;
 //layout(location = 4) in flat int v_EntityID;
 
-layout(binding = 1) uniform sampler2D u_Sampler; // make this an array, and index in with v_TextureIndex
+layout(binding = 0) uniform sampler2D u_Sampler; // make this an array, and index in with v_TextureIndex
 
 layout(location = 0) out vec4 o_Colour;
 //layout(location = 1) out int o_EntityID;

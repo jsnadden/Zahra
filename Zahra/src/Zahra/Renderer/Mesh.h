@@ -24,6 +24,7 @@ namespace Zahra
 
 	struct MeshSpecification
 	{
+		std::string Name;
 		std::filesystem::path Filepath;
 	};
 
