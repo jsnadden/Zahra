@@ -37,6 +37,8 @@ namespace Zahra
 
 		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+		VkImage m_RenderTarget = VK_NULL_HANDLE;
+		VkImageView m_LinearisedImageView = VK_NULL_HANDLE;
 		VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
 
 		VkExtent2D m_FramebufferSize;
@@ -46,10 +48,10 @@ namespace Zahra
 
 		void CreateDescriptorPool();
 		void CreateRenderPass();
-		//void CreateDefaultRenderTarget();
+		void CreateLinearisedRenderTarget();
 		void CreateFramebuffer();
 
-		void DestroyFramebufferAndRenderPass();
+		void Cleanup();
 
 
 	};

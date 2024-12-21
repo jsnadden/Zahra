@@ -56,6 +56,7 @@ namespace Zahra
 
 		CreateDescriptorPool();
 		CreateRenderPass();
+		CreateLinearisedRenderTarget();
 		CreateFramebuffer();
 
 		ImGui_ImplVulkan_InitInfo imguiInfo = {};
@@ -91,11 +92,13 @@ namespace Zahra
 	{
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
+		ImGui::DestroyContext();		
 
-		DestroyFramebufferAndRenderPass();
-		//m_RenderTarget.Reset();
-		vkDestroyDescriptorPool(m_Swapchain->GetVkDevice(), m_DescriptorPool, nullptr);
+		Cleanup();
+
+		auto& device = m_Swapchain->GetVkDevice();
+		vkDestroyRenderPass(device, m_RenderPass, nullptr);
+		vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
 
 	}
 
@@ -203,10 +206,8 @@ namespace Zahra
 		if (event.GetWidth() == 0 || event.GetHeight() == 0)
 			return false;
 
-		const auto& device = m_Swapchain->GetVkDevice();
-
-		vkDeviceWaitIdle(device);
-		vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+		Cleanup();
+		CreateLinearisedRenderTarget();
 		CreateFramebuffer();
 		
 		return false;
@@ -237,7 +238,7 @@ namespace Zahra
 
 		VkAttachmentDescription attachmentDescription{};
 		attachmentDescription.flags = 0;
-		attachmentDescription.format = VulkanUtils::VulkanFormat(ImageFormat::SRGBA);
+		attachmentDescription.format = VulkanUtils::VulkanFormat(ImageFormat::RGBA_UN);
 		attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
 		attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 		attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -289,31 +290,41 @@ namespace Zahra
 			"Main render pass creation failed");
 	}
 
-	void VulkanImGuiLayer::CreateFramebuffer()
+	void VulkanImGuiLayer::CreateLinearisedRenderTarget()
 	{
 		Ref<VulkanImage2D> renderTarget = Renderer::GetRenderTarget().As<VulkanImage2D>();
+		auto& device = VulkanContext::GetCurrentDevice();
 
+		m_RenderTarget = renderTarget->GetVkImage();
 		m_FramebufferSize = { renderTarget->GetWidth(), renderTarget->GetHeight() };
 
+		VkFormat format = VulkanUtils::VulkanFormat(ImageFormat::RGBA_UN);
+		VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+		m_LinearisedImageView = device->CreateVulkanImageView(format, m_RenderTarget, aspectMask);
+	}
+
+	void VulkanImGuiLayer::CreateFramebuffer()
+	{
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = m_RenderPass;
 		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = &renderTarget->GetVkImageView();
-		framebufferInfo.width = renderTarget->GetWidth();
-		framebufferInfo.height = renderTarget->GetHeight();
+		framebufferInfo.pAttachments = &m_LinearisedImageView;
+		framebufferInfo.width = m_FramebufferSize.width;
+		framebufferInfo.height = m_FramebufferSize.height;
 		framebufferInfo.layers = 1;
 
 		VulkanUtils::ValidateVkResult(vkCreateFramebuffer(m_Swapchain->GetVkDevice(), &framebufferInfo, nullptr, &m_Framebuffer),
 			"Vulkan framebuffer creation failed");
 	}
 
-	void VulkanImGuiLayer::DestroyFramebufferAndRenderPass()
+	void VulkanImGuiLayer::Cleanup()
 	{
 		const auto& device = m_Swapchain->GetVkDevice();
 		vkDeviceWaitIdle(device);
 		vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
-		vkDestroyRenderPass(device, m_RenderPass, nullptr);
+		vkDestroyImageView(device, m_LinearisedImageView, nullptr);
 	}
 
 }

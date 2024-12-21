@@ -75,28 +75,58 @@ void SandboxLayer::OnImGuiRender()
 		
 		ImGui::Separator();
 
-		float currentAllocations = (float)(allocationStats.TotalAllocated - allocationStats.TotalFreed);
-		if (currentAllocations >= BIT(20))
-			ImGui::Text("Total allocations: %.1f mb", currentAllocations / BIT(20));
-		else if (currentAllocations >= BIT(10))
-			ImGui::Text("Total allocations: %.1f kb", currentAllocations / BIT(10));
-		else
-			ImGui::Text("Total allocations: %.1f b", currentAllocations);
+		float currentAllocations;
 
-		for (auto& [file, stats] : allocationStatsMap)
+		ImGui::Text("Memory Usage:");
+
+		if (ImGui::BeginTable("MemoryUsageStats", 2, ImGuiTableColumnFlags_NoResize))
 		{
-			currentAllocations = (float)(stats.TotalAllocated - stats.TotalFreed);
+			// TABLE SETUP
+			{
+				ImGui::TableSetupColumn("Category", ImGuiTableColumnFlags_WidthStretch, 0);
+				ImGui::TableSetupColumn("Memory", ImGuiTableColumnFlags_WidthFixed, 100);
+				ImGui::TableHeadersRow();
+			}
 
-			if (currentAllocations >= BIT(20))
-				ImGui::Text("Total allocations from %s: %.1f mb", file, currentAllocations / BIT(20));
-			else if (currentAllocations >= BIT(10))
-				ImGui::Text("Total allocations from %s: %.1f kb", file, currentAllocations / BIT(10));
-			else
-				ImGui::Text("Total allocations from %s: %.1f b", file, currentAllocations);
+			for (auto& [file, stats] : allocationStatsMap)
+			{
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				{
+					ImGui::Text("%s", file);
+				}
+				ImGui::TableSetColumnIndex(1);
+				{
+					currentAllocations = (float)(stats.TotalAllocated - stats.TotalFreed);
+
+					if (currentAllocations >= BIT(20))
+						ImGui::Text(" %.1f MB", currentAllocations / BIT(20));
+					else if (currentAllocations >= BIT(10))
+						ImGui::Text(" %.1f KB", currentAllocations / BIT(10));
+					else
+						ImGui::Text(" %.0f bytes", currentAllocations);
+				}
+			}
+
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0);
+			{
+				ImGui::Text("Total");
+			}
+			ImGui::TableSetColumnIndex(1);			
+			{
+				currentAllocations = (float)(allocationStats.TotalAllocated - allocationStats.TotalFreed);
+
+				if (currentAllocations >= BIT(20))
+					ImGui::Text(" %.1f MB", currentAllocations / BIT(20));
+				else if (currentAllocations >= BIT(10))
+					ImGui::Text(" %.1f KB", currentAllocations / BIT(10));
+				else
+					ImGui::Text(" %.1f bytes", currentAllocations);
+			}
+
+			ImGui::EndTable();
 		}
-
-		/*ImGui::Text("Current allocated memory: %.2f mb", (float)(allocationStats.TotalAllocated - allocationStats.TotalFreed) / (float)(1<<20));
-		ImGui::Text("Total allocated memory: %.2f mb", (float)allocationStats.TotalAllocated / (float)(1 << 20));*/
 		
 		ImGui::Separator();
 

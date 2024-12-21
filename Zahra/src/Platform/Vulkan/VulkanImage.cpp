@@ -230,6 +230,7 @@ namespace Zahra
 	void VulkanImage2D::Cleanup()
 	{
 		auto& device = VulkanContext::GetCurrentVkDevice();
+		vkDeviceWaitIdle(device);
 
 		vkDestroySampler(device, m_Sampler, nullptr);
 		vkDestroyImageView(device, m_ImageView, nullptr);
