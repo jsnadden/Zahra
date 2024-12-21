@@ -3,9 +3,10 @@
 
 #include "Zahra/Core/Input.h"
 #include "Zahra/Core/Memory.h"
+#include "Zahra/Core/Timer.h"
 #include "Zahra/Renderer/Renderer.h"
-#include "Zahra/Utils/PlatformUtils.h"
 #include "Zahra/Scripting/ScriptEngine.h"
+#include "Zahra/Utils/PlatformUtils.h"
 
 namespace Zahra
 {
@@ -52,8 +53,17 @@ namespace Zahra
 	{
 		Z_CORE_INFO("Start of run loop");
 
+		Timer framerateRefreshTimer;
+		bool refreshFramerate = true;
+
 		while (m_Running)
 		{
+			if (framerateRefreshTimer.Elapsed() >= m_Specification.FramerateRefreshInterval)
+			{
+				framerateRefreshTimer.Reset();
+				refreshFramerate = true;
+			}
+
 			/*static int frameNumber = 0;
 			Z_CORE_TRACE("Began frame number {0}", frameNumber);
 			frameNumber++;*/
@@ -89,6 +99,11 @@ namespace Zahra
 				Renderer::Present();
 			}
 			
+			if (refreshFramerate)
+			{
+				m_Framerate = 1.0f / (Time::GetTime() - frameStartTime);
+				refreshFramerate = false;
+			}
 		}
 
 		Z_CORE_INFO("End of run loop");

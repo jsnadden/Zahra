@@ -21,14 +21,14 @@ namespace Zahra
 
 	struct VulkanShaderResourceMetadata
 	{
-		std::string Name;
-		ShaderResourceType Type;
-		ShaderStage Stage;
-		uint32_t Set;
-		uint32_t Binding;
-		uint64_t ByteSize;
-		uint64_t MemberCount;
-		uint64_t ArrayLength = 1; // 1 for non-array types
+		std::string Name = "anonymous_shader";
+		ShaderResourceType Type = ShaderResourceType::None;
+		ShaderStage Stage = ShaderStage::None;
+		uint32_t Set = 0;
+		uint32_t Binding = 0;
+		uint64_t ByteSize = 4;
+		uint32_t MemberCount = 1;
+		uint32_t ArrayLength = 1; // 1 for non-array types
 	};
 
 	struct VulkanShaderReflectionData

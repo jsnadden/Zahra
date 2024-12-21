@@ -75,11 +75,11 @@ namespace Zahra
 	{
 	public:
 		VulkanImage2D() = default;
-		VulkanImage2D(ImageSpecification specification);
-		//VulkanImage2D(VkImage image, VkDeviceMemory memory, ImageSpecification specification);
+		VulkanImage2D(Image2DSpecification specification);
+		//VulkanImage2D(VkImage image, VkDeviceMemory memory, Image2DSpecification specification);
 		virtual ~VulkanImage2D() override;
 
-		virtual const ImageSpecification GetSpecification() const override { return m_Specification; }
+		virtual const Image2DSpecification GetSpecification() const override { return m_Specification; }
 		virtual const uint32_t GetWidth() const override { return m_Specification.Width; }
 		virtual const uint32_t GetHeight() const override { return m_Specification.Height; }
 
@@ -93,14 +93,14 @@ namespace Zahra
 		//void SetLayout(VkImageLayout layout);
 
 		const VkExtent2D GetDimensions() const { return { m_Specification.Width, m_Specification.Height }; }
-		const VkFormat& GetVkFormat() const { return VulkanUtils::VulkanFormat(m_Specification.Format); }
+		VkFormat GetVkFormat() const { return VulkanUtils::VulkanFormat(m_Specification.Format); }
 		const VkImageView& GetVkImageView() const { return m_ImageView; }
 		const VkImage& GetVkImage() const { return m_Image; }
 		const VkSampler& GetVkSampler() const { return m_Sampler; }
 		const VkImageLayout& GetExpectedLayout() const { return m_CurrentLayout; }
 
 	private:
-		ImageSpecification m_Specification;
+		Image2DSpecification m_Specification;
 		
 		VkImage m_Image = VK_NULL_HANDLE;
 		VkDeviceMemory m_Memory = VK_NULL_HANDLE;

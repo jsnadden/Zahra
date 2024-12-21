@@ -68,7 +68,7 @@ namespace Zahra
 
 				if (vertexToIndexMap.count(vertex) == 0)
 				{
-					vertexToIndexMap[vertex] = vertices.size();
+					vertexToIndexMap[vertex] = (uint32_t)vertices.size();
 					vertices.emplace_back(vertex);
 				}
 
@@ -76,8 +76,8 @@ namespace Zahra
 			}
 		}
 
-		m_VertexBuffer = Ref<VulkanVertexBuffer>::Create((void*)vertices.data(), vertices.size() * sizeof(MeshVertex));
-		m_IndexBuffer = Ref<VulkanIndexBuffer>::Create(indices.data(), indices.size());
+		m_VertexBuffer = Ref<VulkanVertexBuffer>::Create((void*)vertices.data(), (uint32_t)(vertices.size() * sizeof(MeshVertex)));
+		m_IndexBuffer = Ref<VulkanIndexBuffer>::Create(indices.data(), (uint32_t)indices.size());
 
 	}
 

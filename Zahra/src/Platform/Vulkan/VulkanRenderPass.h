@@ -64,12 +64,14 @@ namespace Zahra
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
 		virtual const Ref<Framebuffer> GetRenderTarget() const override;
 
+		virtual bool TargetSwapchain() override;
+
 		const VkRenderPass& GetVkRenderPass() const { return m_RenderPass; }
 		const VkPipeline& GetVkPipeline() const { return m_Pipeline; }
 		const VkPipelineLayout& GetVkPipelineLayout() const { return m_PipelineLayout; }
 		const VkFramebuffer& GetVkFramebuffer() const;
 
-		const std::vector<VkClearValue> const GetClearValues();
+		const std::vector<VkClearValue> GetClearValues() const;
 
 		virtual void OnResize() override;
 

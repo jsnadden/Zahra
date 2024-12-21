@@ -10,6 +10,8 @@
 
 namespace Zahra
 {
+	// NOTE: this is currently an experimental mess, and plenty of
+	// it will be migrated elsewhere or deleted entirely
 	class Renderer
 	{
 	public:
@@ -22,16 +24,8 @@ namespace Zahra
 		static void BeginFrame();
 		static void EndFrame();
 
-	private:
-		static void BeginNewQuadBatch();
-		static void SubmitCurrentQuadBatch();
-		
-		// TODO: similar methods for circle/line batches
-
-		static void FlushDrawCalls();
-
-	public:
-		// TODO: move this stuff to SceneRenderer
+		// TODO: split up a bunch of this functionality into SceneRenderer and 2DRenderer classes
+		static void BeginScene(const glm::mat4& view, const glm::mat4& projection);
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
@@ -50,18 +44,10 @@ namespace Zahra
 
 		static Ref<RendererContext> GetContext() { return Application::Get().GetWindow().GetRendererContext(); }
 
-		// I imagine these are no longer relevant, as Vulkan doesn't maintain state
-		/*static float GetLineThickness();
-		static void SetLineThickness(float thickness);*/
-
-		static void SetSwapchainOutput(Ref<Image2D> frameImage);
-
-		// TEMPORARY
-		static Ref<Image2D> GetTestRenderPassOutput();		
-
-		#pragma region(VULKAN TEST)
 		static void DrawTestScene();
-		#pragma endregion
+		static void ClearPass();
+
+		static const Ref<Image2D>& GetRenderTarget();
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// PRIMITIVES
@@ -85,21 +71,30 @@ namespace Zahra
 
 		struct Statistics
 		{
-			uint32_t QuadBatchCount;
-			uint32_t QuadCount;
+			uint32_t QuadBatchCount = 0;
+			uint32_t QuadCount = 0;
 
-			uint32_t CircleBatchCount;
-			uint32_t CircleCount;
+			uint32_t CircleBatchCount = 0;
+			uint32_t CircleCount = 0;
 
-			uint32_t LineBatchCount;
-			uint32_t LineCount;
+			uint32_t LineBatchCount = 0;
+			uint32_t LineCount = 0;
 
-			uint32_t GetTotalVertexCount() { return QuadCount * 4; }
-			uint32_t GetTotalIndexCount() { return QuadCount * 6; }
+			//uint32_t TotalAllocatedMemory = 0;
+
+			uint32_t DrawCalls = 0;
+
+			/*uint32_t GetTotalVertexCount() { return QuadCount * 4; }
+			uint32_t GetTotalIndexCount() { return QuadCount * 6; }*/
 		};
 
-		static Statistics GetStats();
+		static const Statistics& GetStats();
 		static void ResetStats();
+
+	private:
+		static void AddNewQuadBatch();
+
+		// TODO: similar methods for circle/line batches
 	};
 
 };

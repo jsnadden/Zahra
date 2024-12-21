@@ -19,9 +19,11 @@ namespace Zahra
 		glm::vec3 Position;
 		glm::vec4 Tint;
 		glm::vec2 TextureCoord;
-		//alignas(16) uint32_t TextureIndex;
-		//alignas(16) float TilingFactor;
-		//alignas(16) int EntityID = -1;
+
+		// TODO: can I just pass these as push constants?
+		//uint32_t TextureIndex;
+		//float TilingFactor;
+		//int EntityID = -1;
 	};
 
 	struct CircleVertex

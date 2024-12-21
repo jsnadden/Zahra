@@ -58,8 +58,8 @@ namespace Zahra
 		else
 			m_FramesInFlight = framesInFlight;
 
-		for (int i = 0; i < framesInFlight; i++)
-			m_UniformBuffers[i] = Ref<VulkanUniformBuffer>::Create(bufferSize);
+		for (uint32_t frame = 0; frame < framesInFlight; frame++)
+			m_UniformBuffers[frame] = Ref<VulkanUniformBuffer>::Create(bufferSize);
 
 	}
 

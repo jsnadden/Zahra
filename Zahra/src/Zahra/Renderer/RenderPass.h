@@ -23,6 +23,7 @@ namespace Zahra
 
 	struct RenderPassSpecification
 	{
+		std::string Name;
 		Ref<Shader> Shader;
 		Ref<Framebuffer> RenderTarget; // if not set, will target swapchain instead
 
@@ -37,6 +38,8 @@ namespace Zahra
 
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
 		virtual const Ref<Framebuffer> GetRenderTarget() const = 0;
+
+		virtual bool TargetSwapchain() = 0;
 
 		// to be called AFTER swapchain or target framebuffer has already been resized
 		virtual void OnResize() = 0;

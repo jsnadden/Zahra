@@ -6,9 +6,9 @@
 namespace Zahra
 {
 
-	VulkanIndexBuffer::VulkanIndexBuffer(const uint32_t* indices, uint64_t count)
+	VulkanIndexBuffer::VulkanIndexBuffer(const uint32_t* indices, uint32_t count)
 	{
-		uint64_t size = count * sizeof(uint32_t);
+		uint32_t size = count * sizeof(uint32_t);
 
 		m_IndexData.Allocate(size);
 		m_IndexData.ZeroInitialise();
@@ -32,7 +32,7 @@ namespace Zahra
 		//m_IndexData.Release();
 	}
 
-	void VulkanIndexBuffer::SetData(const uint32_t* data, uint64_t size)
+	void VulkanIndexBuffer::SetData(const uint32_t* data, uint32_t size)
 	{
 		m_IndexData.Write((void*)data, size, 0);
 

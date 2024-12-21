@@ -92,6 +92,11 @@ namespace Zahra
 		return m_Specification.RenderTarget;
 	}
 
+	bool VulkanRenderPass::TargetSwapchain()
+	{
+		return m_TargetSwapchain;
+	}
+
 	const VkFramebuffer& VulkanRenderPass::GetVkFramebuffer() const
 	{
 		if (m_TargetSwapchain)
@@ -101,7 +106,7 @@ namespace Zahra
 
 	}
 
-	std::vector<VkClearValue> const VulkanRenderPass::GetClearValues()
+	const std::vector<VkClearValue> VulkanRenderPass::GetClearValues() const
 	{
 		if (m_TargetSwapchain)
 		{
@@ -175,7 +180,7 @@ namespace Zahra
 
 			std::vector<VkAttachmentDescription> attachmentDescriptions = renderTarget->GetAttachmentDescriptions();
 
-			uint32_t colourAttachmentCount = attachmentDescriptions.size();
+			uint32_t colourAttachmentCount = (uint32_t)attachmentDescriptions.size();
 			if (hasDepthStencil)
 				colourAttachmentCount--;
 
@@ -188,12 +193,12 @@ namespace Zahra
 			}
 
 			VkAttachmentReference depthStencilAttachmentReference{};
-			depthStencilAttachmentReference.attachment = colourAttachmentReferences.size();
+			depthStencilAttachmentReference.attachment = (uint32_t)colourAttachmentReferences.size();
 			depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 			VkSubpassDescription subpass{};
 			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-			subpass.colorAttachmentCount = colourAttachmentReferences.size();
+			subpass.colorAttachmentCount = (uint32_t)colourAttachmentReferences.size();
 			subpass.pColorAttachments = colourAttachmentReferences.data();
 			if (hasDepthStencil) subpass.pDepthStencilAttachment = &depthStencilAttachmentReference;
 
@@ -258,7 +263,7 @@ namespace Zahra
 			renderPassInfo.pAttachments = attachmentDescriptions.data();
 			renderPassInfo.subpassCount = 1;
 			renderPassInfo.pSubpasses = &subpass;
-			renderPassInfo.dependencyCount = subpassDependencies.size();
+			renderPassInfo.dependencyCount = (uint32_t)subpassDependencies.size();
 			renderPassInfo.pDependencies = subpassDependencies.data();
 
 			VulkanUtils::ValidateVkResult(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass),
@@ -309,7 +314,7 @@ namespace Zahra
 				vertexInputAttributes[location].binding = binding;
 				vertexInputAttributes[location].location = location;
 				vertexInputAttributes[location].format = VulkanUtils::ShaderDataTypeToVulkanFormat(element.Type);
-				vertexInputAttributes[location].offset = element.Offset;
+				vertexInputAttributes[location].offset = (uint32_t)element.Offset;
 
 				location++;
 			}
@@ -418,7 +423,7 @@ namespace Zahra
 		colourBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colourBlendState.logicOpEnable = VK_FALSE;
 		colourBlendState.logicOp = VK_LOGIC_OP_COPY;
-		colourBlendState.attachmentCount = colourBlendAttachmentStates.size();
+		colourBlendState.attachmentCount = (uint32_t)colourBlendAttachmentStates.size();
 		colourBlendState.pAttachments = colourBlendAttachmentStates.data();
 		colourBlendState.blendConstants[0] = 0.0f;
 		colourBlendState.blendConstants[1] = 0.0f;
@@ -430,7 +435,7 @@ namespace Zahra
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.pNext = nullptr;
-		pipelineLayoutInfo.setLayoutCount = layouts.size();
+		pipelineLayoutInfo.setLayoutCount = (uint32_t)layouts.size();
 		pipelineLayoutInfo.pSetLayouts = layouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 0; // TODO: push constants
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
@@ -498,7 +503,7 @@ namespace Zahra
 			VkFramebufferCreateInfo framebufferInfo{};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferInfo.renderPass = m_RenderPass;
-			framebufferInfo.attachmentCount = attachmentImageViews.size();
+			framebufferInfo.attachmentCount = (uint32_t)attachmentImageViews.size();
 			framebufferInfo.pAttachments = attachmentImageViews.data();
 			framebufferInfo.width = renderTarget->GetSpecification().Width;
 			framebufferInfo.height = renderTarget->GetSpecification().Height;

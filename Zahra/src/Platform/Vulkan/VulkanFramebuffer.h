@@ -20,8 +20,8 @@ namespace Zahra
 
 		virtual const FramebufferSpecification& GetSpecification() const { return m_Specification; }
 
-		virtual const Ref<Image2D>& GetColourAttachment(uint32_t index) const;
-		virtual const Ref<Image2D>& GetDepthStencilAttachment() const;
+		virtual Ref<Image2D> GetColourAttachment(uint32_t index) const;
+		virtual Ref<Image2D> GetDepthStencilAttachment() const;
 
 		std::vector<VkImageView> const GetImageViews();
 		std::vector<VkClearValue> const GetClearValues();

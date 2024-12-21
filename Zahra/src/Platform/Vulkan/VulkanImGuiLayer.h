@@ -28,7 +28,7 @@ namespace Zahra
 		virtual ImGuiTextureHandle RegisterTexture(Ref<Texture2D> texture) override;
 		virtual void DeregisterTexture(ImGuiTextureHandle textureHandle) override;
 
-		virtual void SetRenderTarget(Ref<Image2D> renderTarget) override;
+		//virtual void SetRenderTarget(Ref<Image2D> renderTarget) override;
 
 		bool OnWindowResizedEvent(WindowResizedEvent& event);
 
@@ -39,12 +39,14 @@ namespace Zahra
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 		VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
 
-		Ref<VulkanImage2D> m_RenderTarget;
-		bool m_DefaultRenderTarget = true;
+		VkExtent2D m_FramebufferSize;
+
+		//Ref<VulkanImage2D> m_RenderTarget;
+		//bool m_DefaultRenderTarget = true;
 
 		void CreateDescriptorPool();
 		void CreateRenderPass();
-		void CreateDefaultRenderTarget();
+		//void CreateDefaultRenderTarget();
 		void CreateFramebuffer();
 
 		void DestroyFramebufferAndRenderPass();

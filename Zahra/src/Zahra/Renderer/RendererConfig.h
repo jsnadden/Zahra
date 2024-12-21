@@ -17,7 +17,7 @@ namespace Zahra
 		uint32_t MaximumBoundTextures = 32;
 
 		// 2d batch renderer
-		uint32_t MaxBatchSize = 10000;
+		//uint32_t MaxBatchSize = 10000;
 	};
 
 }

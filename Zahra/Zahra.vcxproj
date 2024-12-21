@@ -145,11 +145,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Platform\Vulkan\VulkanAllocator.h" />
-    <ClInclude Include="src\Platform\Vulkan\VulkanFramebuffer.h" />
-    <ClInclude Include="src\Platform\Vulkan\VulkanImage.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanFramebuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanImGuiLayer.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanImage.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanIndexBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanMaterial.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanMesh.h" />
@@ -165,7 +165,6 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanVertexBuffer.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Zahra.h" />
-    <ClInclude Include="src\Zahra\Core\AppRequirements.h" />
     <ClInclude Include="src\Zahra\Core\Application.h" />
     <ClInclude Include="src\Zahra\Core\Assert.h" />
     <ClInclude Include="src\Zahra\Core\Buffer.h" />
@@ -646,11 +645,11 @@
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Platform\Vulkan\VulkanFramebuffer.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\VulkanImage.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanDevice.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanFramebuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanImGuiLayer.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanImage.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanIndexBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanMesh.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRenderPass.cpp" />
@@ -705,7 +704,6 @@
     <ClCompile Include="vendor\ImGuizmo\ImGuizmo.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="vendor\tinyobjloader\tiny_obj_loader.cpp" />
     <ClCompile Include="vendor\VMA\vk_mem_alloc.cpp" />
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
   </ItemGroup>

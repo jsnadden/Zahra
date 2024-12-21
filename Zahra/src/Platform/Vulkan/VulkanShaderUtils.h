@@ -17,60 +17,54 @@ namespace Zahra
 		static const std::filesystem::path& GetSPIRVCachePath()
 		{
 			if (!std::filesystem::exists(s_CacheDirectory))
-			{
 				std::filesystem::create_directories(s_CacheDirectory);
-			}
 
 			return s_CacheDirectory;
 		}
 
-		static const char* ShaderStageToFileExtension(ShaderStage stage)
+		static std::string ShaderStageToFileExtension(ShaderStage stage)
 		{
-			const char* extension;
+			std::string extension;
 
 			switch (stage)
 			{
-			case ShaderStage::Vertex:
-			{
-				extension = "vert";
-				break;
-			}
+				case ShaderStage::Vertex:
+				{
+					extension = "vert";
+					break;
+				}
 
-			case ShaderStage::TesselationControl:
-			{
-				extension = "tesc";
-				break;
-			}
+				case ShaderStage::TesselationControl:
+				{
+					extension = "tesc";
+					break;
+				}
 
-			case ShaderStage::TesselationEvaluation:
-			{
-				extension = "tese";
-				break;
-			}
+				case ShaderStage::TesselationEvaluation:
+				{
+					extension = "tese";
+					break;
+				}
 
-			case ShaderStage::Geometry:
-			{
-				extension = "geom";
-				break;
-			}
+				case ShaderStage::Geometry:
+				{
+					extension = "geom";
+					break;
+				}
 
-			case ShaderStage::Fragment:
-			{
-				extension = "frag";
-				break;
-			}
+				case ShaderStage::Fragment:
+				{
+					extension = "frag";
+					break;
+				}
 
-			case ShaderStage::Compute:
-			{
-				extension = "comp";
-				break;
-			}
+				case ShaderStage::Compute:
+				{
+					extension = "comp";
+					break;
+				}
 
-			default:
-			{
-				Z_CORE_ASSERT(false, "Unrecognised shader stage");
-				break;
-			}
+				default: Z_CORE_ASSERT(false, "Unrecognised shader stage");
 			}
 
 			return extension;
@@ -82,47 +76,43 @@ namespace Zahra
 
 			switch (stage)
 			{
-			case ShaderStage::Vertex:
-			{
-				stageName = "vertex";
-				break;
-			}
+				case ShaderStage::Vertex:
+				{
+					stageName = "vertex";
+					break;
+				}
 
-			case ShaderStage::TesselationControl:
-			{
-				stageName = "tesselation control";
-				break;
-			}
+				case ShaderStage::TesselationControl:
+				{
+					stageName = "tesselation control";
+					break;
+				}
 
-			case ShaderStage::TesselationEvaluation:
-			{
-				stageName = "tesselation evaluation";
-				break;
-			}
+				case ShaderStage::TesselationEvaluation:
+				{
+					stageName = "tesselation evaluation";
+					break;
+				}
 
-			case ShaderStage::Geometry:
-			{
-				stageName = "geometry";
-				break;
-			}
+				case ShaderStage::Geometry:
+				{
+					stageName = "geometry";
+					break;
+				}
 
-			case ShaderStage::Fragment:
-			{
-				stageName = "fragment";
-				break;
-			}
+				case ShaderStage::Fragment:
+				{
+					stageName = "fragment";
+					break;
+				}
 
-			case ShaderStage::Compute:
-			{
-				stageName = "compute";
-				break;
-			}
+				case ShaderStage::Compute:
+				{
+					stageName = "compute";
+					break;
+				}
 
-			default:
-			{
-				Z_CORE_ASSERT(false, "Unrecognised shader stage");
-				break;
-			}
+				default: Z_CORE_ASSERT(false, "Unrecognised shader stage");
 			}
 
 			return stageName;
@@ -132,42 +122,15 @@ namespace Zahra
 		{
 			switch (stage)
 			{
-			case ShaderStage::Vertex:
-			{
-				return shaderc_vertex_shader;
-			}
+				case ShaderStage::Vertex:					return shaderc_vertex_shader;
+				case ShaderStage::TesselationControl:		return shaderc_tess_control_shader;
+				case ShaderStage::TesselationEvaluation:	return shaderc_tess_evaluation_shader;
+				case ShaderStage::Geometry:					return shaderc_geometry_shader;
+				case ShaderStage::Fragment:					return shaderc_fragment_shader;
+				case ShaderStage::Compute:					return shaderc_compute_shader;			}
 
-			case ShaderStage::TesselationControl:
-			{
-				return shaderc_tess_control_shader;
-			}
-
-			case ShaderStage::TesselationEvaluation:
-			{
-				return shaderc_tess_evaluation_shader;
-			}
-
-			case ShaderStage::Geometry:
-			{
-				return shaderc_geometry_shader;
-			}
-
-			case ShaderStage::Fragment:
-			{
-				return shaderc_fragment_shader;
-			}
-
-			case ShaderStage::Compute:
-			{
-				return shaderc_compute_shader;
-			}
-
-			default:
-			{
-				Z_CORE_ASSERT(false, "Unrecognised shader stage");
-				break;
-			}
-			}
+			Z_CORE_ASSERT(false, "Unrecognised shader stage");
+			return shaderc_vertex_shader;
 		}
 
 		static ShaderDataType SPIRTypeToShaderDataType(spirv_cross::SPIRType type)
@@ -181,74 +144,34 @@ namespace Zahra
 					{
 						switch (type.basetype)
 						{
-							case spirv_cross::SPIRType::BaseType::Boolean:
-							{
-								return ShaderDataType::Bool;
-								break;
-							}
-							case spirv_cross::SPIRType::BaseType::Int:
-							{
-								return ShaderDataType::Int;
-								break;
-							}
-							case spirv_cross::SPIRType::BaseType::Float:
-							{
-								return ShaderDataType::Float;
-								break;
-							}
+							case spirv_cross::SPIRType::BaseType::Boolean:	return ShaderDataType::Bool;
+							case spirv_cross::SPIRType::BaseType::Int:		return ShaderDataType::Int;
+							case spirv_cross::SPIRType::BaseType::Float:	return ShaderDataType::Float;
 						}
-						break;
 					}
 					case 2:
 					{
 						switch (type.basetype)
 						{
-							case spirv_cross::SPIRType::BaseType::Int:
-							{
-								return ShaderDataType::Int2;
-								break;
-							}
-							case spirv_cross::SPIRType::BaseType::Float:
-							{
-								return ShaderDataType::Float2;
-								break;
-							}
+							case spirv_cross::SPIRType::BaseType::Int:		return ShaderDataType::Int2;
+							case spirv_cross::SPIRType::BaseType::Float:	return ShaderDataType::Float2;
 						}
-						break;
 					}
 					case 3:
 					{
 						switch (type.basetype)
 						{
-							case spirv_cross::SPIRType::BaseType::Int:
-							{
-								return ShaderDataType::Int3;
-								break;
-							}
-							case spirv_cross::SPIRType::BaseType::Float:
-							{
-								return ShaderDataType::Float3;
-								break;
-							}
+							case spirv_cross::SPIRType::BaseType::Int:		return ShaderDataType::Int3;
+							case spirv_cross::SPIRType::BaseType::Float:	return ShaderDataType::Float3;
 						}
-						break;
 					}
 					case 4:
 					{
 						switch (type.basetype)
 						{
-							case spirv_cross::SPIRType::BaseType::Int:
-							{
-								return ShaderDataType::Int4;
-								break;
-							}
-							case spirv_cross::SPIRType::BaseType::Float:
-							{
-								return ShaderDataType::Float4;
-								break;
-							}
+							case spirv_cross::SPIRType::BaseType::Int:		return ShaderDataType::Int4;
+							case spirv_cross::SPIRType::BaseType::Float:	return ShaderDataType::Float4;
 						}
-						break;
 					}
 				}
 			}
@@ -256,21 +179,9 @@ namespace Zahra
 			{
 				switch (type.columns)
 				{
-					case 2:
-					{
-						return ShaderDataType::Mat2;
-						break;
-					}
-					case 3:
-					{
-						return ShaderDataType::Mat3;
-						break;
-					}
-					case 4:
-					{
-						return ShaderDataType::Mat4;
-						break;
-					}
+					case 2:	return ShaderDataType::Mat2;
+					case 3:	return ShaderDataType::Mat3;
+					case 4:	return ShaderDataType::Mat4;
 				}
 			}
 			
@@ -282,65 +193,29 @@ namespace Zahra
 		{
 			switch (stage)
 			{
-			case ShaderStage::Vertex:
-			{
-				return VK_SHADER_STAGE_VERTEX_BIT;
+				case ShaderStage::Vertex:					return VK_SHADER_STAGE_VERTEX_BIT;
+				case ShaderStage::TesselationControl:		return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+				case ShaderStage::TesselationEvaluation:	return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+				case ShaderStage::Geometry:					return VK_SHADER_STAGE_GEOMETRY_BIT;
+				case ShaderStage::Fragment:					return VK_SHADER_STAGE_FRAGMENT_BIT;
+				case ShaderStage::Compute:					return VK_SHADER_STAGE_COMPUTE_BIT;
 			}
 
-			case ShaderStage::TesselationControl:
-			{
-				return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-			}
-
-			case ShaderStage::TesselationEvaluation:
-			{
-				return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-			}
-
-			case ShaderStage::Geometry:
-			{
-				return VK_SHADER_STAGE_GEOMETRY_BIT;
-			}
-
-			case ShaderStage::Fragment:
-			{
-				return VK_SHADER_STAGE_FRAGMENT_BIT;
-			}
-
-			case ShaderStage::Compute:
-			{
-				return VK_SHADER_STAGE_COMPUTE_BIT;
-			}
-
-			default:
-			{
-				Z_CORE_ASSERT(false, "Unrecognised shader stage");
-				break;
-			}
-			}
+			Z_CORE_ASSERT(false, "Unrecognised shader stage");
+			return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
 		}
 
 		static VkDescriptorType ShaderResourceTypeToVkDescriptorType(ShaderResourceType type)
 		{
 			switch (type)
 			{
-			case ShaderResourceType::UniformBuffer:
-			case ShaderResourceType::UniformBufferSet:
-			{
-				return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			}
-			case ShaderResourceType::StorageBuffer:
-			{
-				return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			}
-			case ShaderResourceType::Texture2D:
-			{
-				return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				case ShaderResourceType::UniformBuffer:		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				case ShaderResourceType::UniformBufferSet:	return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;					
+				case ShaderResourceType::StorageBuffer:		return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;					
+				case ShaderResourceType::Texture2D:			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;					
 			}
 
-			default: Z_CORE_ASSERT(false, "Unknown or unsupported ShaderResourceType"); break;
-			}
-
+			Z_CORE_ASSERT(false, "Unknown or unsupported ShaderResourceType");
 			return VK_DESCRIPTOR_TYPE_MAX_ENUM;
 		}
 

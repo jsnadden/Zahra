@@ -11,10 +11,10 @@ namespace Zahra
 	public:
 		virtual ~IndexBuffer() = default;
 
-		virtual void SetData(const uint32_t* data, uint64_t size) = 0;
+		virtual void SetData(const uint32_t* data, uint32_t size) = 0;
 
-		virtual uint64_t GetCount() const = 0;
+		virtual uint32_t GetCount() const = 0;
 
-		static Ref<IndexBuffer> Create(const uint32_t* indices, uint64_t count);
+		static Ref<IndexBuffer> Create(const uint32_t* indices, uint32_t count);
 	};
 }

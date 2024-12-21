@@ -190,7 +190,7 @@ namespace Zahra
 				bufferData.Binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 				bufferData.Stage = stage;
 				bufferData.ByteSize = compiler.get_declared_struct_size(bufferBaseType);
-				bufferData.MemberCount = bufferBaseType.member_types.size();
+				bufferData.MemberCount = (uint32_t)bufferBaseType.member_types.size();
 
 				if (!bufferType.array.empty()) bufferData.ArrayLength = bufferType.array[0]; // TODO: this only accounts for non-nested arrays
 
@@ -265,14 +265,14 @@ namespace Zahra
 
 		VkDevice& device = VulkanContext::GetCurrentVkDevice();
 
-		for (int i = 0; i < setCount; i++)
+		for (uint32_t frame = 0; frame < setCount; frame++)
 		{
 			VkDescriptorSetLayoutCreateInfo layoutInfo{};
 			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			layoutInfo.bindingCount = layoutBindings[i].size();
-			layoutInfo.pBindings = layoutBindings[i].data();
+			layoutInfo.bindingCount = (uint32_t)layoutBindings[frame].size();
+			layoutInfo.pBindings = layoutBindings[frame].data();
 
-			VulkanUtils::ValidateVkResult(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &m_DescriptorSetLayouts[i]));
+			VulkanUtils::ValidateVkResult(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &m_DescriptorSetLayouts[frame]));
 		}
 
 	}

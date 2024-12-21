@@ -21,14 +21,14 @@ namespace Zahra
         return nullptr;
 	}
 
-	Ref<Texture2D> Texture2D::CreateFromImage2D(const Ref<Image2D>& image)
+	Ref<Texture2D> Texture2D::CreateFromImage2D(Ref<Image2D>& image)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:    Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;
 		case RendererAPI::API::OpenGL:  Z_CORE_ASSERT(false, "RendererAPI::API::OpenGL is no longer supported"); return nullptr;
 		case RendererAPI::API::DX12:	Z_CORE_ASSERT(false, "RendererAPI::API::DX12 is not currently supported"); return nullptr;
-		case RendererAPI::API::Vulkan:	return Ref<VulkanTexture2D>::Create(image);
+		case RendererAPI::API::Vulkan:	return Ref<VulkanTexture2D>::Create(image.As<VulkanImage2D>());
 		}
 
 		Z_CORE_ASSERT(false, "Unknown RendererAPI::API");

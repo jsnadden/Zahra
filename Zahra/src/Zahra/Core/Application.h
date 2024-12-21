@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Zahra/Core/AppRequirements.h"
 #include "Zahra/Core/Defines.h"
 #include "Zahra/Core/LayerStack.h"
 #include "Zahra/Core/Window.h"
@@ -34,6 +33,17 @@ namespace Zahra
 			: Major(major), Minor(minor), Patch(patch) {}
 	};
 
+	struct GPURequirements
+	{
+		// choose default values to trivialise checks, and make sure to add the
+		// corresponding tests in VulkanSwapchain::MeetsMinimimumRequirements
+		
+		bool IsDiscreteGPU = false;
+		bool AnisotropicFiltering = false;
+
+		uint32_t MinBoundTextureSlots = 1;
+	};
+
 	struct ApplicationSpecification
 	{
 		std::string Name = "Zahra_App";
@@ -41,6 +51,8 @@ namespace Zahra
 
 		std::filesystem::path WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
+
+		float FramerateRefreshInterval = 1.0f;
 
 		RendererConfig RendererConfig;
 		GPURequirements GPURequirements;
@@ -63,6 +75,8 @@ namespace Zahra
 
 		static inline Application& Get() { return *s_Instance; }
 
+		float GetFramerate() { return m_Framerate; }
+
 		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 
 		inline Window& GetWindow() { return *m_Window; }
@@ -78,12 +92,13 @@ namespace Zahra
 
 		Scope<Window> m_Window;
 
-		ImGuiLayer* m_ImGuiLayer;
+		ImGuiLayer* m_ImGuiLayer = nullptr;
 
 		bool m_Running = true;
 		bool m_Minimised = false;
 
-		float m_PreviousFrameStartTime;
+		float m_PreviousFrameStartTime = .0f;
+		float m_Framerate = 0.0f;
 
 		LayerStack m_LayerStack;
 

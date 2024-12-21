@@ -12,7 +12,7 @@ namespace Zahra
 	{
 	public:
 		VulkanTexture2D(const Texture2DSpecification& specification, std::filesystem::path filepath);
-		VulkanTexture2D(const Ref<VulkanImage2D>& image);
+		VulkanTexture2D(Ref<VulkanImage2D>& image);
 		VulkanTexture2D(const Texture2DSpecification& specification, uint32_t colour);
 		virtual ~VulkanTexture2D() override;
 

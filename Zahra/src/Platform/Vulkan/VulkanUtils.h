@@ -9,8 +9,6 @@ namespace Zahra
 {
 	namespace VulkanUtils
 	{
-		// TODO: go through every use of this function and decide if it really needs
-		//  to end execution, or if it should just write an error to the log (i.e. setting crash = false)
 		static void ValidateVkResult(VkResult result, const std::string& errorMessage = "", bool crash = true)
 		{
 			if (crash)

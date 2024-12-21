@@ -80,16 +80,15 @@ namespace Zahra
 			"Vulkan command buffer failed to end recording");
 	}
 
-	void VulkanRendererAPI::BeginRenderPass(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager)
+	void VulkanRendererAPI::BeginRenderPass(Ref<RenderPass> renderPass)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
-		bool targetSwapchain = !vulkanRenderPass->GetSpecification().RenderTarget;
 		std::vector<VkClearValue> clearValues = vulkanRenderPass->GetClearValues();
 		VkExtent2D renderArea;
 
-		if (targetSwapchain)
+		if (vulkanRenderPass->TargetSwapchain())
 		{
 			if (m_Swapchain->Invalidated())
 			{
@@ -111,7 +110,7 @@ namespace Zahra
 		renderPassBeginInfo.renderArea.offset = { 0, 0 };
 		renderPassBeginInfo.renderArea.extent.width = renderArea.width;
 		renderPassBeginInfo.renderArea.extent.height = renderArea.height;
-		renderPassBeginInfo.clearValueCount = clearValues.size();
+		renderPassBeginInfo.clearValueCount = (uint32_t)clearValues.size();
 		renderPassBeginInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -132,10 +131,15 @@ namespace Zahra
 		scissor.extent = renderArea;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(), vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+		// TODO: give RenderPass its own resource manager, and bind its descriptor sets here
+		/*if (resourceManager)
+		{
+			auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
+			auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
+			uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
+				vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+		}*/
 	}
 
 	void VulkanRendererAPI::EndRenderPass()
@@ -148,16 +152,23 @@ namespace Zahra
 		m_Swapchain->PresentImage();			
 	}
 
-	void VulkanRendererAPI::DrawIndexed(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint64_t indexCount, uint64_t startingIndex)
+	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount, uint32_t startingIndex)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
+		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
 
 		VkBuffer vulkanVertexBufferArray[] = { vertexBuffer.As<VulkanVertexBuffer>()->GetVulkanBuffer() };
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vulkanVertexBufferArray, offsets);
 
 		VkBuffer vulkanIndexBuffer = indexBuffer.As<VulkanIndexBuffer>()->GetVulkanBuffer();
-		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);		
+		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
+		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
+		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
+			vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 
 		if (indexCount == 0)
 			indexCount = indexBuffer->GetCount() - startingIndex;
@@ -165,9 +176,10 @@ namespace Zahra
 		vkCmdDrawIndexed(commandBuffer, indexCount, 1, startingIndex, 0, 0);
 	}
 
-	void VulkanRendererAPI::DrawMesh(Ref<StaticMesh> mesh)
+	void VulkanRendererAPI::DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
+		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
 
 		VkBuffer vulkanVertexBufferArray[] = { mesh->GetVertexBuffer().As<VulkanVertexBuffer>()->GetVulkanBuffer()};
 		VkDeviceSize offsets[] = { 0 };
@@ -176,12 +188,26 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = mesh->GetIndexBuffer().As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
+		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
+		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
+		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
+			vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh->GetIndexBuffer()->GetCount(), 1, 0, 0, 0);
 	}
 
-	void VulkanRendererAPI::FinalDrawCall()
+	void VulkanRendererAPI::FinalDrawCall(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager)
 	{
-		vkCmdDraw(m_Swapchain->GetCurrentDrawCommandBuffer(), 3, 1, 0, 0);
+		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
+		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
+		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
+		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
+		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
+			vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+
+		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 	}
 
 }

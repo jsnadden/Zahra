@@ -13,6 +13,7 @@
 #include "Zahra/Core/MouseCodes.h"
 #include "Zahra/Core/Ref.h"
 #include "Zahra/Core/Scope.h"
+#include "Zahra/Core/Timer.h"
 
 //------------DEBUG--------------------
 #include "Zahra/Debug/Profiling.h"

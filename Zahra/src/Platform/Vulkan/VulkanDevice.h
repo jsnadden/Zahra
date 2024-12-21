@@ -10,13 +10,13 @@
 
 namespace Zahra
 {
-	enum class GPUQueueType
+	/*enum class GPUQueueType
 	{
 		Graphics,
 		Present,
 		Transfer,
 		Compute
-	};
+	};*/
 
 	struct QueueFamilyIndices
 	{
@@ -34,25 +34,18 @@ namespace Zahra
 			return GraphicsIndex.has_value() && PresentIndex.has_value();
 		}
 
-		const std::optional<uint32_t>& GetIndex(GPUQueueType queueType)
+		/*const std::optional<uint32_t>& GetIndex(GPUQueueType queueType)
 		{
 			switch (queueType)
 			{
-				case Zahra::GPUQueueType::Graphics:
-					return GraphicsIndex;
-				case Zahra::GPUQueueType::Present:
-					return PresentIndex;
-				case Zahra::GPUQueueType::Transfer:
-					return TransferIndex;
-				case Zahra::GPUQueueType::Compute:
-					return ComputeIndex;
-				default:
-					break;
+				case Zahra::GPUQueueType::Graphics:		return GraphicsIndex;
+				case Zahra::GPUQueueType::Present:		return PresentIndex;
+				case Zahra::GPUQueueType::Transfer:		return TransferIndex;
+				case Zahra::GPUQueueType::Compute:		return ComputeIndex;
 			}
 
 			Z_CORE_ASSERT(false, "Unrecognised GPUQueueType");
-			return std::optional<uint32_t>();
-		}
+		}*/
 
 	};
 
@@ -104,11 +97,11 @@ namespace Zahra
 		VkQueue m_TransferQueue = VK_NULL_HANDLE;
 		VkQueue m_ComputeQueue = VK_NULL_HANDLE;
 
-		QueueFamilyIndices m_QueueFamilyIndices;
-		VkPhysicalDeviceFeatures m_Features;
-		VkPhysicalDeviceProperties m_Properties;
-		VkPhysicalDeviceMemoryProperties m_MemoryProperties;
-		VulkanDeviceSwapchainSupport m_SwapchainSupport;
+		QueueFamilyIndices m_QueueFamilyIndices{};
+		VkPhysicalDeviceFeatures m_Features{};
+		VkPhysicalDeviceProperties m_Properties{};
+		VkPhysicalDeviceMemoryProperties m_MemoryProperties{};
+		VulkanDeviceSwapchainSupport m_SwapchainSupport{};
 
 		std::map<std::thread::id, VkCommandPool> m_CommandPools;
 

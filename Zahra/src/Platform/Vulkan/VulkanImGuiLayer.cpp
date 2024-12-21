@@ -55,7 +55,6 @@ namespace Zahra
 		ImGui_ImplGlfw_InitForVulkan(windowHandle, true);		
 
 		CreateDescriptorPool();
-		CreateDefaultRenderTarget();
 		CreateRenderPass();
 		CreateFramebuffer();
 
@@ -95,7 +94,7 @@ namespace Zahra
 		ImGui::DestroyContext();
 
 		DestroyFramebufferAndRenderPass();
-		m_RenderTarget.Reset();
+		//m_RenderTarget.Reset();
 		vkDestroyDescriptorPool(m_Swapchain->GetVkDevice(), m_DescriptorPool, nullptr);
 
 	}
@@ -123,23 +122,6 @@ namespace Zahra
 
 	void VulkanImGuiLayer::End()
 	{
-		/*if (m_Swapchain->Invalidated())
-		{
-			const auto& device = m_Swapchain->GetVkDevice();
-
-			vkDeviceWaitIdle(device);
-			vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
-
-			if (m_DefaultRenderTarget)
-			{
-				uint32_t width = m_Swapchain->GetWidth();
-				uint32_t height = m_Swapchain->GetHeight();
-				m_RenderTarget->Resize(width, height);
-			}
-
-			CreateFramebuffer();
-		}*/
-
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();
 		VkCommandBuffer commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
@@ -159,7 +141,7 @@ namespace Zahra
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.renderPass = m_RenderPass;
 		renderPassBeginInfo.framebuffer = m_Framebuffer;
-		renderPassBeginInfo.renderArea.extent = m_RenderTarget->GetDimensions();
+		renderPassBeginInfo.renderArea.extent = m_FramebufferSize;
 		renderPassBeginInfo.clearValueCount = 1;
 		renderPassBeginInfo.pClearValues = &clearColour;
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -216,17 +198,6 @@ namespace Zahra
 		vkFreeDescriptorSets(VulkanContext::GetCurrentVkDevice(), m_DescriptorPool, 1, &descriptorSet);
 	}
 
-	void VulkanImGuiLayer::SetRenderTarget(Ref<Image2D> renderTarget)
-	{
-		DestroyFramebufferAndRenderPass();
-
-		m_RenderTarget = renderTarget.As<VulkanImage2D>();
-		m_DefaultRenderTarget = false;
-
-		CreateRenderPass();
-		CreateFramebuffer();
-	}
-
 	bool VulkanImGuiLayer::OnWindowResizedEvent(WindowResizedEvent& event)
 	{
 		if (event.GetWidth() == 0 || event.GetHeight() == 0)
@@ -236,14 +207,6 @@ namespace Zahra
 
 		vkDeviceWaitIdle(device);
 		vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
-
-		if (m_DefaultRenderTarget)
-		{
-			uint32_t width = event.GetWidth();
-			uint32_t height = event.GetHeight();
-			m_RenderTarget->Resize(width, height);
-		}
-
 		CreateFramebuffer();
 		
 		return false;
@@ -260,7 +223,7 @@ namespace Zahra
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		poolInfo.maxSets = 10; // TODO: figure out how many descriptor sets I'll actually need in TOTAL
-		poolInfo.poolSizeCount = poolSizes.size();
+		poolInfo.poolSizeCount = (uint32_t)poolSizes.size();
 		poolInfo.pPoolSizes = poolSizes.data();
 
 		// TODO: VMA allocations
@@ -276,11 +239,11 @@ namespace Zahra
 		attachmentDescription.flags = 0;
 		attachmentDescription.format = VulkanUtils::VulkanFormat(ImageFormat::SRGBA);
 		attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-		attachmentDescription.loadOp = m_DefaultRenderTarget ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+		attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 		attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		attachmentDescription.initialLayout = m_DefaultRenderTarget ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 		VkAttachmentReference colourAttachmentRef{};
@@ -319,33 +282,26 @@ namespace Zahra
 		renderPassInfo.pAttachments = &attachmentDescription;
 		renderPassInfo.subpassCount = 1;
 		renderPassInfo.pSubpasses = &subpass;
-		renderPassInfo.dependencyCount = subpassDependencies.size();
+		renderPassInfo.dependencyCount = (uint32_t)subpassDependencies.size();
 		renderPassInfo.pDependencies = subpassDependencies.data();
 
 		VulkanUtils::ValidateVkResult(vkCreateRenderPass(m_Swapchain->GetVkDevice(), &renderPassInfo, nullptr, &m_RenderPass),
 			"Main render pass creation failed");
 	}
 
-	void VulkanImGuiLayer::CreateDefaultRenderTarget()
-	{
-		ImageSpecification imageSpec{};
-		imageSpec.Format = ImageFormat::SRGBA;
-		imageSpec.Width = m_Swapchain->GetWidth();
-		imageSpec.Height = m_Swapchain->GetHeight();
-		imageSpec.Sampled = true;
-
-		m_RenderTarget = Ref<VulkanImage2D>::Create(imageSpec);
-	}
-
 	void VulkanImGuiLayer::CreateFramebuffer()
 	{
+		Ref<VulkanImage2D> renderTarget = Renderer::GetRenderTarget().As<VulkanImage2D>();
+
+		m_FramebufferSize = { renderTarget->GetWidth(), renderTarget->GetHeight() };
+
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = m_RenderPass;
 		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = &m_RenderTarget->GetVkImageView();
-		framebufferInfo.width = m_RenderTarget->GetWidth();
-		framebufferInfo.height = m_RenderTarget->GetHeight();
+		framebufferInfo.pAttachments = &renderTarget->GetVkImageView();
+		framebufferInfo.width = renderTarget->GetWidth();
+		framebufferInfo.height = renderTarget->GetHeight();
 		framebufferInfo.layers = 1;
 
 		VulkanUtils::ValidateVkResult(vkCreateFramebuffer(m_Swapchain->GetVkDevice(), &framebufferInfo, nullptr, &m_Framebuffer),

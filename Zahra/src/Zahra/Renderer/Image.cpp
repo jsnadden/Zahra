@@ -6,7 +6,7 @@
 
 namespace Zahra
 {
-	Ref<Image2D> Image2D::Create(ImageSpecification specification)
+	Ref<Image2D> Image2D::Create(Image2DSpecification specification)
 	{
 		switch (Renderer::GetAPI())
 		{

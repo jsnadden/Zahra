@@ -100,13 +100,13 @@ namespace Zahra
 		m_Width = width;
 		m_Height = height;
 
-		VkDeviceSize size = width * height * VulkanUtils::BytesPerPixel(m_Format);
+		uint32_t size = width * height * VulkanUtils::BytesPerPixel(m_Format);
 		SetData((void*)imageData, size);
 
 		stbi_image_free(imageData);
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const Ref<VulkanImage2D>& image)
+	VulkanTexture2D::VulkanTexture2D(Ref<VulkanImage2D>& image)
 		: m_Image(image)
 	{
 		Z_CORE_ASSERT(image->GetSpecification().Sampled);
@@ -129,7 +129,7 @@ namespace Zahra
 		m_Width = 1;
 		m_Height = 1;
 
-		VkDeviceSize size = VulkanUtils::BytesPerPixel(m_Format);
+		uint32_t size = VulkanUtils::BytesPerPixel(m_Format);
 		SetData((void*)&colour, size);
 	}
 
@@ -185,7 +185,7 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////
 		// Create sampled image
-		ImageSpecification spec{};
+		Image2DSpecification spec{};
 		spec.Width = m_Width;
 		spec.Height = m_Height;
 		spec.Format = m_Format;

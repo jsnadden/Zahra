@@ -46,8 +46,9 @@ namespace Zahra
 
 	// TODO: make room for 3d images
 
-	struct ImageSpecification
+	struct Image2DSpecification
 	{
+		std::string Name; // for debugging
 		uint32_t Width, Height;
 		ImageFormat Format = ImageFormat::Unspecified;
 		bool Sampled;
@@ -61,13 +62,13 @@ namespace Zahra
 		
 		virtual ~Image2D() {}
 
-		virtual const ImageSpecification GetSpecification() const = 0;
+		virtual const Image2DSpecification GetSpecification() const = 0;
 		virtual const uint32_t GetWidth() const = 0;
 		virtual const uint32_t GetHeight() const = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-		static Ref<Image2D> Create(ImageSpecification specification);
+		static Ref<Image2D> Create(Image2DSpecification specification);
 
 	};
 

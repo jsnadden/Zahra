@@ -3,7 +3,7 @@
 
 namespace Zahra
 {
-	VulkanImage2D::VulkanImage2D(ImageSpecification specification)
+	VulkanImage2D::VulkanImage2D(Image2DSpecification specification)
 		: m_Specification(specification)
 	{
 		Init();

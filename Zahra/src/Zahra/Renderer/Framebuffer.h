@@ -20,7 +20,7 @@ namespace Zahra
 
 		ImageFormat Format = ImageFormat::Unspecified;
 
-		glm::vec3 ClearColour;
+		//glm::vec3 ClearColour;
 		AttachmentLoadOp LoadOp = AttachmentLoadOp::Unspecified;
 		AttachmentStoreOp StoreOp = AttachmentStoreOp::Unspecified;
 
@@ -29,8 +29,11 @@ namespace Zahra
 	
 	struct FramebufferSpecification
 	{
+		std::string Name; // for debugging
+
 		uint32_t Width, Height; // ignored if attachment is using a swapchain image
 
+		glm::vec3 ClearColour;
 		std::vector<AttachmentSpecification> ColourAttachmentSpecs;
 
 		bool HasDepthStencil = false;
@@ -50,8 +53,8 @@ namespace Zahra
 
 		virtual const FramebufferSpecification& GetSpecification() const = 0;
 
-		virtual const Ref<Image2D>& GetColourAttachment(uint32_t index) const = 0;
-		virtual const Ref<Image2D>& GetDepthStencilAttachment() const = 0;
+		virtual Ref<Image2D> GetColourAttachment(uint32_t index) const = 0;
+		virtual Ref<Image2D> GetDepthStencilAttachment() const = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 

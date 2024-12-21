@@ -28,6 +28,7 @@ Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
 	spec.Version = ApplicationVersion(0,1,0);
 	spec.WorkingDirectory = ".";
 	spec.CommandLineArgs = args;
+	spec.FramerateRefreshInterval = .2f;
 
 	spec.RendererConfig.ForceShaderCompilation = false;
 	spec.RendererConfig.MaximumBoundTextures = 32;

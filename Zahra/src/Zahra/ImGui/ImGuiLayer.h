@@ -27,7 +27,7 @@ namespace Zahra
 		virtual ImGuiTextureHandle RegisterTexture(Ref<Texture2D> texture) = 0;
 		virtual void DeregisterTexture(ImGuiTextureHandle textureHandle) = 0;
 
-		virtual void SetRenderTarget(Ref<Image2D> renderTarget) = 0;
+		//virtual void SetRenderTarget(Ref<Image2D> renderTarget) = 0;
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 

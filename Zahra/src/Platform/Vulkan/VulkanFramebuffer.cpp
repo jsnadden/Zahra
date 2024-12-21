@@ -47,13 +47,13 @@ namespace Zahra
 		DestroyAttachments();
 	}
 
-	const Ref<Image2D>& VulkanFramebuffer::GetColourAttachment(uint32_t index) const
+	Ref<Image2D> VulkanFramebuffer::GetColourAttachment(uint32_t index) const
 	{
 		Z_CORE_ASSERT(index < m_ColourAttachments.size(), "Invalid attachment index");
 		return m_ColourAttachments[index];
 	}
 
-	const Ref<Image2D>& VulkanFramebuffer::GetDepthStencilAttachment() const
+	Ref<Image2D> VulkanFramebuffer::GetDepthStencilAttachment() const
 	{
 		return m_DepthStencilAttachment;
 	}
@@ -77,13 +77,13 @@ namespace Zahra
 
 		for (auto& attachment : m_Specification.ColourAttachmentSpecs)
 		{
-			VkClearValue colour = { attachment.ClearColour.r, attachment.ClearColour.g, attachment.ClearColour.b, 1.0f };
+			VkClearValue colour = { m_Specification.ClearColour.r, m_Specification.ClearColour.g, m_Specification.ClearColour.b, 1.0f };
 			clearValues.push_back(colour);
 		}
 
 		if (m_Specification.HasDepthStencil)
 		{
-			VkClearValue depthStencil = { 1.0f, 0 };
+			VkClearValue depthStencil = { m_Specification.DepthClearValue, 0 };
 			clearValues.push_back(depthStencil);
 		}
 
@@ -127,7 +127,7 @@ namespace Zahra
 
 	void VulkanFramebuffer::CreateAttachments()
 	{
-		uint32_t colourAttachmentCount = m_Specification.ColourAttachmentSpecs.size();
+		uint32_t colourAttachmentCount = (uint32_t)m_Specification.ColourAttachmentSpecs.size();
 		m_ColourAttachments.resize(colourAttachmentCount);
 
 		for (uint32_t i = 0; i < colourAttachmentCount; i++)
@@ -181,11 +181,12 @@ namespace Zahra
 	{
 		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
-		ImageSpecification imageSpec{};
+		Image2DSpecification imageSpec{};
+		imageSpec.Name = m_Specification.Name + "[" + std::to_string(index) + "]";
 		imageSpec.Width = m_Specification.Width;
 		imageSpec.Height = m_Specification.Height;
 		imageSpec.Format = m_Specification.ColourAttachmentSpecs[index].Format;
-		imageSpec.Sampled = true; // for now
+		imageSpec.Sampled = true; // for now...
 
 		m_ColourAttachments[index] = Ref<VulkanImage2D>::Create(imageSpec);
 	}
@@ -194,7 +195,8 @@ namespace Zahra
 	{
 		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
-		ImageSpecification imageSpec{};
+		Image2DSpecification imageSpec{};
+		imageSpec.Name = m_Specification.Name + "[depth/stencil]";
 		imageSpec.Width = m_Specification.Width;
 		imageSpec.Height = m_Specification.Height;
 		imageSpec.Format = ImageFormat::DepthStencil;
