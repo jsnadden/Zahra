@@ -475,6 +475,8 @@ namespace Zahra
 	{
 		uint32_t frame = s_RendererAPI->GetCurrentFrameIndex();
 
+		s_RendererAPI->BeginRenderPass(s_Data.QuadRenderPass);
+
 		for (uint32_t batch = 0; batch <= s_Data.BatchIndex; batch++)
 		{
 			uint32_t dataSize = (uint32_t)((byte*)s_Data.QuadBatchEnds[batch] - (byte*)s_Data.QuadBatchStarts[batch]);
@@ -490,14 +492,16 @@ namespace Zahra
 				s_Data.QuadResourceManager->ProvideResource("u_Sampler", s_Data.TextureSlots[0]);
 
 				// TODO: compare this to moving the begin/end render pass outside of the for loop
-				s_RendererAPI->BeginRenderPass(s_Data.QuadRenderPass);
+				
 				s_RendererAPI->DrawIndexed(s_Data.QuadRenderPass, s_Data.QuadResourceManager, s_Data.QuadVertexBuffers[batch][frame], s_Data.QuadIndexBuffer, batchSize);
-				s_RendererAPI->EndRenderPass();
-
+				
 				s_Data.Stats.DrawCalls++;
 			}
 		}
+
+		s_RendererAPI->EndRenderPass();
 	}
+
 
 	void Renderer::Present()
 	{

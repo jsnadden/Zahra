@@ -38,7 +38,7 @@ void SandboxLayer::OnUpdate(float dt)
 	{
 		Zahra::Renderer::ClearPass();
 
-		int n = 20;
+		int n = 200;
 		float scale = 10.0f / n;
 
 		for (int i = 0; i < n; i++)
