@@ -64,7 +64,7 @@ namespace Zahra
 		std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts;
 
 		bool ReadShaderSource(ShaderStage stage);
-		void CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, const std::filesystem::path& cacheDirectory, bool debug, bool forceCompile);
+		void CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, bool debug, bool forceCompile);
 		void Reflect();
 		void CreateVertexLayout();
 		void CreateDescriptorSetLayouts();

@@ -13,19 +13,10 @@ namespace Zahra
 		{
 			switch (mode)
 			{
-				case TextureFilterMode::Nearest:
-				{
-					return VK_FILTER_NEAREST;
-					break;
-				}
-				case TextureFilterMode::Linear:
-				{
-					return VK_FILTER_LINEAR;
-					break;
-				}
-				default:
-					break;
+				case TextureFilterMode::Nearest:	return VK_FILTER_NEAREST;
+				case TextureFilterMode::Linear:		return VK_FILTER_LINEAR;
 			}
+
 			Z_CORE_ASSERT(false, "Unrecognised texture filtering mode");
 			return VK_FILTER_MAX_ENUM;
 		}
@@ -34,35 +25,19 @@ namespace Zahra
 		{
 			switch (mode)
 			{
-			case TextureWrapMode::Repeat:
-			{
-				return VK_SAMPLER_ADDRESS_MODE_REPEAT;
-				break;
+				case TextureWrapMode::Repeat:			return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+				case TextureWrapMode::MirroredRepeat:	return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+				case TextureWrapMode::ClampToEdge:		return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+				case TextureWrapMode::ClampToBorder:	return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 			}
-			case TextureWrapMode::MirroredRepeat:
-			{
-				return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-				break;
-			}
-			case TextureWrapMode::ClampToEdge:
-			{
-				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-				break;
-			}
-			case TextureWrapMode::ClampToBorder:
-			{
-				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-				break;
-			}
-			default:
-				break;
-			}
+
 			Z_CORE_ASSERT(false, "Unrecognised texture tiling mode");
 			return VK_SAMPLER_ADDRESS_MODE_MAX_ENUM;
 		}
 
 		uint32_t BytesPerPixel(ImageFormat format)
 		{
+			// TODO: fill this out
 			switch (format)
 			{
 				//case ImageFormat::R8_UN:				return
@@ -80,22 +55,25 @@ namespace Zahra
 				//case ImageFormat::B10R11G11_UF:		return
 				//case ImageFormat::DepthStencil:		return
 			}
+
 			Z_CORE_ASSERT(false, "Unsupported image format");
 			return VK_FORMAT_UNDEFINED;
 		}
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, std::filesystem::path filepath)
+	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, const std::string& filename)
 		: m_Specification(specification)
 	{
 		int width, height, channels;
+
+		std::filesystem::path filepath = Renderer::GetConfig().TextureSourceDirectory;
+		filepath /= filename;
 
 		stbi_uc* imageData = stbi_load(filepath.string().c_str(), &width, &height, &channels, 4);
 
 		Z_CORE_ASSERT(imageData, "Vulkan texture failed to load image.");
 
 		// TODO: to allow for hdr textures etc., stbi can query the image file to decide on a correct colour format
-		m_Format = ImageFormat::SRGBA;
 		m_Format = ImageFormat::SRGBA;
 		m_Width = width;
 		m_Height = height;

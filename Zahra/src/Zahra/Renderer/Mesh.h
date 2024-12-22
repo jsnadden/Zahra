@@ -22,10 +22,19 @@ namespace Zahra
 		}
 	};
 
+	enum class MeshFileFormat
+	{
+		fbx,
+		gltf, glb,
+		obj,
+		usd, usda, usdc, usdz
+	};
+
 	struct MeshSpecification
 	{
-		std::string Name;
-		std::filesystem::path Filepath;
+		std::string Name = "anonymous_mesh";
+		std::string SourceSubdirectory = "";
+		MeshFileFormat SourceType = MeshFileFormat::obj;
 	};
 
 	class StaticMesh : public RefCounted
@@ -36,12 +45,9 @@ namespace Zahra
 		virtual Ref<VertexBuffer> GetVertexBuffer() = 0;
 		virtual Ref<IndexBuffer> GetIndexBuffer() = 0;
 
-
 		static Ref<StaticMesh> Create(MeshSpecification specification);
 
-	private:
-
-
+		static const std::string Filepath(const MeshSpecification& specification);
 	};
 
 }
@@ -60,5 +66,4 @@ namespace std
 				(hash<glm::vec2>()(vertex.TextureCoordinates) << 1);
 		}
 	};
-
 }

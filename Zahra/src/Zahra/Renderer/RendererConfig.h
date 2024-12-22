@@ -10,14 +10,17 @@ namespace Zahra
 		uint32_t FramesInFlight = 3;
 
 		// Shaders
-		std::filesystem::path ShaderPath = "Resources/Shaders";
 		bool ForceShaderCompilation = false;
 
-		// Textures
-		uint32_t MaximumBoundTextures = 32;
-
 		// 2d batch renderer
-		//uint32_t MaxBatchSize = 10000;
+		uint32_t MaxBatchSize = 10000;
+		uint32_t MaxTextureSlots = 32;
+
+		// TODO: these really belong in an AssetManagerConfig
+		std::filesystem::path ShaderSourceDirectory		= "Resources/Shaders";
+		std::filesystem::path ShaderCacheDirectory		= "Cache/Shaders";
+		std::filesystem::path MeshSourceDirectory		= "Assets/Models";
+		std::filesystem::path TextureSourceDirectory	= "Assets/Textures";
 	};
 
 }

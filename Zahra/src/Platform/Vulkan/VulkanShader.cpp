@@ -12,8 +12,6 @@
 
 namespace Zahra
 {
-	
-
 	VulkanShader::VulkanShader(ShaderSpecification& specification, bool forceCompile)
 		: m_Specification(specification)
 	{
@@ -32,12 +30,10 @@ namespace Zahra
 			throw std::runtime_error(errorMessage);
 		}
 
-		std::filesystem::path cacheDirectory = VulkanUtils::GetSPIRVCachePath();
-		
 		Timer shaderCreationTimer;
 		{
-			CompileOrGetSPIRV(m_SPIRVBytecode, cacheDirectory, false, forceCompile);
-			CompileOrGetSPIRV(m_SPIRVBytecode_Debug, cacheDirectory, true, forceCompile);
+			CompileOrGetSPIRV(m_SPIRVBytecode, false, forceCompile);
+			CompileOrGetSPIRV(m_SPIRVBytecode_Debug, true, forceCompile);
 			CreateModules();
 		}
 		Z_CORE_TRACE("Shader '{0}' took {1} ms to load/compile", m_Specification.Name, shaderCreationTimer.ElapsedMillis());
@@ -65,7 +61,7 @@ namespace Zahra
 
 	bool VulkanShader::ReadShaderSource(ShaderStage stage)
 	{
-		std::filesystem::path sourceFilepath = Application::Get().GetSpecification().RendererConfig.ShaderPath;
+		std::filesystem::path sourceFilepath = Application::Get().GetSpecification().RendererConfig.ShaderSourceDirectory;
 		if (!m_Specification.SourceSubdirectory.empty())
 			sourceFilepath /= m_Specification.SourceSubdirectory;
 		sourceFilepath /= GetSourceFilename(stage);
@@ -90,7 +86,7 @@ namespace Zahra
 		return true;
 	}
 
-	void VulkanShader::CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, const std::filesystem::path& cacheDirectory, bool debug, bool forceCompile)
+	void VulkanShader::CompileOrGetSPIRV(std::unordered_map<ShaderStage, std::vector<uint32_t>>& bytecode, bool debug, bool forceCompile)
 	{
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
@@ -113,6 +109,11 @@ namespace Zahra
 			std::filesystem::path spirvFilename = m_Specification.Name + "_" + VulkanUtils::ShaderStageToFileExtension(stage);
 			if (debug) spirvFilename += "_debug";
  			spirvFilename += ".spv";
+
+			std::filesystem::path cacheDirectory = Renderer::GetConfig().ShaderCacheDirectory;
+			if (!m_Specification.SourceSubdirectory.empty())
+				cacheDirectory /= m_Specification.SourceSubdirectory;
+
 			std::filesystem::path spirvFilepath = cacheDirectory / spirvFilename;
 
 			std::ifstream filestream(spirvFilepath, std::ios::in | std::ios::binary | std::ios::ate);

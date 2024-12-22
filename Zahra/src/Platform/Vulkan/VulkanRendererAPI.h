@@ -6,7 +6,6 @@
 
 namespace Zahra
 {
-
 	class VulkanRendererAPI : public RendererAPI
 	{
 	public:
@@ -29,13 +28,13 @@ namespace Zahra
 
 		virtual void Present() override;
 
-		virtual void BeginRenderPass(Ref<RenderPass> renderPass) override;
+		virtual void BeginRenderPass(Ref<RenderPass>& renderPass) override;
 		virtual void EndRenderPass() override;
 
-		virtual void DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0) override;
-		virtual void DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh) override;
+		virtual void DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0) override;
+		virtual void DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh) override;
 
-		virtual void FinalDrawCall(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager) override;
+		virtual void DrawToSwapchain(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager) override;
 
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;
@@ -43,5 +42,4 @@ namespace Zahra
 
 		uint32_t m_FramesInFlight;
 	};
-
 }

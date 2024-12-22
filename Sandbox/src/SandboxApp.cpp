@@ -17,8 +17,6 @@ public:
 	{
 
 	}
-
-
 };
 
 Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
@@ -31,7 +29,6 @@ Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
 	spec.FramerateRefreshInterval = .2f;
 
 	spec.RendererConfig.ForceShaderCompilation = false;
-	spec.RendererConfig.MaximumBoundTextures = 32;
 
 	spec.GPURequirements.IsDiscreteGPU = true;
 	spec.GPURequirements.AnisotropicFiltering = true;

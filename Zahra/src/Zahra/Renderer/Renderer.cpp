@@ -5,7 +5,6 @@
 #include "Zahra/Renderer/IndexBuffer.h"
 #include "Zahra/Renderer/Mesh.h"
 #include "Zahra/Renderer/RenderPass.h"
-#include "Zahra/Renderer/RendererTypes.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/ShaderResourceManager.h"
 #include "Zahra/Renderer/UniformBuffer.h"
@@ -17,8 +16,6 @@
 
 namespace Zahra
 {
-
-	// TEMPORARY
 	struct TestTransforms
 	{
 		glm::mat4 Model;
@@ -28,125 +25,58 @@ namespace Zahra
 
 	struct RendererData
 	{
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// GENERAL
 		RendererConfig Config;
+		bool ConfigSet = false;
 
-		const uint32_t MaxBatchSize = 10000; // TODO: move to Config
-		const uint32_t MaxQuadVerticesPerBatch = MaxBatchSize * 4;
-		const uint32_t MaxQuadIndicesPerBatch = MaxBatchSize * 6;
+		Ref<Image2D>					RenderTarget;
+		Ref<Framebuffer>				LoadPassFramebuffer;
+		Ref<Framebuffer>				ClearPassFramebuffer;
+		// TODO: find a less stupid way to clear the rendertarget
+		Ref<VertexBuffer>				ClearVertexBuffer;
+		Ref<IndexBuffer>				ClearIndexBuffer;
 
-		Renderer::Statistics Stats;
+		Ref<Shader>						FullscreenTriangleShader;
+		Ref<ShaderResourceManager>		FullscreenTriangleResourceManager;
+		Ref<RenderPass>					FullscreenTriangleRenderPass;
+		Ref<Texture2D>					FullscreenTriangleTexture;
 
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// FRAMEBUFFERS
-		Ref<Image2D> RenderTarget;
-		Ref<Framebuffer> ClearPassFramebuffer, LoadPassFramebuffer;
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CAMERA
-		struct CameraData
-		{
-			glm::mat4 View = glm::mat4(1.0f);
-			glm::mat4 Projection = glm::mat4(1.0f);
-		};
-
-		// TODO: uniform buffer vs push constants for camera
-		CameraData CameraBuffer{};
-		Ref<UniformBufferSet> CameraUniformBuffers;
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// TEST
-		Ref<Shader> TestShader;
-		Ref<ShaderResourceManager> TestResourceManager;
-		Ref<RenderPass> TestRenderPass;
-		Ref<StaticMesh> TestMesh;
-		Ref<Texture2D> TestTexture;
-		Ref<UniformBufferSet> TestUniformBuffers;
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CLEAR PASS (lazy placeholder until I have render passes prior to quads)
-		Ref<VertexBuffer> ClearVertex;
-		Ref<IndexBuffer> ClearIndices;
-		
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// QUADS
-		std::vector<Ref<Texture2D>> TextureSlots;
-		// TODO: do I need this index?
-		uint32_t CurrentTextureSlotIndex = 1; // start at 1, because slot 0 will be our default 1x1 white texture
-
-		Ref<Shader> QuadShader;
-		Ref<ShaderResourceManager> QuadResourceManager;
-		Ref<RenderPass> QuadRenderPass;
-
-		std::vector<std::vector<Ref<VertexBuffer>>>	QuadVertexBuffers; // indexed by (batch, frame)
-		std::vector<QuadVertex*> QuadBatchStarts;
-		std::vector<QuadVertex*> QuadBatchEnds;
-		uint32_t BatchIndex = 0;
-
-		Ref<IndexBuffer> QuadIndexBuffer;
-		uint32_t QuadIndexCount = 0;
-
-		glm::vec4 QuadPositions[4]{};
-		glm::vec2 QuadTextureCoords[4]{};
-
-#pragma region(RESSURECT CIRCLES/LINES)
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CIRCLES
-		//Ref<VertexArray>	CircleVertexArray;
-		//Ref<VertexBuffer>	CircleVertexBuffer;
-		//Ref<Shader>			CircleShader;
-
-		//uint32_t			CircleIndexCount = 0;
-		//CircleVertex*		CircleVertexBufferBase = nullptr;
-		//CircleVertex*		CircleVertexBufferPtr = nullptr;
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// LINES
-		//Ref<VertexArray>	LineVertexArray;
-		//Ref<VertexBuffer>	LineVertexBuffer;
-		//Ref<Shader>			LineShader;
-
-		//uint32_t			LineVertexCount = 0;
-		//LineVertex*			LineVertexBufferBase = nullptr;
-		//LineVertex*			LineVertexBufferPtr = nullptr;
-
-		//float LineThickness = 2.f;
-#pragma endregion
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// SWAPCHAIN RENDERING
-		Ref<Shader> SwapchainShader;
-		Ref<ShaderResourceManager> SwapchainResourceManager;
-		Ref<RenderPass> SwapchainRenderPass;
-		Ref<Texture2D> SwapchainTexture;
-		
+		Ref<Shader>						TestSceneShader;
+		Ref<ShaderResourceManager>		TestSceneResourceManager;
+		Ref<RenderPass>					TestSceneRenderPass;
+		Ref<StaticMesh>					TestSceneMesh;
+		Ref<Texture2D>					TestSceneTexture;
+		Ref<UniformBufferSet>			TestSceneUniformBuffers;
 	};
 
 	static RendererData s_Data;
 
 	static RendererAPI* s_RendererAPI;
 
+	// TODO: Add a render command queue! Most of the static methods here can simply add the relevant s_RendererAPI
+	// call to the queue, but also add a new method Submit(std::function<void>()) to queue external commands
+
 	void Renderer::Init()
 	{
 		s_RendererAPI = RendererAPI::Create();
 		s_RendererAPI->Init();
 
-		uint32_t framesInFlight = s_RendererAPI->GetFramesInFlight();
+		std::filesystem::path cache = s_Data.Config.ShaderCacheDirectory;
+		if (!std::filesystem::exists(cache))
+			std::filesystem::create_directories(cache);
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// FRAMEBUFFERS
+		// RENDER TARGET
 		{
-			Image2DSpecification defaultRenderTargetSpec{};
-			defaultRenderTargetSpec.Name = "default_render_target";
-			defaultRenderTargetSpec.Format = ImageFormat::SRGBA;
-			defaultRenderTargetSpec.Width = s_RendererAPI->GetSwapchainWidth();
-			defaultRenderTargetSpec.Height = s_RendererAPI->GetSwapchainHeight();
-			defaultRenderTargetSpec.Sampled = true;
-			s_Data.RenderTarget = Image2D::Create(defaultRenderTargetSpec);
+			Image2DSpecification imageSpec{};
+			imageSpec.Name = "Renderer_RenderTarget";
+			imageSpec.Format = ImageFormat::SRGBA;
+			imageSpec.Width = s_RendererAPI->GetSwapchainWidth();
+			imageSpec.Height = s_RendererAPI->GetSwapchainHeight();
+			imageSpec.Sampled = true;
+			s_Data.RenderTarget = Image2D::Create(imageSpec);
 
 			FramebufferSpecification framebufferSpec{};
-			framebufferSpec.Name = "clear_framebuffer";
+			framebufferSpec.Name = "Renderer_Clear";
 			framebufferSpec.Width = s_RendererAPI->GetSwapchainWidth();
 			framebufferSpec.Height = s_RendererAPI->GetSwapchainHeight();
 			framebufferSpec.ClearColour = { .0f, .0f, .0f };
@@ -166,7 +96,7 @@ namespace Zahra
 			}
 			s_Data.ClearPassFramebuffer = Framebuffer::Create(framebufferSpec);
 
-			framebufferSpec.Name = "load_framebuffer";
+			framebufferSpec.Name = "Renderer_Load";
 			{
 				framebufferSpec.ColourAttachmentSpecs[0].LoadOp = AttachmentLoadOp::Load;
 			}
@@ -177,238 +107,99 @@ namespace Zahra
 			s_Data.LoadPassFramebuffer = Framebuffer::Create(framebufferSpec);
 		}
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CAMERA
-		{
-			s_Data.CameraUniformBuffers = UniformBufferSet::Create(sizeof(RendererData::CameraData), framesInFlight);
-
-			RendererData::CameraData cameraData{};
-			for (uint32_t frame = 0; frame < framesInFlight; frame++)
-				s_Data.CameraUniformBuffers->SetData(frame, &cameraData, sizeof(RendererData::CameraData));
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// TEST
-		{
-			ShaderSpecification testShaderSpec{};
-			testShaderSpec.Name = "vulkan_tutorial";
-			s_Data.TestShader = Shader::Create(testShaderSpec);
-
-			ShaderResourceManagerSpecification testResourceManagerSpec{};
-			testResourceManagerSpec.Shader = s_Data.TestShader;
-			testResourceManagerSpec.FirstSet = 0;
-			testResourceManagerSpec.LastSet = 0;
-			s_Data.TestResourceManager = ShaderResourceManager::Create(testResourceManagerSpec);
-
-			RenderPassSpecification testRenderPassSpecification{};
-			testRenderPassSpecification.Name = "test_pass";
-			testRenderPassSpecification.Shader = s_Data.TestShader;
-			testRenderPassSpecification.RenderTarget = s_Data.ClearPassFramebuffer;
-			testRenderPassSpecification.Topology = PrimitiveTopology::Triangles;
-			testRenderPassSpecification.BackfaceCulling = true;
-			s_Data.TestRenderPass = RenderPass::Create(testRenderPassSpecification);
-
-			MeshSpecification tutorialMeshSpecification{};
-			tutorialMeshSpecification.Name = "viking_room.obj";
-			tutorialMeshSpecification.Filepath = "Assets/Models/viking_room.obj";
-			s_Data.TestMesh = StaticMesh::Create(tutorialMeshSpecification);
-
-			uint32_t mvpSize = sizeof(TestTransforms);
-
-			s_Data.TestUniformBuffers = UniformBufferSet::Create(mvpSize, framesInFlight);
-
-			TestTransforms transforms{};
-			for (uint32_t frame = 0; frame < framesInFlight; frame++)
-				s_Data.TestUniformBuffers->SetData(frame, &transforms, mvpSize);
-
-			Texture2DSpecification tutorialTextureSpec{};
-			s_Data.TestTexture = Texture2D::CreateFromFile(tutorialTextureSpec, "Assets/Textures/viking_room.png");
-
-			s_Data.TestResourceManager->ProvideResource("Matrices", s_Data.TestUniformBuffers);
-			s_Data.TestResourceManager->ProvideResource("u_Texture", s_Data.TestTexture);
-			s_Data.TestResourceManager->Bake();
-		}
-
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CLEAR PASS
 		{
-			/*Ref<VertexBuffer> ClearVertex;
-			Ref<IndexBuffer> ClearIndices;*/
-
 			MeshVertex vertex = { {.0f, .0f, 1000.0f}, {.0f, .0f, .0f}, {.0f, .0f} };
-			s_Data.ClearVertex = VertexBuffer::Create(&vertex, sizeof(MeshVertex));
+			s_Data.ClearVertexBuffer = VertexBuffer::Create(&vertex, sizeof(MeshVertex));
+
 			uint32_t indices[3] = { 0,0,0 };
-			s_Data.ClearIndices = IndexBuffer::Create(indices, 3);
-		}
+			s_Data.ClearIndexBuffer = IndexBuffer::Create(indices, 3);
+		}		
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// QUADS
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// FINAL PASS
 		{
-			s_Data.TextureSlots.resize(s_Data.Config.MaximumBoundTextures);
+			ShaderSpecification shaderSpec{};
+			shaderSpec.Name = "fullscreen_triangle";
+			s_Data.FullscreenTriangleShader = Shader::Create(shaderSpec);
 
-			Texture2DSpecification flatWhite{};
-			s_Data.TextureSlots[0] = Texture2D::CreateFlatColourTexture(flatWhite, 0xffffffff);
+			ShaderResourceManagerSpecification resourceManagerSpec{};
+			resourceManagerSpec.Shader = s_Data.FullscreenTriangleShader;
+			resourceManagerSpec.FirstSet = 0;
+			resourceManagerSpec.LastSet = 0;
+			s_Data.FullscreenTriangleResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
-			// TODO: setup Shader reflection and ShaderResourceManager to be capable of using arrays
-			// of textures... until that's set up we'll just use slot 0 (a single pure white pixel)
+			RenderPassSpecification renderPassSpec{};
+			renderPassSpec.Name = "Renderer_FullscreenTriangle";
+			renderPassSpec.Shader = s_Data.FullscreenTriangleShader;
+			renderPassSpec.Topology = PrimitiveTopology::Triangles;
+			renderPassSpec.BackfaceCulling = false;
+			s_Data.FullscreenTriangleRenderPass = RenderPass::Create(renderPassSpec);
 
-			ShaderSpecification quadShaderSpec{};
-			quadShaderSpec.Name = "quad";
-			s_Data.QuadShader = Shader::Create(quadShaderSpec, s_Data.Config.ForceShaderCompilation);
-			// TODO: obtain Shaders from a Shaderlibrary instead of directly constructing them here
+			s_Data.FullscreenTriangleTexture = Texture2D::CreateFromImage2D(s_Data.LoadPassFramebuffer->GetColourAttachment(0));
 
-			ShaderResourceManagerSpecification quadResourceManagerSpec{};
-			quadResourceManagerSpec.Shader = s_Data.QuadShader;
-			quadResourceManagerSpec.FirstSet = 0;
-			quadResourceManagerSpec.LastSet = 0;
-			s_Data.QuadResourceManager = ShaderResourceManager::Create(quadResourceManagerSpec);
-
-			s_Data.QuadResourceManager->ProvideResource("Camera", s_Data.CameraUniformBuffers);
-			s_Data.QuadResourceManager->ProvideResource("u_Sampler", s_Data.TextureSlots[0]);
-			s_Data.QuadResourceManager->Bake();
-
-			RenderPassSpecification quadRenderPassSpec{};
-			quadRenderPassSpec.Name = "quad_pass";
-			quadRenderPassSpec.Shader = s_Data.QuadShader;
-			quadRenderPassSpec.RenderTarget = s_Data.LoadPassFramebuffer;
-			quadRenderPassSpec.Topology = PrimitiveTopology::Triangles;
-			quadRenderPassSpec.BackfaceCulling = false;
-			s_Data.QuadRenderPass = RenderPass::Create(quadRenderPassSpec);
-
-			s_Data.QuadVertexBuffers.resize(1);
-			s_Data.QuadVertexBuffers[0].resize(framesInFlight);
-			for (uint32_t frame = 0; frame < framesInFlight; frame++)
-			{
-				s_Data.QuadVertexBuffers[0][frame] = VertexBuffer::Create(s_Data.MaxQuadVerticesPerBatch * sizeof(QuadVertex));
-			}
-
-			s_Data.QuadBatchStarts.resize(1);
-			s_Data.QuadBatchEnds.resize(1);
-			s_Data.QuadBatchStarts[0] = znew QuadVertex[s_Data.MaxQuadVerticesPerBatch];
-
-			uint32_t* quadIndices = znew uint32_t[s_Data.MaxQuadIndicesPerBatch];
-			uint32_t offset = 0;
-			for (uint32_t i = 0; i < s_Data.MaxQuadIndicesPerBatch; i += 6)
-			{
-				quadIndices[i + 0] = offset + 0;
-				quadIndices[i + 1] = offset + 1;
-				quadIndices[i + 2] = offset + 2;
-
-				quadIndices[i + 3] = offset + 2;
-				quadIndices[i + 4] = offset + 3;
-				quadIndices[i + 5] = offset + 0;
-
-				offset += 4;
-			}
-			s_Data.QuadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxQuadIndicesPerBatch);
-			delete[] quadIndices;
-
-			s_Data.QuadIndexCount = 0;
-
-			s_Data.QuadPositions[0] = { -.5f, -.5f, .0f, 1.0f };
-			s_Data.QuadPositions[1] = {  .5f, -.5f, .0f, 1.0f };
-			s_Data.QuadPositions[2] = {  .5f,  .5f, .0f, 1.0f };
-			s_Data.QuadPositions[3] = { -.5f,  .5f, .0f, 1.0f };
-
-			s_Data.QuadTextureCoords[0] = { 0.0f, 0.0f };
-			s_Data.QuadTextureCoords[1] = { 1.0f, 0.0f };
-			s_Data.QuadTextureCoords[2] = { 1.0f, 1.0f };
-			s_Data.QuadTextureCoords[3] = { 0.0f, 1.0f };
-		}
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CIRCLES
-		{
-			// TODO:
-		}
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// LINES
-		{
-			// TODO:
+			s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.FullscreenTriangleTexture);
+			s_Data.FullscreenTriangleResourceManager->Bake();
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// SWAPCHAIN
+		// TEST SCENE
 		{
-			ShaderSpecification swapchainShaderSpec{};
-			swapchainShaderSpec.Name = "fullscreen_triangle";
-			s_Data.SwapchainShader = Shader::Create(swapchainShaderSpec);
+			ShaderSpecification shaderSpec{};
+			shaderSpec.Name = "vulkan_tutorial";
+			s_Data.TestSceneShader = Shader::Create(shaderSpec);
 
-			ShaderResourceManagerSpecification swapchainResourceManagerSpec{};
-			swapchainResourceManagerSpec.Shader = s_Data.SwapchainShader;
-			swapchainResourceManagerSpec.FirstSet = 0;
-			swapchainResourceManagerSpec.LastSet = 0;
-			s_Data.SwapchainResourceManager = ShaderResourceManager::Create(swapchainResourceManagerSpec);
+			ShaderResourceManagerSpecification resourceManagerSpec{};
+			resourceManagerSpec.Shader = s_Data.TestSceneShader;
+			resourceManagerSpec.FirstSet = 0;
+			resourceManagerSpec.LastSet = 0;
+			s_Data.TestSceneResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
-			RenderPassSpecification swapchainRenderPassSpec{};
-			swapchainRenderPassSpec.Name = "swapchain_pass";
-			swapchainRenderPassSpec.Shader = s_Data.SwapchainShader;
-			swapchainRenderPassSpec.Topology = PrimitiveTopology::Triangles;
-			swapchainRenderPassSpec.BackfaceCulling = false;
-			s_Data.SwapchainRenderPass = RenderPass::Create(swapchainRenderPassSpec);
+			RenderPassSpecification renderPassSpec{};
+			renderPassSpec.Name = "Renderer_TestScene";
+			renderPassSpec.Shader = s_Data.TestSceneShader;
+			renderPassSpec.RenderTarget = s_Data.ClearPassFramebuffer;
+			renderPassSpec.Topology = PrimitiveTopology::Triangles;
+			renderPassSpec.BackfaceCulling = false;
+			s_Data.TestSceneRenderPass = RenderPass::Create(renderPassSpec);
 
-			// TODO: set this image externally?
-			s_Data.SwapchainTexture = Texture2D::CreateFromImage2D(s_Data.LoadPassFramebuffer->GetColourAttachment(0));
+			MeshSpecification meshSpec{};
+			meshSpec.Name = "viking_room";
+			s_Data.TestSceneMesh = StaticMesh::Create(meshSpec);
 
-			s_Data.SwapchainResourceManager->ProvideResource("u_Sampler", s_Data.SwapchainTexture);
-			s_Data.SwapchainResourceManager->Bake();
+			uint32_t framesInFlight = s_RendererAPI->GetFramesInFlight();
+			uint32_t mvpSize = sizeof(TestTransforms);
+			s_Data.TestSceneUniformBuffers = UniformBufferSet::Create(mvpSize, framesInFlight);
+			TestTransforms transforms{};
+			for (uint32_t frame = 0; frame < framesInFlight; frame++)
+				s_Data.TestSceneUniformBuffers->SetData(frame, &transforms, mvpSize);
 
+			Texture2DSpecification tutorialTextureSpec{};
+			s_Data.TestSceneTexture = Texture2D::CreateFromFile(tutorialTextureSpec, "viking_room.png");
+
+			s_Data.TestSceneResourceManager->ProvideResource("Matrices", s_Data.TestSceneUniformBuffers);
+			s_Data.TestSceneResourceManager->ProvideResource("u_Texture", s_Data.TestSceneTexture);
+			s_Data.TestSceneResourceManager->Bake();
 		}
-
 	}
 
 	void Renderer::Shutdown()
 	{
-		uint32_t framesInFlight = GetFramesInFlight();
+		s_Data.TestSceneTexture.Reset();
+		s_Data.TestSceneUniformBuffers.Reset();
+		s_Data.TestSceneMesh.Reset();
+		s_Data.TestSceneRenderPass.Reset();
+		s_Data.TestSceneResourceManager.Reset();
+		s_Data.TestSceneShader.Reset();
 
-		s_Data.SwapchainTexture.Reset();
-		s_Data.SwapchainRenderPass.Reset();
-		s_Data.SwapchainResourceManager.Reset();
-		s_Data.SwapchainShader.Reset();
+		s_Data.FullscreenTriangleTexture.Reset();
+		s_Data.FullscreenTriangleRenderPass.Reset();
+		s_Data.FullscreenTriangleResourceManager.Reset();
+		s_Data.FullscreenTriangleShader.Reset();
 
-		// TODO: cleanup circle and line data
-
-		s_Data.QuadIndexBuffer.Reset();
-
-		s_Data.QuadBatchEnds.clear();
-		for (auto batch : s_Data.QuadBatchStarts)
-		{
-			zdelete[] batch;
-		}
-		s_Data.QuadBatchStarts.clear();
-
-		for (auto batch : s_Data.QuadVertexBuffers)
-		{
-			for (uint32_t frame = 0; frame < framesInFlight; frame++)
-			{
-				batch[frame].Reset();
-			}
-			batch.clear();
-		}
-		s_Data.QuadVertexBuffers.clear();
-		
-		s_Data.QuadRenderPass.Reset();
-		s_Data.QuadResourceManager.Reset();
-		s_Data.QuadShader.Reset();
-
-		for (auto texture : s_Data.TextureSlots)
-		{
-			texture.Reset();
-		}
-		s_Data.TextureSlots.clear();
-
-		s_Data.ClearIndices.Reset();
-		s_Data.ClearVertex.Reset();
-
-		s_Data.TestUniformBuffers.Reset();
-		s_Data.TestTexture.Reset();
-		s_Data.TestMesh.Reset();
-		s_Data.TestRenderPass.Reset();
-		s_Data.TestResourceManager.Reset();
-		s_Data.TestShader.Reset();
-
-		s_Data.CameraUniformBuffers.Reset();
+		s_Data.ClearIndexBuffer.Reset();
+		s_Data.ClearVertexBuffer.Reset();
 
 		s_Data.LoadPassFramebuffer.Reset();
 		s_Data.ClearPassFramebuffer.Reset();
@@ -417,91 +208,86 @@ namespace Zahra
 		s_RendererAPI->Shutdown();
 	}
 
-	RendererConfig& Renderer::GetConfig()
+	const RendererConfig& Renderer::GetConfig()
 	{
+		Z_CORE_ASSERT(s_Data.ConfigSet, "Renderer configuration has not been set");
 		return s_Data.Config;
 	}
 
 	void Renderer::SetConfig(const RendererConfig& config)
 	{
+		Z_CORE_ASSERT(!s_Data.ConfigSet, "Renderer configuration already set");
+		s_Data.ConfigSet = true;
+
 		s_Data.Config = config;
+	}
+
+	uint32_t Renderer::GetSwapchainWidth()
+	{
+		return s_RendererAPI->GetSwapchainWidth();
+	}
+
+	uint32_t Renderer::GetSwapchainHeight()
+	{
+		return s_RendererAPI->GetSwapchainHeight();
+	}
+
+	uint32_t Renderer::GetFramesInFlight()
+	{
+		return s_RendererAPI->GetFramesInFlight();
+	}
+
+	uint32_t Renderer::GetCurrentFrameIndex()
+	{
+		return s_RendererAPI->GetCurrentFrameIndex();
+	}
+
+	const Ref<Image2D>& Renderer::GetRenderTarget()
+	{
+		return s_Data.RenderTarget;
+	}
+
+	const Ref<Framebuffer>& Renderer::GetLoadPassFramebuffer()
+	{
+		return s_Data.LoadPassFramebuffer;
 	}
 
 	void Renderer::BeginFrame()
 	{
 		s_RendererAPI->BeginFrame();
+		
+		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
+
+		// TODO: rework clear pass, this is confusing and slow
+		{
+			TestTransforms transforms{};
+			s_Data.TestSceneUniformBuffers->SetData(frameIndex, &transforms, sizeof(TestTransforms));
+
+			s_RendererAPI->BeginRenderPass(s_Data.TestSceneRenderPass);
+			s_RendererAPI->DrawIndexed(s_Data.TestSceneRenderPass, s_Data.TestSceneResourceManager, s_Data.ClearVertexBuffer, s_Data.ClearIndexBuffer);
+			s_RendererAPI->EndRenderPass();
+		}
+
 	}
 
 	void Renderer::EndFrame()
 	{
-		s_RendererAPI->BeginRenderPass(s_Data.SwapchainRenderPass);
-		s_RendererAPI->FinalDrawCall(s_Data.SwapchainRenderPass, s_Data.SwapchainResourceManager);
+		s_RendererAPI->BeginRenderPass(s_Data.FullscreenTriangleRenderPass);
+		s_RendererAPI->DrawToSwapchain(s_Data.FullscreenTriangleRenderPass, s_Data.FullscreenTriangleResourceManager);
 		s_RendererAPI->EndRenderPass();
 
 		s_RendererAPI->EndFrame();
 	}
 
-	void Renderer::BeginScene(const glm::mat4& view, const glm::mat4& projection)
+	void Renderer::BeginRenderPass(Ref<RenderPass>& renderPass)
 	{
-		uint32_t frame = s_RendererAPI->GetCurrentFrameIndex();
-
-		s_Data.CameraBuffer.View = view;
-		s_Data.CameraBuffer.Projection = projection;
-		s_Data.CameraUniformBuffers->SetData(frame, &s_Data.CameraBuffer, sizeof(RendererData::CameraData));
-
-		s_Data.QuadIndexCount = 0;
-
-		for (uint32_t batch = 0; batch < s_Data.QuadBatchEnds.size(); batch++)
-		{
-			s_Data.QuadBatchEnds[batch] = s_Data.QuadBatchStarts[batch];
-		}
-
-		// TODO: reset texture array
+		s_RendererAPI->BeginRenderPass(renderPass);
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
+	void Renderer::EndRenderPass()
 	{
-		/*s_Data.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(RendererData::CameraData));*/
-	}
-
-	void Renderer::BeginScene(const EditorCamera& camera)
-	{
-		/*s_Data.CameraBuffer.ViewProjection = camera.GetPVMatrix();
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(RendererData::CameraData));*/
-	}
-
-	void Renderer::EndScene()
-	{
-		uint32_t frame = s_RendererAPI->GetCurrentFrameIndex();
-
-		s_RendererAPI->BeginRenderPass(s_Data.QuadRenderPass);
-
-		for (uint32_t batch = 0; batch <= s_Data.BatchIndex; batch++)
-		{
-			uint32_t dataSize = (uint32_t)((byte*)s_Data.QuadBatchEnds[batch] - (byte*)s_Data.QuadBatchStarts[batch]);
-			if (dataSize)
-			{
-				uint32_t batchSize = (batch == s_Data.BatchIndex) ?
-					s_Data.QuadIndexCount - batch * s_Data.MaxQuadIndicesPerBatch :
-					s_Data.MaxQuadIndicesPerBatch;
-
-				s_Data.QuadVertexBuffers[batch][frame]->SetData(s_Data.QuadBatchStarts[batch], dataSize);
-
-				// TODO: assign ALL textures in array
-				s_Data.QuadResourceManager->ProvideResource("u_Sampler", s_Data.TextureSlots[0]);
-
-				// TODO: compare this to moving the begin/end render pass outside of the for loop
-				
-				s_RendererAPI->DrawIndexed(s_Data.QuadRenderPass, s_Data.QuadResourceManager, s_Data.QuadVertexBuffers[batch][frame], s_Data.QuadIndexBuffer, batchSize);
-				
-				s_Data.Stats.DrawCalls++;
-			}
-		}
-
 		s_RendererAPI->EndRenderPass();
 	}
-
 
 	void Renderer::Present()
 	{
@@ -515,40 +301,24 @@ namespace Zahra
 		s_Data.RenderTarget->Resize(width, height);
 		s_Data.ClearPassFramebuffer->Resize(width, height);
 		s_Data.LoadPassFramebuffer->Resize(width, height);
-		s_Data.TestRenderPass->OnResize();
-		s_Data.QuadRenderPass->OnResize();
+		s_Data.TestSceneRenderPass->OnResize();
 
-		if (s_Data.SwapchainTexture)
+		if (s_Data.FullscreenTriangleTexture)
 		{
-			s_Data.SwapchainTexture->Resize(width, height);
-			s_Data.SwapchainResourceManager->ProvideResource("u_Sampler", s_Data.SwapchainTexture);
-			s_Data.SwapchainResourceManager->Bake();
+			s_Data.FullscreenTriangleTexture->Resize(width, height);
+			s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.FullscreenTriangleTexture);
+			s_Data.FullscreenTriangleResourceManager->Bake();
 		}
 	}
 
-	uint32_t Renderer::GetSwapchainWidth()
+	void Renderer::DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount, uint32_t startingIndex)
 	{
-		return s_RendererAPI->GetSwapchainWidth();
+		s_RendererAPI->DrawIndexed(renderPass, resourceManager, vertexBuffer, indexBuffer, indexCount, startingIndex);
 	}
 
-	uint32_t Renderer::GetSwapchainHeight()
+	void Renderer::DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh)
 	{
-		return s_RendererAPI->GetSwapchainHeight();
-	}
-
-	uint32_t Renderer::GetCurrentFrameIndex()
-	{
-		return s_RendererAPI->GetCurrentFrameIndex();
-	}
-
-	uint32_t Renderer::GetFramesInFlight()
-	{
-		return s_RendererAPI->GetFramesInFlight();
-	}
-
-	const Ref<Image2D>& Renderer::GetRenderTarget()
-	{
-		return s_Data.RenderTarget;
+		s_RendererAPI->DrawMesh(renderPass, resourceManager, mesh);
 	}
 
 	void Renderer::DrawTestScene()
@@ -567,215 +337,10 @@ namespace Zahra
 		transforms.Projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
 		transforms.Projection[1][1] *= -1.f; // because screenspace is left-handed....
 
-		s_Data.TestUniformBuffers->SetData(frameIndex, &transforms, sizeof(TestTransforms));
+		s_Data.TestSceneUniformBuffers->SetData(frameIndex, &transforms, sizeof(TestTransforms));
 
-		s_RendererAPI->BeginRenderPass(s_Data.TestRenderPass);
-		s_RendererAPI->DrawMesh(s_Data.TestRenderPass, s_Data.TestResourceManager, s_Data.TestMesh);
+		s_RendererAPI->BeginRenderPass(s_Data.TestSceneRenderPass);
+		s_RendererAPI->DrawMesh(s_Data.TestSceneRenderPass, s_Data.TestSceneResourceManager, s_Data.TestSceneMesh);
 		s_RendererAPI->EndRenderPass();
 	}
-
-	void Renderer::ClearPass()
-	{
-		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
-
-		TestTransforms transforms{};
-		s_Data.TestUniformBuffers->SetData(frameIndex, &transforms, sizeof(TestTransforms));
-
-		s_RendererAPI->BeginRenderPass(s_Data.TestRenderPass);
-		s_RendererAPI->DrawIndexed(s_Data.TestRenderPass, s_Data.TestResourceManager, s_Data.ClearVertex, s_Data.ClearIndices);
-		s_RendererAPI->EndRenderPass();
-	}
-
-	void Renderer::AddNewQuadBatch()
-	{
-		uint32_t framesInFlight = GetFramesInFlight();
-
-		auto& newVertexBuffers = s_Data.QuadVertexBuffers.emplace_back();
-		newVertexBuffers.resize(framesInFlight);
-		for (uint32_t frame = 0; frame < framesInFlight; frame++)
-		{
-			newVertexBuffers[frame] = VertexBuffer::Create(s_Data.MaxQuadVerticesPerBatch * sizeof(QuadVertex));
-		}
-
-		auto& newBatch = s_Data.QuadBatchStarts.emplace_back();
-		newBatch = znew QuadVertex[s_Data.MaxQuadVerticesPerBatch];
-	}
-
-	/*float Renderer::GetLineThickness()
-	{
-		return s_Data.LineThickness;
-	}
-
-	void Renderer::SetLineThickness(float thickness)
-	{
-		//s_Data.LineThickness = thickness;
-	}*/
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	// PRIMITIVES
-
-	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID)
-	{
-		s_Data.BatchIndex = s_Data.QuadIndexCount / s_Data.MaxQuadIndicesPerBatch;
-
-		if (s_Data.BatchIndex >= s_Data.QuadBatchStarts.size())
-		{
-			AddNewQuadBatch();
-			s_Data.QuadBatchEnds.emplace_back();
-			s_Data.QuadBatchEnds[s_Data.BatchIndex] = s_Data.QuadBatchStarts[s_Data.BatchIndex];
-		}
-
-		auto& newVertex = s_Data.QuadBatchEnds[s_Data.BatchIndex];
-		for (int i = 0; i < 4; i++)
-		{
-			newVertex->Position = transform * s_Data.QuadPositions[i];
-			newVertex->Tint = colour;
-			newVertex->TextureCoord = s_Data.QuadTextureCoords[i];
-			/*newVertex->TextureIndex = 0.0f;
-			newVertex->TilingFactor = 1.0f;
-			newVertex->EntityID = entityID;*/
-
-			newVertex++;
-		}
-
-		s_Data.QuadIndexCount += 6;
-		s_Data.Stats.QuadCount++;
-	}
-
-	void Renderer::DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling, int entityID)
-	{
-		//// TODO: separate maxima for each primitive type
-		//if (s_Data.QuadIndexCount >= RendererData::MaxQuadIndicesPerBatch)
-		//{
-		//	SubmitCurrentQuadBatch();
-		//	AddNewQuadBatch();
-		//}
-
-		//// FIND AN AVAILABLE TEXTURE SLOT
-		//float textureIndex = 0.0f;
-		//{
-
-		//	for (uint32_t i = 1; i < s_Data.CurrentTextureSlotIndex; i++)
-		//	{
-		//		// TODO: this comparison is horrendous, refactor it once we have a general asset UUID system
-		//		if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
-		//		{
-		//			textureIndex = (float)i;
-		//			break;
-		//		}
-		//	}
-
-		//	if (textureIndex == 0.0f)
-		//	{
-		//		if (s_Data.CurrentTextureSlotIndex >= RendererData::MaximumBoundTextures)
-		//		{
-		//			SubmitCurrentQuadBatch();
-		//			AddNewQuadBatch();
-		//		}
-
-		//		textureIndex = (float)s_Data.CurrentTextureSlotIndex;
-		//		s_Data.TextureSlots[s_Data.CurrentTextureSlotIndex] = texture;
-		//		s_Data.CurrentTextureSlotIndex++;
-		//	}
-		//}
-
-		//for (int i = 0; i < 4; i++)
-		//{
-		//	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadPositions[i];
-		//	s_Data.QuadVertexBufferPtr->Tint = tint;
-		//	s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
-		//	s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
-		//	s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
-		//	s_Data.QuadVertexBufferPtr->EntityID = entityID;
-
-		//	s_Data.QuadVertexBufferPtr++;
-		//}
-
-		//s_Data.QuadIndexCount += 6;
-		//s_Data.Stats.QuadCount++;
-	}
-
-	void Renderer::DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID)
-	{
-		//// TODO: separate maxima for each primitive type
-		//if (s_Data.CircleIndexCount >= RendererData::MaxQuadIndicesPerBatch)
-		//{
-		//	SubmitCurrentQuadBatch();
-		//	AddNewQuadBatch();
-		//}
-
-		//for (int i = 0; i < 4; i++)
-		//{
-		//	s_Data.CircleVertexBufferPtr->WorldPosition = transform * s_Data.QuadPositions[i];
-		//	s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.QuadPositions[i] * 2.0f;
-		//	s_Data.CircleVertexBufferPtr->Colour = colour;
-		//	s_Data.CircleVertexBufferPtr->Thickness = thickness;
-		//	s_Data.CircleVertexBufferPtr->Fade = fade;
-		//	s_Data.CircleVertexBufferPtr->EntityID = entityID;
-
-		//	s_Data.CircleVertexBufferPtr++;
-		//}
-
-		//s_Data.CircleIndexCount += 6;
-		//s_Data.Stats.QuadCount++;
-	}
-
-	void Renderer::DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID)
-	{
-		//// TODO: separate maxima for each primitive type
-		//if (s_Data.LineVertexCount >= RendererData::MaxQuadVerticesPerBatch)
-		//{
-		//	SubmitCurrentQuadBatch();
-		//	AddNewQuadBatch();
-		//}
-
-		//s_Data.LineVertexBufferPtr->Position = end0;
-		//s_Data.LineVertexBufferPtr->Colour = colour;
-		//s_Data.LineVertexBufferPtr->EntityID = entityID;
-		//s_Data.LineVertexBufferPtr++;
-
-		//s_Data.LineVertexBufferPtr->Position = end1;
-		//s_Data.LineVertexBufferPtr->Colour = colour;
-		//s_Data.LineVertexBufferPtr->EntityID = entityID;
-		//s_Data.LineVertexBufferPtr++;
-
-		//s_Data.LineVertexCount += 2;
-	}
-
-	void Renderer::DrawRect(const glm::mat4& transform, const glm::vec4& colour, int entityID)
-	{
-		/*glm::vec3 corners[4] = { {.5f, .5f, .0f}, {-.5f, .5f, .0f}, {-.5f, -.5f, .0f}, {.5f, -.5f, .0f} };
-
-		for (int i = 0; i < 4; i++)
-			DrawLine(transform * glm::vec4(corners[i], 1.f), transform * glm::vec4(corners[(i+1)%4], 1.f), colour, entityID);*/
-	}
-
-
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	// SPRITES
-
-	void Renderer::DrawSprite(const glm::mat4& transform, SpriteComponent& sprite, int entityID)
-	{
-		//// TODO: deal with animation data
-		//if (sprite.Texture)
-		//	DrawQuad(transform, sprite.Texture, sprite.Tint, sprite.TextureTiling, entityID);
-		//else
-		//	DrawQuad(transform, sprite.Tint, entityID);
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	// STATS
-
-	const Renderer::Statistics& Renderer::GetStats()
-	{
-		return s_Data.Stats;
-	}
-
-	void Renderer::ResetStats()
-	{
-		memset(&s_Data.Stats, 0, sizeof(Renderer::Statistics));
-	}
-	
-
 }

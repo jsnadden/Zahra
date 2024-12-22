@@ -8,7 +8,6 @@
 
 namespace Zahra
 {
-
 	void VulkanRendererAPI::Init()
 	{
 		m_Swapchain = VulkanContext::Get()->GetSwapchain();
@@ -69,7 +68,7 @@ namespace Zahra
 
 		VulkanUtils::ValidateVkResult(vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo),
 			"Vulkan command buffer failed to begin recording");
-		// TODO: reset descriptor pools
+		// TODO: reset descriptor pools?
 	}
 
 	void VulkanRendererAPI::EndFrame()
@@ -80,7 +79,7 @@ namespace Zahra
 			"Vulkan command buffer failed to end recording");
 	}
 
-	void VulkanRendererAPI::BeginRenderPass(Ref<RenderPass> renderPass)
+	void VulkanRendererAPI::BeginRenderPass(Ref<RenderPass>& renderPass)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
@@ -152,7 +151,7 @@ namespace Zahra
 		m_Swapchain->PresentImage();			
 	}
 
-	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount, uint32_t startingIndex)
+	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount, uint32_t startingIndex)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
@@ -176,7 +175,7 @@ namespace Zahra
 		vkCmdDrawIndexed(commandBuffer, indexCount, 1, startingIndex, 0, 0);
 	}
 
-	void VulkanRendererAPI::DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh)
+	void VulkanRendererAPI::DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
@@ -197,7 +196,7 @@ namespace Zahra
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh->GetIndexBuffer()->GetCount(), 1, 0, 0, 0);
 	}
 
-	void VulkanRendererAPI::FinalDrawCall(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager)
+	void VulkanRendererAPI::DrawToSwapchain(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
@@ -209,6 +208,4 @@ namespace Zahra
 
 		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 	}
-
 }
-

@@ -14,13 +14,18 @@ namespace Zahra
 	VulkanStaticMesh::VulkanStaticMesh(MeshSpecification specification)
 		: m_Specification(specification)
 	{
-		if (strcmp(specification.Filepath.extension().string().c_str(), ".obj") == 0)
+		// TODO: make a switch-case and write loaders for other formats
+		if (m_Specification.SourceType == MeshFileFormat::obj)
 		{
 			Timer meshLoadTimer;
 			{
 				LoadFromObj();
 			}
 			Z_CORE_TRACE("Mesh '{0}' took {1} ms to load", m_Specification.Name, meshLoadTimer.ElapsedMillis());
+		}
+		else
+		{
+			Z_CORE_ASSERT(false, "Unsupported mesh source file format");
 		}
 	}
 
@@ -40,7 +45,9 @@ namespace Zahra
 		std::vector<tinyobj::material_t> materials;
 		std::string warning, error;
 
-		if (!tinyobj::LoadObj(&attributes, &triangles, &materials, &warning, &error, m_Specification.Filepath.string().c_str())) {
+		std::string sourceFilepath = Filepath(m_Specification);
+
+		if (!tinyobj::LoadObj(&attributes, &triangles, &materials, &warning, &error, sourceFilepath.c_str())) {
 			throw std::runtime_error(warning + error);
 		}
 

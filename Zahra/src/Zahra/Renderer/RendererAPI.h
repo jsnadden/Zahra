@@ -10,7 +10,6 @@
 
 namespace Zahra
 {
-
 	class RendererAPI
 	{
 	public:
@@ -48,18 +47,16 @@ namespace Zahra
 		//			(materials, textures, transforms)
 		// Give RenderPass a ShaderResourceManager!
 
-		virtual void BeginRenderPass(Ref<RenderPass> renderPass) = 0;
+		virtual void BeginRenderPass(Ref<RenderPass>& renderPass) = 0;
 		virtual void EndRenderPass() = 0;
 
-		virtual void DrawIndexed(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0) = 0;
-		virtual void DrawMesh(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager, Ref<StaticMesh> mesh) = 0;
+		virtual void DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0) = 0;
+		virtual void DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh) = 0;
 		
-		virtual void FinalDrawCall(Ref<RenderPass> renderPass, Ref<ShaderResourceManager> resourceManager) = 0;
-
+		virtual void DrawToSwapchain(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager) = 0;
 
 	private:
 		static API s_API;
-
 
 	};
 

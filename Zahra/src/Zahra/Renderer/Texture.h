@@ -60,7 +60,7 @@ namespace Zahra
 		// this does not resize the image itself, and should only be called after that has been done externally!!
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-		static Ref<Texture2D> CreateFromFile(const Texture2DSpecification& specification, std::filesystem::path filepath);
+		static Ref<Texture2D> CreateFromFile(const Texture2DSpecification& specification, const std::string& filename);
 		static Ref<Texture2D> CreateFromImage2D(Ref<Image2D>& image);
 		static Ref<Texture2D> CreateFlatColourTexture(const Texture2DSpecification& specification, uint32_t colour);
 	};

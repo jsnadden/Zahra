@@ -16,10 +16,12 @@ public:
 	void OnImGuiRender() override;
 
 	bool OnKeyPressedEvent(Zahra::KeyPressedEvent& event);
+	bool OnWindowResizedEvent(Zahra::WindowResizedEvent& event);
 
 private:
-	std::vector<Zahra::Ref<Zahra::Texture2D>> m_ViewportTexture2D;
-	std::vector<void*> m_ViewportImGuiTextureHandle;
+	Zahra::Ref<Zahra::Renderer2D> m_Renderer2D;
+
+	bool m_Toggle = true;
 
 };
 

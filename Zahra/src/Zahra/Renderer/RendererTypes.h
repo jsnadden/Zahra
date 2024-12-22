@@ -28,19 +28,25 @@ namespace Zahra
 
 	struct CircleVertex
 	{
-		alignas(16) glm::vec3 WorldPosition;
-		alignas(16) glm::vec2 LocalPosition;
-		alignas(16) glm::vec4 Colour;
-		alignas(16) float Thickness;
-		alignas(16) float Fade;
-		alignas(16) int EntityID = -1;
+		glm::vec3 WorldPosition;
+		glm::vec2 LocalPosition;
+		glm::vec4 Colour;
+		float Thickness;
+		float Fade;
+		int EntityID = -1;
 	};
 
 	struct LineVertex
 	{
-		alignas(16) glm::vec3 Position;
-		alignas(16) glm::vec4 Colour;
-		alignas(16) int EntityID = -1;
+		glm::vec3 Position;
+		glm::vec4 Colour;
+		int EntityID = -1;
+	};
+
+	struct CameraData
+	{
+		glm::mat4 View = glm::mat4(1.0f);
+		glm::mat4 Projection = glm::mat4(1.0f);
 	};
 
 }

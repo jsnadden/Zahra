@@ -200,6 +200,7 @@
     <ClInclude Include="src\Zahra\Renderer\Material.h" />
     <ClInclude Include="src\Zahra\Renderer\Mesh.h" />
     <ClInclude Include="src\Zahra\Renderer\RenderCommandQueue.h" />
+    <ClInclude Include="src\Zahra\Renderer\Renderer2D.h" />
     <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
     <ClInclude Include="src\Zahra\Renderer\Renderer.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h" />
@@ -681,6 +682,7 @@
     <ClCompile Include="src\Zahra\Renderer\Material.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Mesh.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RenderCommandQueue.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\Renderer2D.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RenderPass.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp" />

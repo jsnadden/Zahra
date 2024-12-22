@@ -193,18 +193,18 @@ namespace Zahra
 
 	void Scene::OnUpdateEditor(float dt, EditorCamera& camera)
 	{
-		Renderer::BeginScene(camera);
+		/*Renderer::BeginScene(camera);
 		RenderEntities();
-		Renderer::EndScene();
+		Renderer::EndScene();*/
 	}
 
 	void Scene::OnUpdateSimulation(float dt, EditorCamera& camera)
 	{
 		UpdatePhysicsWorld(dt);
 
-		Renderer::BeginScene(camera);
+		/*Renderer::BeginScene(camera);
 		RenderEntities();
-		Renderer::EndScene();
+		Renderer::EndScene();*/
 	}
 
 	void Scene::OnUpdateRuntime(float dt)
@@ -232,9 +232,9 @@ namespace Zahra
 				Entity activeCameraEntity(m_ActiveCamera, this);
 				glm::mat4 cameraTransform = activeCameraEntity.GetComponents<TransformComponent>().GetTransform();
 
-				Renderer::BeginScene(activeCameraEntity.GetComponents<CameraComponent>().Camera.GetProjection(), cameraTransform);
+				/*Renderer::BeginScene(activeCameraEntity.GetComponents<CameraComponent>().Camera.GetProjection(), cameraTransform);
 				RenderEntities();
-				Renderer::EndScene();
+				Renderer::EndScene();*/
 			}
 		}
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -392,7 +392,7 @@ namespace Zahra
 		{
 			auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
 
-			Renderer::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+			//Renderer::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
 
 		auto circleEntities = m_Registry.view<TransformComponent, CircleComponent>();
@@ -401,7 +401,7 @@ namespace Zahra
 		{
 			auto [transform, circle] = circleEntities.get<TransformComponent, CircleComponent>(entity);
 
-			Renderer::DrawCircle(transform.GetTransform(), circle.Colour, circle.Thickness, circle.Fade, (int)entity);
+			//Renderer::DrawCircle(transform.GetTransform(), circle.Colour, circle.Thickness, circle.Fade, (int)entity);
 		}
 
 		
@@ -420,7 +420,7 @@ namespace Zahra
 					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
 					* glm::scale(glm::mat4(1.0f), scale);
 
-				Renderer::DrawRect(colliderTransform, s_OverlayMode.ColliderColour);
+				//Renderer::DrawRect(colliderTransform, s_OverlayMode.ColliderColour);
 			}
 
 			auto circleColliders = m_Registry.view<TransformComponent, CircleColliderComponent>();
@@ -434,7 +434,7 @@ namespace Zahra
 					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
 					* glm::scale(glm::mat4(1.f), glm::vec3(collider.Radius * 2.05f));
 
-				Renderer::DrawCircle(colliderTransform, s_OverlayMode.ColliderColour, .02f / collider.Radius, .001f, (int)entity);
+				//Renderer::DrawCircle(colliderTransform, s_OverlayMode.ColliderColour, .02f / collider.Radius, .001f, (int)entity);
 			}
 
 		}

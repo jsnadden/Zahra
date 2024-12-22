@@ -12,16 +12,6 @@ namespace Zahra
 {
 	namespace VulkanUtils
 	{
-		static std::filesystem::path s_CacheDirectory = "Cache/Shaders/Vulkan";
-
-		static const std::filesystem::path& GetSPIRVCachePath()
-		{
-			if (!std::filesystem::exists(s_CacheDirectory))
-				std::filesystem::create_directories(s_CacheDirectory);
-
-			return s_CacheDirectory;
-		}
-
 		static std::string ShaderStageToFileExtension(ShaderStage stage)
 		{
 			std::string extension;
