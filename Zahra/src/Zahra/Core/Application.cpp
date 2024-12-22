@@ -53,27 +53,16 @@ namespace Zahra
 	{
 		Z_CORE_INFO("Start of run loop");
 
-		Timer framerateRefreshTimer;
-		bool refreshFramerate = true;
-
 		while (m_Running)
 		{
-			if (framerateRefreshTimer.Elapsed() >= m_Specification.FramerateRefreshInterval)
-			{
-				framerateRefreshTimer.Reset();
-				refreshFramerate = true;
-			}
-
 			/*static int frameNumber = 0;
 			Z_CORE_TRACE("Began frame number {0}", frameNumber);
 			frameNumber++;*/
 
 			// Compute frame time
 			float frameStartTime = Time::GetTime();
-			float frameTimeStep = frameStartTime - m_PreviousFrameStartTime; // actual delta time
-			float dt = glm::min<float>(frameTimeStep, 0.0333f); // regularised for some numerical stability
-			//Z_CORE_TRACE("Frame time = {0} ms", dt * 1000.f);
-			//Z_CORE_TRACE("Framerate = {0} fps", 1.0f / dt);
+			float dt = frameStartTime - m_PreviousFrameStartTime; // actual delta time
+			//float dt = glm::min<float>(frameStartTime - m_PreviousFrameStartTime, 0.0333f); // regularised delta time
 			m_PreviousFrameStartTime = frameStartTime;
 
 			m_Window->PollEvents();
@@ -97,12 +86,6 @@ namespace Zahra
 
 				Renderer::EndFrame();
 				Renderer::Present();
-			}
-			
-			if (refreshFramerate)
-			{
-				m_Framerate = 1.0f / (Time::GetTime() - frameStartTime);
-				refreshFramerate = false;
 			}
 		}
 

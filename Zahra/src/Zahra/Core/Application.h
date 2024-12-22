@@ -52,8 +52,6 @@ namespace Zahra
 		std::filesystem::path WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
 
-		float FramerateRefreshInterval = 1.0f;
-
 		RendererConfig RendererConfig;
 		GPURequirements GPURequirements;
 
@@ -74,8 +72,6 @@ namespace Zahra
 		void PushOverlay(Layer* overlay);
 
 		static inline Application& Get() { return *s_Instance; }
-
-		float GetFramerate() { return m_Framerate; }
 
 		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 
@@ -98,7 +94,6 @@ namespace Zahra
 		bool m_Minimised = false;
 
 		float m_PreviousFrameStartTime = .0f;
-		float m_Framerate = 0.0f;
 
 		LayerStack m_LayerStack;
 

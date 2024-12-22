@@ -9,8 +9,7 @@ layout (location = 2) in vec2 a_TextureCoordinates;
 
 layout(binding = 0) uniform Camera
 {
-    mat4 View;
-    mat4 Projection;
+    mat4 ViewProjection;
 } u_Camera;
 
 layout(location = 0) out vec4 v_Tint;
@@ -21,7 +20,7 @@ layout(location = 1) out vec2 v_TextureCoordinates;
 
 void main()
 {
-    gl_Position = u_Camera.Projection * u_Camera.View * vec4(a_Position, 1.0);
+    gl_Position = u_Camera.ViewProjection * vec4(a_Position, 1.0);
     v_Tint = a_Tint;
     v_TextureCoordinates = a_TextureCoordinates;
     //v_TextureIndex = a_TextureIndex;

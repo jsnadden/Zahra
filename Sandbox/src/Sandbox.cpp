@@ -15,6 +15,8 @@ SandboxLayer::SandboxLayer()
 
 void SandboxLayer::OnAttach()
 {
+	m_FramerateRefreshTimer.Reset();
+
 	Zahra::Renderer2DSpecification rendererSpec{};
 	rendererSpec.RenderTarget = Zahra::Renderer::GetLoadPassFramebuffer();
 	m_Renderer2D = Zahra::Ref<Zahra::Renderer2D>::Create(rendererSpec);
@@ -27,18 +29,27 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float dt)
 {
-	m_Renderer2D->ResetStats();
+	if (m_FramerateRefreshTimer.Elapsed() >= c_FramerateRefreshInterval)
+	{
+		m_FramerateRefreshTimer.Reset();
+		m_Framerate = 1.0f / dt;
+	}
 
 	float aspectRatio = (float)Zahra::Renderer::GetSwapchainWidth() / (float)Zahra::Renderer::GetSwapchainHeight();
 
-	// TODO: setup an editor camera instead of just setting these here
-	glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 5.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
-	projection[1][1] *= -1.f; // TODO: rewrite things to avoid this stupid parity discrepancy
+	static auto startTime = std::chrono::high_resolution_clock::now();
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float elapsedTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	m_Renderer2D->BeginScene(view, projection);
+	// TODO: setup an editor camera instead of just setting these here
+	glm::mat4 view = glm::lookAt(glm::vec3(7.0f, 7.0f, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))
+		* glm::rotate(glm::mat4(1.0f), .5f * elapsedTime, { 0.0f, 0.0f, 1.0f });
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+	projection[1][1] *= -1.f; // NOTE: remember to do this parity correction for all projections coming from glm
+
+	m_Renderer2D->BeginScene(projection * view);
 	{
-		Zahra::Renderer::DrawTestScene();
+		//Zahra::Renderer::DrawTestScene();
 
 		int n = 30;
 		float scale = 10.0f / n;
@@ -49,9 +60,15 @@ void SandboxLayer::OnUpdate(float dt)
 			{
 				float x = -5.0f + (i + 0.5f) * scale;
 				float y = -5.0f + (j + 0.5f) * scale;
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x, y, -2.0f }) * glm::scale(glm::mat4(1.0f), { scale, scale, scale });
+
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x, y, .0f });
+				transform *= glm::rotate(glm::mat4(1.0f), glm::atan(x) + elapsedTime, { 1.0f, 0.0f, 0.0f });
+				transform *= glm::scale(glm::mat4(1.0f), { .8f * scale, .8f * scale, .8f * scale });
+
 				glm::vec4 colour = { .25f + .5f * ((float)i) / n, .25f + .5f * ((float)j) / n, .1f, 1.0f };
-				m_Renderer2D->DrawQuad(transform, colour);
+
+				//m_Renderer2D->DrawQuad(transform, colour);
+				m_Renderer2D->DrawCircle(transform, colour, .2f, .01f);
 			}
 		}
 
@@ -74,14 +91,18 @@ void SandboxLayer::OnImGuiRender()
 
 	if (ImGui::Begin("Engine Statistics", 0, ImGuiWindowFlags_NoCollapse))
 	{
-		ImGui::SeparatorText("Renderer");
+		ImGui::SeparatorText("2D Batch Renderer");
 		{
-			ImGui::Text("Draw calls per frame: %u", renderer2DStats.DrawCalls);
+			ImGui::Text("Draw calls: %u", renderer2DStats.DrawCalls);
+			ImGui::Text("Quads: %u", renderer2DStats.QuadCount);
+			ImGui::Text("Quad batches: %u", renderer2DStats.QuadBatchCount);
+			ImGui::Text("Circles: %u", renderer2DStats.CircleCount);
+			ImGui::Text("Circle batches: %u", renderer2DStats.CircleBatchCount);
 		}	
 
 		ImGui::SeparatorText("Timing");
 		{
-			ImGui::Text("Framerate: %.2f fps", Zahra::Application::Get().GetFramerate());
+			ImGui::Text("Framerate: %.2f fps", m_Framerate);
 		}
 
 		ImGui::SeparatorText("Memory Allocations");
