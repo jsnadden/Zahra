@@ -29,6 +29,7 @@ namespace Zahra
 
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;		
 		bool BackfaceCulling = true;
+		bool DynamicLineWidths = false;
 	};
 
 	class RenderPass : public RefCounted

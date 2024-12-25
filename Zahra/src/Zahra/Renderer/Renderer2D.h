@@ -19,7 +19,6 @@ namespace Zahra
 	struct Renderer2DSpecification
 	{
 		Ref<Framebuffer> RenderTarget;
-
 		uint32_t MaxBatchSize = 10000;
 		uint32_t MaxTextureSlots = 32;
 	};
@@ -42,6 +41,9 @@ namespace Zahra
 		void DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID = -1);
 		void DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID = -1);
 		void DrawRect(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1);
+
+		void SetLineWidth(float width) { m_LineWidth = width; }
+		float GetLineWidth() { return m_LineWidth; }
 
 		void OnWindowResize(uint32_t width, uint32_t height);
 
@@ -72,7 +74,11 @@ namespace Zahra
 		const uint32_t c_MaxQuadIndicesPerBatch = c_MaxBatchSize * 6;
 		const uint32_t c_MaxLineVerticesPerBatch = c_MaxBatchSize * 2;
 
+		float m_LineWidth = 1.5f;
+
 		Statistics m_Stats;
+
+		ShaderLibrary m_ShaderLibrary;
 
 		glm::mat4 m_ProjectionView = glm::mat4(1.0f);
 		// TODO: make this a push constant, not a UB
@@ -86,7 +92,7 @@ namespace Zahra
 		glm::vec4 m_QuadTemplate[4]{};
 		glm::vec2 m_TextureTemplate[4]{};
 
-		Ref<Shader> m_QuadShader;
+		//Ref<Shader> m_QuadShader;
 		Ref<ShaderResourceManager> m_QuadResourceManager;
 		Ref<RenderPass> m_QuadRenderPass;
 
@@ -101,7 +107,7 @@ namespace Zahra
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CIRCLES
-		Ref<Shader>	m_CircleShader;
+		//Ref<Shader>	m_CircleShader;
 		Ref<ShaderResourceManager> m_CircleResourceManager;
 		Ref<RenderPass> m_CircleRenderPass;
 
@@ -114,15 +120,16 @@ namespace Zahra
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// LINES
-		//Ref<Shader>			LineShader;
-		//Ref<VertexArray>	LineVertexArray;
-		//Ref<VertexBuffer>	LineVertexBuffer;
+		//Ref<Shader> m_LineShader;
+		Ref<ShaderResourceManager> m_LineResourceManager;
+		Ref<RenderPass> m_LineRenderPass;
 
-		//uint32_t			LineVertexCount = 0;
-		//LineVertex*			LineVertexBufferBase = nullptr;
-		//LineVertex*			LineVertexBufferPtr = nullptr;
+		std::vector<std::vector<Ref<VertexBuffer>>> m_LineVertexBuffers;
+		std::vector<LineVertex*> m_LineBatchStarts;
+		std::vector<LineVertex*> m_LineBatchEnds;
 
-		//float LineThickness = 2.f;
+		uint32_t m_LastLineBatch = 0;
+		uint32_t m_LineVertexCount = 0;
 
 		void Init();
 		void Shutdown();
@@ -131,7 +138,6 @@ namespace Zahra
 
 		void AddNewQuadBatch();
 		void AddNewCircleBatch();
-
-		// TODO: similar methods for circle/line batches
+		void AddNewLineBatch();
 	};
 }

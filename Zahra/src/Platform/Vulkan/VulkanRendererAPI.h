@@ -31,10 +31,12 @@ namespace Zahra
 		virtual void BeginRenderPass(Ref<RenderPass>& renderPass) override;
 		virtual void EndRenderPass() override;
 
+		virtual void Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount) override;
 		virtual void DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0) override;
 		virtual void DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh) override;
+		virtual void DrawFullscreenTriangle(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager) override;
 
-		virtual void DrawToSwapchain(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager) override;
+		virtual void SetLineWidth(float width) override;
 
 	private:
 		Ref<VulkanSwapchain> m_Swapchain;

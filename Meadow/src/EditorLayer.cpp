@@ -26,7 +26,7 @@ namespace Zahra
 		m_EditorScene = Ref<Scene>::Create();
 		m_ActiveScene = m_EditorScene;
 
-		//Renderer::SetLineThickness(3.f);
+		//Renderer::SetLineWidth(3.f);
 
 		auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
 		if (commandLineArgs.Count > 1)

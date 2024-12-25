@@ -53,7 +53,7 @@ namespace Zahra
 	static RendererAPI* s_RendererAPI;
 
 	// TODO: Add a render command queue! Most of the static methods here can simply add the relevant s_RendererAPI
-	// call to the queue, but also add a new method Submit(std::function<void>()) to queue external commands
+	// call to the queue, but also add a method to allow other classes to enqueue their own commands
 
 	void Renderer::Init()
 	{
@@ -273,7 +273,7 @@ namespace Zahra
 	void Renderer::EndFrame()
 	{
 		s_RendererAPI->BeginRenderPass(s_Data.FullscreenTriangleRenderPass);
-		s_RendererAPI->DrawToSwapchain(s_Data.FullscreenTriangleRenderPass, s_Data.FullscreenTriangleResourceManager);
+		s_RendererAPI->DrawFullscreenTriangle(s_Data.FullscreenTriangleRenderPass, s_Data.FullscreenTriangleResourceManager);
 		s_RendererAPI->EndRenderPass();
 
 		s_RendererAPI->EndFrame();
@@ -311,6 +311,11 @@ namespace Zahra
 		}
 	}
 
+	void Renderer::Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)
+	{
+		s_RendererAPI->Draw(renderPass, resourceManager, vertexBuffer, vertexCount);
+	}
+
 	void Renderer::DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount, uint32_t startingIndex)
 	{
 		s_RendererAPI->DrawIndexed(renderPass, resourceManager, vertexBuffer, indexBuffer, indexCount, startingIndex);
@@ -342,5 +347,9 @@ namespace Zahra
 		s_RendererAPI->BeginRenderPass(s_Data.TestSceneRenderPass);
 		s_RendererAPI->DrawMesh(s_Data.TestSceneRenderPass, s_Data.TestSceneResourceManager, s_Data.TestSceneMesh);
 		s_RendererAPI->EndRenderPass();
+	}
+	void Renderer::SetLineWidth(float width)
+	{
+		s_RendererAPI->SetLineWidth(width);
 	}
 }

@@ -151,6 +151,24 @@ namespace Zahra
 		m_Swapchain->PresentImage();			
 	}
 
+	void VulkanRendererAPI::Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)
+	{
+		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
+		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
+
+		VkBuffer vulkanVertexBufferArray[] = { vertexBuffer.As<VulkanVertexBuffer>()->GetVulkanBuffer() };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vulkanVertexBufferArray, offsets);
+
+		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
+		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
+		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
+			vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+
+		vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
+	}
+
 	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount, uint32_t startingIndex)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
@@ -196,10 +214,11 @@ namespace Zahra
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh->GetIndexBuffer()->GetCount(), 1, 0, 0, 0);
 	}
 
-	void VulkanRendererAPI::DrawToSwapchain(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager)
+	void VulkanRendererAPI::DrawFullscreenTriangle(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
+
 		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
 		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
@@ -207,5 +226,11 @@ namespace Zahra
 			vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 
 		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	}
+
+	void VulkanRendererAPI::SetLineWidth(float width)
+	{
+		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
+		vkCmdSetLineWidth(commandBuffer, width);
 	}
 }

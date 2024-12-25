@@ -26,6 +26,18 @@ namespace Zahra
 		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// SHADERS
+		{
+			ShaderSpecification shaderSpec{};
+			shaderSpec.Name = "flat_colour";
+			m_ShaderLibrary.Add(Shader::Create(shaderSpec));
+			shaderSpec.Name = "flat_texture";
+			m_ShaderLibrary.Add(Shader::Create(shaderSpec));
+			shaderSpec.Name = "circle";
+			m_ShaderLibrary.Add(Shader::Create(shaderSpec));
+		}
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CAMERA DATA
 		{
 			m_CameraUniformBufferSet = UniformBufferSet::Create(sizeof(glm::mat4), framesInFlight);
@@ -44,6 +56,7 @@ namespace Zahra
 			// TODO: setup Shader reflection and ShaderResourceManager to be capable of sampler arrays
 			Texture2DSpecification flatWhite{};
 			m_TextureSlots[0] = Texture2D::CreateFlatColourTexture(flatWhite, 0xffffffff);
+			//m_TextureSlots[0] = Texture2D::CreateFromFile(flatWhite, "yajirobe.png");
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,13 +72,16 @@ namespace Zahra
 			m_TextureTemplate[2] = { 1.0f, 1.0f };
 			m_TextureTemplate[3] = { 0.0f, 1.0f };
 
-			ShaderSpecification shaderSpec{};
-			shaderSpec.Name = "quad";
-			m_QuadShader = Shader::Create(shaderSpec);
+			/*ShaderSpecification shaderSpec{};
+			shaderSpec.Name = "flat_texture";
+			m_QuadShader = Shader::Create(shaderSpec);*/
 			// TODO: obtain Shaders from a Shaderlibrary instead of directly constructing them here
 
+			// TODO: put a resource manager in renderpass, specifically for
+			// camera and light resources (give these a specific set range)
+			// For other resources, the manager should belong to a material
 			ShaderResourceManagerSpecification resourceManagerSpec{};
-			resourceManagerSpec.Shader = m_QuadShader;
+			resourceManagerSpec.Shader = m_ShaderLibrary.Get("flat_texture");
 			resourceManagerSpec.FirstSet = 0;
 			resourceManagerSpec.LastSet = 0;
 			m_QuadResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
@@ -76,7 +92,7 @@ namespace Zahra
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "quad_pass";
-			renderPassSpec.Shader = m_QuadShader;
+			renderPassSpec.Shader = m_ShaderLibrary.Get("flat_texture");
 			renderPassSpec.RenderTarget = m_Specification.RenderTarget;
 			renderPassSpec.Topology = PrimitiveTopology::Triangles;
 			renderPassSpec.BackfaceCulling = false;
@@ -114,12 +130,12 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CIRCLES
 		{
-			ShaderSpecification shaderSpec{};
+			/*ShaderSpecification shaderSpec{};
 			shaderSpec.Name = "circle";
-			m_CircleShader = Shader::Create(shaderSpec);
+			m_CircleShader = Shader::Create(shaderSpec);*/
 
 			ShaderResourceManagerSpecification resourceManagerSpec{};
-			resourceManagerSpec.Shader = m_CircleShader;
+			resourceManagerSpec.Shader = m_ShaderLibrary.Get("circle");
 			resourceManagerSpec.FirstSet = 0;
 			resourceManagerSpec.LastSet = 0;
 			m_CircleResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
@@ -129,7 +145,7 @@ namespace Zahra
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "circle_pass";
-			renderPassSpec.Shader = m_CircleShader;
+			renderPassSpec.Shader = m_ShaderLibrary.Get("circle");
 			renderPassSpec.RenderTarget = m_QuadRenderPass->GetRenderTarget();
 			renderPassSpec.Topology = PrimitiveTopology::Triangles;
 			renderPassSpec.BackfaceCulling = false;
@@ -150,7 +166,37 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// LINES
 		{
-			// TODO:
+			/*ShaderSpecification shaderSpec{};
+			shaderSpec.Name = "flat_colour";
+			m_LineShader = Shader::Create(shaderSpec);*/
+
+			ShaderResourceManagerSpecification resourceManagerSpec{};
+			resourceManagerSpec.Shader = m_ShaderLibrary.Get("flat_colour");
+			resourceManagerSpec.FirstSet = 0;
+			resourceManagerSpec.LastSet = 0;
+			m_LineResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
+
+			m_LineResourceManager->ProvideResource("Camera", m_CameraUniformBufferSet);
+			m_LineResourceManager->Bake();
+
+			RenderPassSpecification renderPassSpec{};
+			renderPassSpec.Name = "line_pass";
+			renderPassSpec.Shader = m_ShaderLibrary.Get("flat_colour");
+			renderPassSpec.RenderTarget = m_CircleRenderPass->GetRenderTarget();
+			renderPassSpec.Topology = PrimitiveTopology::Lines;
+			renderPassSpec.DynamicLineWidths = true;
+			m_LineRenderPass = RenderPass::Create(renderPassSpec);
+
+			m_LineVertexBuffers.resize(1);
+			m_LineVertexBuffers[0].resize(framesInFlight);
+			for (uint32_t frame = 0; frame < framesInFlight; frame++)
+			{
+				m_LineVertexBuffers[0][frame] = VertexBuffer::Create(c_MaxLineVerticesPerBatch * sizeof(LineVertex));
+			}
+
+			m_LineBatchStarts.resize(1);
+			m_LineBatchEnds.resize(1);
+			m_LineBatchStarts[0] = znew LineVertex[c_MaxLineVerticesPerBatch];
 		}
 	}
 
@@ -159,7 +205,27 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// LINES
 		{
-			// TODO:
+			m_LineBatchEnds.clear();
+			for (auto batch : m_LineBatchStarts)
+			{
+				zdelete[] batch;
+			}
+			m_LineBatchStarts.clear();
+
+			uint32_t framesInFlight = Renderer::GetFramesInFlight();
+			for (auto& batch : m_LineVertexBuffers)
+			{
+				for (uint32_t frame = 0; frame < framesInFlight; frame++)
+				{
+					batch[frame].Reset();
+				}
+				batch.clear();
+			}
+			m_LineVertexBuffers.clear();
+
+			m_LineRenderPass.Reset();
+			m_LineResourceManager.Reset();
+			//m_LineShader.Reset();
 		}
 		
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +251,7 @@ namespace Zahra
 
 			m_CircleRenderPass.Reset();
 			m_CircleResourceManager.Reset();
-			m_CircleShader.Reset();
+			//m_CircleShader.Reset();
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,7 +279,7 @@ namespace Zahra
 
 			m_QuadRenderPass.Reset();
 			m_QuadResourceManager.Reset();
-			m_QuadShader.Reset();
+			//m_QuadShader.Reset();
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,17 +307,17 @@ namespace Zahra
 
 		// TODO: reset texture array
 
+		m_QuadIndexCount = 0;
 		for (uint32_t batch = 0; batch < m_QuadBatchEnds.size(); batch++)
 			m_QuadBatchEnds[batch] = m_QuadBatchStarts[batch];
 
-		m_QuadIndexCount = 0;
-
+		m_CircleIndexCount = 0;
 		for (uint32_t batch = 0; batch < m_CircleBatchEnds.size(); batch++)
 			m_CircleBatchEnds[batch] = m_CircleBatchStarts[batch];
 
-		m_CircleIndexCount = 0;
-
-		// TODO: reset line batches	
+		m_LineVertexCount = 0;
+		for (uint32_t batch = 0; batch < m_LineBatchEnds.size(); batch++)
+			m_LineBatchEnds[batch] = m_LineBatchStarts[batch];
 	}
 
 	void Renderer2D::EndScene()
@@ -308,6 +374,32 @@ namespace Zahra
 			}
 		}
 		Renderer::EndRenderPass();
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// LINE PASS
+		Renderer::BeginRenderPass(m_LineRenderPass);
+		{
+			Renderer::SetLineWidth(m_LineWidth);
+
+			for (uint32_t batch = 0; batch <= m_LastLineBatch; batch++)
+			{
+				uint32_t dataSize = (uint32_t)((byte*)m_LineBatchEnds[batch] - (byte*)m_LineBatchStarts[batch]);
+				if (dataSize)
+				{
+					uint32_t batchSize = (batch == m_LastLineBatch) ?
+						m_LineVertexCount - batch * c_MaxLineVerticesPerBatch :
+						c_MaxLineVerticesPerBatch;
+
+					m_LineVertexBuffers[batch][frame]->SetData(m_LineBatchStarts[batch], dataSize);
+
+					Renderer::Draw(m_LineRenderPass, m_LineResourceManager, m_LineVertexBuffers[batch][frame], batchSize);
+
+					m_Stats.LineBatchCount++;
+					m_Stats.DrawCalls++;
+				}
+			}
+		}
+		Renderer::EndRenderPass();
 	}
 
 	void Renderer2D::AddNewQuadBatch()
@@ -333,11 +425,26 @@ namespace Zahra
 		newVertexBufferPerFrame.resize(framesInFlight);
 		for (uint32_t frame = 0; frame < framesInFlight; frame++)
 		{
-			newVertexBufferPerFrame[frame] = VertexBuffer::Create(c_MaxQuadVerticesPerBatch * sizeof(QuadVertex));
+			newVertexBufferPerFrame[frame] = VertexBuffer::Create(c_MaxQuadVerticesPerBatch * sizeof(CircleVertex));
 		}
 
 		auto& newBatch = m_CircleBatchStarts.emplace_back();
 		newBatch = znew CircleVertex[c_MaxQuadVerticesPerBatch];
+	}
+
+	void Renderer2D::AddNewLineBatch()
+	{
+		uint32_t framesInFlight = Renderer::GetFramesInFlight();
+
+		auto& newVertexBufferPerFrame = m_LineVertexBuffers.emplace_back();
+		newVertexBufferPerFrame.resize(framesInFlight);
+		for (uint32_t frame = 0; frame < framesInFlight; frame++)
+		{
+			newVertexBufferPerFrame[frame] = VertexBuffer::Create(c_MaxLineVerticesPerBatch * sizeof(LineVertex));
+		}
+
+		auto& newBatch = m_LineBatchStarts.emplace_back();
+		newBatch = znew LineVertex[c_MaxLineVerticesPerBatch];
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID)
@@ -451,32 +558,35 @@ namespace Zahra
 
 	void Renderer2D::DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID)
 	{
-		//// TODO: separate maxima for each primitive type
-		//if (s_Data.LineVertexCount >= RendererData::MaxQuadVerticesPerBatch)
-		//{
-		//	SubmitCurrentQuadBatch();
-		//	AddNewQuadBatch();
-		//}
+		m_LastLineBatch = m_LineVertexCount / c_MaxLineVerticesPerBatch;
 
-		//s_Data.LineVertexBufferPtr->Position = end0;
-		//s_Data.LineVertexBufferPtr->Colour = colour;
-		//s_Data.LineVertexBufferPtr->EntityID = entityID;
-		//s_Data.LineVertexBufferPtr++;
+		if (m_LastLineBatch >= m_LineBatchStarts.size())
+		{
+			AddNewLineBatch();
+			m_LineBatchEnds.emplace_back();
+			m_LineBatchEnds[m_LastLineBatch] = m_LineBatchStarts[m_LastLineBatch];
+		}
 
-		//s_Data.LineVertexBufferPtr->Position = end1;
-		//s_Data.LineVertexBufferPtr->Colour = colour;
-		//s_Data.LineVertexBufferPtr->EntityID = entityID;
-		//s_Data.LineVertexBufferPtr++;
+		auto& newVertex = m_LineBatchEnds[m_LastLineBatch];
 
-		//s_Data.LineVertexCount += 2;
+		newVertex->Position = end0;
+		newVertex->Colour = colour;
+		//newVertex->EntityID = entityID;
+		newVertex++;
+		
+		newVertex->Position = end1;
+		newVertex->Colour = colour;
+		//newVertex->EntityID = entityID;
+		newVertex++;
+		
+		m_LineVertexCount += 2;
+		m_Stats.LineCount++;
 	}
 
 	void Renderer2D::DrawRect(const glm::mat4& transform, const glm::vec4& colour, int entityID)
 	{
-		/*glm::vec3 corners[4] = { {.5f, .5f, .0f}, {-.5f, .5f, .0f}, {-.5f, -.5f, .0f}, {.5f, -.5f, .0f} };
-
 		for (int i = 0; i < 4; i++)
-			DrawLine(transform * glm::vec4(corners[i], 1.f), transform * glm::vec4(corners[(i+1)%4], 1.f), colour, entityID);*/
+			DrawLine(transform * m_QuadTemplate[i], transform * m_QuadTemplate[(i + 1) % 4], colour, entityID);
 	}
 
 	void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)

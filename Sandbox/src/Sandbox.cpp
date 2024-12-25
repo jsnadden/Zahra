@@ -65,10 +65,11 @@ void SandboxLayer::OnUpdate(float dt)
 				transform *= glm::rotate(glm::mat4(1.0f), glm::atan(x) + elapsedTime, { 1.0f, 0.0f, 0.0f });
 				transform *= glm::scale(glm::mat4(1.0f), { .8f * scale, .8f * scale, .8f * scale });
 
-				glm::vec4 colour = { .25f + .5f * ((float)i) / n, .25f + .5f * ((float)j) / n, .1f, 1.0f };
+				glm::vec4 colour = { .25f + glm::cos(3 * elapsedTime) * .5f * ((float)i) / n, .25f + glm::sin(3 * elapsedTime) * .5f * ((float)j) / n, .1f, 1.0f};
 
 				//m_Renderer2D->DrawQuad(transform, colour);
-				m_Renderer2D->DrawCircle(transform, colour, .2f, .01f);
+				m_Renderer2D->DrawRect(transform, {1.0f, 1.0f, 0.0f, 1.0f});
+				//m_Renderer2D->DrawCircle(transform, colour, .2f, .01f);
 			}
 		}
 
@@ -98,6 +99,12 @@ void SandboxLayer::OnImGuiRender()
 			ImGui::Text("Quad batches: %u", renderer2DStats.QuadBatchCount);
 			ImGui::Text("Circles: %u", renderer2DStats.CircleCount);
 			ImGui::Text("Circle batches: %u", renderer2DStats.CircleBatchCount);
+			ImGui::Text("Lines: %u", renderer2DStats.LineCount);
+			ImGui::Text("Line batches: %u", renderer2DStats.LineBatchCount);
+
+			/*float lineWidth = m_Renderer2D->GetLineWidth();
+			ImGui::SliderFloat("Line width", &lineWidth, .1f, 10.f, "%.1f");
+			m_Renderer2D->SetLineWidth(lineWidth);*/
 		}	
 
 		ImGui::SeparatorText("Timing");

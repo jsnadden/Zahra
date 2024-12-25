@@ -127,7 +127,6 @@ namespace Zahra
 
 		/////////////////////////////////////////////////////////////////////////////////////////
 		// WAIT FOR RENDERING TO COMPLETE, THEN DISPLAY SWAPCHAIN IMAGE
-
 		VkSwapchainKHR swapChains[] = { m_Swapchain };
 
 		VkPresentInfoKHR presentInfo{};
@@ -200,6 +199,7 @@ namespace Zahra
 
 		VkPhysicalDeviceFeatures enabledFeatures{};
 		enabledFeatures.samplerAnisotropy = VK_TRUE;
+		enabledFeatures.wideLines = VK_TRUE;
 
 		VkDeviceCreateInfo logicalDeviceInfo{};
 		logicalDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -287,6 +287,9 @@ namespace Zahra
 
 		if (properties.limits.maxDescriptorSetSampledImages < requirements.MinBoundTextureSlots)
 			return false;
+
+		if (features.wideLines == VK_FALSE)
+			return false; // TODO: instead just let the renderer know not to use dynamic line widths
 
 		// TODO: add checks for other requirements
 
