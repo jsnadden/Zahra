@@ -519,14 +519,14 @@ namespace Zahra
 					Camera camera = cameraEntity.GetComponents<CameraComponent>().Camera;
 					glm::mat4 cameraTransform = cameraEntity.GetComponents<TransformComponent>().GetTransform();
 					Renderer::BeginScene(camera, cameraTransform);
-					Renderer::DrawRect(entityTransform.GetTransform(), m_HighlightSelectionColour);
+					Renderer::DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
 					Renderer::EndScene();
 				}
 			}
 			else
 			{
 				Renderer::BeginScene(m_EditorCamera);
-				Renderer::DrawRect(entityTransform.GetTransform(), m_HighlightSelectionColour);
+				Renderer::DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
 				Renderer::EndScene();
 			}
 			

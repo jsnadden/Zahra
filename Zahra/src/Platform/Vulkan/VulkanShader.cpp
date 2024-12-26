@@ -173,6 +173,7 @@ namespace Zahra
 				attribute.Stage = stage;
 				attribute.Location = compiler.get_decoration(resource.id, spv::DecorationLocation);
 				attribute.ArrayLength = type.array.empty() ? 1 : type.array[0]; // TODO: this only accounts for non-nested arrays
+
 			}
 
 			for (const auto& resource : resources.uniform_buffers)
@@ -192,8 +193,7 @@ namespace Zahra
 				bufferData.Stage = stage;
 				bufferData.ByteSize = compiler.get_declared_struct_size(bufferBaseType);
 				bufferData.MemberCount = (uint32_t)bufferBaseType.member_types.size();
-
-				if (!bufferType.array.empty()) bufferData.ArrayLength = bufferType.array[0]; // TODO: this only accounts for non-nested arrays
+				bufferData.ArrayLength = bufferType.array.empty() ? 1 : bufferType.array[0]; // TODO: this only accounts for non-nested arrays
 
 			}
 
@@ -215,8 +215,8 @@ namespace Zahra
 				textureData.Stage = stage;
 				//textureData.ByteSize = compiler.get_declared_struct_size(textureBaseType);
 				textureData.MemberCount = 1;
+				textureData.ArrayLength = textureType.array.empty() ? 1 : textureType.array[0]; // TODO: this only accounts for non-nested arrays
 
-				if (!textureType.array.empty()) textureData.ArrayLength = textureType.array[0]; // TODO: this only accounts for non-nested arrays
 			}
 
 			// TODO: additional for loops for other shader resources. For details see:

@@ -36,7 +36,6 @@ namespace Zahra
 
 	WindowsWindow::~WindowsWindow()
 	{
-		WriteConfig();
 		Shutdown();
 	}
 

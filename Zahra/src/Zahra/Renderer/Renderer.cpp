@@ -18,15 +18,19 @@ namespace Zahra
 {
 	struct TestTransforms
 	{
-		glm::mat4 Model;
-		glm::mat4 View;
-		glm::mat4 Projection;
+		glm::mat4 Model = glm::mat4(1.0f);
+		glm::mat4 View = glm::mat4(1.0f);
+		glm::mat4 Projection = glm::mat4(1.0f);
 	};
 
 	struct RendererData
 	{
 		RendererConfig Config;
 		bool ConfigSet = false;
+
+		RendererCapabilities Capabilities;
+
+		Renderer::Statistics Statistics;
 
 		Ref<Image2D>					RenderTarget;
 		Ref<Framebuffer>				LoadPassFramebuffer;
@@ -140,7 +144,7 @@ namespace Zahra
 			s_Data.FullscreenTriangleTexture = Texture2D::CreateFromImage2D(s_Data.LoadPassFramebuffer->GetColourAttachment(0));
 
 			s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.FullscreenTriangleTexture);
-			s_Data.FullscreenTriangleResourceManager->Bake();
+			s_Data.FullscreenTriangleResourceManager->Update();
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,7 +184,7 @@ namespace Zahra
 
 			s_Data.TestSceneResourceManager->ProvideResource("Matrices", s_Data.TestSceneUniformBuffers);
 			s_Data.TestSceneResourceManager->ProvideResource("u_Texture", s_Data.TestSceneTexture);
-			s_Data.TestSceneResourceManager->Bake();
+			s_Data.TestSceneResourceManager->Update();
 		}
 	}
 
@@ -222,6 +226,11 @@ namespace Zahra
 		s_Data.Config = config;
 	}
 
+	RendererCapabilities& Renderer::GetCapabilities()
+	{
+		return s_Data.Capabilities;
+	}
+
 	uint32_t Renderer::GetSwapchainWidth()
 	{
 		return s_RendererAPI->GetSwapchainWidth();
@@ -250,6 +259,11 @@ namespace Zahra
 	const Ref<Framebuffer>& Renderer::GetLoadPassFramebuffer()
 	{
 		return s_Data.LoadPassFramebuffer;
+	}
+
+	const Renderer::Statistics& Renderer::GetStats()
+	{
+		return s_Data.Statistics;
 	}
 
 	void Renderer::BeginFrame()
@@ -307,46 +321,48 @@ namespace Zahra
 		{
 			s_Data.FullscreenTriangleTexture->Resize(width, height);
 			s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.FullscreenTriangleTexture);
-			s_Data.FullscreenTriangleResourceManager->Bake();
+			s_Data.FullscreenTriangleResourceManager->Update();
 		}
 	}
 
 	void Renderer::Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)
 	{
 		s_RendererAPI->Draw(renderPass, resourceManager, vertexBuffer, vertexCount);
+
+		s_Data.Statistics.DrawCallCount++;
 	}
 
 	void Renderer::DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount, uint32_t startingIndex)
 	{
 		s_RendererAPI->DrawIndexed(renderPass, resourceManager, vertexBuffer, indexBuffer, indexCount, startingIndex);
+
+		s_Data.Statistics.DrawCallCount++;
 	}
 
 	void Renderer::DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh)
 	{
 		s_RendererAPI->DrawMesh(renderPass, resourceManager, mesh);
+
+		s_Data.Statistics.DrawCallCount++;
+
 	}
 
-	void Renderer::DrawTestScene()
+	void Renderer::DrawTestScene(glm::mat4 view, glm::mat4 projection)
 	{
-		static auto startTime = std::chrono::high_resolution_clock::now();
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float timeSinceStart = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		float width = (float)s_RendererAPI->GetSwapchainWidth();
-		float height = (float)s_RendererAPI->GetSwapchainHeight();
-		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
+		float width = (float)GetSwapchainWidth();
+		float height = (float)GetSwapchainHeight();
+		uint32_t frameIndex = GetCurrentFrameIndex();
 
 		TestTransforms transforms{};
-		transforms.Model = glm::rotate(glm::mat4(1.0f), timeSinceStart * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		transforms.View = glm::lookAt(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		transforms.Projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
-		transforms.Projection[1][1] *= -1.f; // because screenspace is left-handed....
+		transforms.Model = glm::rotate(glm::mat4(1.f), glm::radians(-90.f), { 1.f, 0.f, 0.f }) * glm::rotate(glm::mat4(1.f), glm::radians(180.f), { 0.f, 0.f, 1.f });
+		transforms.View = view;
+		transforms.Projection = projection;
 
 		s_Data.TestSceneUniformBuffers->SetData(frameIndex, &transforms, sizeof(TestTransforms));
 
-		s_RendererAPI->BeginRenderPass(s_Data.TestSceneRenderPass);
-		s_RendererAPI->DrawMesh(s_Data.TestSceneRenderPass, s_Data.TestSceneResourceManager, s_Data.TestSceneMesh);
-		s_RendererAPI->EndRenderPass();
+		BeginRenderPass(s_Data.TestSceneRenderPass);
+		DrawMesh(s_Data.TestSceneRenderPass, s_Data.TestSceneResourceManager, s_Data.TestSceneMesh);
+		EndRenderPass();
 	}
 	void Renderer::SetLineWidth(float width)
 	{

@@ -201,10 +201,10 @@
     <ClInclude Include="src\Zahra\Renderer\Mesh.h" />
     <ClInclude Include="src\Zahra\Renderer\RenderCommandQueue.h" />
     <ClInclude Include="src\Zahra\Renderer\Renderer2D.h" />
+    <ClInclude Include="src\Zahra\Renderer\RendererConfig.h" />
     <ClInclude Include="src\Zahra\Renderer\RenderPass.h" />
     <ClInclude Include="src\Zahra\Renderer\Renderer.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h" />
-    <ClInclude Include="src\Zahra\Renderer\RendererConfig.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererContext.h" />
     <ClInclude Include="src\Zahra\Renderer\RendererTypes.h" />
     <ClInclude Include="src\Zahra\Renderer\SceneRenderer.h" />

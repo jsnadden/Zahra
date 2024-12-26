@@ -160,6 +160,7 @@ namespace Zahra
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vulkanVertexBufferArray, offsets);
 
+		resourceManager->Update();
 		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
 		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
@@ -181,6 +182,7 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = indexBuffer.As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
+		resourceManager->Update();
 		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
 		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
@@ -205,6 +207,7 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = mesh->GetIndexBuffer().As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
+		resourceManager->Update();
 		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
 		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
@@ -219,6 +222,7 @@ namespace Zahra
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
 
+		resourceManager->Update();
 		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
 		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;

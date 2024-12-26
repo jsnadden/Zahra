@@ -420,7 +420,7 @@ namespace Zahra
 					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
 					* glm::scale(glm::mat4(1.0f), scale);
 
-				//Renderer::DrawRect(colliderTransform, s_OverlayMode.ColliderColour);
+				//Renderer::DrawQuadBoundingBox(colliderTransform, s_OverlayMode.ColliderColour);
 			}
 
 			auto circleColliders = m_Registry.view<TransformComponent, CircleColliderComponent>();

@@ -19,10 +19,8 @@ namespace Zahra
 		glm::vec3 Position;
 		glm::vec4 Tint;
 		glm::vec2 TextureCoord;
-
-		// TODO: can I just pass these as push constants?
-		//uint32_t TextureIndex;
-		//float TilingFactor;
+		uint32_t TextureIndex;
+		float TilingFactor;
 		//int EntityID = -1;
 	};
 

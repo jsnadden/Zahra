@@ -25,39 +25,19 @@ namespace Zahra
 	{
 		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// SHADERS
-		{
-			ShaderSpecification shaderSpec{};
-			shaderSpec.Name = "flat_colour";
-			m_ShaderLibrary.Add(Shader::Create(shaderSpec));
-			shaderSpec.Name = "flat_texture";
-			m_ShaderLibrary.Add(Shader::Create(shaderSpec));
-			shaderSpec.Name = "circle";
-			m_ShaderLibrary.Add(Shader::Create(shaderSpec));
-		}
+		ShaderSpecification shaderSpec{};
+		shaderSpec.Name = "flat_colour";
+		m_ShaderLibrary.Add(Shader::Create(shaderSpec));
+		shaderSpec.Name = "flat_texture";
+		m_ShaderLibrary.Add(Shader::Create(shaderSpec));
+		shaderSpec.Name = "circle";
+		m_ShaderLibrary.Add(Shader::Create(shaderSpec));
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CAMERA DATA
-		{
-			m_CameraUniformBufferSet = UniformBufferSet::Create(sizeof(glm::mat4), framesInFlight);
+		m_CameraUniformBufferSet = UniformBufferSet::Create(sizeof(glm::mat4), framesInFlight);
 
-			/*glm::mat4 identityMat(1.0f);
-
-			for (uint32_t frame = 0; frame < framesInFlight; frame++)
-				m_CameraUniformBufferSet->SetData(frame, &identityMat, sizeof(CameraData));*/
-		}
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// TEXTURE SLOTS
-		{
-			m_TextureSlots.resize(m_Specification.MaxTextureSlots);
-
-			// TODO: setup Shader reflection and ShaderResourceManager to be capable of sampler arrays
-			Texture2DSpecification flatWhite{};
-			m_TextureSlots[0] = Texture2D::CreateFlatColourTexture(flatWhite, 0xffffffff);
-			//m_TextureSlots[0] = Texture2D::CreateFromFile(flatWhite, "yajirobe.png");
-		}
+		Texture2DSpecification textureSpec{};
+		auto newTexture = Texture2D::CreateFlatColourTexture(textureSpec, 0xffffffff);
+		m_TextureSlots.resize(m_Specification.MaxTextureSlots, newTexture);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// QUADS
@@ -72,11 +52,6 @@ namespace Zahra
 			m_TextureTemplate[2] = { 1.0f, 1.0f };
 			m_TextureTemplate[3] = { 0.0f, 1.0f };
 
-			/*ShaderSpecification shaderSpec{};
-			shaderSpec.Name = "flat_texture";
-			m_QuadShader = Shader::Create(shaderSpec);*/
-			// TODO: obtain Shaders from a Shaderlibrary instead of directly constructing them here
-
 			// TODO: put a resource manager in renderpass, specifically for
 			// camera and light resources (give these a specific set range)
 			// For other resources, the manager should belong to a material
@@ -87,8 +62,8 @@ namespace Zahra
 			m_QuadResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
 			m_QuadResourceManager->ProvideResource("Camera", m_CameraUniformBufferSet);
-			m_QuadResourceManager->ProvideResource("u_Sampler", m_TextureSlots[0]);
-			m_QuadResourceManager->Bake();
+			m_QuadResourceManager->ProvideResource("u_Sampler", m_TextureSlots);
+			m_QuadResourceManager->Update();
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "quad_pass";
@@ -130,10 +105,6 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CIRCLES
 		{
-			/*ShaderSpecification shaderSpec{};
-			shaderSpec.Name = "circle";
-			m_CircleShader = Shader::Create(shaderSpec);*/
-
 			ShaderResourceManagerSpecification resourceManagerSpec{};
 			resourceManagerSpec.Shader = m_ShaderLibrary.Get("circle");
 			resourceManagerSpec.FirstSet = 0;
@@ -141,7 +112,7 @@ namespace Zahra
 			m_CircleResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
 			m_CircleResourceManager->ProvideResource("Camera", m_CameraUniformBufferSet);
-			m_CircleResourceManager->Bake();
+			m_CircleResourceManager->Update();
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "circle_pass";
@@ -166,10 +137,6 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// LINES
 		{
-			/*ShaderSpecification shaderSpec{};
-			shaderSpec.Name = "flat_colour";
-			m_LineShader = Shader::Create(shaderSpec);*/
-
 			ShaderResourceManagerSpecification resourceManagerSpec{};
 			resourceManagerSpec.Shader = m_ShaderLibrary.Get("flat_colour");
 			resourceManagerSpec.FirstSet = 0;
@@ -177,7 +144,7 @@ namespace Zahra
 			m_LineResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
 			m_LineResourceManager->ProvideResource("Camera", m_CameraUniformBufferSet);
-			m_LineResourceManager->Bake();
+			m_LineResourceManager->Update();
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "line_pass";
@@ -282,21 +249,13 @@ namespace Zahra
 			//m_QuadShader.Reset();
 		}
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// TEXTURE SLOTS
+		for (auto& texture : m_TextureSlots)
 		{
-			for (auto& texture : m_TextureSlots)
-			{
-				texture.Reset();
-			}
-			m_TextureSlots.clear();
+			texture.Reset();
 		}
+		m_TextureSlots.clear();
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CAMERA DATA
-		{
-			m_CameraUniformBufferSet.Reset();
-		}
+		m_CameraUniformBufferSet.Reset();
 	}
 
 	void Renderer2D::BeginScene(const glm::mat4& cameraPV)
@@ -305,7 +264,9 @@ namespace Zahra
 
 		m_CameraUniformBufferSet->SetData(Renderer::GetCurrentFrameIndex(), &cameraPV, sizeof(glm::mat4));
 
-		// TODO: reset texture array
+		m_TextureSlotsInUse = 1;
+		for (uint32_t i = 1; i < m_TextureSlots.size(); i++)
+			m_TextureSlots[i] = m_TextureSlots[0];
 
 		m_QuadIndexCount = 0;
 		for (uint32_t batch = 0; batch < m_QuadBatchEnds.size(); batch++)
@@ -339,8 +300,7 @@ namespace Zahra
 
 					m_QuadVertexBuffers[batch][frame]->SetData(m_QuadBatchStarts[batch], dataSize);
 
-					// TODO: provide texture array
-					m_QuadResourceManager->ProvideResource("u_Sampler", m_TextureSlots[0]);
+					m_QuadResourceManager->ProvideResource("u_Sampler", m_TextureSlots);
 
 					Renderer::DrawIndexed(m_QuadRenderPass, m_QuadResourceManager, m_QuadVertexBuffers[batch][frame], m_QuadIndexBuffer, batchSize);
 
@@ -464,9 +424,9 @@ namespace Zahra
 			newVertex->Position = transform * m_QuadTemplate[i];
 			newVertex->Tint = colour;
 			newVertex->TextureCoord = m_TextureTemplate[i];
-			/*newVertex->TextureIndex = 0.0f;
+			newVertex->TextureIndex = 0;
 			newVertex->TilingFactor = 1.0f;
-			newVertex->EntityID = entityID;*/
+			//newVertex->EntityID = entityID;
 
 			newVertex++;
 		}
@@ -475,57 +435,56 @@ namespace Zahra
 		m_Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint, float tiling, int entityID)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec4& tint, float tiling, int entityID)
 	{
-		//// TODO: separate maxima for each primitive type
-		//if (s_Data.QuadIndexCount >= RendererData::MaxQuadIndicesPerBatch)
-		//{
-		//	SubmitCurrentQuadBatch();
-		//	AddNewQuadBatch();
-		//}
+		m_LastQuadBatch = m_QuadIndexCount / c_MaxQuadIndicesPerBatch;
 
-		//// FIND AN AVAILABLE TEXTURE SLOT
-		//float textureIndex = 0.0f;
-		//{
+		if (m_LastQuadBatch >= m_QuadBatchStarts.size())
+		{
+			AddNewQuadBatch();
+			m_QuadBatchEnds.emplace_back();
+			m_QuadBatchEnds[m_LastQuadBatch] = m_QuadBatchStarts[m_LastQuadBatch];
+		}
 
-		//	for (uint32_t i = 1; i < s_Data.CurrentTextureSlotIndex; i++)
-		//	{
-		//		// TODO: this comparison is horrendous, refactor it once we have a general asset UUID system
-		//		if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
-		//		{
-		//			textureIndex = (float)i;
-		//			break;
-		//		}
-		//	}
+		uint32_t textureIndex = 0;
+		{
+			// check if texture is already in our array
+			for (uint32_t i = 1; i < m_TextureSlotsInUse; i++)
+			{
+				if (m_TextureSlots[i]->GetHash() == texture->GetHash())
+				{
+					textureIndex = i;
+					break;
+				}
+			}
 
-		//	if (textureIndex == 0.0f)
-		//	{
-		//		if (s_Data.CurrentTextureSlotIndex >= RendererData::MaximumBoundTextures)
-		//		{
-		//			SubmitCurrentQuadBatch();
-		//			AddNewQuadBatch();
-		//		}
+			// otherwise, add it to the array, dynamically resizing if necessary/possible
+			if (textureIndex == 0)
+			{
+				Z_CORE_ASSERT(m_TextureSlotsInUse < m_Specification.MaxTextureSlots, "Reached maximum bound textures");
 
-		//		textureIndex = (float)s_Data.CurrentTextureSlotIndex;
-		//		s_Data.TextureSlots[s_Data.CurrentTextureSlotIndex] = texture;
-		//		s_Data.CurrentTextureSlotIndex++;
-		//	}
-		//}
+				textureIndex = m_TextureSlotsInUse;
+				m_TextureSlots[textureIndex] = texture;
+				m_TextureSlotsInUse++;
+			}
+		}
 
-		//for (int i = 0; i < 4; i++)
-		//{
-		//	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadPositions[i];
-		//	s_Data.QuadVertexBufferPtr->Tint = tint;
-		//	s_Data.QuadVertexBufferPtr->TextureCoord = s_Data.QuadTextureCoords[i];
-		//	s_Data.QuadVertexBufferPtr->TextureIndex = textureIndex;
-		//	s_Data.QuadVertexBufferPtr->TilingFactor = tiling;
-		//	s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		auto& newVertex = m_QuadBatchEnds[m_LastQuadBatch];
+		for (int i = 0; i < 4; i++)
+		{
+			newVertex->Position = transform * m_QuadTemplate[i];
+			newVertex->Tint = tint;
+			newVertex->TextureCoord = m_TextureTemplate[i];
+			newVertex->TextureIndex = textureIndex;
+			newVertex->TilingFactor = tiling;
+			//newVertex->EntityID = entityID;
 
-		//	s_Data.QuadVertexBufferPtr++;
-		//}
+			newVertex++;
+		}
 
-		//s_Data.QuadIndexCount += 6;
-		//s_Data.Stats.QuadCount++;
+		m_QuadIndexCount += 6;
+		m_Stats.QuadCount++;
+
 	}
 
 	void Renderer2D::DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID)
@@ -583,7 +542,7 @@ namespace Zahra
 		m_Stats.LineCount++;
 	}
 
-	void Renderer2D::DrawRect(const glm::mat4& transform, const glm::vec4& colour, int entityID)
+	void Renderer2D::DrawQuadBoundingBox(const glm::mat4& transform, const glm::vec4& colour, int entityID)
 	{
 		for (int i = 0; i < 4; i++)
 			DrawLine(transform * m_QuadTemplate[i], transform * m_QuadTemplate[(i + 1) % 4], colour, entityID);
@@ -593,5 +552,6 @@ namespace Zahra
 	{
 		m_QuadRenderPass->OnResize();
 		m_CircleRenderPass->OnResize();
+		m_LineRenderPass->OnResize();
 	}
 }

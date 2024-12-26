@@ -20,6 +20,12 @@ void SandboxLayer::OnAttach()
 	Zahra::Renderer2DSpecification rendererSpec{};
 	rendererSpec.RenderTarget = Zahra::Renderer::GetLoadPassFramebuffer();
 	m_Renderer2D = Zahra::Ref<Zahra::Renderer2D>::Create(rendererSpec);
+
+	m_Textures.resize(3);
+	Zahra::Texture2DSpecification textureSpec{};
+	m_Textures[0] = Zahra::Texture2D::CreateFromFile(textureSpec, "yajirobe.png");
+	m_Textures[1] = Zahra::Texture2D::CreateFromFile(textureSpec, "checkerboard.png");
+	m_Textures[2] = Zahra::Texture2D::CreateFromFile(textureSpec, "viking_room.png");
 }
 
 void SandboxLayer::OnDetach()
@@ -29,6 +35,8 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float dt)
 {
+	m_Camera.OnUpdate(dt);
+
 	if (m_FramerateRefreshTimer.Elapsed() >= c_FramerateRefreshInterval)
 	{
 		m_FramerateRefreshTimer.Reset();
@@ -42,15 +50,17 @@ void SandboxLayer::OnUpdate(float dt)
 	float elapsedTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 	// TODO: setup an editor camera instead of just setting these here
-	glm::mat4 view = glm::lookAt(glm::vec3(7.0f, 7.0f, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))
+	/*glm::mat4 view = glm::lookAt(glm::vec3(7.0f, 7.0f, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))
 		* glm::rotate(glm::mat4(1.0f), .5f * elapsedTime, { 0.0f, 0.0f, 1.0f });
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);*/
+	glm::mat4 view = m_Camera.GetViewMatrix();
+	glm::mat4 projection = m_Camera.GetProjection();
 	projection[1][1] *= -1.f; // NOTE: remember to do this parity correction for all projections coming from glm
+
+	//Zahra::Renderer::DrawTestScene(view, projection);
 
 	m_Renderer2D->BeginScene(projection * view);
 	{
-		//Zahra::Renderer::DrawTestScene();
-
 		int n = 30;
 		float scale = 10.0f / n;
 
@@ -61,14 +71,16 @@ void SandboxLayer::OnUpdate(float dt)
 				float x = -5.0f + (i + 0.5f) * scale;
 				float y = -5.0f + (j + 0.5f) * scale;
 
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x, y, .0f });
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), { y, .0f, x });
 				transform *= glm::rotate(glm::mat4(1.0f), glm::atan(x) + elapsedTime, { 1.0f, 0.0f, 0.0f });
 				transform *= glm::scale(glm::mat4(1.0f), { .8f * scale, .8f * scale, .8f * scale });
 
 				glm::vec4 colour = { .25f + glm::cos(3 * elapsedTime) * .5f * ((float)i) / n, .25f + glm::sin(3 * elapsedTime) * .5f * ((float)j) / n, .1f, 1.0f};
 
-				//m_Renderer2D->DrawQuad(transform, colour);
-				m_Renderer2D->DrawRect(transform, {1.0f, 1.0f, 0.0f, 1.0f});
+				uint32_t texIndex = (i + j) % 3;
+
+				m_Renderer2D->DrawQuad(transform, m_Textures[texIndex], colour);
+				//m_Renderer2D->DrawQuadBoundingBox(transform, {1.0f, 1.0f, 0.0f, 1.0f});
 				//m_Renderer2D->DrawCircle(transform, colour, .2f, .01f);
 			}
 		}
@@ -79,6 +91,8 @@ void SandboxLayer::OnUpdate(float dt)
 
 void SandboxLayer::OnEvent(Zahra::Event& event)
 {
+	m_Camera.OnEvent(event);
+
 	Zahra::EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<Zahra::KeyPressedEvent>(Z_BIND_EVENT_FN(SandboxLayer::OnKeyPressedEvent));
 	dispatcher.Dispatch<Zahra::WindowResizedEvent>(Z_BIND_EVENT_FN(SandboxLayer::OnWindowResizedEvent));
@@ -182,7 +196,14 @@ bool SandboxLayer::OnKeyPressedEvent(Zahra::KeyPressedEvent& event)
 
 bool SandboxLayer::OnWindowResizedEvent(Zahra::WindowResizedEvent& event)
 {
-	m_Renderer2D->OnWindowResize(event.GetWidth(), event.GetHeight());
+	uint32_t width = event.GetWidth();
+	uint32_t height = event.GetHeight();
+
+	if (width == 0 || height == 0)
+		return false;
+
+	m_Renderer2D->OnWindowResize(width, height);
+	m_Camera.SetViewportSize(width, height);
 
 	return false;
 }

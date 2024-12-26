@@ -15,49 +15,49 @@ namespace Zahra
 		Init();
 	}
 
-	VulkanShaderResourceManager::~VulkanShaderResourceManager()
+	void VulkanShaderResourceManager::Init()
+	{
+		const auto& reflectionData = m_Shader->m_ReflectionData;
+
+		for (const auto& resource : reflectionData.ResourceMetadata)
+		{
+			if (resource.Set < m_FirstSet || resource.Set > m_LastSet)
+				continue;
+
+			auto& newShaderResource = m_Resources[resource.Name];
+			newShaderResource.Metadata = resource;
+			newShaderResource.Data.resize(resource.ArrayLength);
+
+			// for array-type resources, it's helpful to cache a vector of image/buffer infos
+			if (resource.ArrayLength > 1)
+			{
+				switch (resource.Type)
+				{
+				case ShaderResourceType::Texture2D:
+				{
+					newShaderResource.ImageInfos.resize(resource.ArrayLength);
+					break;
+				}
+
+				default:
+					Z_CORE_ASSERT(false, "This array type is not yet supported");
+				}
+			}
+
+			newShaderResource.Provided = false;
+		}
+
+		CreateDescriptorPool();
+		AllocateDescriptorSets();
+	}
+
+	void VulkanShaderResourceManager::CreateDescriptorPool()
 	{
 		VkDevice& device = VulkanContext::GetCurrentVkDevice();
-		vkDeviceWaitIdle(device);
-		vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
-	}
-
-	void VulkanShaderResourceManager::ProvideResource(const std::string& name, Ref<UniformBufferSet> uniformBufferSet, uint32_t arrayIndex)
-	{
-		auto it = m_Resources.find(name);
-		Z_CORE_ASSERT(it != m_Resources.end(), "No expected resource was found with the provided name");
-		Z_CORE_ASSERT(m_Resources[name].Metadata.Type == ShaderResourceType::UniformBuffer, "Wrong resource type provided");
-
-		m_Resources.at(name).Data[arrayIndex] = uniformBufferSet;
-	}
-
-	void VulkanShaderResourceManager::ProvideResource(const std::string& name, Ref<Texture2D> texture, uint32_t arrayIndex)
-	{
-		auto it = m_Resources.find(name);
-		Z_CORE_ASSERT(it != m_Resources.end(), "No expected resource was found with the provided name");
-		Z_CORE_ASSERT(m_Resources[name].Metadata.Type == ShaderResourceType::Texture2D, "Wrong resource type provided");
-
-		m_Resources.at(name).Data[arrayIndex] = texture;
-	}
-
-	bool VulkanShaderResourceManager::CheckIfComplete()
-	{
-		// TODO: check if all managed resources have been correctly submitted
-		return true;
-	}
-
-	void VulkanShaderResourceManager::Bake()
-	{
-		if (!CheckIfComplete()) throw std::runtime_error("VulkanShaderResourceManager is missing required resources");
-
-		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 		uint32_t maxSetIndex = m_Shader->m_ReflectionData.MaxSetIndex;
-		VkDevice& device = VulkanContext::GetCurrentVkDevice();
-		const std::vector<VkDescriptorSetLayout>& descriptorLayouts = m_Shader->m_DescriptorSetLayouts;
+		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CREATE DESCRIPTOR POOL
-		if(m_DescriptorPool != VK_NULL_HANDLE)
+		if (m_DescriptorPool != VK_NULL_HANDLE)
 			vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
 
 		std::vector<VkDescriptorPoolSize> poolSizes =
@@ -74,11 +74,18 @@ namespace Zahra
 
 		VulkanUtils::ValidateVkResult(vkCreateDescriptorPool(device, &poolInfo, nullptr, &m_DescriptorPool),
 			"Vulkan descriptor pool creation failed");
+	}
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////
-		// ALLOCATE DESCRIPTOR SETS
+	void VulkanShaderResourceManager::AllocateDescriptorSets()
+	{
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
+		uint32_t maxSetIndex = m_Shader->m_ReflectionData.MaxSetIndex;
+		uint32_t framesInFlight = Renderer::GetFramesInFlight();
+		const std::vector<VkDescriptorSetLayout>& descriptorLayouts = m_Shader->m_DescriptorSetLayouts;
+
 		m_DescriptorSets.resize(framesInFlight);
-		for (auto& vec : m_DescriptorSets) vec.resize(maxSetIndex + 1);
+		for (auto& vec : m_DescriptorSets)
+			vec.resize(maxSetIndex + 1);
 
 		for (uint32_t set = m_FirstSet; set <= m_LastSet; set++)
 		{
@@ -91,7 +98,7 @@ namespace Zahra
 			descriptorSetAllocationInfo.pSetLayouts = layouts.data();
 
 			std::vector<VkDescriptorSet> descriptorPerFrame(framesInFlight);
-			
+
 			VulkanUtils::ValidateVkResult(vkAllocateDescriptorSets(device, &descriptorSetAllocationInfo, descriptorPerFrame.data()),
 				"Descriptor set allocation failed");
 
@@ -100,61 +107,122 @@ namespace Zahra
 				m_DescriptorSets[frame][set] = descriptorPerFrame[frame];
 			}
 		}
+	}
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////
-		// UPDATE DESCRIPTOR SETS
-		for (uint32_t frame = 0; frame < framesInFlight; frame++)
+	VulkanShaderResourceManager::~VulkanShaderResourceManager()
+	{
+		VkDevice& device = VulkanContext::GetCurrentVkDevice();
+		vkDeviceWaitIdle(device);
+		vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
+	}
+
+	void VulkanShaderResourceManager::ProvideResource(const std::string& name, Ref<UniformBufferSet> uniformBufferSet)
+	{
+		Z_CORE_ASSERT(m_Resources.find(name) != m_Resources.end(), "No expected resource was found with the provided name");
+
+		VulkanShaderResource& resource = m_Resources[name];
+		Z_CORE_ASSERT(resource.Metadata.Type == ShaderResourceType::UniformBuffer, "Wrong resource type provided");
+		Z_CORE_ASSERT(resource.Metadata.ArrayLength == 1, "This method is not intended for use with array-type resources");
+
+		resource.Data[0] = uniformBufferSet;
+
+		for (uint32_t frame = 0; frame < Renderer::GetFramesInFlight(); frame++)
 		{
-			for (auto&& [name, resource] : m_Resources)
-			{
-				VkWriteDescriptorSet write{};
-				write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				write.dstSet = m_DescriptorSets[frame][resource.Metadata.Set];
-				write.dstBinding = resource.Metadata.Binding;
-				write.descriptorType = VulkanUtils::ShaderResourceTypeToVkDescriptorType(resource.Metadata.Type);
-				write.dstArrayElement = 0;
-				write.descriptorCount = resource.Metadata.ArrayLength;
-				
-				std::vector<VkDescriptorBufferInfo> bufferInfos;
-				std::vector<VkDescriptorImageInfo> imageInfos;
-				std::vector<VkBufferView> texelBufferViews;
-
-				switch (resource.Metadata.Type)
-				{
-					case ShaderResourceType::UniformBuffer:
-					{
-						for (uint32_t i = 0; i < resource.Metadata.ArrayLength; i++)
-						{
-							bufferInfos.emplace_back(resource.Data[i].As<VulkanUniformBufferSet>()->Get(frame).As<VulkanUniformBuffer>()->GetVkDescriptorBufferInfo());
-						}
-
-						write.pBufferInfo = bufferInfos.data();
-						break;
-					}
-
-					case ShaderResourceType::Texture2D:
-					{
-						for (uint32_t i = 0; i < resource.Metadata.ArrayLength; i++)
-						{
-							imageInfos.emplace_back(resource.Data[i].As<VulkanTexture2D>()->GetVkDescriptorImageInfo());
-						}
-
-						write.pImageInfo = imageInfos.data();
-						break;
-
-					}
-
-					// TODO: other types!
-
-					default: break;
-				}
-
-				// TODO: refactor to queue all these writes up in a single array and submit them together
-				vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-
-			}
+			auto& write = m_UpdateQueue.emplace_back();
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = m_DescriptorSets[frame][resource.Metadata.Set];
+			write.dstBinding = resource.Metadata.Binding;
+			write.dstArrayElement = 0;
+			write.descriptorCount = 1;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			write.pImageInfo = nullptr;
+			write.pBufferInfo = &uniformBufferSet->Get(frame).As<VulkanUniformBuffer>()->GetVkDescriptorBufferInfo();
+			write.pTexelBufferView = nullptr;
 		}
 
+		resource.Provided = true;
+	}
+
+	void VulkanShaderResourceManager::ProvideResource(const std::string& name, Ref<Texture2D> texture)
+	{
+		Z_CORE_ASSERT(m_Resources.find(name) != m_Resources.end(), "No expected resource was found with the provided name");
+
+		VulkanShaderResource& resource = m_Resources[name];
+		Z_CORE_ASSERT(resource.Metadata.Type == ShaderResourceType::Texture2D, "Wrong resource type provided");
+		Z_CORE_ASSERT(resource.Metadata.ArrayLength == 1, "This method is not intended for use with array-type resources");
+
+		resource.Data[0] = texture;
+
+		for (uint32_t frame = 0; frame < Renderer::GetFramesInFlight(); frame++)
+		{
+			auto& write = m_UpdateQueue.emplace_back();
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.pNext = nullptr;
+			write.dstSet = m_DescriptorSets[frame][resource.Metadata.Set];
+			write.dstBinding = resource.Metadata.Binding;
+			write.dstArrayElement = 0;
+			write.descriptorCount = 1;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			write.pImageInfo = &texture.As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
+			write.pBufferInfo = nullptr;
+			write.pTexelBufferView = nullptr;
+		}
+
+		resource.Provided = true;
+	}
+
+	void VulkanShaderResourceManager::ProvideResource(const std::string& name, const std::vector<Ref<Texture2D>>& textureArray)
+	{
+		Z_CORE_ASSERT(m_Resources.find(name) != m_Resources.end(), "No expected resource was found with the provided name");
+
+		VulkanShaderResource& resource = m_Resources[name];
+		Z_CORE_ASSERT(resource.Metadata.Type == ShaderResourceType::Texture2D, "Wrong resource type provided");
+		Z_CORE_ASSERT(resource.Metadata.ArrayLength == textureArray.size(), "Provided array doesn't have the correct size");
+
+		for (uint32_t i = 0; i < resource.Metadata.ArrayLength; i++)
+		{
+			resource.Data[i] = textureArray[i];
+			resource.ImageInfos[i] = textureArray[i].As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
+		}
+
+		for (uint32_t frame = 0; frame < Renderer::GetFramesInFlight(); frame++)
+		{
+			auto& write = m_UpdateQueue.emplace_back();
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = m_DescriptorSets[frame][resource.Metadata.Set];
+			write.dstBinding = resource.Metadata.Binding;
+			write.dstArrayElement = 0;
+			write.descriptorCount = resource.ImageInfos.size();
+			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			write.pImageInfo = resource.ImageInfos.data();
+			write.pBufferInfo = nullptr;
+			write.pTexelBufferView = nullptr;
+		}
+
+		resource.Provided = true;
+	}
+
+	bool VulkanShaderResourceManager::CheckIfComplete()
+	{
+		for (auto [name, resource] : m_Resources)
+		{
+			if (!resource.Provided)
+				return false;
+		}
+
+		return true;
+	}
+
+	void VulkanShaderResourceManager::Update()
+	{
+		if (!CheckIfComplete())
+		{
+			std::string errorMessage = "Resource manager for Shader '" + m_Shader->GetName() + "' is missing expected resources";
+			throw std::runtime_error(errorMessage);
+		}
+
+		vkUpdateDescriptorSets(VulkanContext::GetCurrentVkDevice(), m_UpdateQueue.size(), m_UpdateQueue.data(), 0, nullptr);
+		m_UpdateQueue.clear();
 	}
 
 	std::vector<VkDescriptorSet>& VulkanShaderResourceManager::GetDescriptorSets()
@@ -162,20 +230,6 @@ namespace Zahra
 		return GetDescriptorSets(Renderer::GetCurrentFrameIndex());
 	}
 
-	void VulkanShaderResourceManager::Init()
-	{
-		const auto& reflectionData = m_Shader->m_ReflectionData;
-
-		for (const auto& resource : reflectionData.ResourceMetadata)
-		{
-			if (resource.Set < m_FirstSet || resource.Set > m_LastSet)
-				continue;
-
-			m_Resources[resource.Name].Metadata = resource;
-			m_Resources[resource.Name].Data.resize(resource.ArrayLength);
-		}
-
-	}
-
+	
 
 }

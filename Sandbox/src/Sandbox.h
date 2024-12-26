@@ -21,6 +21,12 @@ public:
 private:
 	Zahra::Ref<Zahra::Renderer2D> m_Renderer2D;
 
+	Zahra::EditorCamera m_Camera{ .5f, 1.78f, .1f, 1000.f };
+
+	Zahra::Ref<Zahra::Scene> m_Scene;
+
+	std::vector<Zahra::Ref<Zahra::Texture2D>> m_Textures;
+
 	const float c_FramerateRefreshInterval = .5f;
 	Zahra::Timer m_FramerateRefreshTimer;
 	float m_Framerate;

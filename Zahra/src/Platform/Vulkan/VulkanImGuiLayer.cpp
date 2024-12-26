@@ -70,7 +70,7 @@ namespace Zahra
 		imguiInfo.Subpass = 0;
 		imguiInfo.DescriptorPool = m_DescriptorPool;
 		imguiInfo.MinImageCount = 2;
-		imguiInfo.ImageCount = Application::Get().GetSpecification().RendererConfig.FramesInFlight;
+		imguiInfo.ImageCount = m_Swapchain->GetImageCount();
 		imguiInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		imguiInfo.Allocator = nullptr; // TODO: VMA allocations
 		imguiInfo.CheckVkResultFn = [](VkResult result)

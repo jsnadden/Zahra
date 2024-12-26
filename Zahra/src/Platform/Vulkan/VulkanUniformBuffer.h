@@ -16,7 +16,7 @@ namespace Zahra
 
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
 
-		const VkDescriptorBufferInfo& GetVkDescriptorBufferInfo() { return m_BufferInfo; }
+		VkDescriptorBufferInfo& GetVkDescriptorBufferInfo() { return m_BufferInfo; }
 
 	private:
 		Buffer m_Data; // TODO: do I need local storage?

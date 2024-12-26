@@ -90,6 +90,8 @@ namespace Zahra
 		}
 
 		Z_CORE_INFO("End of run loop");
+
+		m_Window->WriteConfig();
 	}
 
 	void Application::OnEvent(Event& e)

@@ -27,6 +27,7 @@ Zahra::Application* Zahra::CreateApplication(ApplicationCommandLineArgs args)
 	spec.WorkingDirectory = ".";
 	spec.CommandLineArgs = args;
 
+	spec.RendererConfig.DesiredFramesInFlight = 3;
 	spec.RendererConfig.ForceShaderCompilation = false;
 
 	spec.GPURequirements.IsDiscreteGPU = true;

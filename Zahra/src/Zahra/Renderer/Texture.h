@@ -17,12 +17,11 @@ namespace Zahra
 		virtual uint32_t GetHeight() const = 0;
 		virtual const std::filesystem::path& GetFilepath() const = 0;
 
+		// TODO: once we have a asset system in place this should be replaced with asset GUID
+		virtual uint64_t GetHash() const = 0;
+
 		//virtual void SetData(void* data, uint32_t size) = 0;
 		//virtual void SetData(Ref<Image2D> srcImage) = 0;
-
-		// this was used (in Renderer.cpp) for checking if a texture had been
-		// bound already, but should be replaced with a Resource hash/GUID comparison
-		//virtual bool operator==(const Texture& other) const = 0;
 	};
 
 	enum class TextureFilterMode

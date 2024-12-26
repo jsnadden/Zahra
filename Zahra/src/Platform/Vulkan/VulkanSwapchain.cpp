@@ -27,7 +27,7 @@ namespace Zahra
 		AllocateCommandBuffer();
 		CreateSyncObjects();
 
-		//Z_CORE_TRACE("Vulkan swap chain creation succeeded");
+		m_Initialised = true;
 	}
 
 	void VulkanSwapchain::Invalidate()
@@ -278,6 +278,7 @@ namespace Zahra
 		vkGetPhysicalDeviceMemoryProperties(device, &memory);
 
 		const GPURequirements& requirements = Application::Get().GetSpecification().GPURequirements;
+		auto& rendererCapabilities = Renderer::GetCapabilities();
 
 		if (requirements.IsDiscreteGPU && properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 			return false;
@@ -287,6 +288,8 @@ namespace Zahra
 
 		if (properties.limits.maxDescriptorSetSampledImages < requirements.MinBoundTextureSlots)
 			return false;
+		else
+			rendererCapabilities.MaxBoundTextures = properties.limits.maxDescriptorSetSampledImages;
 
 		if (features.wideLines == VK_FALSE)
 			return false; // TODO: instead just let the renderer know not to use dynamic line widths
@@ -514,8 +517,20 @@ namespace Zahra
 		m_Images.resize(m_ImageCount);
 		vkGetSwapchainImagesKHR(m_Device->m_LogicalDevice, m_Swapchain, &m_ImageCount, m_Images.data());
 
-		m_FramesInFlight = Renderer::GetConfig().FramesInFlight;
-		if (m_FramesInFlight > m_ImageCount) m_FramesInFlight = m_ImageCount;
+		if (!m_Initialised)
+		{
+			m_FramesInFlight = Renderer::GetConfig().DesiredFramesInFlight;
+		}
+
+		if (m_FramesInFlight > m_ImageCount)
+		{
+			if (!m_Initialised)
+			{
+				Z_CORE_WARN("RendererConfig requested {0} frames-in-flight, but device only supports {1} swapchain image(s)", m_FramesInFlight, m_ImageCount);
+			}
+			
+			m_FramesInFlight = m_ImageCount;
+		}
 
 		m_ImageViews.resize(m_ImageCount);
 		for (size_t i = 0; i < m_ImageCount; i++)

@@ -53,6 +53,8 @@ namespace Zahra
 		bool m_WindowResized = false;
 		bool m_Invalidated = false;
 
+		bool m_Initialised = false;
+
 		uint32_t m_ImageCount = 0;
 		uint32_t m_CurrentImageIndex = 0;
 		std::vector<VkImage> m_Images;

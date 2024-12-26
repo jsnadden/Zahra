@@ -18,11 +18,12 @@ namespace Zahra
 	public:
 		~ShaderResourceManager() {}
 
-		virtual void ProvideResource(const std::string& name, Ref<UniformBufferSet> uniformBufferSet, uint32_t arrayIndex = 0) = 0;
-		virtual void ProvideResource(const std::string& name, Ref<Texture2D> texture, uint32_t arrayIndex = 0) = 0;
+		virtual void ProvideResource(const std::string& name, Ref<UniformBufferSet> uniformBufferSet) = 0;
+		virtual void ProvideResource(const std::string& name, Ref<Texture2D> texture) = 0;
+		virtual void ProvideResource(const std::string& name, const std::vector<Ref<Texture2D>>& textureArray) = 0;
 
 		virtual bool CheckIfComplete() = 0;
-		virtual void Bake() = 0;
+		virtual void Update() = 0;
 
 		static Ref<ShaderResourceManager> Create(const ShaderResourceManagerSpecification& specification);
 	};

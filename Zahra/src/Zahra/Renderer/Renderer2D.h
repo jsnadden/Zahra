@@ -37,10 +37,10 @@ namespace Zahra
 		void EndScene();
 
 		void DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1);
-		void DrawQuad(const glm::mat4& transform, const Ref<Texture2D> texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f, int entityID = -1);
+		void DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f, int entityID = -1);
 		void DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID = -1);
 		void DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID = -1);
-		void DrawRect(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1);
+		void DrawQuadBoundingBox(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1);
 
 		void SetLineWidth(float width) { m_LineWidth = width; }
 		float GetLineWidth() { return m_LineWidth; }
@@ -85,7 +85,7 @@ namespace Zahra
 		Ref<UniformBufferSet> m_CameraUniformBufferSet;
 
 		std::vector<Ref<Texture2D>> m_TextureSlots;
-		uint32_t m_CurrentTextureSlotIndex = 1; // start at 1, because slot 0 will be our default 1x1 white texture
+		uint32_t m_TextureSlotsInUse = 1; // start at 1, because slot 0 will be our default 1x1 white texture
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// QUADS
