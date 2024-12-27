@@ -25,25 +25,21 @@ namespace Zahra
 
 	struct RendererData
 	{
-		RendererConfig Config;
-		bool ConfigSet = false;
+		RendererConfig					Config;
+		bool							ConfigSet = false;
 
-		RendererCapabilities Capabilities;
+		Renderer::Capabilities			Capabilities;
+		Renderer::Statistics			Statistics;
 
-		Renderer::Statistics Statistics;
-
-		Ref<Image2D>					RenderTarget;
-		Ref<Framebuffer>				LoadPassFramebuffer;
-		Ref<Framebuffer>				ClearPassFramebuffer;
-		// TODO: find a less stupid way to clear the rendertarget
-		Ref<VertexBuffer>				ClearVertexBuffer;
-		Ref<IndexBuffer>				ClearIndexBuffer;
+		Ref<Image2D>					PrimaryRenderTargetImage;
+		Ref<Texture2D>					PrimaryRenderTargetTexture;
+		Ref<Framebuffer>				PrimaryFramebuffer;
+		Ref<RenderPass>					ClearRenderPass;
 
 		Ref<Shader>						FullscreenTriangleShader;
 		Ref<ShaderResourceManager>		FullscreenTriangleResourceManager;
 		Ref<RenderPass>					FullscreenTriangleRenderPass;
-		Ref<Texture2D>					FullscreenTriangleTexture;
-
+		
 		Ref<Shader>						TestSceneShader;
 		Ref<ShaderResourceManager>		TestSceneResourceManager;
 		Ref<RenderPass>					TestSceneRenderPass;
@@ -69,60 +65,45 @@ namespace Zahra
 			std::filesystem::create_directories(cache);
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// RENDER TARGET
+		// PRIMARY RENDER TARGET
 		{
 			Image2DSpecification imageSpec{};
-			imageSpec.Name = "Renderer_RenderTarget";
+			imageSpec.Name = "Renderer_PrimaryRenderTarget";
 			imageSpec.Format = ImageFormat::SRGBA;
 			imageSpec.Width = s_RendererAPI->GetSwapchainWidth();
 			imageSpec.Height = s_RendererAPI->GetSwapchainHeight();
 			imageSpec.Sampled = true;
-			s_Data.RenderTarget = Image2D::Create(imageSpec);
+			imageSpec.InitialLayout = ImageLayout::ColourAttachment;
+			s_Data.PrimaryRenderTargetImage = Image2D::Create(imageSpec);
+
+			s_Data.PrimaryRenderTargetTexture = Texture2D::CreateFromImage2D(s_Data.PrimaryRenderTargetImage);
 
 			FramebufferSpecification framebufferSpec{};
-			framebufferSpec.Name = "Renderer_Clear";
+			framebufferSpec.Name = "Renderer_PrimaryFramebuffer";
 			framebufferSpec.Width = s_RendererAPI->GetSwapchainWidth();
 			framebufferSpec.Height = s_RendererAPI->GetSwapchainHeight();
 			framebufferSpec.ClearColour = { .0f, .0f, .0f };
 			{
 				auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
-				attachment.InheritFrom = s_Data.RenderTarget;
+				attachment.InheritFrom = s_Data.PrimaryRenderTargetImage;
 				attachment.Format = ImageFormat::SRGBA;
-				attachment.LoadOp = AttachmentLoadOp::Clear;
-				attachment.StoreOp = AttachmentStoreOp::Store;
 			}
 			framebufferSpec.HasDepthStencil = true;
 			framebufferSpec.DepthClearValue = 1.0f;
-			{
-				framebufferSpec.DepthStencilAttachmentSpec.Format = ImageFormat::DepthStencil;
-				framebufferSpec.DepthStencilAttachmentSpec.LoadOp = AttachmentLoadOp::Clear;
-				framebufferSpec.DepthStencilAttachmentSpec.StoreOp = AttachmentStoreOp::Store;
-			}
-			s_Data.ClearPassFramebuffer = Framebuffer::Create(framebufferSpec);
+			framebufferSpec.DepthStencilAttachmentSpec.Format = ImageFormat::DepthStencil;
+			s_Data.PrimaryFramebuffer = Framebuffer::Create(framebufferSpec);
 
-			framebufferSpec.Name = "Renderer_Load";
-			{
-				framebufferSpec.ColourAttachmentSpecs[0].LoadOp = AttachmentLoadOp::Load;
-			}
-			{
-				framebufferSpec.DepthStencilAttachmentSpec.InheritFrom = s_Data.ClearPassFramebuffer->GetDepthStencilAttachment();
-				framebufferSpec.DepthStencilAttachmentSpec.LoadOp = AttachmentLoadOp::Load;
-			}
-			s_Data.LoadPassFramebuffer = Framebuffer::Create(framebufferSpec);
+			RenderPassSpecification renderPassSpec{};
+			renderPassSpec.Name = "Renderer_ClearRenderPass";
+			//renderPassSpec.Shader = s_Data.Shaders.Get("vulkan_tutorial");
+			renderPassSpec.RenderTarget = s_Data.PrimaryFramebuffer;
+			renderPassSpec.ClearColourAttachments = true;
+			renderPassSpec.ClearDepthAttachment = true;
+			s_Data.ClearRenderPass = RenderPass::Create(renderPassSpec);
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CLEAR PASS
-		{
-			MeshVertex vertex = { {.0f, .0f, 1000.0f}, {.0f, .0f, .0f}, {.0f, .0f} };
-			s_Data.ClearVertexBuffer = VertexBuffer::Create(&vertex, sizeof(MeshVertex));
-
-			uint32_t indices[3] = { 0,0,0 };
-			s_Data.ClearIndexBuffer = IndexBuffer::Create(indices, 3);
-		}		
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// FINAL PASS
+		// FULLSCREEN TRIANGLE RENDERING
 		{
 			ShaderSpecification shaderSpec{};
 			shaderSpec.Name = "fullscreen_triangle";
@@ -135,15 +116,12 @@ namespace Zahra
 			s_Data.FullscreenTriangleResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
 			RenderPassSpecification renderPassSpec{};
-			renderPassSpec.Name = "Renderer_FullscreenTriangle";
+			renderPassSpec.Name = "Renderer_FullscreenTriangleRenderPass";
 			renderPassSpec.Shader = s_Data.FullscreenTriangleShader;
-			renderPassSpec.Topology = PrimitiveTopology::Triangles;
-			renderPassSpec.BackfaceCulling = false;
+			renderPassSpec.ClearColourAttachments = true;
 			s_Data.FullscreenTriangleRenderPass = RenderPass::Create(renderPassSpec);
 
-			s_Data.FullscreenTriangleTexture = Texture2D::CreateFromImage2D(s_Data.LoadPassFramebuffer->GetColourAttachment(0));
-
-			s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.FullscreenTriangleTexture);
+			s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.PrimaryRenderTargetTexture);
 			s_Data.FullscreenTriangleResourceManager->Update();
 		}
 
@@ -161,11 +139,10 @@ namespace Zahra
 			s_Data.TestSceneResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
 			RenderPassSpecification renderPassSpec{};
-			renderPassSpec.Name = "Renderer_TestScene";
+			renderPassSpec.Name = "Renderer_TestSceneRenderPass";
 			renderPassSpec.Shader = s_Data.TestSceneShader;
-			renderPassSpec.RenderTarget = s_Data.ClearPassFramebuffer;
 			renderPassSpec.Topology = PrimitiveTopology::Triangles;
-			renderPassSpec.BackfaceCulling = false;
+			renderPassSpec.RenderTarget = s_Data.PrimaryFramebuffer;
 			s_Data.TestSceneRenderPass = RenderPass::Create(renderPassSpec);
 
 			MeshSpecification meshSpec{};
@@ -186,6 +163,8 @@ namespace Zahra
 			s_Data.TestSceneResourceManager->ProvideResource("u_Texture", s_Data.TestSceneTexture);
 			s_Data.TestSceneResourceManager->Update();
 		}
+
+		Z_CORE_INFO("Core rendering engine initialised");
 	}
 
 	void Renderer::Shutdown()
@@ -197,17 +176,14 @@ namespace Zahra
 		s_Data.TestSceneResourceManager.Reset();
 		s_Data.TestSceneShader.Reset();
 
-		s_Data.FullscreenTriangleTexture.Reset();
 		s_Data.FullscreenTriangleRenderPass.Reset();
 		s_Data.FullscreenTriangleResourceManager.Reset();
 		s_Data.FullscreenTriangleShader.Reset();
 
-		s_Data.ClearIndexBuffer.Reset();
-		s_Data.ClearVertexBuffer.Reset();
-
-		s_Data.LoadPassFramebuffer.Reset();
-		s_Data.ClearPassFramebuffer.Reset();
-		s_Data.RenderTarget.Reset();
+		s_Data.ClearRenderPass.Reset();
+		s_Data.PrimaryFramebuffer.Reset();
+		s_Data.PrimaryRenderTargetTexture.Reset();
+		s_Data.PrimaryRenderTargetImage.Reset();
 
 		s_RendererAPI->Shutdown();
 	}
@@ -226,7 +202,7 @@ namespace Zahra
 		s_Data.Config = config;
 	}
 
-	RendererCapabilities& Renderer::GetCapabilities()
+	Renderer::Capabilities& Renderer::GetCapabilities()
 	{
 		return s_Data.Capabilities;
 	}
@@ -251,14 +227,14 @@ namespace Zahra
 		return s_RendererAPI->GetCurrentFrameIndex();
 	}
 
-	const Ref<Image2D>& Renderer::GetRenderTarget()
+	const Ref<Image2D>& Renderer::GetPrimaryRenderTarget()
 	{
-		return s_Data.RenderTarget;
+		return s_Data.PrimaryRenderTargetImage;
 	}
 
-	const Ref<Framebuffer>& Renderer::GetLoadPassFramebuffer()
+	const Ref<Framebuffer>& Renderer::GetPrimaryFramebuffer()
 	{
-		return s_Data.LoadPassFramebuffer;
+		return s_Data.PrimaryFramebuffer;
 	}
 
 	const Renderer::Statistics& Renderer::GetStats()
@@ -271,17 +247,9 @@ namespace Zahra
 		s_RendererAPI->BeginFrame();
 		
 		uint32_t frameIndex = s_RendererAPI->GetCurrentFrameIndex();
-
-		// TODO: rework clear pass, this is confusing and slow
-		{
-			TestTransforms transforms{};
-			s_Data.TestSceneUniformBuffers->SetData(frameIndex, &transforms, sizeof(TestTransforms));
-
-			s_RendererAPI->BeginRenderPass(s_Data.TestSceneRenderPass);
-			s_RendererAPI->DrawIndexed(s_Data.TestSceneRenderPass, s_Data.TestSceneResourceManager, s_Data.ClearVertexBuffer, s_Data.ClearIndexBuffer);
-			s_RendererAPI->EndRenderPass();
-		}
-
+		
+		s_RendererAPI->BeginRenderPass(s_Data.ClearRenderPass, false, true);
+		s_RendererAPI->EndRenderPass();
 	}
 
 	void Renderer::EndFrame()
@@ -293,9 +261,9 @@ namespace Zahra
 		s_RendererAPI->EndFrame();
 	}
 
-	void Renderer::BeginRenderPass(Ref<RenderPass>& renderPass)
+	void Renderer::BeginRenderPass(Ref<RenderPass>& renderPass, bool bindPipeline, bool clearAttachments)
 	{
-		s_RendererAPI->BeginRenderPass(renderPass);
+		s_RendererAPI->BeginRenderPass(renderPass, bindPipeline, clearAttachments);
 	}
 
 	void Renderer::EndRenderPass()
@@ -312,17 +280,16 @@ namespace Zahra
 	{
 		s_RendererAPI->OnWindowResize();
 
-		s_Data.RenderTarget->Resize(width, height);
-		s_Data.ClearPassFramebuffer->Resize(width, height);
-		s_Data.LoadPassFramebuffer->Resize(width, height);
-		s_Data.TestSceneRenderPass->OnResize();
+		s_Data.PrimaryRenderTargetImage->Resize(width, height);
+		s_Data.PrimaryRenderTargetTexture->Resize(width, height);
+		s_Data.PrimaryFramebuffer->Resize(width, height);
+		s_Data.ClearRenderPass->OnResize();
 
-		if (s_Data.FullscreenTriangleTexture)
-		{
-			s_Data.FullscreenTriangleTexture->Resize(width, height);
-			s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.FullscreenTriangleTexture);
-			s_Data.FullscreenTriangleResourceManager->Update();
-		}
+		s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.PrimaryRenderTargetTexture);
+		s_Data.FullscreenTriangleResourceManager->Update();
+		s_Data.FullscreenTriangleRenderPass->OnResize();
+
+		s_Data.TestSceneRenderPass->OnResize();
 	}
 
 	void Renderer::Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)

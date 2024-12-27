@@ -13,14 +13,15 @@ namespace Zahra
 	{
 	public:
 		EditorLayer();
-
 		~EditorLayer() = default;
 
 		void OnAttach() override;
 		void OnDetach() override;
+
 		void OnUpdate(float dt) override;
-		void OnEvent(Event& event) override;
 		void OnImGuiRender() override;
+
+		void OnEvent(Event& event) override;
 		bool OnKeyPressedEvent(KeyPressedEvent& event);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
 

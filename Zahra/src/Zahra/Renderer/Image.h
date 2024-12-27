@@ -51,6 +51,7 @@ namespace Zahra
 		std::string Name; // for debugging
 		uint32_t Width, Height;
 		ImageFormat Format = ImageFormat::Unspecified;
+		ImageLayout InitialLayout = ImageLayout::Unspecified;
 		bool Sampled;
 		bool TransferSource;
 		bool TransferDestination;

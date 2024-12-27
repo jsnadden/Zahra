@@ -17,7 +17,7 @@ namespace Zahra
 	class Scene : public RefCounted
 	{
 	public:
-		Scene();
+		Scene(const std::string& sceneName = "Untitled");
 		~Scene();
 
 		static Ref<Scene> CopyScene(Ref<Scene> oldScene);

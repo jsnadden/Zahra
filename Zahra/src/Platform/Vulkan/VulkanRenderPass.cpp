@@ -11,30 +11,26 @@ namespace Zahra
 {
 	namespace VulkanUtils
 	{
-		static VkAttachmentLoadOp VulkanLoadOp(AttachmentLoadOp op)
+		static VkAttachmentLoadOp VulkanLoadOp(AttachmentLoadOp loadOp)
 		{
-			switch (op)
+			switch (loadOp)
 			{
-			case AttachmentLoadOp::Load:
-			{
-				return VK_ATTACHMENT_LOAD_OP_LOAD;
-				break;
+				case AttachmentLoadOp::Unspecified:		return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				case AttachmentLoadOp::Clear:			return VK_ATTACHMENT_LOAD_OP_CLEAR;
+				case AttachmentLoadOp::Load:			return VK_ATTACHMENT_LOAD_OP_LOAD;
 			}
-			case AttachmentLoadOp::Clear:
-			{
-				return VK_ATTACHMENT_LOAD_OP_CLEAR;
-				break;
-			}
-			case AttachmentLoadOp::Unspecified:
-			{
-				return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				break;
-			}
-
-			}
-
-			Z_CORE_ASSERT(false, "Unrecognised LoadOp");
+			Z_CORE_ASSERT(false, "Unsupported load operation");
 			return VK_ATTACHMENT_LOAD_OP_MAX_ENUM;
+		}
+
+		static VkImageLayout InitialLayoutFromLoadOp(AttachmentLoadOp loadOp, bool depthStencil)
+		{
+			if (loadOp == AttachmentLoadOp::Clear)
+				return VK_IMAGE_LAYOUT_UNDEFINED;
+			else if (depthStencil)
+				return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; // TODO: framebuffer spec should flag whether we'll sample the depth/stencil attachment or not
+			else
+				return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 
 		static VkAttachmentStoreOp VulkanStoreOp(AttachmentStoreOp op)
@@ -70,6 +66,8 @@ namespace Zahra
 		CreateRenderPass();
 		CreatePipeline();
 		CreateFramebuffers();
+
+		CreateClearData();
 	}
 
 	VulkanRenderPass::~VulkanRenderPass()
@@ -122,6 +120,12 @@ namespace Zahra
 	{
 		DestroyFramebuffers();
 		CreateFramebuffers();
+
+		for (auto& rect : m_ClearRects)
+		{
+			rect.rect.extent.width = m_TargetSwapchain ? m_Swapchain->GetWidth() : m_Specification.RenderTarget->GetWidth();
+			rect.rect.extent.height = m_TargetSwapchain ? m_Swapchain->GetHeight() : m_Specification.RenderTarget->GetHeight();
+		}
 	}
 
 	void VulkanRenderPass::CreateRenderPass()
@@ -134,7 +138,7 @@ namespace Zahra
 			description.flags = 0;
 			description.format = m_Swapchain->GetSwapchainImageFormat();
 			description.samples = VK_SAMPLE_COUNT_1_BIT;
-			description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			description.loadOp = m_Specification.ClearColourAttachments ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
 			description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -178,12 +182,27 @@ namespace Zahra
 			VkFormat depthStencilFormat = VulkanUtils::GetSupportedDepthStencilFormat();
 			Ref<VulkanFramebuffer> renderTarget = m_Specification.RenderTarget.As<VulkanFramebuffer>();
 
+			///////////////////////////////////////////////////////////////////////////////////////
+			// Attachment descriptions
 			std::vector<VkAttachmentDescription> attachmentDescriptions = renderTarget->GetAttachmentDescriptions();
-
 			uint32_t colourAttachmentCount = (uint32_t)attachmentDescriptions.size();
 			if (hasDepthStencil)
 				colourAttachmentCount--;
 
+			for (uint32_t i = 0; i < colourAttachmentCount; i++)
+			{
+				attachmentDescriptions[i].loadOp = m_Specification.ClearColourAttachments ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+				attachmentDescriptions[i].initialLayout = m_Specification.ClearColourAttachments ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			}
+
+			if (hasDepthStencil)
+			{
+				attachmentDescriptions[colourAttachmentCount].loadOp = m_Specification.ClearDepthAttachment ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+				attachmentDescriptions[colourAttachmentCount].initialLayout = m_Specification.ClearDepthAttachment ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+			}
+
+			///////////////////////////////////////////////////////////////////////////////////////
+			// Attachment references
 			std::vector<VkAttachmentReference> colourAttachmentReferences;
 			for (uint32_t i = 0; i < colourAttachmentCount; i++)
 			{
@@ -196,12 +215,16 @@ namespace Zahra
 			depthStencilAttachmentReference.attachment = (uint32_t)colourAttachmentReferences.size();
 			depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+			///////////////////////////////////////////////////////////////////////////////////////
+			// Subpass
 			VkSubpassDescription subpass{};
 			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 			subpass.colorAttachmentCount = (uint32_t)colourAttachmentReferences.size();
 			subpass.pColorAttachments = colourAttachmentReferences.data();
 			if (hasDepthStencil) subpass.pDepthStencilAttachment = &depthStencilAttachmentReference;
 
+			///////////////////////////////////////////////////////////////////////////////////////
+			// Subpass dependencies
 			VkPipelineStageFlags stageMask = hasDepthStencil ?
 				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
 				: VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -257,6 +280,8 @@ namespace Zahra
 				nextPassDepth.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 			}
 
+			///////////////////////////////////////////////////////////////////////////////////////
+			// Render pass creation
 			VkRenderPassCreateInfo renderPassInfo{};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 			renderPassInfo.attachmentCount = (uint32_t)attachmentDescriptions.size();
@@ -274,10 +299,14 @@ namespace Zahra
 	void VulkanRenderPass::CreatePipeline()
 	{
 		Ref<VulkanShader> shader = Ref<VulkanShader>(m_Specification.Shader);
+
+		if (!shader)
+			return;
+
 		const auto& shaderStageInfos = shader->GetPipelineShaderStageInfos();
 		VkDevice& device = m_Swapchain->GetDevice()->GetVkDevice();
 		VertexBufferLayout vertexLayout = shader->GetVertexLayout();
-		std::vector<VkDescriptorSetLayout> layouts = shader->GetDescriptorSetLayouts();
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts = shader->GetDescriptorSetLayouts();
 		// TODO: get push constant ranges from shader reflection
 
 		bool hasDepthStencil = false;
@@ -299,11 +328,15 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////
 		// Vertex input
 		std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions;
-
-		VkVertexInputBindingDescription& vertexInputBinding = vertexInputBindingDescriptions.emplace_back();
-		vertexInputBinding.binding = 0;
-		vertexInputBinding.stride = vertexLayout.GetStride();
-		vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		// TODO: should really gather this info in shader, but for now we'll either
+		// have no bindings (i.e no vertex buffers), or just one at index 0
+		if (vertexLayout.GetElementCount())
+		{
+			VkVertexInputBindingDescription& vertexInputBinding = vertexInputBindingDescriptions.emplace_back();
+			vertexInputBinding.binding = 0;
+			vertexInputBinding.stride = vertexLayout.GetStride();
+			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		}
 
 		// TODO: add other layouts for instanced transforms etc.
 
@@ -328,7 +361,7 @@ namespace Zahra
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 1; // TODO: increase to account for additional bindings
+		vertexInputInfo.vertexBindingDescriptionCount = vertexInputBindingDescriptions.size();
 		vertexInputInfo.pVertexBindingDescriptions = vertexInputBindingDescriptions.data();
 		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexInputAttributes.size();
 		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributes.data();
@@ -439,8 +472,8 @@ namespace Zahra
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.pNext = nullptr;
-		pipelineLayoutInfo.setLayoutCount = (uint32_t)layouts.size();
-		pipelineLayoutInfo.pSetLayouts = layouts.data();
+		pipelineLayoutInfo.setLayoutCount = (uint32_t)descriptorSetLayouts.size();
+		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 0; // TODO: push constants
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
@@ -530,6 +563,47 @@ namespace Zahra
 		}
 
 		m_Framebuffers.clear();
+	}
+
+	void VulkanRenderPass::CreateClearData()
+	{
+		uint32_t colourAttachmentCount = m_TargetSwapchain ? 1 : m_Specification.RenderTarget->GetColourAttachmentCount();
+		m_ClearValues = GetClearValues();
+		m_ClearAttachments.resize(colourAttachmentCount);
+		m_ClearRects.resize(colourAttachmentCount);
+
+		uint32_t renderTargetWidth = m_TargetSwapchain ? m_Swapchain->GetWidth() : m_Specification.RenderTarget->GetWidth();
+		uint32_t renderTargetHeight = m_TargetSwapchain ? m_Swapchain->GetHeight() : m_Specification.RenderTarget->GetHeight();
+
+
+		for (uint32_t i = 0; i < colourAttachmentCount; i++)
+		{
+			m_ClearAttachments[i].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			m_ClearAttachments[i].colorAttachment = i;
+			m_ClearAttachments[i].clearValue = m_ClearValues[i];
+
+			m_ClearRects[i].baseArrayLayer = 0;
+			m_ClearRects[i].layerCount = 1; // TODO: get layer count
+			m_ClearRects[i].rect.extent.width = renderTargetWidth;
+			m_ClearRects[i].rect.extent.height = renderTargetHeight;
+			m_ClearRects[i].rect.offset.x = 0;
+			m_ClearRects[i].rect.offset.y = 0;
+		}
+
+		if (!m_TargetSwapchain && m_Specification.RenderTarget->GetSpecification().HasDepthStencil)
+		{
+			auto& depthAttachment = m_ClearAttachments.emplace_back();
+			depthAttachment.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+			depthAttachment.clearValue = m_ClearValues[colourAttachmentCount];
+
+			auto& depthRect = m_ClearRects.emplace_back();
+			depthRect.baseArrayLayer = 0;
+			depthRect.layerCount = 1; // TODO: get layer count
+			depthRect.rect.extent.width = m_Specification.RenderTarget->GetWidth();
+			depthRect.rect.extent.height = m_Specification.RenderTarget->GetHeight();
+			depthRect.rect.offset.x = 0;
+			depthRect.rect.offset.y = 0;
+		}
 	}
 
 	void VulkanRenderPass::ValidateSpecification()

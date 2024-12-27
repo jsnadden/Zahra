@@ -6,15 +6,15 @@ class SandboxLayer : public Zahra::Layer
 {
 public:
 	SandboxLayer();
-
 	~SandboxLayer() = default;
 
 	void OnAttach() override;
 	void OnDetach() override;
+
 	void OnUpdate(float dt) override;
-	void OnEvent(Zahra::Event& event) override;
 	void OnImGuiRender() override;
 
+	void OnEvent(Zahra::Event& event) override;
 	bool OnKeyPressedEvent(Zahra::KeyPressedEvent& event);
 	bool OnWindowResizedEvent(Zahra::WindowResizedEvent& event);
 
@@ -22,8 +22,11 @@ private:
 	Zahra::Ref<Zahra::Renderer2D> m_Renderer2D;
 
 	Zahra::EditorCamera m_Camera{ .5f, 1.78f, .1f, 100.f };
-	Zahra::Ref<Zahra::Framebuffer> m_Framebuffer;
-	std::vector<Zahra::Ref<Zahra::Texture2D>> m_Textures;
+
+	uint32_t m_ViewportWidth = 1, m_ViewportHeight = 1;
+	/*Zahra::Ref<Zahra::Image2D> m_ViewportRenderTarget;
+	Zahra::Ref<Zahra::Framebuffer> m_ClearViewportFramebuffer, m_ViewportFramebuffer;
+	std::vector<Zahra::Ref<Zahra::Texture2D>> m_Textures;*/
 
 	Zahra::Ref<Zahra::Scene> m_Scene;
 	std::vector<std::vector<Zahra::Entity>> m_EntityGrid;

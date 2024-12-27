@@ -21,8 +21,8 @@ namespace Zahra
 		ImageFormat Format = ImageFormat::Unspecified;
 
 		//glm::vec3 ClearColour;
-		AttachmentLoadOp LoadOp = AttachmentLoadOp::Unspecified;
-		AttachmentStoreOp StoreOp = AttachmentStoreOp::Unspecified;
+		//AttachmentLoadOp LoadOp = AttachmentLoadOp::Unspecified;
+		//AttachmentStoreOp StoreOp = AttachmentStoreOp::Unspecified;
 
 		// add blending options
 	};
@@ -31,9 +31,9 @@ namespace Zahra
 	{
 		std::string Name; // for debugging
 
-		uint32_t Width, Height;
+		uint32_t Width = 1.0f, Height = 1.0f;
 
-		glm::vec3 ClearColour;
+		glm::vec3 ClearColour = { 0.f, 0.f, 0.f };
 		std::vector<AttachmentSpecification> ColourAttachmentSpecs;
 
 		bool HasDepthStencil = false;
@@ -55,6 +55,8 @@ namespace Zahra
 
 		virtual Ref<Image2D> GetColourAttachment(uint32_t index) const = 0;
 		virtual Ref<Image2D> GetDepthStencilAttachment() const = 0;
+
+		virtual uint32_t GetColourAttachmentCount() const = 0;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;

@@ -292,7 +292,7 @@ namespace Zahra
 
 	void VulkanImGuiLayer::CreateLinearisedRenderTarget()
 	{
-		Ref<VulkanImage2D> renderTarget = Renderer::GetRenderTarget().As<VulkanImage2D>();
+		Ref<VulkanImage2D> renderTarget = Renderer::GetPrimaryRenderTarget().As<VulkanImage2D>();
 		auto& device = VulkanContext::GetCurrentDevice();
 
 		m_RenderTarget = renderTarget->GetVkImage();

@@ -72,6 +72,8 @@ namespace Zahra
 		const VkFramebuffer& GetVkFramebuffer() const;
 
 		const std::vector<VkClearValue> GetClearValues() const;
+		const std::vector<VkClearAttachment>& GetClearAttachments() const { return m_ClearAttachments; }
+		const std::vector<VkClearRect>& GetClearRects() const { return m_ClearRects; }
 
 		virtual void OnResize() override;
 
@@ -87,10 +89,16 @@ namespace Zahra
 
 		std::vector<VkFramebuffer> m_Framebuffers;
 
+		std::vector<VkClearValue> m_ClearValues;
+		std::vector<VkClearAttachment> m_ClearAttachments;
+		std::vector<VkClearRect> m_ClearRects;
+
 		void CreateRenderPass();
 		void CreatePipeline();
 		void CreateFramebuffers();
 		void DestroyFramebuffers();
+
+		void CreateClearData();
 
 		void ValidateSpecification();
 

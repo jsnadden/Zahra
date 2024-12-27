@@ -47,7 +47,7 @@ namespace Zahra
 		//			(materials, textures, transforms)
 		// Give RenderPass a ShaderResourceManager!
 
-		virtual void BeginRenderPass(Ref<RenderPass>& renderPass) = 0;
+		virtual void BeginRenderPass(Ref<RenderPass>& renderPass, bool bindPipeline = true, bool clearAttachments = false) = 0;
 		virtual void EndRenderPass() = 0;
 
 		virtual void Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount) = 0;

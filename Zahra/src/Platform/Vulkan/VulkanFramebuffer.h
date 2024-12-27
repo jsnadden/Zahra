@@ -23,6 +23,8 @@ namespace Zahra
 		virtual Ref<Image2D> GetColourAttachment(uint32_t index) const;
 		virtual Ref<Image2D> GetDepthStencilAttachment() const;
 
+		virtual uint32_t GetColourAttachmentCount() const override { return m_ColourAttachmentCount; }
+
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
@@ -35,8 +37,9 @@ namespace Zahra
 	private:
 		FramebufferSpecification m_Specification;
 
-		uint32_t m_Width, m_Height;
+		uint32_t m_Width = 1.0f, m_Height = 1.0f;
 
+		uint32_t m_ColourAttachmentCount = 0;
 		std::vector<Ref<VulkanImage2D>> m_ColourAttachments;
 		Ref<VulkanImage2D> m_DepthStencilAttachment;
 

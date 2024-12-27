@@ -28,7 +28,7 @@ namespace Zahra
 
 		virtual void Present() override;
 
-		virtual void BeginRenderPass(Ref<RenderPass>& renderPass) override;
+		virtual void BeginRenderPass(Ref<RenderPass>& renderPass, bool bindPipeline = true, bool clearAttachments = false) override;
 		virtual void EndRenderPass() override;
 
 		virtual void Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount) override;

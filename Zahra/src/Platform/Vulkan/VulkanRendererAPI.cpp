@@ -79,7 +79,7 @@ namespace Zahra
 			"Vulkan command buffer failed to end recording");
 	}
 
-	void VulkanRendererAPI::BeginRenderPass(Ref<RenderPass>& renderPass)
+	void VulkanRendererAPI::BeginRenderPass(Ref<RenderPass>& renderPass, bool bindPipeline, bool clearAttachments)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 
@@ -114,31 +114,34 @@ namespace Zahra
 
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipeline());
+		if (bindPipeline)
+		{
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipeline());
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(renderArea.width);
-		viewport.height = static_cast<float>(renderArea.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+			VkViewport viewport{};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = static_cast<float>(renderArea.width);
+			viewport.height = static_cast<float>(renderArea.height);
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = renderArea;
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+			VkRect2D scissor{};
+			scissor.offset = { 0, 0 };
+			scissor.extent = renderArea;
+			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+		}
 
 		// TODO: give RenderPass its own resource manager, and bind its descriptor sets here
-		/*if (resourceManager)
+		
+		if (clearAttachments)
 		{
-			auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-			auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-			uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
-				vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
-		}*/
+			auto& attachments = vulkanRenderPass->GetClearAttachments();
+			auto& rects = vulkanRenderPass->GetClearRects();
+
+			vkCmdClearAttachments(commandBuffer, attachments.size(), attachments.data(), rects.size(), rects.data());
+		}
 	}
 
 	void VulkanRendererAPI::EndRenderPass()

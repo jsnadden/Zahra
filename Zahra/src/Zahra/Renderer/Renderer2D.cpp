@@ -69,8 +69,6 @@ namespace Zahra
 			renderPassSpec.Name = "quad_pass";
 			renderPassSpec.Shader = m_ShaderLibrary.Get("flat_texture");
 			renderPassSpec.RenderTarget = m_Specification.RenderTarget;
-			renderPassSpec.Topology = PrimitiveTopology::Triangles;
-			renderPassSpec.BackfaceCulling = false;
 			m_QuadRenderPass = RenderPass::Create(renderPassSpec);
 
 			m_QuadVertexBuffers.resize(1);
@@ -118,8 +116,6 @@ namespace Zahra
 			renderPassSpec.Name = "circle_pass";
 			renderPassSpec.Shader = m_ShaderLibrary.Get("circle");
 			renderPassSpec.RenderTarget = m_QuadRenderPass->GetRenderTarget();
-			renderPassSpec.Topology = PrimitiveTopology::Triangles;
-			renderPassSpec.BackfaceCulling = false;
 			m_CircleRenderPass = RenderPass::Create(renderPassSpec);
 
 			m_CircleVertexBuffers.resize(1);
@@ -149,9 +145,9 @@ namespace Zahra
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "line_pass";
 			renderPassSpec.Shader = m_ShaderLibrary.Get("flat_colour");
-			renderPassSpec.RenderTarget = m_CircleRenderPass->GetRenderTarget();
 			renderPassSpec.Topology = PrimitiveTopology::Lines;
 			renderPassSpec.DynamicLineWidths = true;
+			renderPassSpec.RenderTarget = m_CircleRenderPass->GetRenderTarget();
 			m_LineRenderPass = RenderPass::Create(renderPassSpec);
 
 			m_LineVertexBuffers.resize(1);
@@ -192,7 +188,6 @@ namespace Zahra
 
 			m_LineRenderPass.Reset();
 			m_LineResourceManager.Reset();
-			//m_LineShader.Reset();
 		}
 		
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,7 +213,6 @@ namespace Zahra
 
 			m_CircleRenderPass.Reset();
 			m_CircleResourceManager.Reset();
-			//m_CircleShader.Reset();
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +240,6 @@ namespace Zahra
 
 			m_QuadRenderPass.Reset();
 			m_QuadResourceManager.Reset();
-			//m_QuadShader.Reset();
 		}
 
 		for (auto& texture : m_TextureSlots)

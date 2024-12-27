@@ -17,9 +17,9 @@ namespace Zahra
 {
 	static Scene::DebugRenderSettings s_OverlayMode;
 
-	Scene::Scene()
+	Scene::Scene(const std::string& sceneName)
 	{
-		m_SceneName = "Untitled";
+		m_SceneName = sceneName;
 
 		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<IDComponent>>();
 		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<TagComponent>>();

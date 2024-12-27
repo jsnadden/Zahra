@@ -17,46 +17,83 @@ void SandboxLayer::OnAttach()
 {
 	m_FramerateRefreshTimer.Reset();
 
-	m_Framebuffer = Zahra::Renderer::GetLoadPassFramebuffer();
+	/*{
+		Zahra::Image2DSpecification imageSpec{};
+		imageSpec.Name = "EditorViewportRenderTarget";
+		imageSpec.Format = Zahra::ImageFormat::SRGBA;
+		imageSpec.Width = m_ViewportWidth;
+		imageSpec.Height = m_ViewportHeight;
+		imageSpec.Sampled = true;
+		m_ViewportRenderTarget = Zahra::Image2D::Create(imageSpec);
 
-	m_Camera.SetViewportSize(m_Framebuffer->GetWidth(), m_Framebuffer->GetHeight());
+		Zahra::FramebufferSpecification framebufferSpec{};
+		framebufferSpec.Name = "EditorClearViewport";
+		framebufferSpec.Width = m_ViewportWidth;
+		framebufferSpec.Height = m_ViewportHeight;
+		framebufferSpec.ClearColour = { .0f, .0f, .0f };
+		{
+			auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
+			attachment.InheritFrom = m_ViewportRenderTarget;
+			attachment.Format = Zahra::ImageFormat::SRGBA;
+			attachment.LoadOp = Zahra::AttachmentLoadOp::Clear;
+			attachment.StoreOp = Zahra::AttachmentStoreOp::Store;
+		}
+		framebufferSpec.HasDepthStencil = true;
+		framebufferSpec.DepthClearValue = 1.0f;
+		{
+			framebufferSpec.DepthStencilAttachmentSpec.Format = Zahra::ImageFormat::DepthStencil;
+			framebufferSpec.DepthStencilAttachmentSpec.LoadOp = Zahra::AttachmentLoadOp::Clear;
+			framebufferSpec.DepthStencilAttachmentSpec.StoreOp = Zahra::AttachmentStoreOp::Store;
+		}
+		m_ClearViewportFramebuffer = Zahra::Framebuffer::Create(framebufferSpec);
+
+		framebufferSpec.Name = "EditorViewport";
+		{
+			framebufferSpec.ColourAttachmentSpecs[0].LoadOp = Zahra::AttachmentLoadOp::Load;
+		}
+		{
+			framebufferSpec.DepthStencilAttachmentSpec.InheritFrom = m_ClearViewportFramebuffer->GetDepthStencilAttachment();
+			framebufferSpec.DepthStencilAttachmentSpec.LoadOp = Zahra::AttachmentLoadOp::Load;
+		}
+		m_ViewportFramebuffer = Zahra::Framebuffer::Create(framebufferSpec);
+	}*/
+
+	m_Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 
 	Zahra::Renderer2DSpecification rendererSpec{};
-	rendererSpec.RenderTarget = m_Framebuffer;
+	rendererSpec.RenderTarget = Zahra::Renderer::GetPrimaryFramebuffer();//m_ViewportFramebuffer;
 	m_Renderer2D = Zahra::Ref<Zahra::Renderer2D>::Create(rendererSpec);
 
 	m_Scene = Zahra::Ref<Zahra::Scene>::Create();
 
-	Zahra::Texture2DSpecification textureSpec{};
+	/*Zahra::Texture2DSpecification textureSpec{};
 	m_Textures.emplace_back(Zahra::Texture2D::CreateFromFile(textureSpec, "yajirobe.png"));
-	m_Textures.emplace_back(Zahra::Texture2D::CreateFromFile(textureSpec, "checkerboard.png"));
+	m_Textures.emplace_back(Zahra::Texture2D::CreateFromFile(textureSpec, "checkerboard.png"));*/
 
+	int n = 30;
+	float scale = 10.0f / n;
+
+	m_EntityGrid.resize(n);
+	for (int i = 0; i < n; i++)
 	{
-		int n = 30;
-		float scale = 10.0f / n;
-
-		m_EntityGrid.resize(n);
-		for (int i = 0; i < n; i++)
+		m_EntityGrid[i].resize(n);
+		for (int j = 0; j < n; j++)
 		{
-			m_EntityGrid[i].resize(n);
-			for (int j = 0; j < n; j++)
-			{
-				auto entity = m_Scene->CreateEntity(std::to_string(i) + "," + std::to_string(j));
+			auto entity = m_Scene->CreateEntity(std::to_string(i) + "," + std::to_string(j));
 
-				float x = -5.0f + (i + 0.5f) * scale;
-				float y = -5.0f + (j + 0.5f) * scale;
+			float x = -5.0f + (i + 0.5f) * scale;
+			float y = -5.0f + (j + 0.5f) * scale;
 
-				auto& tc = entity.GetComponents<Zahra::TransformComponent>();
-				tc.Translation = { y, .0f, x };
-				tc.EulerAngles = { glm::atan(x) , .0f, .0f };
-				tc.Scale = { .8f * scale, .8f * scale, .8f * scale };
+			auto& tc = entity.GetComponents<Zahra::TransformComponent>();
+			tc.Translation = { y, .0f, x };
+			tc.EulerAngles = { glm::atan(x) , .0f, .0f };
+			tc.Scale = { .8f * scale, .8f * scale, .8f * scale };
 
-				auto& sc = entity.AddComponent<Zahra::SpriteComponent>();
-				sc.Tint = { .25f + .5f * ((float)i) / n, .25f + .5f * ((float)j) / n, .1f, 1.0f };
-				//sc.Texture = m_Textures[(i + j) % 2];
+			auto& sc = entity.AddComponent<Zahra::SpriteComponent>();
+			sc.Tint = { .25f + .5f * ((float)i) / n, .25f + .5f * ((float)j) / n, .1f, 1.0f };
+			//sc.Texture = m_Textures[(i + j) % 2];
 
-				m_EntityGrid[i][j] = entity;
-			}
+			m_EntityGrid[i][j] = entity;
 		}
 	}
 }
@@ -70,9 +107,15 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float dt)
 {
-	m_Camera.OnUpdate(dt);
+	if (m_ViewportWidth != Zahra::Renderer::GetSwapchainWidth() || m_ViewportHeight != Zahra::Renderer::GetSwapchainHeight())
+	{
+		m_ViewportWidth = Zahra::Renderer::GetSwapchainWidth();
+		m_ViewportHeight = Zahra::Renderer::GetSwapchainHeight();
+		m_Renderer2D->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+		m_Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	}
 
-	//Zahra::Renderer::DrawTestScene(m_Camera.GetView(), m_Camera.GetProjection());
+	m_Camera.OnUpdate(dt);
 
 	if (m_FramerateRefreshTimer.Elapsed() >= c_FramerateRefreshInterval)
 	{
@@ -89,16 +132,10 @@ void SandboxLayer::OnUpdate(float dt)
 		}
 	}
 
-	m_Scene->OnRenderEditor(m_Renderer2D, m_Camera);
-}
-
-void SandboxLayer::OnEvent(Zahra::Event& event)
-{
-	m_Camera.OnEvent(event);
-
-	Zahra::EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<Zahra::KeyPressedEvent>(Z_BIND_EVENT_FN(SandboxLayer::OnKeyPressedEvent));
-	dispatcher.Dispatch<Zahra::WindowResizedEvent>(Z_BIND_EVENT_FN(SandboxLayer::OnWindowResizedEvent));
+	if (m_Toggle)
+		Zahra::Renderer::DrawTestScene(m_Camera.GetView(), m_Camera.GetProjection());
+	else
+		m_Scene->OnRenderEditor(m_Renderer2D, m_Camera);
 }
 
 void SandboxLayer::OnImGuiRender()
@@ -109,6 +146,13 @@ void SandboxLayer::OnImGuiRender()
 
 	if (ImGui::Begin("Engine Statistics", 0, ImGuiWindowFlags_NoCollapse))
 	{
+		ImGui::Checkbox("Test scene?", &m_Toggle);
+
+		ImGui::SeparatorText("Timing");
+		{
+			ImGui::Text("Framerate: %.2f fps", m_Framerate);
+		}
+
 		ImGui::SeparatorText("2D Batch Renderer");
 		{
 			ImGui::Text("Draw calls: %u", renderer2DStats.DrawCalls);
@@ -118,11 +162,6 @@ void SandboxLayer::OnImGuiRender()
 			ImGui::Text("Circle batches: %u", renderer2DStats.CircleBatchCount);
 			ImGui::Text("Lines: %u", renderer2DStats.LineCount);
 			ImGui::Text("Line batches: %u", renderer2DStats.LineBatchCount);
-		}	
-
-		ImGui::SeparatorText("Timing");
-		{
-			ImGui::Text("Framerate: %.2f fps", m_Framerate);
 		}
 
 		ImGui::SeparatorText("Memory Allocations");
@@ -185,7 +224,15 @@ void SandboxLayer::OnImGuiRender()
 
 		ImGui::End();
 	}
-	
+}
+
+void SandboxLayer::OnEvent(Zahra::Event& event)
+{
+	m_Camera.OnEvent(event);
+
+	Zahra::EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<Zahra::KeyPressedEvent>(Z_BIND_EVENT_FN(SandboxLayer::OnKeyPressedEvent));
+	dispatcher.Dispatch<Zahra::WindowResizedEvent>(Z_BIND_EVENT_FN(SandboxLayer::OnWindowResizedEvent));
 }
 
 bool SandboxLayer::OnKeyPressedEvent(Zahra::KeyPressedEvent& event)

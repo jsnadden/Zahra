@@ -24,12 +24,17 @@ namespace Zahra
 	struct RenderPassSpecification
 	{
 		std::string Name;
-		Ref<Shader> Shader;
-		Ref<Framebuffer> RenderTarget; // if not set, will target swapchain instead
 
-		PrimitiveTopology Topology = PrimitiveTopology::Triangles;		
-		bool BackfaceCulling = true;
+		// pipeline
+		Ref<Shader> Shader;
+		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
+		bool BackfaceCulling = false;
 		bool DynamicLineWidths = false;
+
+		// render target
+		Ref<Framebuffer> RenderTarget; // if not set, will target swapchain instead
+		bool ClearColourAttachments = false;
+		bool ClearDepthAttachment = false;
 	};
 
 	class RenderPass : public RefCounted

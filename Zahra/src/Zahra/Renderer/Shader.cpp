@@ -40,6 +40,18 @@ namespace Zahra
         Add(name, shader);
     }
 
+    Ref<Shader> ShaderLibrary::Create(ShaderSpecification specification)
+    {
+		Z_CORE_ASSERT(!Exists(specification.Name), "Shader with this name already exists.");
+
+		auto newShader = Shader::Create(specification);
+		Z_CORE_ASSERT(newShader, "Shader creation failed");
+
+		Add(specification.Name, newShader);
+
+		return newShader;
+    }
+
     Ref<Shader> ShaderLibrary::Get(const std::string& name)
     {
         Z_CORE_ASSERT(Exists(name), "No shader with this name exists.");

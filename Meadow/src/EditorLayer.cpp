@@ -16,10 +16,12 @@ namespace Zahra
 
 	void EditorLayer::OnAttach()
 	{
-		FramebufferSpecification framebufferSpec;
-		framebufferSpec.AttachmentSpec = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::DEPTH24STENCIL8 };
-		framebufferSpec.Width = 1280;
-		framebufferSpec.Height = 720; // These will be overwritten by the ImGui viewport window
+		FramebufferSpecification framebufferSpec{};
+		auto& colourAttachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
+		{
+			colourAttachment.Format
+		}
+		framebufferSpec.HasDepthStencil = true;
 
 		m_Framebuffer = Framebuffer::Create(framebufferSpec);
 
@@ -114,17 +116,6 @@ namespace Zahra
 			m_Framebuffer->Unbind();
 			
 		}
-	}
-
-	void EditorLayer::OnEvent(Event& event)
-	{
-		if (m_ViewportHovered) m_EditorCamera.OnEvent(event);
-
-		m_ContentBrowserPanel.OnEvent(event);
-		
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<KeyPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnKeyPressedEvent));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressedEvent));
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -386,7 +377,7 @@ namespace Zahra
 		ImGui::Separator();
 		ImGui::Text("Debug overlay:");
 
-		Scene::OverlayMode overlayMode = m_ActiveScene->GetOverlayMode();
+		Scene::DebugRenderSettings overlayMode = m_ActiveScene->DebugRenderSettings();
 		ImGui::Checkbox("Show colliders", &overlayMode.ShowColliders);
 		ImGui::ColorEdit4("Collider colour", glm::value_ptr(overlayMode.ColliderColour), ImGuiColorEditFlags_NoInputs);
 		m_ActiveScene->SetOverlayMode(overlayMode);
@@ -543,6 +534,17 @@ namespace Zahra
 			m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
 
 		ImGui::End();
+	}
+
+	void EditorLayer::OnEvent(Event& event)
+	{
+		if (m_ViewportHovered) m_EditorCamera.OnEvent(event);
+
+		m_ContentBrowserPanel.OnEvent(event);
+
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<KeyPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnKeyPressedEvent));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressedEvent));
 	}
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& event)

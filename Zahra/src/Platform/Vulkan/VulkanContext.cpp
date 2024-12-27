@@ -66,13 +66,11 @@ namespace Zahra
 		m_Swapchain->Init(m_VulkanInstance, m_WindowHandle);
 		m_Device = m_Swapchain->GetDevice();
 
-		Z_CORE_INFO("Vulkan renderer successfully initialised");
+		Z_CORE_INFO("Vulkan initialised");
 	}
 
 	void VulkanContext::Shutdown()
 	{
-		Z_CORE_INFO("Vulkan renderer shutting down");
-
 		m_Swapchain->Shutdown(m_VulkanInstance);
 
 		if (m_ValidationLayersEnabled)

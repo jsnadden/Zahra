@@ -40,7 +40,6 @@ namespace Zahra
 		VkImage m_RenderTarget = VK_NULL_HANDLE;
 		VkImageView m_LinearisedImageView = VK_NULL_HANDLE;
 		VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
-
 		VkExtent2D m_FramebufferSize;
 
 		//Ref<VulkanImage2D> m_RenderTarget;

@@ -31,7 +31,7 @@ namespace Zahra
 		Renderer::Init();
 
 		// TODO: ressurect
-		//ScriptEngine::Init();
+		ScriptEngine::Init();
 
 		if (m_Specification.ImGuiConfig.Enabled)
 		{
@@ -45,7 +45,7 @@ namespace Zahra
 	Application::~Application()
 	{
 		// TODO: ressurect
-		//ScriptEngine::Shutdown();
+		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
 	}
 
@@ -134,14 +134,6 @@ namespace Zahra
 
 	bool Application::OnWindowResized(WindowResizedEvent& e)
 	{
-		//if (e.GetWidth() == 0 || e.GetHeight() == 0)
-		//{
-		//	//m_Minimised = true;
-		//	return false;
-		//}
-		
-		//m_Minimised = false;
-
 		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 
 		return false;

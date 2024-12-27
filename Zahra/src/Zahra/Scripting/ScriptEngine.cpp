@@ -162,6 +162,7 @@ namespace Zahra
 
 		ScriptGlue::RegisterFunctions();
 
+		Z_CORE_INFO("Script engine initialised");
 	}
 
 	void ScriptEngine::Shutdown()

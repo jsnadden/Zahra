@@ -69,6 +69,50 @@ namespace Zahra
 			Z_CORE_ASSERT(false, "Unsupported image format");
 			return false;
 		}
+
+		static VkImageLayout VulkanImageLayout(ImageLayout layout)
+		{
+			switch (layout)
+			{
+				case ImageLayout::Unspecified: return VK_IMAGE_LAYOUT_UNDEFINED;
+				case ImageLayout::ColourAttachment: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				case ImageLayout::DepthStencilAttachment: return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+				case ImageLayout::Texture: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				case ImageLayout::TransferSource: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				case ImageLayout::TransferDestination: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				case ImageLayout::Presentation: return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			}
+			Z_CORE_ASSERT(false, "Unsupported image layout");
+			return VK_IMAGE_LAYOUT_MAX_ENUM;
+		}
+
+		static VkAccessFlags DstAccessForLayoutTransition(ImageLayout layout)
+		{
+			switch (layout)
+			{
+				case ImageLayout::ColourAttachment: return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
+				case ImageLayout::DepthStencilAttachment: return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
+				case ImageLayout::Texture: return VK_ACCESS_SHADER_READ_BIT;
+				case ImageLayout::TransferSource: return VK_ACCESS_TRANSFER_READ_BIT;
+				case ImageLayout::TransferDestination: return VK_ACCESS_TRANSFER_WRITE_BIT;
+			}
+			Z_CORE_ASSERT(false, "Unsupported image layout");
+			return VK_ACCESS_FLAG_BITS_MAX_ENUM;
+		}
+
+		static VkPipelineStageFlags DstStageForLayoutTransition(ImageLayout layout)
+		{
+			switch (layout)
+			{
+				case ImageLayout::ColourAttachment: return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				case ImageLayout::DepthStencilAttachment: return VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				case ImageLayout::Texture: return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				case ImageLayout::TransferSource: return VK_PIPELINE_STAGE_TRANSFER_BIT;
+				case ImageLayout::TransferDestination: return VK_PIPELINE_STAGE_TRANSFER_BIT;
+			}
+			Z_CORE_ASSERT(false, "Unsupported image layout");
+			return VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
+		}
 	}
 
 	class VulkanImage2D : public Image2D
@@ -85,12 +129,7 @@ namespace Zahra
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
-		//virtual void CopyFrom(Ref<Image>& source) override;
-
-		//void TransitionLayout(ImageLayout layout);
-
 		void SetData(const VkBuffer& srcBuffer);
-		//void SetLayout(VkImageLayout layout);
 
 		const VkExtent2D GetDimensions() const { return { m_Specification.Width, m_Specification.Height }; }
 		VkFormat GetVkFormat() const { return VulkanUtils::VulkanFormat(m_Specification.Format); }
@@ -113,6 +152,7 @@ namespace Zahra
 		void CreateAndAllocateImage();
 		void CreateImageView();
 		void CreateSampler();
+		void TransitionLayout();
 
 		void Init();
 		void Cleanup();
