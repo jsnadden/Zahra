@@ -137,7 +137,14 @@ namespace Zahra
 							case spirv_cross::SPIRType::BaseType::Boolean:	return ShaderDataType::Bool;
 							case spirv_cross::SPIRType::BaseType::Int:		return ShaderDataType::Int;
 							case spirv_cross::SPIRType::BaseType::Float:	return ShaderDataType::Float;
+
+							default:
+							{
+								Z_CORE_ASSERT(false, "Unrecognised variable type from shader reflection");
+								break;
+							}
 						}
+						break;
 					}
 					case 2:
 					{
@@ -145,7 +152,14 @@ namespace Zahra
 						{
 							case spirv_cross::SPIRType::BaseType::Int:		return ShaderDataType::Int2;
 							case spirv_cross::SPIRType::BaseType::Float:	return ShaderDataType::Float2;
+
+							default:
+							{
+								Z_CORE_ASSERT(false, "Unrecognised variable type from shader reflection");
+								break;
+							}
 						}
+						break;
 					}
 					case 3:
 					{
@@ -153,7 +167,14 @@ namespace Zahra
 						{
 							case spirv_cross::SPIRType::BaseType::Int:		return ShaderDataType::Int3;
 							case spirv_cross::SPIRType::BaseType::Float:	return ShaderDataType::Float3;
+
+							default:
+							{
+								Z_CORE_ASSERT(false, "Unrecognised variable type from shader reflection");
+								break;
+							}
 						}
+						break;
 					}
 					case 4:
 					{
@@ -161,7 +182,19 @@ namespace Zahra
 						{
 							case spirv_cross::SPIRType::BaseType::Int:		return ShaderDataType::Int4;
 							case spirv_cross::SPIRType::BaseType::Float:	return ShaderDataType::Float4;
+
+							default:
+							{
+								Z_CORE_ASSERT(false, "Unrecognised variable type from shader reflection");
+								break;
+							}
 						}
+					}
+
+					default:
+					{
+						Z_CORE_ASSERT(false, "Unrecognised variable type from shader reflection");
+						break;
 					}
 				}
 			}
@@ -172,10 +205,16 @@ namespace Zahra
 					case 2:	return ShaderDataType::Mat2;
 					case 3:	return ShaderDataType::Mat3;
 					case 4:	return ShaderDataType::Mat4;
+
+					default:
+					{
+						Z_CORE_ASSERT(false, "Unrecognised variable type from shader reflection");
+						break;
+					}
 				}
 			}
 			
-			Z_CORE_ASSERT(false, "Unsupported attribute type");
+			Z_CORE_ASSERT(false, "Unrecognised variable type from shader reflection");
 			return ShaderDataType::None;
 		}
 

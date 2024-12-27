@@ -24,7 +24,7 @@ namespace Zahra
 
 		void Recenter(const glm::vec3& center);
 
-		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		const glm::mat4& GetView() const { return m_ViewMatrix; }
 		const glm::mat4& GetProjection() const { return m_Projection; }
 		glm::mat4 GetPVMatrix() const { return m_Projection * m_ViewMatrix; }
 

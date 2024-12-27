@@ -18,7 +18,7 @@ namespace Zahra
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
-		virtual const std::filesystem::path& GetFilepath() const override { return m_Filepath.value(); }
+		virtual const std::filesystem::path& GetFilepath() const override { return m_Filepath; }
 		virtual const Texture2DSpecification& GetSpecification() const override { return m_Specification; }
 
 		// TODO: once we have a asset system in place this should be replaced with asset GUIDs
@@ -32,7 +32,7 @@ namespace Zahra
 		VkDescriptorImageInfo& GetVkDescriptorImageInfo() { return m_DescriptorImageInfo; }
 
 	private:
-		std::optional<std::filesystem::path> m_Filepath;
+		std::filesystem::path m_Filepath;
 		Buffer m_LocalImageData;
 		
 		uint32_t m_Width, m_Height;

@@ -5,8 +5,6 @@
 #include "Zahra/Core/KeyCodes.h"
 #include "Zahra/Core/MouseCodes.h"
 
-#include <glfw/glfw3.h>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
@@ -23,6 +21,7 @@ namespace Zahra
 	{
 		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
 		m_Projection = glm::perspective(m_FOV, m_AspectRatio, m_NearClip, m_FarClip);
+		m_Projection[1][1] *= -1.f; // TODO: parity correction, since glm uses y-up screenspace coords
 	}
 
 	void EditorCamera::UpdateView()

@@ -33,9 +33,9 @@ namespace Zahra
 
 		std::map<std::string, Ref<Texture2D>> m_Icons;
 
-		enum class SceneState // TODO: add Paused?
+		enum class SceneState
 		{
-			Edit = 0, Play = 1, Simulate = 2
+			Edit = 0, Play = 1, Simulate = 2, Paused = 3
 		};
 
 		SceneState m_SceneState = SceneState::Edit;

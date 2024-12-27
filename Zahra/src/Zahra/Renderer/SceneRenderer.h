@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Zahra/Renderer/RenderCommandQueue.h"
-#include "Zahra/Renderer/Shader.h"
+#include "Zahra/Renderer/Renderer2D.h"
+#include "Zahra/Scene/Scene.h"
 
 namespace Zahra
 {
 
 	struct SceneRendererSpecification
 	{
-		int Placeholder = 0;
+		Ref<Framebuffer> RenderTarget;
 	};
 
 	class SceneRenderer : public RefCounted
@@ -17,7 +17,12 @@ namespace Zahra
 		SceneRenderer(const SceneRendererSpecification& specification);
 		~SceneRenderer();
 
+		void OnViewportResize(uint32_t width, uint32_t height);
+
 	private:
+		SceneRendererSpecification m_Specification;
+		Ref<Renderer2D> m_Renderer2D;
+		uint32_t m_ViewportWidth, m_ViewportHeight;
 	};
 
 }

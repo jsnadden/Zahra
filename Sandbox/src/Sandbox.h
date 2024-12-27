@@ -21,15 +21,16 @@ public:
 private:
 	Zahra::Ref<Zahra::Renderer2D> m_Renderer2D;
 
-	Zahra::EditorCamera m_Camera{ .5f, 1.78f, .1f, 1000.f };
+	Zahra::EditorCamera m_Camera{ .5f, 1.78f, .1f, 100.f };
+	Zahra::Ref<Zahra::Framebuffer> m_Framebuffer;
+	std::vector<Zahra::Ref<Zahra::Texture2D>> m_Textures;
 
 	Zahra::Ref<Zahra::Scene> m_Scene;
-
-	std::vector<Zahra::Ref<Zahra::Texture2D>> m_Textures;
+	std::vector<std::vector<Zahra::Entity>> m_EntityGrid;
 
 	const float c_FramerateRefreshInterval = .5f;
 	Zahra::Timer m_FramerateRefreshTimer;
-	float m_Framerate;
+	float m_Framerate = .0f;
 
 	bool m_Toggle = true;
 

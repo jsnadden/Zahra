@@ -31,7 +31,7 @@ namespace Zahra
 	{
 		std::string Name; // for debugging
 
-		uint32_t Width, Height; // ignored if attachment is using a swapchain image
+		uint32_t Width, Height;
 
 		glm::vec3 ClearColour;
 		std::vector<AttachmentSpecification> ColourAttachmentSpecs;
@@ -55,6 +55,9 @@ namespace Zahra
 
 		virtual Ref<Image2D> GetColourAttachment(uint32_t index) const = 0;
 		virtual Ref<Image2D> GetDepthStencilAttachment() const = 0;
+
+		virtual uint32_t GetWidth() const = 0;
+		virtual uint32_t GetHeight() const = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 

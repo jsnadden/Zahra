@@ -98,8 +98,8 @@ namespace Zahra
 		}
 		else
 		{
-			FramebufferSpecification renderTargetSpec = vulkanRenderPass->GetSpecification().RenderTarget->GetSpecification();
-			renderArea = { renderTargetSpec.Width, renderTargetSpec.Height };			
+			Ref<Framebuffer> renderTarget = vulkanRenderPass->GetSpecification().RenderTarget;
+			renderArea = { renderTarget->GetWidth(), renderTarget->GetHeight() };
 		}
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};

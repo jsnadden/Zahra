@@ -222,6 +222,7 @@ namespace Zahra
 				out << YAML::Key << "Tint" << YAML::Value << sprite.Tint;
 				if (sprite.Texture)
 				{
+					// TODO: serialise texture as asset GUID instead
 					std::string texturePath = sprite.Texture->GetFilepath().string();
 					out << YAML::Key << "TexturePath" << YAML::Value << texturePath.c_str();
 				}

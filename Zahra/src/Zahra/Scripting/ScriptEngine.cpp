@@ -13,9 +13,6 @@
 
 namespace MonoUtils
 {
-	// TODO: move this to a more general engine-wide FileSystem manager:
-	
-
 	static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath)
 	{
 		Z_CORE_ASSERT(std::filesystem::exists(assemblyPath), "Assembly file does not exist");

@@ -509,8 +509,8 @@ namespace Zahra
 			framebufferInfo.renderPass = m_RenderPass;
 			framebufferInfo.attachmentCount = (uint32_t)attachmentImageViews.size();
 			framebufferInfo.pAttachments = attachmentImageViews.data();
-			framebufferInfo.width = renderTarget->GetSpecification().Width;
-			framebufferInfo.height = renderTarget->GetSpecification().Height;
+			framebufferInfo.width = renderTarget->GetWidth();
+			framebufferInfo.height = renderTarget->GetHeight();
 			framebufferInfo.layers = 1; // TODO: set this in FramebufferSpec
 
 			VulkanUtils::ValidateVkResult(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer),

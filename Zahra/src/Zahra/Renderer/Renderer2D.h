@@ -31,11 +31,12 @@ namespace Zahra
 		Renderer2D(Renderer2DSpecification specification);
 		~Renderer2D();
 		
-		void BeginScene(const glm::mat4& cameraPV);
+		void BeginScene(const glm::mat4& cameraView, const glm::mat4& cameraProjection);
 		//void BeginScene(const Camera& camera, const glm::mat4& transform);
-		//void BeginScene(const EditorCamera& camera);
+		void BeginScene(const EditorCamera& camera);
 		void EndScene();
 
+		// TODO: Add billboarded options
 		void DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1);
 		void DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec4& tint = { 1.0f, 1.0f, 1.0f, 1.0f }, float tiling = 1.0f, int entityID = -1);
 		void DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID = -1);
@@ -45,7 +46,7 @@ namespace Zahra
 		void SetLineWidth(float width) { m_LineWidth = width; }
 		float GetLineWidth() { return m_LineWidth; }
 
-		void OnWindowResize(uint32_t width, uint32_t height);
+		void OnViewportResize(uint32_t width, uint32_t height);
 
 		struct Statistics
 		{

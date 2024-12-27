@@ -66,10 +66,10 @@ namespace Zahra
 	{
 		int width, height, channels;
 
-		std::filesystem::path filepath = Renderer::GetConfig().TextureSourceDirectory;
-		filepath /= filename;
+		m_Filepath = Renderer::GetConfig().TextureSourceDirectory;
+		m_Filepath /= filename;
 
-		stbi_uc* imageData = stbi_load(filepath.string().c_str(), &width, &height, &channels, 4);
+		stbi_uc* imageData = stbi_load(m_Filepath.string().c_str(), &width, &height, &channels, 4);
 
 		Z_CORE_ASSERT(imageData, "Vulkan texture failed to load image.");
 
@@ -89,6 +89,8 @@ namespace Zahra
 	{
 		Z_CORE_ASSERT(image->GetSpecification().Sampled);
 
+		m_Filepath = "";
+
 		m_CreatedFromExistingImage = true;
 
 		m_Format = image->GetSpecification().Format;
@@ -103,6 +105,8 @@ namespace Zahra
 	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, uint32_t colour)
 		: m_Specification(specification)
 	{
+		m_Filepath = "";
+
 		m_Format = ImageFormat::SRGBA;
 		m_Width = 1;
 		m_Height = 1;

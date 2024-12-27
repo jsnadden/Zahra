@@ -2,6 +2,7 @@
 
 #include "Components.h"
 #include "Zahra/Renderer/EditorCamera.h"
+#include "Zahra/Renderer/Renderer2D.h"
 
 #include <entt.hpp>
 
@@ -33,9 +34,12 @@ namespace Zahra
 		void OnSimulationStart();
 		void OnSimulationStop();
 
-		void OnUpdateEditor(float dt, EditorCamera& camera);
-		void OnUpdateSimulation(float dt, EditorCamera& camera);
+		void OnUpdateEditor(float dt);
+		void OnUpdateSimulation(float dt);
 		void OnUpdateRuntime(float dt);
+
+		void OnRenderEditor(Ref<Renderer2D> renderer, EditorCamera& camera);
+		void OnRenderRuntime(Ref<Renderer2D> renderer);
 
 		// TODO: replace Box2D with a 3d physics engine (e.g. Nvidia PhysX)
 		void InitPhysicsWorld();
@@ -57,17 +61,13 @@ namespace Zahra
 				m_Registry.get<CameraComponent>(entity).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
 
-		struct OverlayMode
+		struct DebugRenderSettings
 		{
 			bool ShowColliders = false;
 			glm::vec4 ColliderColour = { 0.80f, 0.55f, 0.00f, 1.00f };
-
-			OverlayMode() = default;
-			OverlayMode(const OverlayMode&) = default;
 		};
 
-		static const OverlayMode& GetOverlayMode();
-		static void SetOverlayMode(OverlayMode mode);
+		static DebugRenderSettings& GetDebugRenderSettings();
 
 	private:
 		std::string m_SceneName;
@@ -81,8 +81,6 @@ namespace Zahra
 		entt::entity m_ActiveCamera = entt::null;
 
 		float m_ViewportWidth = 1.0f, m_ViewportHeight = 1.0f;
-
-		void RenderEntities();
 
 		friend class Entity;
 		friend class SceneHierarchyPanel;

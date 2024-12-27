@@ -258,9 +258,11 @@ namespace Zahra
 		m_CameraUniformBufferSet.Reset();
 	}
 
-	void Renderer2D::BeginScene(const glm::mat4& cameraPV)
+	void Renderer2D::BeginScene(const glm::mat4& cameraView, const glm::mat4& cameraProjection)
 	{
 		ResetStats();
+
+		glm::mat4 cameraPV = cameraProjection * cameraView;
 
 		m_CameraUniformBufferSet->SetData(Renderer::GetCurrentFrameIndex(), &cameraPV, sizeof(glm::mat4));
 
@@ -279,6 +281,11 @@ namespace Zahra
 		m_LineVertexCount = 0;
 		for (uint32_t batch = 0; batch < m_LineBatchEnds.size(); batch++)
 			m_LineBatchEnds[batch] = m_LineBatchStarts[batch];
+	}
+
+	void Renderer2D::BeginScene(const EditorCamera& camera)
+	{
+		BeginScene(camera.GetView(), camera.GetProjection());
 	}
 
 	void Renderer2D::EndScene()
@@ -548,7 +555,7 @@ namespace Zahra
 			DrawLine(transform * m_QuadTemplate[i], transform * m_QuadTemplate[(i + 1) % 4], colour, entityID);
 	}
 
-	void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
+	void Renderer2D::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		m_QuadRenderPass->OnResize();
 		m_CircleRenderPass->OnResize();

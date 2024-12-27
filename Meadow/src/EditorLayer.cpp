@@ -56,9 +56,8 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// REACT TO RESIZED VIEWPORT
 		{
-			FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f // framebuffer requires positive dimensions
-				&& (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+				&& (m_Framebuffer->GetWidth() != m_ViewportSize.x || m_Framebuffer->GetHeight() != m_ViewportSize.y))
 			{
 				m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 				m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
@@ -482,7 +481,7 @@ namespace Zahra
 
 			// Editor camera
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+			glm::mat4 cameraView = m_EditorCamera.GetView();
 
 			// Entity transform
 			auto& tc = selection.GetComponents<TransformComponent>();
