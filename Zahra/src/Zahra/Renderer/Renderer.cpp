@@ -95,7 +95,6 @@ namespace Zahra
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "Renderer_ClearRenderPass";
-			//renderPassSpec.Shader = s_Data.Shaders.Get("vulkan_tutorial");
 			renderPassSpec.RenderTarget = s_Data.PrimaryFramebuffer;
 			renderPassSpec.ClearColourAttachments = true;
 			renderPassSpec.ClearDepthAttachment = true;
@@ -157,7 +156,7 @@ namespace Zahra
 				s_Data.TestSceneUniformBuffers->SetData(frame, &transforms, mvpSize);
 
 			Texture2DSpecification tutorialTextureSpec{};
-			s_Data.TestSceneTexture = Texture2D::CreateFromFile(tutorialTextureSpec, "viking_room.png");
+			s_Data.TestSceneTexture = Texture2D::CreateFromFile(tutorialTextureSpec, "Assets/Textures/viking_room.png");
 
 			s_Data.TestSceneResourceManager->ProvideResource("Matrices", s_Data.TestSceneUniformBuffers);
 			s_Data.TestSceneResourceManager->ProvideResource("u_Texture", s_Data.TestSceneTexture);

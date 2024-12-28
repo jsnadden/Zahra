@@ -26,13 +26,17 @@ namespace Zahra
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
 
 	private:
-
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
+
+		// TODO: replace with a general SceneRenderer class including 2D and 3D rendering
+		Ref<Renderer2D> m_Renderer2D;
+		Ref<RenderPass> m_ClearPass;
 
 		EditorCamera m_EditorCamera{ .5f, 1.78f, .1f, 1000.f };
 
 		std::map<std::string, Ref<Texture2D>> m_Icons;
+		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
 
 		enum class SceneState
 		{
@@ -55,7 +59,7 @@ namespace Zahra
 		void UIViewport();
 		void UIGizmos();
 		void UIHighlightSelection();
-		void UIStatsWindow(); // TODO: do something better with this stuff
+		void UIStatsWindow(); // TODO: break up stats window into several tabs?
 
 		glm::vec4 m_HighlightSelectionColour = { 0.92f, 0.72f, 0.18f, 1.00f };
 
@@ -66,21 +70,21 @@ namespace Zahra
 		void SaveAsSceneFile();
 
 		// Viewport
-		Ref<Framebuffer> m_Framebuffer;
+		Ref<Framebuffer> m_ViewportFramebuffer;
+		Ref<Texture2D> m_ViewportTexture;
+		ImGuiTextureHandle m_ViewportTextureHandle = nullptr;
 		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
 		glm::vec2 m_ViewportBounds[2] = { {}, {} };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 		float m_ClearColour[4] = { .0f, .0f, .0f, 1.0f };
 		int m_GizmoType = -1;
-		Entity m_HoveredEntity;
+		Entity m_HoveredEntity;		
 
 		void ReadHoveredEntity();
 
 		// Editor panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
-
-		
 
 	};
 }

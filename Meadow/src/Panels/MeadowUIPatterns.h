@@ -389,7 +389,8 @@ namespace Zahra
 						char filepath[256];
 						strcpy_s(filepath, (const char*)payload->Data);
 
-						texture = Texture2D::Create(filepath);
+						Texture2DSpecification textureSpec{};
+						texture = Texture2D::CreateFromFile(textureSpec, filepath);
 					}
 
 					ImGui::EndDragDropTarget();

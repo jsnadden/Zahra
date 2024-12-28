@@ -26,7 +26,7 @@ namespace Zahra
 		virtual void End() override;
 
 		virtual ImGuiTextureHandle RegisterTexture(Ref<Texture2D> texture) override;
-		virtual void DeregisterTexture(ImGuiTextureHandle textureHandle) override;
+		virtual void DeregisterTexture(ImGuiTextureHandle& handle) override;
 
 		//virtual void SetRenderTarget(Ref<Image2D> renderTarget) override;
 

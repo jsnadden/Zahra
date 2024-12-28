@@ -8,6 +8,8 @@
 
 namespace Zahra
 {
+	typedef void* ImGuiTextureHandle;
+
 	class Texture : public RefCounted
 	{
 	public:
@@ -46,7 +48,7 @@ namespace Zahra
 		TextureFilterMode MagnificationFilterMode = TextureFilterMode::Linear;
 		TextureWrapMode WrapMode = TextureWrapMode::Repeat;*/
 
-		bool KeepLocalData = false;
+		bool KeepLocalData = true;
 		
 		// TODO: mipmapping, hdr etc.
 	};
@@ -56,10 +58,11 @@ namespace Zahra
 	public:
 		virtual const Texture2DSpecification& GetSpecification() const = 0;
 
-		// this does not resize the image itself, and should only be called after that has been done externally!!
+		// NOTE: only use this method if the texture was created from an existing
+		// image, and only do so after the image has already been resized
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-		static Ref<Texture2D> CreateFromFile(const Texture2DSpecification& specification, const std::string& filename);
+		static Ref<Texture2D> CreateFromFile(const Texture2DSpecification& specification, const std::string& filepath);
 		static Ref<Texture2D> CreateFromImage2D(Ref<Image2D>& image);
 		static Ref<Texture2D> CreateFlatColourTexture(const Texture2DSpecification& specification, uint32_t colour);
 	};

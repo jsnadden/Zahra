@@ -2,6 +2,7 @@
 #include "ImGuiLayer.h"
 
 #include "Platform/Vulkan/VulkanImGuiLayer.h"
+#include "Zahra/Core/Application.h"
 #include "Zahra/Renderer/Renderer.h"
 
 #include <imgui.h>
@@ -9,8 +10,13 @@
 namespace Zahra
 {
 
-	ImGuiLayer* ImGuiLayer::Create()
+	ImGuiLayer* ImGuiLayer::GetOrCreate()
 	{
+		ImGuiLayer* layer = Application::Get().GetImGuiLayer();
+
+		if (layer)
+			return layer;
+
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:	Z_CORE_ASSERT(false, "RendererAPI::API::None is not currently supported"); return nullptr;

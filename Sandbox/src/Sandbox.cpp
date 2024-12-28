@@ -4,6 +4,7 @@
 #include "Zahra/Renderer/Shader.h"
 
 #include <ImGui/imgui.h>
+#include <ImGui/imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Windows.h"
@@ -17,17 +18,20 @@ void SandboxLayer::OnAttach()
 {
 	m_FramerateRefreshTimer.Reset();
 
-	/*{
+	{
 		Zahra::Image2DSpecification imageSpec{};
-		imageSpec.Name = "EditorViewportRenderTarget";
+		imageSpec.Name = "Sandbox_ViewportImage";
 		imageSpec.Format = Zahra::ImageFormat::SRGBA;
 		imageSpec.Width = m_ViewportWidth;
 		imageSpec.Height = m_ViewportHeight;
 		imageSpec.Sampled = true;
 		m_ViewportRenderTarget = Zahra::Image2D::Create(imageSpec);
 
+		m_ViewportTexture = Zahra::Texture2D::CreateFromImage2D(m_ViewportRenderTarget);
+		Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture);
+
 		Zahra::FramebufferSpecification framebufferSpec{};
-		framebufferSpec.Name = "EditorClearViewport";
+		framebufferSpec.Name = "Sandbox_ViewportFramebuffer";
 		framebufferSpec.Width = m_ViewportWidth;
 		framebufferSpec.Height = m_ViewportHeight;
 		framebufferSpec.ClearColour = { .0f, .0f, .0f };
@@ -35,40 +39,25 @@ void SandboxLayer::OnAttach()
 			auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
 			attachment.InheritFrom = m_ViewportRenderTarget;
 			attachment.Format = Zahra::ImageFormat::SRGBA;
-			attachment.LoadOp = Zahra::AttachmentLoadOp::Clear;
-			attachment.StoreOp = Zahra::AttachmentStoreOp::Store;
 		}
 		framebufferSpec.HasDepthStencil = true;
 		framebufferSpec.DepthClearValue = 1.0f;
-		{
-			framebufferSpec.DepthStencilAttachmentSpec.Format = Zahra::ImageFormat::DepthStencil;
-			framebufferSpec.DepthStencilAttachmentSpec.LoadOp = Zahra::AttachmentLoadOp::Clear;
-			framebufferSpec.DepthStencilAttachmentSpec.StoreOp = Zahra::AttachmentStoreOp::Store;
-		}
-		m_ClearViewportFramebuffer = Zahra::Framebuffer::Create(framebufferSpec);
-
-		framebufferSpec.Name = "EditorViewport";
-		{
-			framebufferSpec.ColourAttachmentSpecs[0].LoadOp = Zahra::AttachmentLoadOp::Load;
-		}
-		{
-			framebufferSpec.DepthStencilAttachmentSpec.InheritFrom = m_ClearViewportFramebuffer->GetDepthStencilAttachment();
-			framebufferSpec.DepthStencilAttachmentSpec.LoadOp = Zahra::AttachmentLoadOp::Load;
-		}
+		framebufferSpec.DepthStencilAttachmentSpec.Format = Zahra::ImageFormat::DepthStencil;
 		m_ViewportFramebuffer = Zahra::Framebuffer::Create(framebufferSpec);
-	}*/
+	}
 
-	m_Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	Zahra::RenderPassSpecification renderPassSpec{};
+	renderPassSpec.Name = "Sandbox_ClearPass";
+	renderPassSpec.RenderTarget = m_ViewportFramebuffer;
+	renderPassSpec.ClearColourAttachments = true;
+	renderPassSpec.ClearDepthAttachment = true;
+	m_ClearPass = Zahra::RenderPass::Create(renderPassSpec);
 
 	Zahra::Renderer2DSpecification rendererSpec{};
-	rendererSpec.RenderTarget = Zahra::Renderer::GetPrimaryFramebuffer();//m_ViewportFramebuffer;
+	rendererSpec.RenderTarget = m_ViewportFramebuffer;
 	m_Renderer2D = Zahra::Ref<Zahra::Renderer2D>::Create(rendererSpec);
 
 	m_Scene = Zahra::Ref<Zahra::Scene>::Create();
-
-	/*Zahra::Texture2DSpecification textureSpec{};
-	m_Textures.emplace_back(Zahra::Texture2D::CreateFromFile(textureSpec, "yajirobe.png"));
-	m_Textures.emplace_back(Zahra::Texture2D::CreateFromFile(textureSpec, "checkerboard.png"));*/
 
 	int n = 30;
 	float scale = 10.0f / n;
@@ -91,28 +80,34 @@ void SandboxLayer::OnAttach()
 
 			auto& sc = entity.AddComponent<Zahra::SpriteComponent>();
 			sc.Tint = { .25f + .5f * ((float)i) / n, .25f + .5f * ((float)j) / n, .1f, 1.0f };
-			//sc.Texture = m_Textures[(i + j) % 2];
 
 			m_EntityGrid[i][j] = entity;
 		}
 	}
+
+	OnViewportResize();
 }
 
 void SandboxLayer::OnDetach()
 {
 	m_EntityGrid.clear();
-	m_Scene.Reset();
+
 	m_Renderer2D.Reset();
+	m_Scene.Reset();
+
+	Zahra::Application::Get().GetImGuiLayer()->DeregisterTexture(m_ViewportTexture);
+	m_ViewportTexture.Reset();
+
+	m_ClearPass.Reset();
+	m_ViewportFramebuffer.Reset();
+	m_ViewportRenderTarget.Reset();
 }
 
 void SandboxLayer::OnUpdate(float dt)
 {
-	if (m_ViewportWidth != Zahra::Renderer::GetSwapchainWidth() || m_ViewportHeight != Zahra::Renderer::GetSwapchainHeight())
+	if (m_ViewportRenderTarget->GetWidth() != m_ViewportWidth || m_ViewportRenderTarget->GetHeight() != m_ViewportHeight)
 	{
-		m_ViewportWidth = Zahra::Renderer::GetSwapchainWidth();
-		m_ViewportHeight = Zahra::Renderer::GetSwapchainHeight();
-		m_Renderer2D->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
-		m_Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		OnViewportResize();
 	}
 
 	m_Camera.OnUpdate(dt);
@@ -132,22 +127,36 @@ void SandboxLayer::OnUpdate(float dt)
 		}
 	}
 
-	if (m_Toggle)
-		Zahra::Renderer::DrawTestScene(m_Camera.GetView(), m_Camera.GetProjection());
-	else
-		m_Scene->OnRenderEditor(m_Renderer2D, m_Camera);
+	// TEMPORARY (clear viewport framebuffer)
+	Zahra::Renderer::BeginRenderPass(m_ClearPass, false, true);
+	Zahra::Renderer::EndRenderPass();
+
+	m_Scene->OnRenderEditor(m_Renderer2D, m_Camera);
 }
 
 void SandboxLayer::OnImGuiRender()
 {
+	ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_NoWindowMenuButton);
+
+	if (ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoCollapse))
+	{
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		m_ViewportWidth = viewportPanelSize.x;
+		m_ViewportHeight = viewportPanelSize.y;
+
+		Zahra::Application::Get().GetImGuiLayer()->BlockEvents(false);
+
+		ImGui::Image(m_ViewportTexture->GetImGuiHandle(), ImVec2(m_ViewportWidth, m_ViewportHeight), ImVec2(0, 0), ImVec2(1, 1));
+
+		ImGui::End();
+	}
+
 	auto& allocationStats = Zahra::Memory::GetAllocationStats();
 	auto& allocationStatsMap = Zahra::Allocator::GetAllocationStatsMap();
 	auto& renderer2DStats = m_Renderer2D->GetStats();
 
 	if (ImGui::Begin("Engine Statistics", 0, ImGuiWindowFlags_NoCollapse))
 	{
-		ImGui::Checkbox("Test scene?", &m_Toggle);
-
 		ImGui::SeparatorText("Timing");
 		{
 			ImGui::Text("Framerate: %.2f fps", m_Framerate);
@@ -226,6 +235,21 @@ void SandboxLayer::OnImGuiRender()
 	}
 }
 
+void SandboxLayer::OnViewportResize()
+{
+	Zahra::Application::Get().GetImGuiLayer()->DeregisterTexture(m_ViewportTexture);
+	m_ViewportRenderTarget->Resize(m_ViewportWidth, m_ViewportHeight);
+	m_ViewportFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
+	m_ClearPass->OnResize();
+
+	m_ViewportTexture->Resize(m_ViewportWidth, m_ViewportHeight);
+	Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture);
+
+	m_Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+
+	m_Renderer2D->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+}
+
 void SandboxLayer::OnEvent(Zahra::Event& event)
 {
 	m_Camera.OnEvent(event);
@@ -242,15 +266,6 @@ bool SandboxLayer::OnKeyPressedEvent(Zahra::KeyPressedEvent& event)
 
 bool SandboxLayer::OnWindowResizedEvent(Zahra::WindowResizedEvent& event)
 {
-	uint32_t width = event.GetWidth();
-	uint32_t height = event.GetHeight();
-
-	if (width == 0 || height == 0)
-		return false;
-
-	m_Renderer2D->OnViewportResize(width, height);
-	m_Camera.SetViewportSize(width, height);
-
 	return false;
 }
 

@@ -74,6 +74,7 @@ namespace Zahra
 		float m_RefreshPeriod = 500.0f; // in milliseconds
 
 		std::map<std::string, Ref<Texture2D>> m_Icons;
+		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
 
 		int m_ThumbnailSize = 64;
 

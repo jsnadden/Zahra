@@ -14,6 +14,29 @@ namespace Zahra
 		Cleanup();
 	}
 
+	void VulkanImage2D::Init()
+	{
+		CreateAndAllocateImage();
+		CreateImageView();
+
+		if (m_Specification.Sampled)
+			CreateSampler();
+
+		/*if (m_Specification.InitialLayout != ImageLayout::Unspecified)
+			TransitionLayout();*/
+	}
+
+	void VulkanImage2D::Cleanup()
+	{
+		auto& device = VulkanContext::GetCurrentVkDevice();
+		vkDeviceWaitIdle(device);
+
+		vkDestroySampler(device, m_Sampler, nullptr);
+		vkDestroyImageView(device, m_ImageView, nullptr);
+		vkFreeMemory(device, m_Memory, nullptr);
+		vkDestroyImage(device, m_Image, nullptr);
+	}
+
 	void VulkanImage2D::Resize(uint32_t width, uint32_t height)
 	{
 		if (width > 0 && height > 0)
@@ -177,61 +200,38 @@ namespace Zahra
 		m_Sampler = device->CreateVulkanImageSampler(filter, filter, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, mipmapMode);
 	}
 
-	void VulkanImage2D::TransitionLayout()
-	{
-		bool isDepthStencil = (m_Specification.Format == ImageFormat::DepthStencil);
-		VkImageAspectFlags aspectMask = isDepthStencil ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	//void VulkanImage2D::TransitionLayout()
+	//{
+	//	bool isDepthStencil = (m_Specification.Format == ImageFormat::DepthStencil);
+	//	VkImageAspectFlags aspectMask = isDepthStencil ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
-		auto& device = VulkanContext::GetCurrentDevice();
-		VkCommandBuffer commandBuffer = device->GetTemporaryCommandBuffer();
+	//	auto& device = VulkanContext::GetCurrentDevice();
+	//	VkCommandBuffer commandBuffer = device->GetTemporaryCommandBuffer();
 
-		VkAccessFlags dstAccessMask = VulkanUtils::DstAccessForLayoutTransition(m_Specification.InitialLayout);
-		VkPipelineStageFlags dstStageMask = VulkanUtils::DstStageForLayoutTransition(m_Specification.InitialLayout);
+	//	VkAccessFlags dstAccessMask = VulkanUtils::DstAccessForLayoutTransition(m_Specification.InitialLayout);
+	//	VkPipelineStageFlags dstStageMask = VulkanUtils::DstStageForLayoutTransition(m_Specification.InitialLayout);
 
-		VkImageMemoryBarrier barrier{};
-		{
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			barrier.newLayout = VulkanUtils::VulkanImageLayout(m_Specification.InitialLayout);
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = m_Image;
-			barrier.subresourceRange.aspectMask = aspectMask;
-			barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
-			barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.srcAccessMask = 0;
-			barrier.dstAccessMask = dstAccessMask;
-		}
+	//	VkImageMemoryBarrier barrier{};
+	//	{
+	//		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	//		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	//		barrier.newLayout = VulkanUtils::VulkanImageLayout(m_Specification.InitialLayout);
+	//		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
+	//		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	//		barrier.image = m_Image;
+	//		barrier.subresourceRange.aspectMask = aspectMask;
+	//		barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
+	//		barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
+	//		barrier.subresourceRange.baseArrayLayer = 0;
+	//		barrier.subresourceRange.layerCount = 1;
+	//		barrier.srcAccessMask = 0;
+	//		barrier.dstAccessMask = dstAccessMask;
+	//	}
 
-		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-			dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	//	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+	//		dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-		device->EndTemporaryCommandBuffer(commandBuffer);
-	}
-
-	void VulkanImage2D::Init()
-	{
-		CreateAndAllocateImage();
-		CreateImageView();
-		
-		if (m_Specification.Sampled)
-			CreateSampler();
-
-		if (m_Specification.InitialLayout != ImageLayout::Unspecified)
-			TransitionLayout();
-	}
-
-	void VulkanImage2D::Cleanup()
-	{
-		auto& device = VulkanContext::GetCurrentVkDevice();
-		vkDeviceWaitIdle(device);
-
-		vkDestroySampler(device, m_Sampler, nullptr);
-		vkDestroyImageView(device, m_ImageView, nullptr);
-		vkFreeMemory(device, m_Memory, nullptr);
-		vkDestroyImage(device, m_Image, nullptr);
-	}
+	//	device->EndTemporaryCommandBuffer(commandBuffer);
+	//}
 
 }

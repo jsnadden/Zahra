@@ -35,7 +35,7 @@ namespace Zahra
 
 		if (m_Specification.ImGuiConfig.Enabled)
 		{
-			m_ImGuiLayer = ImGuiLayer::Create();
+			m_ImGuiLayer = ImGuiLayer::GetOrCreate();
 			PushOverlay(m_ImGuiLayer);
 		}
 

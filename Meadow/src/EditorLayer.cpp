@@ -16,104 +16,161 @@ namespace Zahra
 
 	void EditorLayer::OnAttach()
 	{
-		FramebufferSpecification framebufferSpec{};
-		auto& colourAttachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
+		auto imguiLayer = ImGuiLayer::GetOrCreate();
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// VIEWPORT FRAMEBUFFER
 		{
-			colourAttachment.Format
+			FramebufferSpecification framebufferSpec{};
+			framebufferSpec.Name = "Editor_ViewportFramebuffer";
+			framebufferSpec.Width = 1;
+			framebufferSpec.Height = 1;
+			framebufferSpec.ClearColour = { .0f, .0f, .0f };
+			{
+				auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
+				attachment.Format = ImageFormat::SRGBA;
+			}
+			framebufferSpec.HasDepthStencil = true;
+			framebufferSpec.DepthClearValue = 1.0f;
+			framebufferSpec.DepthStencilAttachmentSpec.Format = ImageFormat::DepthStencil;
+			m_ViewportFramebuffer = Framebuffer::Create(framebufferSpec);
+
+			m_ViewportTexture = Texture2D::CreateFromImage2D(m_ViewportFramebuffer->GetColourAttachment(0));
+			m_ViewportTextureHandle = imguiLayer->RegisterTexture(m_ViewportTexture);
 		}
-		framebufferSpec.HasDepthStencil = true;
 
-		m_Framebuffer = Framebuffer::Create(framebufferSpec);
-
-		m_EditorScene = Ref<Scene>::Create();
-		m_ActiveScene = m_EditorScene;
-
-		//Renderer::SetLineWidth(3.f);
-
-		auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
-		if (commandLineArgs.Count > 1)
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// TEMPORARY
 		{
-			auto sceneFilePath = commandLineArgs[1];
-			SceneSerialiser serialiser(m_EditorScene);
-			serialiser.DeserialiseYaml(sceneFilePath);
+			Zahra::RenderPassSpecification renderPassSpec{};
+			renderPassSpec.Name = "Editor_ClearPass";
+			renderPassSpec.RenderTarget = m_ViewportFramebuffer;
+			renderPassSpec.ClearColourAttachments = true;
+			renderPassSpec.ClearDepthAttachment = true;
+			m_ClearPass = Zahra::RenderPass::Create(renderPassSpec);
 		}
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		m_SceneHierarchyPanel.SetEditorCamera(m_EditorCamera);
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// SCENE SYSTEM
+		{
+			m_EditorScene = Ref<Scene>::Create();
+			m_ActiveScene = m_EditorScene;
 
-		m_Icons["Play"]		= Texture2D::Create("Resources/Icons/Controls/play.png");
-		m_Icons["Stop"]		= Texture2D::Create("Resources/Icons/Controls/stop.png");
-		m_Icons["PlaySim"]	= Texture2D::Create("Resources/Icons/Controls/play_sim.png");
-		m_Icons["Replay"]	= Texture2D::Create("Resources/Icons/Controls/replay.png");
+			Renderer2DSpecification renderer2DSpec{};
+			renderer2DSpec.RenderTarget = m_ViewportFramebuffer;
+			m_Renderer2D = Ref<Renderer2D>::Create(renderer2DSpec);
+			m_Renderer2D->SetLineWidth(3.f);
+
+			auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
+			if (commandLineArgs.Count > 1)
+			{
+				auto sceneFilePath = commandLineArgs[1];
+				SceneSerialiser serialiser(m_EditorScene);
+				serialiser.DeserialiseYaml(sceneFilePath);
+			}
+
+			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+			m_SceneHierarchyPanel.SetEditorCamera(m_EditorCamera);
+		}
+
+		Texture2DSpecification textureSpec{};
+		m_Icons["Play"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/play.png");
+		m_Icons["Stop"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/stop.png");
+		m_Icons["PlaySim"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/play_sim.png");
+		m_Icons["Replay"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/replay.png");
+
+		for (auto& [name, texture] : m_Icons)
+		{
+			m_IconHandles[name] = imguiLayer->RegisterTexture(texture);
+		}
 
 	}
 
 	void EditorLayer::OnDetach()
 	{
-		// TODO: I should probably clean up things here
+		m_Renderer2D.Reset();
+		m_ActiveScene.Reset();
+		m_EditorScene.Reset();
+
+		m_ClearPass.Reset();
+
+		ImGuiLayer::GetOrCreate()->DeregisterTexture(m_ViewportTextureHandle);
+		m_ViewportTextureHandle = nullptr;
+		m_ViewportTexture.Reset();
+		m_ViewportFramebuffer.Reset();
 	}
 
 	void EditorLayer::OnUpdate(float dt)
 	{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// REACT TO RESIZED VIEWPORT
+		// UPDATE VIEWPORT AND CAMERAS
 		{
-			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f // framebuffer requires positive dimensions
-				&& (m_Framebuffer->GetWidth() != m_ViewportSize.x || m_Framebuffer->GetHeight() != m_ViewportSize.y))
+			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (m_ViewportFramebuffer->GetWidth() != m_ViewportSize.x || m_ViewportFramebuffer->GetHeight() != m_ViewportSize.y))
 			{
-				m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				ImGuiLayer::GetOrCreate()->DeregisterTexture(m_ViewportTextureHandle);
+
+				m_ViewportFramebuffer->Resize(m_ViewportSize.x, m_ViewportSize.y);
+				m_ViewportTexture->Resize(m_ViewportSize.x, m_ViewportSize.y);
+				m_ViewportTextureHandle = ImGuiLayer::GetOrCreate()->RegisterTexture(m_ViewportTexture);
+
+				m_ClearPass->OnResize();
+
 				m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+				m_Renderer2D->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+
 				m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 			}
-		}
 
-		if (m_ViewportHovered && m_SceneState != SceneState::Play)
-		{
-			m_EditorCamera.OnUpdate(dt);
+			if (m_ViewportHovered && m_SceneState != SceneState::Play)
+			{
+				m_EditorCamera.OnUpdate(dt);
+			}
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// CAPTURE DRAW CALLS IN FRAMEBUFFER
+		// UPDATE AND RENDER ACTIVE SCENE
 		{
-			Renderer::ResetStats();
-			
-			m_Framebuffer->Bind();
-			{
-				RenderCommandQueue::SetClearColour(glm::make_vec4(m_ClearColour));
-				//RenderCommandQueue::Clear();
+			Zahra::Renderer::BeginRenderPass(m_ClearPass, false, true);
+			Zahra::Renderer::EndRenderPass();
 
-				m_Framebuffer->ClearColourAttachment(1, -1);
-				
-				// UPDATE SCENE
-				switch (m_SceneState)
+			//m_Scene->OnRenderEditor(m_Renderer2D, m_Camera);
+
+			// TODO: mousepicking
+			//m_Framebuffer->ClearColourAttachment(1, -1);
+
+			switch (m_SceneState)
+			{
+				case SceneState::Edit:
 				{
-					case SceneState::Edit:
-					{
-						m_ActiveScene->OnUpdateEditor(dt, m_EditorCamera);
-						break;
-					}
-					case SceneState::Play:
-					{
-						m_ActiveScene->OnUpdateRuntime(dt);
-						break;
-					}
-					case SceneState::Simulate:
-					{
-						m_ActiveScene->OnUpdateSimulation(dt, m_EditorCamera);
-						break;
-					}
-					default:
-						Z_CORE_ASSERT(false, "Invalid SceneState");
+					m_ActiveScene->OnUpdateEditor(dt);
+					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera);
+					break;
+				}
+				case SceneState::Play:
+				{
+					// TODO: ressurect
+					//m_ActiveScene->OnUpdateRuntime(dt);
+					break;
+				}
+				case SceneState::Simulate:
+				{
+					// TODO: ressurect
+					// m_ActiveScene->OnUpdateSimulation(dt, m_EditorCamera);
+					break;
 				}
 
-				UIHighlightSelection();
-
-				if (m_ViewportHovered)
+				default:
 				{
-					ReadHoveredEntity();
+					Z_CORE_ASSERT(false, "Invalid SceneState");
 				}
 			}
-			m_Framebuffer->Unbind();
+
+			UIHighlightSelection();
+
+			if (m_ViewportHovered)
+			{
+				ReadHoveredEntity();
+			}
 			
 		}
 	}
@@ -268,13 +325,12 @@ namespace Zahra
 		
 		float iconSize = 35.f;
 
-		ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
+		ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
 		switch (m_SceneState)
 		{
 		case SceneState::Edit:
 		{
-			if (ImGui::ImageButton((ImTextureID)m_Icons["Play"]->GetRendererID(),
-				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			if (ImGui::ImageButton(m_IconHandles["Play"], { iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				ScenePlay();
 			}
@@ -288,8 +344,8 @@ namespace Zahra
 
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton((ImTextureID)m_Icons["PlaySim"]->GetRendererID(),
-				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			if (ImGui::ImageButton(m_IconHandles["PlaySim"],
+				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				SceneSimulate();
 			}
@@ -305,8 +361,8 @@ namespace Zahra
 		}
 		case SceneState::Play:
 		{
-			if (ImGui::ImageButton((ImTextureID)m_Icons["Stop"]->GetRendererID(),
-				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			if (ImGui::ImageButton(m_IconHandles["Stop"],
+				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				SceneStop();
 			}
@@ -320,8 +376,8 @@ namespace Zahra
 
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton((ImTextureID)m_Icons["Replay"]->GetRendererID(),
-				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			if (ImGui::ImageButton(m_IconHandles["Replay"],
+				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				SceneStop();
 				ScenePlay();
@@ -338,8 +394,8 @@ namespace Zahra
 		}
 		case SceneState::Simulate:
 		{
-			if (ImGui::ImageButton((ImTextureID)m_Icons["Stop"]->GetRendererID(),
-				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			if (ImGui::ImageButton(m_IconHandles["Stop"],
+				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				SceneStop();
 			}
@@ -353,8 +409,8 @@ namespace Zahra
 
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton((ImTextureID)m_Icons["Replay"]->GetRendererID(),
-				{ iconSize, iconSize }, { 0,1 }, { 1,0 }, 0))
+			if (ImGui::ImageButton(m_IconHandles["Replay"],
+				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				SceneStop();
 				SceneSimulate();
@@ -377,10 +433,10 @@ namespace Zahra
 		ImGui::Separator();
 		ImGui::Text("Debug overlay:");
 
-		Scene::DebugRenderSettings overlayMode = m_ActiveScene->DebugRenderSettings();
-		ImGui::Checkbox("Show colliders", &overlayMode.ShowColliders);
-		ImGui::ColorEdit4("Collider colour", glm::value_ptr(overlayMode.ColliderColour), ImGuiColorEditFlags_NoInputs);
-		m_ActiveScene->SetOverlayMode(overlayMode);
+		auto& sceneDebugSettings = m_ActiveScene->GetDebugRenderSettings();
+		ImGui::Checkbox("Show colliders", &sceneDebugSettings.ShowColliders);
+		ImGui::ColorEdit4("Collider colour", glm::value_ptr(sceneDebugSettings.ColliderColour), ImGuiColorEditFlags_NoInputs);
+		//m_ActiveScene->SetOverlayMode(overlayMode);
 
 		ImGui::Separator();
 		ImGui::Text("Editor");
@@ -406,13 +462,13 @@ namespace Zahra
 			m_ViewportHovered = ImGui::IsWindowHovered();
 
 			// must set false!!
-			Application::Get().GetImGuiLayer()->BlockEvents(false);
+			ImGuiLayer::GetOrCreate()->BlockEvents(false);
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
-			size_t framebufferTextureID = m_Framebuffer->GetColourAttachmentID();
-			ImGui::Image(reinterpret_cast<void*>(framebufferTextureID), ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
+			ImGuiTextureHandle viewportTextureID = m_ViewportTextureHandle;
+			ImGui::Image(viewportTextureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2(0, 0), ImVec2(1, 1));
 
 			if (m_SceneState == SceneState::Edit) UIGizmos();
 
@@ -439,7 +495,7 @@ namespace Zahra
 		if (selection && m_GizmoType != -1)
 		{			
 			// Configure ImGuizmo
-			ImGuizmo::SetOrthographic(false); // TODO: make this work with orth cameras instead, and move to pure 2D
+			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 			ImGuizmo::SetGizmoSizeClipSpace(.15f);
@@ -471,7 +527,8 @@ namespace Zahra
 			}
 
 			// Editor camera
-			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			glm::mat4 cameraProjection = m_EditorCamera.GetProjection();
+			cameraProjection[1][1] *= -1.f;
 			glm::mat4 cameraView = m_EditorCamera.GetView();
 
 			// Entity transform
@@ -494,9 +551,10 @@ namespace Zahra
 		}
 	}
 
+	// TODO: move highight rendering to Scene, or SceneRenderer
 	void EditorLayer::UIHighlightSelection()
 	{
-		if (Entity selection = m_SceneHierarchyPanel.GetSelectedEntity())
+		/*if (Entity selection = m_SceneHierarchyPanel.GetSelectedEntity())
 		{
 			TransformComponent entityTransform = selection.GetComponents<TransformComponent>();
 
@@ -508,37 +566,43 @@ namespace Zahra
 				{
 					Camera camera = cameraEntity.GetComponents<CameraComponent>().Camera;
 					glm::mat4 cameraTransform = cameraEntity.GetComponents<TransformComponent>().GetTransform();
-					Renderer::BeginScene(camera, cameraTransform);
-					Renderer::DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
-					Renderer::EndScene();
+					m_Renderer2D->BeginScene(camera, cameraTransform);
+					m_Renderer2D->DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
+					m_Renderer2D->EndScene();
 				}
 			}
 			else
 			{
-				Renderer::BeginScene(m_EditorCamera);
-				Renderer::DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
-				Renderer::EndScene();
+				m_Renderer2D->BeginScene(m_EditorCamera);
+				m_Renderer2D->DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
+				m_Renderer2D->EndScene();
 			}
 			
 			
-		}
+		}*/
 	}
 
 	void EditorLayer::UIStatsWindow()
 	{
-		ImGui::Begin("Misc. shit", NULL, ImGuiWindowFlags_NoCollapse);
+		auto stats = m_Renderer2D->GetStats();
 
-		ImGui::Text("Quads: %u", Renderer::GetStats().QuadCount);
-		ImGui::Text("Draw calls: %u", Renderer::GetStats().DrawCalls);
-		ImGui::TextWrapped("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
-			m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
+		if (ImGui::Begin("Renderer Stats", NULL, ImGuiWindowFlags_NoCollapse))
+		{
+			ImGui::Text("Quads: %u", stats.QuadCount);
+			ImGui::Text("Circles: %u", stats.CircleCount);
+			ImGui::Text("Lines: %u", stats.LineCount);
+			ImGui::Text("Draw calls: %u", stats.DrawCalls);
+			ImGui::TextWrapped("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
+				m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
 
-		ImGui::End();
+			ImGui::End();
+		}		
 	}
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		if (m_ViewportHovered) m_EditorCamera.OnEvent(event);
+		if (m_ViewportHovered)
+			m_EditorCamera.OnEvent(event);
 
 		m_ContentBrowserPanel.OnEvent(event);
 
@@ -552,95 +616,94 @@ namespace Zahra
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Keyboard shortcuts
 		
-		// TODO: is this an issue?
-		if (m_SceneState != SceneState::Edit) return false;
-
-		if (ImGuizmo::IsUsing()) return false; // avoids crash bug when an entity is deleted during manipulation
-
-		bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
-		bool alt = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
-
-		switch (event.GetKeyCode())
+		if (m_SceneState == SceneState::Edit)
 		{
-			case KeyCode::S:
-			{
-				if (ctrl && shift)
-				{
-					SaveAsSceneFile();
-					return true;
-				}
-				else if (ctrl)
-				{
-					SaveSceneFile();
-					return true;
-				}
+			if (ImGuizmo::IsUsing()) return false; // avoids crash bug when an entity is deleted during manipulation
 
-				break;
-			}
-			case KeyCode::N:
-			{
-				if (ctrl) 
-				{
-					NewScene();
-					return true;
-				}
+			bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+			bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+			bool alt = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
 
-				break;
-			}
-			case KeyCode::O:
+			switch (event.GetKeyCode())
 			{
-				if (ctrl) 
+				case KeyCode::S:
 				{
-					OpenSceneFile();
-					return true;
-				}
-
-				break;
-			}
-			case KeyCode::Q:
-			{
-				if (m_ViewportFocused) m_GizmoType = -1;
-				break;
-			}
-			case KeyCode::W:
-			{
-				if (m_ViewportFocused) m_GizmoType = 7;
-				break;
-			}
-			case KeyCode::E:
-			{
-				if (m_ViewportFocused) m_GizmoType = 120;
-				break;
-			}
-			case KeyCode::R:
-			{
-				if (m_ViewportFocused) m_GizmoType = 896;
-				break;
-			}
-			case KeyCode::D:
-			{
-				if (ctrl && m_SceneState == SceneState::Edit)
-				{
-					Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
-					if (selection)
+					if (ctrl && shift)
 					{
-						Entity copy = m_EditorScene->DuplicateEntity(selection);
-						m_SceneHierarchyPanel.SelectEntity(copy);
+						SaveAsSceneFile();
+						return true;
 					}
+					else if (ctrl)
+					{
+						SaveSceneFile();
+						return true;
+					}
+
+					break;
+				}
+				case KeyCode::N:
+				{
+					if (ctrl)
+					{
+						NewScene();
+						return true;
+					}
+
+					break;
+				}
+				case KeyCode::O:
+				{
+					if (ctrl)
+					{
+						OpenSceneFile();
+						return true;
+					}
+
+					break;
+				}
+				case KeyCode::Q:
+				{
+					if (m_ViewportFocused) m_GizmoType = -1;
+					break;
+				}
+				case KeyCode::W:
+				{
+					if (m_ViewportFocused) m_GizmoType = 7;
+					break;
+				}
+				case KeyCode::E:
+				{
+					if (m_ViewportFocused) m_GizmoType = 120;
+					break;
+				}
+				case KeyCode::R:
+				{
+					if (m_ViewportFocused) m_GizmoType = 896;
+					break;
+				}
+				case KeyCode::D:
+				{
+					if (ctrl && m_SceneState == SceneState::Edit)
+					{
+						Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
+						if (selection)
+						{
+							Entity copy = m_EditorScene->DuplicateEntity(selection);
+							m_SceneHierarchyPanel.SelectEntity(copy);
+						}
+						return true;
+					}
+
+					break;
+				}
+				case KeyCode::F11:
+				{
+					Window& window = Application::Get().GetWindow();
+					window.SetFullscreen(!window.IsFullscreen());
 					return true;
 				}
-
-				break;
 			}
-			case KeyCode::F11:
-			{
-				Window& window = Application::Get().GetWindow();
-				window.SetFullscreen(!window.IsFullscreen());
-				return true;
-			}
-			default: break;
-			}
+		}
 
 		return false;
 	}
@@ -648,15 +711,13 @@ namespace Zahra
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
 	{
 		// block other mouse input when we're trying to use imguizmo, or move our camera around
-		if (m_EditorCamera.Controlled() || (ImGuizmo::IsOver() && m_SceneHierarchyPanel.GetSelectedEntity())) return false;
+		if (m_EditorCamera.Controlled() || ( ImGuizmo::IsOver() && m_SceneHierarchyPanel.GetSelectedEntity() ))
+			return false;
 		
-		switch (event.GetMouseButton())
+		if (event.GetMouseButton() == MouseCode::ButtonLeft)
 		{
-			case MouseCode::ButtonLeft:
-			{
-				if (m_ViewportHovered) m_SceneHierarchyPanel.SelectEntity(m_HoveredEntity);
-				break;
-			}
+			if (m_ViewportHovered)
+				m_SceneHierarchyPanel.SelectEntity(m_HoveredEntity);
 		}
 
 		return true;
@@ -752,15 +813,16 @@ namespace Zahra
 
 	void EditorLayer::ReadHoveredEntity()
 	{
-		ImVec2 mouse = ImGui::GetMousePos();
+		// TODO: Figure out how to make mousepicking work in Vulkan
+		// Might have to use ray casting
+		/*ImVec2 mouse = ImGui::GetMousePos();
 		mouse.x -= m_ViewportBounds[0].x;
 		mouse.y -= m_ViewportBounds[0].y;
 		mouse.y = m_ViewportSize.y - mouse.y;
 
 		int hoveredID = m_Framebuffer->ReadPixel(1, (int)mouse.x, (int)mouse.y);
 
-		m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.Raw());
-
+		m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.Raw());*/
 	}
 
 	

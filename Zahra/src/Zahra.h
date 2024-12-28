@@ -10,6 +10,7 @@
 #include "Zahra/Core/KeyCodes.h"
 #include "Zahra/Core/Layer.h"
 #include "Zahra/Core/Log.h"
+#include "Zahra/Core/Memory.h"
 #include "Zahra/Core/MouseCodes.h"
 #include "Zahra/Core/Ref.h"
 #include "Zahra/Core/Scope.h"

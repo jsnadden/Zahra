@@ -2,6 +2,7 @@
 #include "ContentBrowserPanel.h"
 
 #include "Zahra/Core/Input.h"
+#include "Zahra/ImGui/ImGuiLayer.h"
 
 #include <ImGui/imgui.h>
 
@@ -16,17 +17,17 @@ namespace Zahra
 	{
 		m_RefreshTimer.Reset();
 
-		/*m_Icons["DirectoryThumb"] = Texture2D::Create("Resources/Icons/Browser/folder.png");
-		m_Icons["DefaultFileThumb"] = Texture2D::Create("Resources/Icons/Browser/blank_file.png");
-		m_Icons["BrokenImage"] = Texture2D::Create("Resources/Icons/Browser/broken_image.png");
-		m_Icons["Back"] = Texture2D::Create("Resources/Icons/Browser/back_arrow.png");
-		m_Icons["Forward"] = Texture2D::Create("Resources/Icons/Browser/forward_arrow.png");*/
-	}
+		Texture2DSpecification textureSpec{};
+		m_Icons["DirectoryThumb"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/folder.png");
+		m_Icons["DefaultFileThumb"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/blank_file.png");
+		m_Icons["BrokenImage"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/broken_image.png");
+		m_Icons["Back"]				= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/back_arrow.png");
+		m_Icons["Forward"]			= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/forward_arrow.png");
 
-	void ContentBrowserPanel::OnEvent(Event& event)
-	{
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<MouseButtonPressedEvent>(Z_BIND_EVENT_FN(ContentBrowserPanel::OnMouseButtonPressedEvent));
+		for (auto& [name, texture] : m_Icons)
+		{
+			m_IconHandles[name] = ImGuiLayer::GetOrCreate()->RegisterTexture(texture);
+		}
 	}
 
 	void ContentBrowserPanel::OnImGuiRender()
@@ -69,8 +70,8 @@ namespace Zahra
 
 			// BACK BUTTON
 			ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-			if (ImGui::ImageButton((ImTextureID)m_Icons["Back"]->GetRendererID(),
-				{ iconSize, iconSize }, { 0,1 }, { 1,0 }))
+			if (ImGui::ImageButton(m_IconHandles["Back"],
+				{ iconSize, iconSize }, { 0,0 }, { 1,1 }))
 			{
 				GoBack();
 			}
@@ -78,8 +79,8 @@ namespace Zahra
 			ImGui::TableNextColumn();
 
 			// FORWARD BUTTON
-			if (ImGui::ImageButton((ImTextureID)m_Icons["Forward"]->GetRendererID(),
-				{ iconSize, iconSize }, { 0,1 }, { 1,0 }))
+			if (ImGui::ImageButton(m_IconHandles["Forward"],
+				{ iconSize, iconSize }, { 0,0 }, { 1,1 }))
 			{
 				GoForward();
 			}
@@ -152,9 +153,9 @@ namespace Zahra
 				const std::filesystem::path& path = dir.Path;
 				std::string filenameString = path.filename().string();
 
-				ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-				ImGui::ImageButton(filenameString.c_str(), (ImTextureID)m_Icons["DirectoryThumb"]->GetRendererID(),
-					{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
+				ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
+				ImGui::ImageButton(filenameString.c_str(), m_IconHandles["DirectoryThumb"],
+					{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 				ImGui::PopStyleColor();
 
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
@@ -184,20 +185,20 @@ namespace Zahra
 				ImGui::PushID(filenameString.c_str());
 
 				// TODO: check extension and metadata to choose a specific thumbnail (e.g. add screenshot to SceneSerialiser)
-				ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
+				ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
 				switch (file.Type)
 				{
 					case FileData::ContentType::Image:
 					{
 						// TODO: get a thumbnail from file metadata!!
-						ImGui::ImageButton((ImTextureID)m_Icons["BrokenImage"]->GetRendererID(),
-							{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+						ImGui::ImageButton(m_IconHandles["BrokenImage"],
+							{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 						break;
 					}
 					default:
 					{
-						ImGui::ImageButton((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(),
-							{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+						ImGui::ImageButton(m_IconHandles["DefaultFileThumb"],
+							{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 						break;
 					}
 				}
@@ -282,14 +283,14 @@ namespace Zahra
 					Z_ASSERT(filepath.length() < 256, "Currently only support filenames up to 256 characters (including extension + null terminator)");
 					ImGui::SetDragDropPayload("BROWSER_FILE_IMAGE", (void*)filepath.c_str(), sizeof(char) * (filepath.length() + 1), ImGuiCond_Always);
 					// TODO: get thumbnail from metadata
-					ImGui::Image((ImTextureID)m_Icons["BrokenImage"]->GetRendererID(),
-						{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+					ImGui::Image(m_IconHandles["BrokenImage"],
+						{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 					break;
 				}
 				default:
 				{
-					ImGui::Image((ImTextureID)m_Icons["DefaultFileThumb"]->GetRendererID(),
-						{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0,1 }, { 1,0 });
+					ImGui::Image(m_IconHandles["DefaultFileThumb"],
+						{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 					break;
 				}
 			}
@@ -322,6 +323,11 @@ namespace Zahra
 		}
 	}
 
+	void ContentBrowserPanel::OnEvent(Event& event)
+	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<MouseButtonPressedEvent>(Z_BIND_EVENT_FN(ContentBrowserPanel::OnMouseButtonPressedEvent));
+	}
 	bool ContentBrowserPanel::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
 	{
 		if (!m_ChildHovered && !m_PanelHovered) return false;

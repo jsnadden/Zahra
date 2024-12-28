@@ -19,6 +19,5 @@ namespace Zahra
 		std::filesystem::path ShaderSourceDirectory = "Resources/Shaders";
 		std::filesystem::path ShaderCacheDirectory = "Cache/Shaders";
 		std::filesystem::path MeshSourceDirectory = "Assets/Models";
-		std::filesystem::path TextureSourceDirectory = "Assets/Textures";
 	};
 }

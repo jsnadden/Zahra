@@ -156,49 +156,19 @@ namespace Zahra
 
 	ImGuiTextureHandle VulkanImGuiLayer::RegisterTexture(Ref<Texture2D> texture)
 	{
-		VkDescriptorImageInfo imageInfo = texture.As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
-		VkDescriptorSet descriptorSet = ImGui_ImplVulkan_AddTexture(imageInfo.sampler,
-			imageInfo.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		
-#if 0
-		VkDescriptorSetLayout layout;
-		VkDescriptorSet descriptorSet;
-
-		VkDescriptorSetLayoutBinding binding{};
-		binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		binding.binding = 0;
-		binding.descriptorCount = 1;
-		binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &binding;
-		vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &layout);
-
-		VkDescriptorSetAllocateInfo descriptorSetAllocationInfo{};
-		descriptorSetAllocationInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		descriptorSetAllocationInfo.descriptorPool = m_DescriptorPool;
-		descriptorSetAllocationInfo.descriptorSetCount = 1;
-		descriptorSetAllocationInfo.pSetLayouts = &layout;
-		vkAllocateDescriptorSets(device, &descriptorSetAllocationInfo, &descriptorSet);
-
-		VkWriteDescriptorSet write{};
-		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write.dstSet = descriptorSet;
-		write.descriptorCount = 1;
-		write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		write.pImageInfo = &texture.As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
-		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-#endif
-
-		return (void*)descriptorSet;
+		auto imageInfo = texture.As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
+		return ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
-	void VulkanImGuiLayer::DeregisterTexture(ImGuiTextureHandle textureHandle)
+	void VulkanImGuiLayer::DeregisterTexture(ImGuiTextureHandle& handle)
 	{
-		const VkDescriptorSet descriptorSet = (VkDescriptorSet)textureHandle;
-		vkFreeDescriptorSets(VulkanContext::GetCurrentVkDevice(), m_DescriptorPool, 1, &descriptorSet);
+		const auto& device = m_Swapchain->GetVkDevice();
+		vkDeviceWaitIdle(device);
+
+		const VkDescriptorSet descriptorSet = (VkDescriptorSet)handle;
+		vkFreeDescriptorSets(device, m_DescriptorPool, 1, &descriptorSet);
+
+		handle = nullptr;
 	}
 
 	bool VulkanImGuiLayer::OnWindowResizedEvent(WindowResizedEvent& event)
@@ -223,7 +193,7 @@ namespace Zahra
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		poolInfo.maxSets = 10; // TODO: figure out how many descriptor sets I'll actually need in TOTAL
+		poolInfo.maxSets = 100; // TODO: figure out how many descriptor sets I'll actually need in TOTAL
 		poolInfo.poolSizeCount = (uint32_t)poolSizes.size();
 		poolInfo.pPoolSizes = poolSizes.data();
 

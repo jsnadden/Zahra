@@ -9,8 +9,6 @@
 
 namespace Zahra
 {
-	typedef void* ImGuiTextureHandle;
-
 	struct ImGuiLayerConfig
 	{
 		bool Enabled = true;
@@ -25,7 +23,7 @@ namespace Zahra
 		virtual void End() = 0;
 
 		virtual ImGuiTextureHandle RegisterTexture(Ref<Texture2D> texture) = 0;
-		virtual void DeregisterTexture(ImGuiTextureHandle textureHandle) = 0;
+		virtual void DeregisterTexture(ImGuiTextureHandle& handle) = 0;
 
 		//virtual void SetRenderTarget(Ref<Image2D> renderTarget) = 0;
 
@@ -33,7 +31,7 @@ namespace Zahra
 
 		void SetColourTheme();
 
-		static ImGuiLayer* Create();
+		static ImGuiLayer* GetOrCreate();
 
 	protected:
 		bool m_BlockEvents = true;

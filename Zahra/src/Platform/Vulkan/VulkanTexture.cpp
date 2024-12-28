@@ -2,6 +2,7 @@
 #include "VulkanTexture.h"
 
 #include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanImGuiLayer.h"
 
 #include <stb_image.h>
 
@@ -61,15 +62,15 @@ namespace Zahra
 		}
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, const std::string& filename)
+	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, const std::string& filepath)
 		: m_Specification(specification)
 	{
 		int width, height, channels;
 
-		m_Filepath = Renderer::GetConfig().TextureSourceDirectory;
-		m_Filepath /= filename;
+		m_Filepath = filepath;
+		bool validfilepath = std::filesystem::exists(filepath);
 
-		stbi_uc* imageData = stbi_load(m_Filepath.string().c_str(), &width, &height, &channels, 4);
+		stbi_uc* imageData = stbi_load(filepath.c_str(), &width, &height, &channels, 4);
 
 		Z_CORE_ASSERT(imageData, "Vulkan texture failed to load image.");
 
@@ -120,7 +121,7 @@ namespace Zahra
 		VkDevice device = VulkanContext::GetCurrentVkDevice();
 
 		vkDeviceWaitIdle(device);
-		
+
 		m_Image.Reset();
 
 		m_LocalImageData.Release();

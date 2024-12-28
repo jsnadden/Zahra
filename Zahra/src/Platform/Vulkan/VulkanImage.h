@@ -149,12 +149,12 @@ namespace Zahra
 
 		VkImageLayout m_CurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
+		void Init();
+		void Cleanup();
+
 		void CreateAndAllocateImage();
 		void CreateImageView();
 		void CreateSampler();
-		void TransitionLayout();
-
-		void Init();
-		void Cleanup();
+		//void TransitionLayout();
 	};
 }
