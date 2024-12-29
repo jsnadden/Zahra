@@ -31,7 +31,7 @@ namespace Zahra
 	{
 		std::string Name; // for debugging
 
-		uint32_t Width = 1.0f, Height = 1.0f;
+		uint32_t Width = .0f, Height = .0f;
 
 		glm::vec3 ClearColour = { 0.f, 0.f, 0.f };
 		std::vector<AttachmentSpecification> ColourAttachmentSpecs;

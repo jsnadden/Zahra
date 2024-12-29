@@ -28,7 +28,7 @@ void SandboxLayer::OnAttach()
 		m_ViewportRenderTarget = Zahra::Image2D::Create(imageSpec);
 
 		m_ViewportTexture = Zahra::Texture2D::CreateFromImage2D(m_ViewportRenderTarget);
-		Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture);
+		m_ViewportTextureHandle = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture);
 
 		Zahra::FramebufferSpecification framebufferSpec{};
 		framebufferSpec.Name = "Sandbox_ViewportFramebuffer";
@@ -85,7 +85,7 @@ void SandboxLayer::OnAttach()
 		}
 	}
 
-	OnViewportResize();
+	//OnViewportResize();
 }
 
 void SandboxLayer::OnDetach()
@@ -95,7 +95,7 @@ void SandboxLayer::OnDetach()
 	m_Renderer2D.Reset();
 	m_Scene.Reset();
 
-	Zahra::Application::Get().GetImGuiLayer()->DeregisterTexture(m_ViewportTexture);
+	Zahra::Application::Get().GetImGuiLayer()->DeregisterTexture(m_ViewportTextureHandle);
 	m_ViewportTexture.Reset();
 
 	m_ClearPass.Reset();
@@ -105,9 +105,12 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float dt)
 {
+	m_Resized = false;
+
 	if (m_ViewportRenderTarget->GetWidth() != m_ViewportWidth || m_ViewportRenderTarget->GetHeight() != m_ViewportHeight)
 	{
 		OnViewportResize();
+		m_Resized = true;
 	}
 
 	m_Camera.OnUpdate(dt);
@@ -140,13 +143,16 @@ void SandboxLayer::OnImGuiRender()
 
 	if (ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoCollapse))
 	{
+		ImGui::GetWindowViewport()->Flags;
+
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportWidth = viewportPanelSize.x;
 		m_ViewportHeight = viewportPanelSize.y;
 
 		Zahra::Application::Get().GetImGuiLayer()->BlockEvents(false);
 
-		ImGui::Image(m_ViewportTexture->GetImGuiHandle(), ImVec2(m_ViewportWidth, m_ViewportHeight), ImVec2(0, 0), ImVec2(1, 1));
+		if (!m_Resized)
+			ImGui::Image(m_ViewportTextureHandle, ImVec2(m_ViewportWidth, m_ViewportHeight), ImVec2(0, 0), ImVec2(1, 1));
 
 		ImGui::End();
 	}
@@ -237,13 +243,13 @@ void SandboxLayer::OnImGuiRender()
 
 void SandboxLayer::OnViewportResize()
 {
-	Zahra::Application::Get().GetImGuiLayer()->DeregisterTexture(m_ViewportTexture);
+	Zahra::Application::Get().GetImGuiLayer()->DeregisterTexture(m_ViewportTextureHandle);
 	m_ViewportRenderTarget->Resize(m_ViewportWidth, m_ViewportHeight);
 	m_ViewportFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
 	m_ClearPass->OnResize();
 
 	m_ViewportTexture->Resize(m_ViewportWidth, m_ViewportHeight);
-	Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture);
+	m_ViewportTextureHandle = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture);
 
 	m_Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 

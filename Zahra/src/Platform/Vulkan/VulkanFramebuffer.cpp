@@ -9,14 +9,10 @@ namespace Zahra
 		Z_CORE_ASSERT(ValidateSpecification());
 
 		if (m_Specification.Width == 0)
-			m_Width = Renderer::GetSwapchainWidth();
-		else
-			m_Width = m_Specification.Width;
+			m_Specification.Width = Renderer::GetSwapchainWidth();
 
 		if (m_Specification.Height == 0)
-			m_Height = Renderer::GetSwapchainHeight();
-		else
-			m_Height = m_Specification.Height;
+			m_Specification.Height = Renderer::GetSwapchainHeight();
 
 		m_ColourAttachmentCount = m_Specification.ColourAttachmentSpecs.size();
 		CreateAttachments();
@@ -75,12 +71,10 @@ namespace Zahra
 		if (width == 0 || height == 0)
 			return;
 
-		m_Width = width;
-		m_Height = height;
+		m_Specification.Width = width;
+		m_Specification.Height = height;
 
 		vkDeviceWaitIdle(VulkanContext::GetCurrentVkDevice());
-
-#if Z_DEBUG
 
 		for (uint32_t i = 0; i < m_ColourAttachmentCount; i++)
 		{
@@ -102,7 +96,6 @@ namespace Zahra
 
 			return;
 		}
-#endif
 
 		if (m_Specification.HasDepthStencil)
 			m_DepthStencilAttachment->Resize(width, height);
@@ -165,8 +158,8 @@ namespace Zahra
 
 		Image2DSpecification imageSpec{};
 		imageSpec.Name = m_Specification.Name + "[" + std::to_string(index) + "]";
-		imageSpec.Width = m_Width;
-		imageSpec.Height = m_Height;
+		imageSpec.Width = m_Specification.Width;
+		imageSpec.Height = m_Specification.Height;
 		imageSpec.Format = m_Specification.ColourAttachmentSpecs[index].Format;
 		imageSpec.Sampled = true; // for now...
 
@@ -179,8 +172,8 @@ namespace Zahra
 
 		Image2DSpecification imageSpec{};
 		imageSpec.Name = m_Specification.Name + "[depth/stencil]";
-		imageSpec.Width = m_Width;
-		imageSpec.Height = m_Height;
+		imageSpec.Width = m_Specification.Width;
+		imageSpec.Height = m_Specification.Height;
 		imageSpec.Format = ImageFormat::DepthStencil;
 		imageSpec.Sampled = true; // for now
 

@@ -23,7 +23,7 @@ namespace Zahra
 
 	private:
 		Ref<Scene> m_Context;
-		EditorCamera* m_Camera;
+		EditorCamera* m_Camera = nullptr;
 
 		Entity m_Selected;
 

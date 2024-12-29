@@ -25,8 +25,8 @@ namespace Zahra
 
 		virtual uint32_t GetColourAttachmentCount() const override { return m_ColourAttachmentCount; }
 
-		virtual uint32_t GetWidth() const override { return m_Width; }
-		virtual uint32_t GetHeight() const override { return m_Height; }
+		virtual uint32_t GetWidth() const override { return m_Specification.Width; }
+		virtual uint32_t GetHeight() const override { return m_Specification.Height; }
 
 		std::vector<VkImageView> const GetImageViews();
 		std::vector<VkClearValue> const GetClearValues();
@@ -36,8 +36,6 @@ namespace Zahra
 
 	private:
 		FramebufferSpecification m_Specification;
-
-		uint32_t m_Width = 1.0f, m_Height = 1.0f;
 
 		uint32_t m_ColourAttachmentCount = 0;
 		std::vector<Ref<VulkanImage2D>> m_ColourAttachments;

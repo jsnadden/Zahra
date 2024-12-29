@@ -86,6 +86,10 @@ namespace Zahra
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 
+		const float c_FramerateRefreshInterval = .5f;
+		Zahra::Timer m_FramerateRefreshTimer;
+		float m_Framerate = .0f;
+
 	};
 }
 

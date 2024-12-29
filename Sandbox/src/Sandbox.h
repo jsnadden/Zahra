@@ -27,7 +27,10 @@ private:
 	uint32_t m_ViewportWidth = 1, m_ViewportHeight = 1;
 	Zahra::Ref<Zahra::Image2D> m_ViewportRenderTarget;
 	Zahra::Ref<Zahra::Texture2D> m_ViewportTexture;
+	Zahra::ImGuiTextureHandle m_ViewportTextureHandle = nullptr;
 	Zahra::Ref<Zahra::Framebuffer> m_ViewportFramebuffer;
+
+	bool m_Resized = false;
 
 	// TEMPORARY
 	Zahra::Ref<Zahra::RenderPass> m_ClearPass;

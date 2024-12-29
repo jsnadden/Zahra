@@ -37,7 +37,18 @@ namespace Zahra
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		// NOTE: if at some stage I want to enable multi-viewports (i.e. pop-out windows),
+		// there are a couple issues I'll need to contend with. I can render a scene to a
+		// framebuffer, and have ImGui render it to a separate window as a texture, but on
+		// resizing that window, the Vulkan validation layer produces an error message about
+		// some image being in layout _UNDEFINED, when it expects _SHADER_READ_ONLY_OPTIMAL.
+		// As far as I can tell, this is due to a lack of synchronisation between my own
+		// Vulkan setup (which targets only the main window), and ImGui's internal one.
+		// It doesn't break anything right now, but it is cause for concern.
+		// There is also the issue that these external windows don't communicate with my
+		// engine's event system, so non-ImGui-specific user input is ignored.
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
 
 		io.IniFilename = "./Config/imgui.ini";
 

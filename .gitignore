@@ -21,3 +21,4 @@ Intermediates/
 Zahra/vendor/VulkanSDK
 Meadow/assets/cache
 scripts/__pycache__
+.Rproj.user

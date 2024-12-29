@@ -102,6 +102,12 @@ namespace Zahra
 
 	void EditorLayer::OnUpdate(float dt)
 	{
+		if (m_FramerateRefreshTimer.Elapsed() >= c_FramerateRefreshInterval)
+		{
+			m_FramerateRefreshTimer.Reset();
+			m_Framerate = 1.0f / dt;
+		}
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// UPDATE VIEWPORT AND CAMERAS
 		{
@@ -109,14 +115,14 @@ namespace Zahra
 			{
 				ImGuiLayer::GetOrCreate()->DeregisterTexture(m_ViewportTextureHandle);
 
-				m_ViewportFramebuffer->Resize(m_ViewportSize.x, m_ViewportSize.y);
-				m_ViewportTexture->Resize(m_ViewportSize.x, m_ViewportSize.y);
+				m_ViewportFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				m_ViewportTexture->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 				m_ViewportTextureHandle = ImGuiLayer::GetOrCreate()->RegisterTexture(m_ViewportTexture);
 
 				m_ClearPass->OnResize();
 
 				m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
-				m_Renderer2D->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+				m_Renderer2D->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
 				m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 			}
@@ -584,16 +590,24 @@ namespace Zahra
 
 	void EditorLayer::UIStatsWindow()
 	{
-		auto stats = m_Renderer2D->GetStats();
+		auto& stats = m_Renderer2D->GetStats();
 
-		if (ImGui::Begin("Renderer Stats", NULL, ImGuiWindowFlags_NoCollapse))
+		if (ImGui::Begin("Stats", NULL, ImGuiWindowFlags_NoCollapse))
 		{
-			ImGui::Text("Quads: %u", stats.QuadCount);
-			ImGui::Text("Circles: %u", stats.CircleCount);
-			ImGui::Text("Lines: %u", stats.LineCount);
-			ImGui::Text("Draw calls: %u", stats.DrawCalls);
-			ImGui::TextWrapped("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
-				m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
+			ImGui::SeparatorText("Timing");
+			{
+				ImGui::Text("Framerate: %.2f fps", m_Framerate);
+			}
+
+			ImGui::SeparatorText("Renderer 2D");
+			{
+				ImGui::Text("Quads: %u", stats.QuadCount);
+				ImGui::Text("Circles: %u", stats.CircleCount);
+				ImGui::Text("Lines: %u", stats.LineCount);
+				ImGui::Text("Draw calls: %u", stats.DrawCalls);
+				ImGui::TextWrapped("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
+					m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
+			}
 
 			ImGui::End();
 		}		
