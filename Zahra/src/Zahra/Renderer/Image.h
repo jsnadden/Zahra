@@ -14,7 +14,7 @@ namespace Zahra
 		Unspecified,
 
 		// single channel
-		R8_UN, R8_UI, R16_UI, R32_UI,
+		R8_UN, R8_UI, R16_UI, R32_UI, R32_SI,
 		R32_F,
 
 		// two channels

@@ -121,10 +121,10 @@ void SandboxLayer::OnUpdate(float dt)
 		m_Framerate = 1.0f / dt;
 	}
 
-	uint32_t n = m_EntityGrid.size();
-	for (int i = 0; i < n; i++)
+	uint32_t n = (uint32_t)m_EntityGrid.size();
+	for (uint32_t i = 0; i < n; i++)
 	{
-		for (int j = 0; j < n; j++)
+		for (uint32_t j = 0; j < n; j++)
 		{
 			m_EntityGrid[i][j].GetComponents<Zahra::TransformComponent>().EulerAngles += glm::vec3(.0f, dt, .0f);
 		}
@@ -146,13 +146,13 @@ void SandboxLayer::OnImGuiRender()
 		ImGui::GetWindowViewport()->Flags;
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-		m_ViewportWidth = viewportPanelSize.x;
-		m_ViewportHeight = viewportPanelSize.y;
+		m_ViewportWidth = (uint32_t)viewportPanelSize.x;
+		m_ViewportHeight = (uint32_t)viewportPanelSize.y;
 
 		Zahra::Application::Get().GetImGuiLayer()->BlockEvents(false);
 
 		if (!m_Resized)
-			ImGui::Image(m_ViewportTextureHandle, ImVec2(m_ViewportWidth, m_ViewportHeight), ImVec2(0, 0), ImVec2(1, 1));
+			ImGui::Image(m_ViewportTextureHandle, ImVec2((float)m_ViewportWidth, (float)m_ViewportHeight), ImVec2(0, 0), ImVec2(1, 1));
 
 		ImGui::End();
 	}
@@ -251,7 +251,7 @@ void SandboxLayer::OnViewportResize()
 	m_ViewportTexture->Resize(m_ViewportWidth, m_ViewportHeight);
 	m_ViewportTextureHandle = Zahra::Application::Get().GetImGuiLayer()->RegisterTexture(m_ViewportTexture);
 
-	m_Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	m_Camera.SetViewportSize((float)m_ViewportWidth, (float)m_ViewportHeight);
 
 	m_Renderer2D->OnViewportResize(m_ViewportWidth, m_ViewportHeight);
 }

@@ -2,12 +2,12 @@
 
 layout(location = 0) in vec2 v_LocalPosition;
 layout(location = 1) in vec4 v_Colour;
-layout(location = 2) in float v_Thickness;
-layout(location = 3) in float v_Fade;
-//layout(location = 4) in flat int v_EntityID;
+layout(location = 2) in flat float v_Thickness;
+layout(location = 3) in flat float v_Fade;
+layout(location = 4) in flat int v_EntityID;
 
 layout(location = 0) out vec4 o_Colour;
-//layout(location = 1) out int o_EntityID;
+layout(location = 1) out int o_EntityID;
 
 void main()
 {
@@ -21,5 +21,5 @@ void main()
 	if (o_Colour.a == 0)
 		discard;
 
-    //o_EntityID = v_EntityID;
+    o_EntityID = v_EntityID;
 }

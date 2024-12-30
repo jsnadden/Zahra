@@ -136,11 +136,11 @@ namespace Zahra
 		m_ChildHovered = ImGui::IsWindowHovered();
 		m_ChildFocused = ImGui::IsWindowFocused();
 
-		int buttonPadding = 2 * (int)ImGui::GetStyle().FramePadding.x;
-		int minColumnWidth = m_ThumbnailSize + buttonPadding;
+		int32_t buttonPadding = 2 * (int)ImGui::GetStyle().FramePadding.x;
+		int32_t minColumnWidth = m_ThumbnailSize + buttonPadding;
 		float panelWidth = ImGui::GetContentRegionAvail().x;
 
-		int numColumns = std::max(((int)panelWidth) / minColumnWidth, 1);
+		int32_t numColumns = std::max(((int32_t)panelWidth) / minColumnWidth, 1);
 
 		if (ImGui::BeginTable("DirThumbs", numColumns))
 		{

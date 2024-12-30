@@ -28,6 +28,7 @@ namespace Zahra
 				case ImageFormat::R8_UI:			return VK_FORMAT_R8_UINT;
 				case ImageFormat::R16_UI:			return VK_FORMAT_R16_UINT;
 				case ImageFormat::R32_UI:			return VK_FORMAT_R32_UINT;
+				case ImageFormat::R32_SI:			return VK_FORMAT_R32_SINT;
 				case ImageFormat::R32_F:			return VK_FORMAT_R32_SFLOAT;
 				case ImageFormat::RG8_UN:			return VK_FORMAT_R8G8_UNORM;
 				case ImageFormat::RG16_F:			return VK_FORMAT_R16G16_SFLOAT;
@@ -51,6 +52,7 @@ namespace Zahra
 				case ImageFormat::R8_UI:
 				case ImageFormat::R16_UI:
 				case ImageFormat::R32_UI:
+				case ImageFormat::R32_SI:
 					return true;
 
 				case ImageFormat::R8_UN:

@@ -94,12 +94,14 @@ namespace Zahra
 				// right click to add components
 				if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 				{
-					if (ImGui::MenuItem("Add Component(s)")) m_ShowAddComponentsModal = true;
+					if (ImGui::MenuItem("Add Component(s)"))
+						m_ShowAddComponentsModal = true;
 
 					ImGui::EndPopup();
 				}
 
-				if (m_ShowAddComponentsModal) AddComponentsModal(m_Selected);
+				if (m_ShowAddComponentsModal)
+					AddComponentsModal(m_Selected);
 			}
 		}
 
@@ -134,9 +136,14 @@ namespace Zahra
 
 		if (ImGui::BeginPopupContextItem())
 		{
-			if (ImGui::MenuItem("Add child", 0, false, false)) int i = 0; // TODO: make this happen
-			if (ImGui::MenuItem("Duplicate entity")) m_Selected = m_Context->DuplicateEntity(entity);
-			if (ImGui::MenuItem("Delete entity")) entityDeleted = true;
+			if (ImGui::MenuItem("Add child", 0, false, false))
+				int i = 0; // TODO: make this happen
+
+			if (ImGui::MenuItem("Duplicate entity"))
+				m_Selected = m_Context->DuplicateEntity(entity);
+
+			if (ImGui::MenuItem("Delete entity"))
+				entityDeleted = true;
 
 			ImGui::EndPopup();
 		}
@@ -152,7 +159,8 @@ namespace Zahra
 		if (entityDeleted)
 		{
 			m_Context->DestroyEntity(entity);
-			if (m_Selected == entity) m_Selected = {};
+			if (m_Selected == entity)
+				m_Selected = {};
 		}
 
 	}
@@ -184,7 +192,8 @@ namespace Zahra
 				ImGui::PushItemWidth(ImGui::GetColumnWidth());
 				if (ImGui::InputText("", buffer, sizeof(buffer)))
 				{
-					if (ImGui::IsWindowFocused()) tag = std::string(buffer);
+					if (ImGui::IsWindowFocused())
+						tag = std::string(buffer);
 				}
 				ImGui::PopItemWidth();
 			}
@@ -203,7 +212,8 @@ namespace Zahra
 
 				ImGui::SameLine(ImGui::GetColumnWidth() - 135.f);
 				
-				if (ImGui::Button("Add Component(s)")) m_ShowAddComponentsModal = true;
+				if (ImGui::Button("Add Component(s)"))
+					m_ShowAddComponentsModal = true;
 				
 			}
 
@@ -239,14 +249,16 @@ namespace Zahra
 				// TODO: make this a combo box and populate from .first in ScriptEngine::GetEntityTypes
 
 				glm::vec3 textColour = glm::vec3(.95f, .1f, .1f);
-				if (ScriptEngine::ValidEntityClass(component.ScriptName)) textColour = glm::vec3(.1f, .95f, .1f);
+				if (ScriptEngine::ValidEntityClass(component.ScriptName))
+					textColour = glm::vec3(.1f, .95f, .1f);
 
 				char buffer[64];
 				strcpy_s(buffer, component.ScriptName.c_str());
 				
 				if (MeadowUIPatterns::DrawTextEdit("Script name", buffer, sizeof(buffer), textColour))
 				{
-					if (ImGui::IsWindowFocused()) component.ScriptName = std::string(buffer);
+					if (ImGui::IsWindowFocused())
+						component.ScriptName = std::string(buffer);
 				}
 
 			});

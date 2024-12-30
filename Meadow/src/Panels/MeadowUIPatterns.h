@@ -21,7 +21,8 @@ namespace Zahra
 					ImGuiTreeNodeFlags_SpanAvailWidth |
 					ImGuiTreeNodeFlags_Framed;
 
-				if (defaultOpen) nodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+				if (defaultOpen)
+					nodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 
 				auto& component = entity.GetComponents<T>();
 
@@ -30,7 +31,8 @@ namespace Zahra
 				bool removedComponent = false;
 				if (ImGui::BeginPopupContextItem())
 				{
-					if (ImGui::MenuItem("Remove component", 0, false, removeable)) removedComponent = true;
+					if (ImGui::MenuItem("Remove component", 0, false, removeable))
+						removedComponent = true;
 
 					ImGui::EndPopup();
 				}
@@ -50,7 +52,8 @@ namespace Zahra
 					ImGui::TreePop();
 				}
 
-				if (removedComponent) entity.RemoveComponent<T>();
+				if (removedComponent)
+					entity.RemoveComponent<T>();
 			}
 		}
 
@@ -140,7 +143,10 @@ namespace Zahra
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.9f, .2f, .20f, 1.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.8f, .1f, .15f, 1.0f));
 				ImGui::PushFont(boldFont);
-				if (ImGui::Button("X", buttonSize)) values.x = resetValue;
+				if (ImGui::Button("X", buttonSize))
+				{
+					values.x = resetValue;
+				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
 
@@ -156,7 +162,10 @@ namespace Zahra
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.3f, .8f, .3f, 1.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.2f, .7f, .2f, 1.0f));
 				ImGui::PushFont(boldFont);
-				if (ImGui::Button("Y", buttonSize)) values.y = resetValue;
+				if (ImGui::Button("Y", buttonSize))
+				{
+					values.y = resetValue;
+				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
 
@@ -211,7 +220,10 @@ namespace Zahra
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.9f, .2f, .20f, 1.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.8f, .1f, .15f, 1.0f));
 				ImGui::PushFont(boldFont);
-				if (ImGui::Button("X", buttonSize)) values.x = resetValue;
+				if (ImGui::Button("X", buttonSize))
+				{
+					values.x = resetValue;
+				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
 
@@ -227,7 +239,10 @@ namespace Zahra
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.3f, .8f, .3f, 1.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.2f, .7f, .2f, 1.0f));
 				ImGui::PushFont(boldFont);
-				if (ImGui::Button("Y", buttonSize)) values.y = resetValue;
+				if (ImGui::Button("Y", buttonSize))
+				{
+					values.y = resetValue;
+				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
 
@@ -243,7 +258,10 @@ namespace Zahra
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.2f, .35f, .9f, 1.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.1f, .25f, .8f, 1.0f));
 				ImGui::PushFont(boldFont);
-				if (ImGui::Button("Z", buttonSize)) values.z = resetValue;
+				if (ImGui::Button("Z", buttonSize))
+				{
+					values.z = resetValue;
+				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
 
@@ -301,7 +319,7 @@ namespace Zahra
 
 		}
 
-		bool DrawTextEdit(const std::string& label, char* buffer, int bufferLength, const glm::vec3& textColour)
+		bool DrawTextEdit(const std::string& label, char* buffer, int32_t bufferLength, const glm::vec3& textColour)
 		{
 			bool edited;
 
@@ -329,9 +347,9 @@ namespace Zahra
 			return edited;
 		}
 
-		int DrawComboControl(const std::string& label, const char** options, int count, int currentValue)
+		int32_t DrawComboControl(const std::string& label, const char** options, uint32_t count, int32_t currentValue)
 		{
-			int newValue = currentValue;
+			int32_t newValue = currentValue;
 
 			ImGui::PushID(label.c_str());
 
@@ -347,14 +365,15 @@ namespace Zahra
 			{
 				if (ImGui::BeginCombo("##options", options[currentValue]))
 				{
-					for (int i = 0; i < count; i++)
+					for (uint32_t i = 0; i < count; i++)
 					{
 						if (ImGui::Selectable(options[i], currentValue == i))
 						{
 							newValue = i;
 						}
 
-						if (currentValue == i) ImGui::SetItemDefaultFocus();
+						if (currentValue == i)
+							ImGui::SetItemDefaultFocus();
 					}
 
 					ImGui::EndCombo();

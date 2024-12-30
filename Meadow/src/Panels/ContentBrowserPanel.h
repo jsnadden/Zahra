@@ -76,7 +76,7 @@ namespace Zahra
 		std::map<std::string, Ref<Texture2D>> m_Icons;
 		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
 
-		int m_ThumbnailSize = 64;
+		int32_t m_ThumbnailSize = 64;
 
 		bool m_PanelHovered = false, m_PanelFocused = false;
 		bool m_ChildHovered = false, m_ChildFocused = false;

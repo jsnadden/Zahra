@@ -82,7 +82,7 @@ namespace Zahra
 			framebufferSpec.Name = "Renderer_PrimaryFramebuffer";
 			framebufferSpec.Width = s_RendererAPI->GetSwapchainWidth();
 			framebufferSpec.Height = s_RendererAPI->GetSwapchainHeight();
-			framebufferSpec.ClearColour = { .0f, .0f, .0f };
+			//framebufferSpec.ClearColour = { .0f, .0f, .0f };
 			{
 				auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
 				attachment.InheritFrom = s_Data.PrimaryRenderTargetImage;

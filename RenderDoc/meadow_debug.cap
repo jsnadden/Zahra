@@ -7,7 +7,7 @@
         ],
         "executable": "C:\\dev\\Zahra\\bin\\Debug-windows-x86_64\\Meadow\\Meadow.exe",
         "inject": false,
-        "numQueuedFrames": 3,
+        "numQueuedFrames": 0,
         "options": {
             "allowFullscreen": true,
             "allowVSync": false,

@@ -249,7 +249,13 @@
     <ClInclude Include="src\Zahra\Renderer\Renderer.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\Renderer2D.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\RendererAPI.h">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\RendererConfig.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\RendererContext.h">
@@ -1569,8 +1575,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Renderer2D.h" />
-    <ClInclude Include="src\Zahra\Renderer\RendererConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp">
@@ -1687,6 +1691,9 @@
     <ClCompile Include="src\Zahra\Renderer\Renderer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\Renderer2D.cpp">
+      <Filter>src\Zahra\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\RendererAPI.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
@@ -1744,6 +1751,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Renderer2D.cpp" />
   </ItemGroup>
 </Project>

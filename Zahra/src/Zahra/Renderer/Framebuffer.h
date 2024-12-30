@@ -2,6 +2,8 @@
 
 #include "Zahra/Renderer/Image.h"
 
+#include <variant>
+
 namespace Zahra
 {
 	enum class AttachmentLoadOp
@@ -20,7 +22,12 @@ namespace Zahra
 
 		ImageFormat Format = ImageFormat::Unspecified;
 
-		//glm::vec3 ClearColour;
+		union
+		{
+			glm::vec4 fColour = glm::vec4(.0f, .0f, .0f, 1.0f);
+			glm::ivec4 iColour;
+		} ClearColour;
+		
 		//AttachmentLoadOp LoadOp = AttachmentLoadOp::Unspecified;
 		//AttachmentStoreOp StoreOp = AttachmentStoreOp::Unspecified;
 
@@ -31,9 +38,9 @@ namespace Zahra
 	{
 		std::string Name; // for debugging
 
-		uint32_t Width = .0f, Height = .0f;
+		uint32_t Width = 0, Height = 0;
 
-		glm::vec3 ClearColour = { 0.f, 0.f, 0.f };
+		//glm::vec3 ClearColour = { 0.f, 0.f, 0.f };
 		std::vector<AttachmentSpecification> ColourAttachmentSpecs;
 
 		bool HasDepthStencil = false;

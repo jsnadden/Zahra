@@ -38,7 +38,7 @@ namespace Zahra
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		// NOTE: if at some stage I want to enable multi-viewports (i.e. pop-out windows),
-		// there are a couple issues I'll need to contend with. I can render a scene to a
+		// there are a few issues I'll need to contend with. I can render a scene to a
 		// framebuffer, and have ImGui render it to a separate window as a texture, but on
 		// resizing that window, the Vulkan validation layer produces an error message about
 		// some image being in layout _UNDEFINED, when it expects _SHADER_READ_ONLY_OPTIMAL.
@@ -67,7 +67,7 @@ namespace Zahra
 
 		CreateDescriptorPool();
 		CreateRenderPass();
-		CreateLinearisedRenderTarget();
+		CreateRenderTargetImageView();
 		CreateFramebuffer();
 
 		ImGui_ImplVulkan_InitInfo imguiInfo = {};
@@ -188,7 +188,7 @@ namespace Zahra
 			return false;
 
 		Cleanup();
-		CreateLinearisedRenderTarget();
+		CreateRenderTargetImageView();
 		CreateFramebuffer();
 		
 		return false;
@@ -271,7 +271,7 @@ namespace Zahra
 			"Main render pass creation failed");
 	}
 
-	void VulkanImGuiLayer::CreateLinearisedRenderTarget()
+	void VulkanImGuiLayer::CreateRenderTargetImageView()
 	{
 		Ref<VulkanImage2D> renderTarget = Renderer::GetPrimaryRenderTarget().As<VulkanImage2D>();
 		auto& device = VulkanContext::GetCurrentDevice();

@@ -23,7 +23,7 @@ namespace Zahra
 		glm::vec2 TextureCoord;
 		uint32_t TextureIndex;
 		float TilingFactor;
-		//int EntityID = -1;
+		int EntityID = -1;
 	};
 
 	struct CircleVertex
@@ -33,14 +33,14 @@ namespace Zahra
 		glm::vec4 Colour;
 		float Thickness;
 		float Fade;
-		//int EntityID = -1;
+		int EntityID = -1;
 	};
 
 	struct LineVertex
 	{
 		glm::vec3 Position;
 		glm::vec4 Colour;
-		//int EntityID = -1;
+		int EntityID = -1;
 	};
 
 	struct Renderer2DSpecification

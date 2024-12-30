@@ -25,10 +25,14 @@ namespace Zahra
 			framebufferSpec.Name = "Editor_ViewportFramebuffer";
 			framebufferSpec.Width = 1;
 			framebufferSpec.Height = 1;
-			framebufferSpec.ClearColour = { .0f, .0f, .0f };
 			{
 				auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
 				attachment.Format = ImageFormat::SRGBA;
+			}
+			{
+				auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
+				attachment.Format = ImageFormat::R32_SI;
+				attachment.ClearColour.iColour = glm::ivec4(-1, 0, 0, 1);
 			}
 			framebufferSpec.HasDepthStencil = true;
 			framebufferSpec.DepthClearValue = 1.0f;
@@ -139,11 +143,6 @@ namespace Zahra
 			Zahra::Renderer::BeginRenderPass(m_ClearPass, false, true);
 			Zahra::Renderer::EndRenderPass();
 
-			//m_Scene->OnRenderEditor(m_Renderer2D, m_Camera);
-
-			// TODO: mousepicking
-			//m_Framebuffer->ClearColourAttachment(1, -1);
-
 			switch (m_SceneState)
 			{
 				case SceneState::Edit:
@@ -253,13 +252,19 @@ namespace Zahra
 
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("New", "Ctrl+N")) NewScene();
-				if (ImGui::MenuItem("Open...", "Ctrl+O")) OpenSceneFile();
+				if (ImGui::MenuItem("New", "Ctrl+N"))
+					NewScene();
+
+				if (ImGui::MenuItem("Open...", "Ctrl+O"))
+					OpenSceneFile();
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Save", "Ctrl+S")) SaveSceneFile();
-				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) SaveAsSceneFile();
+				if (ImGui::MenuItem("Save", "Ctrl+S"))					
+					SaveSceneFile();
+
+				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+					SaveAsSceneFile();
 
 				ImGui::Separator();
 
@@ -285,10 +290,17 @@ namespace Zahra
 
 			if (ImGui::BeginMenu("Tools"))
 			{
-				if (ImGui::MenuItem("Select", "Q")) m_GizmoType = -1;
-				if (ImGui::MenuItem("Translate", "W")) m_GizmoType = 0;
-				if (ImGui::MenuItem("Rotate", "E")) m_GizmoType = 1;
-				if (ImGui::MenuItem("Scale", "R")) m_GizmoType = 2;
+				if (ImGui::MenuItem("Select", "Q"))
+					m_GizmoType = -1;
+
+				if (ImGui::MenuItem("Translate", "W"))
+					m_GizmoType = 0;
+
+				if (ImGui::MenuItem("Rotate", "E"))
+					m_GizmoType = 1;
+
+				if (ImGui::MenuItem("Scale", "R"))
+					m_GizmoType = 2;
 
 				ImGui::EndMenu();
 			}
@@ -307,7 +319,8 @@ namespace Zahra
 
 	void EditorLayer::UIAboutWindow()
 	{
-		if (m_ShowAboutWindow) ImGui::OpenPopup("Meadow##About");
+		if (m_ShowAboutWindow)
+			ImGui::OpenPopup("Meadow##About");
 
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -476,7 +489,8 @@ namespace Zahra
 			ImGuiTextureHandle viewportTextureID = m_ViewportTextureHandle;
 			ImGui::Image(viewportTextureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2(0, 0), ImVec2(1, 1));
 
-			if (m_SceneState == SceneState::Edit) UIGizmos();
+			if (m_SceneState == SceneState::Edit)
+				UIGizmos();
 
 			if (ImGui::BeginDragDropTarget())
 			{
@@ -632,7 +646,8 @@ namespace Zahra
 		
 		if (m_SceneState == SceneState::Edit)
 		{
-			if (ImGuizmo::IsUsing()) return false; // avoids crash bug when an entity is deleted during manipulation
+			if (ImGuizmo::IsUsing())
+				return false; // avoids crash bug when an entity is deleted during manipulation
 
 			bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 			bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
@@ -677,22 +692,30 @@ namespace Zahra
 				}
 				case KeyCode::Q:
 				{
-					if (m_ViewportFocused) m_GizmoType = -1;
+					if (m_ViewportFocused)
+						m_GizmoType = -1;
+
 					break;
 				}
 				case KeyCode::W:
 				{
-					if (m_ViewportFocused) m_GizmoType = 7;
+					if (m_ViewportFocused)
+						m_GizmoType = 7;
+
 					break;
 				}
 				case KeyCode::E:
 				{
-					if (m_ViewportFocused) m_GizmoType = 120;
+					if (m_ViewportFocused)
+						m_GizmoType = 120;
+
 					break;
 				}
 				case KeyCode::R:
 				{
-					if (m_ViewportFocused) m_GizmoType = 896;
+					if (m_ViewportFocused)
+						m_GizmoType = 896;
+
 					break;
 				}
 				case KeyCode::D:
@@ -739,7 +762,8 @@ namespace Zahra
 
 	void EditorLayer::NewScene()
 	{
-		if (m_SceneState != SceneState::Edit) SceneStop();
+		if (m_SceneState != SceneState::Edit)
+			SceneStop();
 
 		{
 			m_EditorScene = Ref<Scene>::Create();
@@ -760,9 +784,11 @@ namespace Zahra
 
 	void EditorLayer::OpenSceneFile(std::filesystem::path filepath)
 	{
-		if (filepath.empty()) return;
+		if (filepath.empty())
+			return;
 		
-		if (m_SceneState != SceneState::Edit) SceneStop();
+		if (m_SceneState != SceneState::Edit)
+			SceneStop();
 
 		m_HoveredEntity = {};
 
@@ -827,16 +853,16 @@ namespace Zahra
 
 	void EditorLayer::ReadHoveredEntity()
 	{
-		// TODO: Figure out how to make mousepicking work in Vulkan
-		// Might have to use ray casting
-		/*ImVec2 mouse = ImGui::GetMousePos();
+		// TODO: compare performance between this GPU-side colour picking method, and CPU-side raycasting
+
+		ImVec2 mouse = ImGui::GetMousePos();
 		mouse.x -= m_ViewportBounds[0].x;
 		mouse.y -= m_ViewportBounds[0].y;
 		mouse.y = m_ViewportSize.y - mouse.y;
 
-		int hoveredID = m_Framebuffer->ReadPixel(1, (int)mouse.x, (int)mouse.y);
+		//int32_t hoveredID = m_Framebuffer->ReadPixel(1, (int)mouse.x, (int)mouse.y);
 
-		m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.Raw());*/
+		//m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.Raw());
 	}
 
 	

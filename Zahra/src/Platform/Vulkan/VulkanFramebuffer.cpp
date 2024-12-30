@@ -53,8 +53,9 @@ namespace Zahra
 
 		for (auto& attachment : m_Specification.ColourAttachmentSpecs)
 		{
-			VkClearValue colour = { m_Specification.ClearColour.r, m_Specification.ClearColour.g, m_Specification.ClearColour.b, 1.0f };
-			clearValues.push_back(colour);
+			auto& clearValue = clearValues.emplace_back();
+
+			memcpy(&clearValue, &attachment.ClearColour, sizeof(glm::vec4));
 		}
 
 		if (m_Specification.HasDepthStencil)

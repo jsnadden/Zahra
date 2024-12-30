@@ -76,8 +76,7 @@ namespace Zahra
 		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
 		glm::vec2 m_ViewportBounds[2] = { {}, {} };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
-		float m_ClearColour[4] = { .0f, .0f, .0f, 1.0f };
-		int m_GizmoType = -1;
+		int32_t m_GizmoType = -1;
 		Entity m_HoveredEntity;		
 
 		void ReadHoveredEntity();

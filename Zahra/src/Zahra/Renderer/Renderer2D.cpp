@@ -47,10 +47,10 @@ namespace Zahra
 			m_QuadTemplate[2] = { .5f,  .5f, .0f, 1.0f };
 			m_QuadTemplate[3] = { -.5f,  .5f, .0f, 1.0f };
 
-			m_TextureTemplate[0] = { 0.0f, 0.0f };
-			m_TextureTemplate[1] = { 1.0f, 0.0f };
-			m_TextureTemplate[2] = { 1.0f, 1.0f };
-			m_TextureTemplate[3] = { 0.0f, 1.0f };
+			m_TextureTemplate[0] = { 0.0f, 1.0f };
+			m_TextureTemplate[1] = { 1.0f, 1.0f };
+			m_TextureTemplate[2] = { 1.0f, 0.0f };
+			m_TextureTemplate[3] = { 0.0f, 0.0f };
 
 			// TODO: put a resource manager in renderpass, specifically for
 			// camera and light resources (give these a specific set range)
@@ -426,7 +426,7 @@ namespace Zahra
 			newVertex->TextureCoord = m_TextureTemplate[i];
 			newVertex->TextureIndex = 0;
 			newVertex->TilingFactor = 1.0f;
-			//newVertex->EntityID = entityID;
+			newVertex->EntityID = entityID;
 
 			newVertex++;
 		}
@@ -477,7 +477,7 @@ namespace Zahra
 			newVertex->TextureCoord = m_TextureTemplate[i];
 			newVertex->TextureIndex = textureIndex;
 			newVertex->TilingFactor = tiling;
-			//newVertex->EntityID = entityID;
+			newVertex->EntityID = entityID;
 
 			newVertex++;
 		}
@@ -506,7 +506,7 @@ namespace Zahra
 			newVertex->Colour = colour;
 			newVertex->Thickness = thickness;
 			newVertex->Fade = fade;
-			//newVertex->EntityID = entityID;
+			newVertex->EntityID = entityID;
 
 			newVertex++;
 		}
@@ -535,7 +535,7 @@ namespace Zahra
 		
 		newVertex->Position = end1;
 		newVertex->Colour = colour;
-		//newVertex->EntityID = entityID;
+		newVertex->EntityID = entityID;
 		newVertex++;
 		
 		m_LineVertexCount += 2;

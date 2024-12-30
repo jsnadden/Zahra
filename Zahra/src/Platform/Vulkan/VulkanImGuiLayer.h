@@ -47,7 +47,7 @@ namespace Zahra
 
 		void CreateDescriptorPool();
 		void CreateRenderPass();
-		void CreateLinearisedRenderTarget();
+		void CreateRenderTargetImageView();
 		void CreateFramebuffer();
 
 		void Cleanup();

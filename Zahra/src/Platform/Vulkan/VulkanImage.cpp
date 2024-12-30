@@ -196,8 +196,8 @@ namespace Zahra
 			filter = VK_FILTER_LINEAR;
 			mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		}
-
-		m_Sampler = device->CreateVulkanImageSampler(filter, filter, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, mipmapMode);
+		// TODO: set "address mode" in image/texture spec
+		m_Sampler = device->CreateVulkanImageSampler(filter, filter, VK_SAMPLER_ADDRESS_MODE_REPEAT, mipmapMode);
 	}
 
 	//void VulkanImage2D::TransitionLayout()
