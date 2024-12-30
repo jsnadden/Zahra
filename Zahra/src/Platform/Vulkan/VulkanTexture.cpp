@@ -49,7 +49,7 @@ namespace Zahra
 				//case ImageFormat::RG8_UN:				return
 				//case ImageFormat::RG16_F:				return
 				//case ImageFormat::RG32_F:				return
-				//case ImageFormat::RGBA_UN:			return;
+				case ImageFormat::RGBA_UN:				return 4;
 				case ImageFormat::SRGBA:				return 4;
 				//case ImageFormat::RGBA16_F:			return
 				//case ImageFormat::RGBA32_F:			return
@@ -75,7 +75,7 @@ namespace Zahra
 		Z_CORE_ASSERT(imageData, "Vulkan texture failed to load image.");
 
 		// TODO: to allow for hdr textures etc., stbi can query the image file to decide on a correct colour format
-		m_Format = ImageFormat::SRGBA;
+		m_Format = m_Specification.Format;
 		m_Width = width;
 		m_Height = height;
 
@@ -108,7 +108,7 @@ namespace Zahra
 	{
 		m_Filepath = "";
 
-		m_Format = ImageFormat::SRGBA;
+		m_Format = m_Specification.Format;
 		m_Width = 1;
 		m_Height = 1;
 

@@ -395,6 +395,10 @@ namespace Zahra
 		uint64_t cameraGUID;
 		if (hasActiveCamera) cameraGUID = data["ActiveCameraGUID"].as<uint64_t>();
 
+		Texture2DSpecification textureSpec{};
+		if (Application::Get().GetSpecification().ImGuiConfig.RenderingScenes)
+			textureSpec.Format = ImageFormat::RGBA_UN;
+
 		auto entityNodes = data["Entities"];
 		if (entityNodes)
 		{
@@ -428,7 +432,7 @@ namespace Zahra
 
 					sprite.Tint = spriteNode["Tint"].as<glm::vec4>();
 					if (spriteNode["TexturePath"])
-						sprite.Texture = Texture2D::CreateFromFile({}, spriteNode["TexturePath"].as<std::string>());
+						sprite.Texture = Texture2D::CreateFromFile(textureSpec, spriteNode["TexturePath"].as<std::string>());
 					sprite.TextureTiling = spriteNode["TextureTiling"].as<float>();
 					sprite.Animated = spriteNode["Animated"].as<bool>();
 				}

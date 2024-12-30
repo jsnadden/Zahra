@@ -13,6 +13,8 @@ namespace Zahra
 	{
 		bool Enabled = true;
 
+		bool RenderingScenes = false;
+
 		// colour scheme stuff?
 	};
 

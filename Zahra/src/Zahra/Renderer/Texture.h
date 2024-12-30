@@ -48,6 +48,8 @@ namespace Zahra
 		TextureFilterMode MagnificationFilterMode = TextureFilterMode::Linear;
 		TextureWrapMode WrapMode = TextureWrapMode::Repeat;*/
 
+		ImageFormat Format = ImageFormat::SRGBA;
+
 		bool KeepLocalData = true;
 		
 		// TODO: mipmapping, hdr etc.

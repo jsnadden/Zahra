@@ -86,7 +86,6 @@ namespace Zahra
 			{
 				auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
 				attachment.InheritFrom = s_Data.PrimaryRenderTargetImage;
-				attachment.Format = ImageFormat::SRGBA;
 			}
 			framebufferSpec.HasDepthStencil = true;
 			framebufferSpec.DepthClearValue = 1.0f;
