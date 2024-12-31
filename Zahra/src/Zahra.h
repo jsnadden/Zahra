@@ -23,8 +23,9 @@
 #include "Zahra/ImGui/ImGuiLayer.h"
 
 //------------RENDERING----------------
-#include "Zahra/Renderer/Camera.h"
-#include "Zahra/Renderer/EditorCamera.h"
+#include "Zahra/Renderer/Cameras/Camera.h"
+#include "Zahra/Renderer/Cameras/EditorCamera.h"
+#include "Zahra/Renderer/Cameras/SceneCamera.h"
 #include "Zahra/Renderer/Framebuffer.h"
 #include "Zahra/Renderer/Image.h"
 #include "Zahra/Renderer/IndexBuffer.h"

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "SceneCamera.h"
-#include "Zahra/Renderer/Texture.h"
 #include "Zahra/Core/GUID.h"
+#include "Zahra/Renderer/Cameras/SceneCamera.h"
+#include "Zahra/Renderer/Texture.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -10,7 +10,6 @@
 #ifndef GLM_ENABLE_EXPERIMENTAL
 	#define GLM_ENABLE_EXPERIMENTAL
 #endif
-
 #include <glm/gtx/quaternion.hpp>
 
 namespace Zahra

@@ -396,7 +396,7 @@ namespace Zahra
 		if (hasActiveCamera) cameraGUID = data["ActiveCameraGUID"].as<uint64_t>();
 
 		Texture2DSpecification textureSpec{};
-		if (Application::Get().GetSpecification().ImGuiConfig.RenderingScenes)
+		if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
 			textureSpec.Format = ImageFormat::RGBA_UN;
 
 		auto entityNodes = data["Entities"];

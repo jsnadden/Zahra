@@ -192,7 +192,7 @@ namespace Zahra
 			write.dstSet = m_DescriptorSets[frame][resource.Metadata.Set];
 			write.dstBinding = resource.Metadata.Binding;
 			write.dstArrayElement = 0;
-			write.descriptorCount = resource.ImageInfos.size();
+			write.descriptorCount = (uint32_t)resource.ImageInfos.size();
 			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write.pImageInfo = resource.ImageInfos.data();
 			write.pBufferInfo = nullptr;
@@ -221,7 +221,7 @@ namespace Zahra
 			throw std::runtime_error(errorMessage);
 		}
 
-		vkUpdateDescriptorSets(VulkanContext::GetCurrentVkDevice(), m_UpdateQueue.size(), m_UpdateQueue.data(), 0, nullptr);
+		vkUpdateDescriptorSets(VulkanContext::GetCurrentVkDevice(), (uint32_t)m_UpdateQueue.size(), m_UpdateQueue.data(), 0, nullptr);
 		m_UpdateQueue.clear();
 	}
 

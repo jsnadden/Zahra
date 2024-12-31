@@ -90,27 +90,29 @@ namespace Zahra
 	{
 		switch (m_ProjectionType)
 		{
-		case ProjectionType::Orthographic:
-		{
-			m_Projection = glm::ortho(m_OrthographicData.Size * m_AspectRatio * -.5f,
-				m_OrthographicData.Size * m_AspectRatio * .5f,
-				m_OrthographicData.Size * -.5f,
-				m_OrthographicData.Size * .5f,
-				m_OrthographicData.Near,
-				m_OrthographicData.Far);
-			break;
-		}
-		case ProjectionType::Perspective:
-		{
-			m_Projection = glm::perspective(m_PerspectiveData.VerticalFOV,
-				m_AspectRatio,
-				m_PerspectiveData.Near,
-				m_PerspectiveData.Far);
-			break;
-		}
-		default: Z_CORE_ASSERT(false, "Invalid camera projection type");
+			case ProjectionType::Orthographic:
+			{
+				m_Projection = glm::ortho(m_OrthographicData.Size * m_AspectRatio * -.5f,
+					m_OrthographicData.Size * m_AspectRatio * .5f,
+					m_OrthographicData.Size * -.5f,
+					m_OrthographicData.Size * .5f,
+					m_OrthographicData.Near,
+					m_OrthographicData.Far);
+				break;
+			}
+			case ProjectionType::Perspective:
+			{
+				m_Projection = glm::perspective(m_PerspectiveData.VerticalFOV,
+					m_AspectRatio,
+					m_PerspectiveData.Near,
+					m_PerspectiveData.Far);
+				break;
+			}
+
+			default: Z_CORE_ASSERT(false, "Invalid camera projection type");
 		}
 
+		m_Projection[1][1] *= -1.f; // TODO: parity correction, since glm uses y-up screenspace coords
 	}
 
 }

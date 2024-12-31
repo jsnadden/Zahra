@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Components.h"
-#include "Zahra/Renderer/EditorCamera.h"
+#include "Zahra/Renderer/Cameras/EditorCamera.h"
 #include "Zahra/Renderer/Renderer2D.h"
+#include "Zahra/Scene/Components.h"
 
 #include <entt.hpp>
 
@@ -86,6 +86,8 @@ namespace Zahra
 		friend class SceneHierarchyPanel;
 		friend class PropertiesPanel;
 		friend class SceneSerialiser;
+
+		void RenderEntities(Ref<Renderer2D>& renderer);
 	};
 
 }

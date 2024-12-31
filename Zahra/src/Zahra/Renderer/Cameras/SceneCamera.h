@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Renderer/Camera.h"
+#include "Zahra/Renderer/Cameras/Camera.h"
 
 #include <glm/glm.hpp>
 

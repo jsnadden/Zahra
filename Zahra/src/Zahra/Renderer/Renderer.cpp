@@ -73,7 +73,6 @@ namespace Zahra
 			imageSpec.Width = s_RendererAPI->GetSwapchainWidth();
 			imageSpec.Height = s_RendererAPI->GetSwapchainHeight();
 			imageSpec.Sampled = true;
-			imageSpec.InitialLayout = ImageLayout::ColourAttachment;
 			s_Data.PrimaryRenderTargetImage = Image2D::Create(imageSpec);
 
 			s_Data.PrimaryRenderTargetTexture = Texture2D::CreateFromImage2D(s_Data.PrimaryRenderTargetImage);

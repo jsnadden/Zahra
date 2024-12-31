@@ -1,11 +1,9 @@
 #pragma once
 
-#include <Zahra.h>
-
-#include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
+#include "Panels/SceneHierarchyPanel.h"
 
-#include <optional>
+#include <Zahra.h>
 
 namespace Zahra
 {
@@ -70,6 +68,7 @@ namespace Zahra
 		void SaveAsSceneFile();
 
 		// Viewport
+		Ref<Image2D> m_ColourPickingAttachment;
 		Ref<Framebuffer> m_ViewportFramebuffer;
 		Ref<Texture2D> m_ViewportTexture;
 		ImGuiTextureHandle m_ViewportTextureHandle = nullptr;
@@ -77,7 +76,7 @@ namespace Zahra
 		glm::vec2 m_ViewportBounds[2] = { {}, {} };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 		int32_t m_GizmoType = -1;
-		Entity m_HoveredEntity;		
+		Entity m_HoveredEntity;
 
 		void ReadHoveredEntity();
 

@@ -2,9 +2,9 @@
 #include "Scene.h"
 
 #include "Zahra/Renderer/Renderer.h"
+#include "Zahra/Scene/Components.h"
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scene/ScriptableEntity.h"
-#include "Zahra/Scene/Components.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 
 #include <box2d/b2_world.h>
@@ -216,72 +216,22 @@ namespace Zahra
 	void Scene::OnRenderEditor(Ref<Renderer2D> renderer, EditorCamera& camera)
 	{
 		renderer->BeginScene(camera);
-		{
-			auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
-			for (auto entity : spriteEntities)
-			{
-				auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
-
-				if (sprite.Texture)
-					renderer->DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Tint, sprite.TextureTiling, (int)entity);
-				else
-					renderer->DrawQuad(transform.GetTransform(), sprite.Tint, (int)entity);
-			}
-
-			auto circleEntities = m_Registry.view<TransformComponent, CircleComponent>();
-			for (auto entity : circleEntities)
-			{
-				auto [transform, circle] = circleEntities.get<TransformComponent, CircleComponent>(entity);
-
-				renderer->DrawCircle(transform.GetTransform(), circle.Colour, circle.Thickness, circle.Fade, (int)entity);
-			}
-
-			if (s_OverlayMode.ShowColliders)
-			{
-				auto rectColliders = m_Registry.view<TransformComponent, RectColliderComponent>();
-				for (auto entity : rectColliders)
-				{
-					auto [transform, collider] = rectColliders.get<TransformComponent, RectColliderComponent>(entity);
-
-					glm::vec3 scale = transform.Scale * glm::vec3(collider.HalfExtent * 2.0f, 1.0f);
-
-					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), glm::vec3(transform.Translation.x, transform.Translation.y, 0.f))
-						* glm::rotate(glm::mat4(1.0f), transform.EulerAngles.z, glm::vec3(0.0f, 0.0f, 1.0f))
-						* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
-						* glm::scale(glm::mat4(1.0f), scale);
-
-					renderer->DrawQuadBoundingBox(colliderTransform, s_OverlayMode.ColliderColour, (int)entity);
-				}
-
-				auto circleColliders = m_Registry.view<TransformComponent, CircleColliderComponent>();
-				for (auto entity : circleColliders)
-				{
-					auto [transform, collider] = circleColliders.get<TransformComponent, CircleColliderComponent>(entity);
-
-					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), transform.Translation)
-						* glm::rotate(glm::mat4(1.0f), transform.EulerAngles.z, glm::vec3(0.0f, 0.0f, 1.0f))
-						* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
-						* glm::scale(glm::mat4(1.f), glm::vec3(collider.Radius * 2.05f));
-
-					renderer->DrawCircle(colliderTransform, s_OverlayMode.ColliderColour, .02f / collider.Radius, .001f, (int)entity);
-				}
-
-			}
-		}
+		RenderEntities(renderer);
 		renderer->EndScene();
 	}
 
 	void Scene::OnRenderRuntime(Ref<Renderer2D> renderer)
 	{
-		/*if (m_ActiveCamera != entt::null)
+		if (m_ActiveCamera != entt::null)
 		{
 			Entity activeCameraEntity(m_ActiveCamera, this);
-			glm::mat4 cameraTransform = activeCameraEntity.GetComponents<TransformComponent>().GetTransform();
+			glm::mat4 cameraView = glm::inverse(activeCameraEntity.GetComponents<TransformComponent>().GetTransform());
+			glm::mat4 cameraProjection = activeCameraEntity.GetComponents<CameraComponent>().Camera.GetProjection();
 
-			renderer->BeginScene(activeCameraEntity.GetComponents<CameraComponent>().Camera.GetProjection(), cameraTransform);
-			RenderEntities();
+			renderer->BeginScene(cameraView, cameraProjection);
+			RenderEntities(renderer);
 			renderer->EndScene();
-		}*/
+		}
 	}
 
 	static b2BodyType ZRigidBodyTypeToBox2D(RigidBody2DComponent::BodyType type)
@@ -421,6 +371,60 @@ namespace Zahra
 	Scene::DebugRenderSettings& Scene::GetDebugRenderSettings()
 	{
 		return s_OverlayMode;
+	}
+
+	void Scene::RenderEntities(Ref<Renderer2D>& renderer)
+	{
+		auto spriteEntities = m_Registry.view<TransformComponent, SpriteComponent>();
+		for (auto entity : spriteEntities)
+		{
+			auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
+
+			if (sprite.Texture)
+				renderer->DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Tint, sprite.TextureTiling, (int)entity);
+			else
+				renderer->DrawQuad(transform.GetTransform(), sprite.Tint, (int)entity);
+		}
+
+		auto circleEntities = m_Registry.view<TransformComponent, CircleComponent>();
+		for (auto entity : circleEntities)
+		{
+			auto [transform, circle] = circleEntities.get<TransformComponent, CircleComponent>(entity);
+
+			renderer->DrawCircle(transform.GetTransform(), circle.Colour, circle.Thickness, circle.Fade, (int)entity);
+		}
+
+		if (s_OverlayMode.ShowColliders)
+		{
+			auto rectColliders = m_Registry.view<TransformComponent, RectColliderComponent>();
+			for (auto entity : rectColliders)
+			{
+				auto [transform, collider] = rectColliders.get<TransformComponent, RectColliderComponent>(entity);
+
+				glm::vec3 scale = transform.Scale * glm::vec3(collider.HalfExtent * 2.0f, 1.0f);
+
+				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), glm::vec3(transform.Translation.x, transform.Translation.y, 0.f))
+					* glm::rotate(glm::mat4(1.0f), transform.EulerAngles.z, glm::vec3(0.0f, 0.0f, 1.0f))
+					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
+					* glm::scale(glm::mat4(1.0f), scale);
+
+				renderer->DrawQuadBoundingBox(colliderTransform, s_OverlayMode.ColliderColour, (int)entity);
+			}
+
+			auto circleColliders = m_Registry.view<TransformComponent, CircleColliderComponent>();
+			for (auto entity : circleColliders)
+			{
+				auto [transform, collider] = circleColliders.get<TransformComponent, CircleColliderComponent>(entity);
+
+				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), transform.Translation)
+					* glm::rotate(glm::mat4(1.0f), transform.EulerAngles.z, glm::vec3(0.0f, 0.0f, 1.0f))
+					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
+					* glm::scale(glm::mat4(1.f), glm::vec3(collider.Radius * 2.05f));
+
+				renderer->DrawCircle(colliderTransform, s_OverlayMode.ColliderColour, .02f / collider.Radius, .001f, (int)entity);
+			}
+
+		}
 	}
 
 

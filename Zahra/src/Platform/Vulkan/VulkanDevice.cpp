@@ -81,7 +81,7 @@ namespace Zahra
 
 	void VulkanDevice::CreateVulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 	{
-		bool mutableFormat = Application::Get().GetSpecification().ImGuiConfig.Enabled;
+		bool mutableFormat = Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures;
 
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -190,6 +190,44 @@ namespace Zahra
 
 		EndTemporaryCommandBuffer(commandBuffer);
 
+	}
+
+	void VulkanDevice::CopyPixelToBuffer(VkImage image, VkBuffer buffer, int32_t x, int32_t y)
+	{
+		VkCommandBuffer commandBuffer = GetTemporaryCommandBuffer();
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
+		barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		VkBufferImageCopy copyInfo{};
+		copyInfo.bufferOffset = 0;
+		copyInfo.bufferRowLength = 0;
+		copyInfo.bufferImageHeight = 0;
+		copyInfo.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		copyInfo.imageSubresource.mipLevel = 0; // TODO: mipmapping
+		copyInfo.imageSubresource.baseArrayLayer = 0;
+		copyInfo.imageSubresource.layerCount = 1;
+		copyInfo.imageOffset = { x, y, 0 };
+		copyInfo.imageExtent = { 1, 1, 1 };
+
+		vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &copyInfo); // this assumes we've already transitioned the image layout to TRANSFER_DST_OPTIMAL;
+
+		EndTemporaryCommandBuffer(commandBuffer);
 	}
 
 	void VulkanDevice::CopyVulkanImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height)
@@ -332,7 +370,7 @@ namespace Zahra
 		return commandBuffer;
 	}
 
-	void VulkanDevice::EndTemporaryCommandBuffer(VkCommandBuffer commandBuffer)
+	void VulkanDevice::EndTemporaryCommandBuffer(VkCommandBuffer commandBuffer, GPUQueueType queueType)
 	{
 		vkEndCommandBuffer(commandBuffer);
 
@@ -341,8 +379,37 @@ namespace Zahra
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(m_GraphicsQueue);
+		VkQueue queue;
+
+		switch (queueType)
+		{
+			case GPUQueueType::Graphics:
+			{
+				queue = m_GraphicsQueue;
+				break;
+			}
+			case GPUQueueType::Present:
+			{
+				queue = m_PresentationQueue;
+				break;
+			}
+			case GPUQueueType::Transfer:
+			{
+				queue = m_TransferQueue;
+				break;
+			}
+			case GPUQueueType::Compute:
+			{
+				queue = m_ComputeQueue;
+				break;
+			}
+
+			default:
+				break;
+		}
+
+		vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(queue);
 		// TODO: synchronise using fences instead of just waiting ("A fence would allow
 		// you to schedule multiple transfers simultaneously and wait for all of them
 		// complete, instead of executing one at a time. That may give the driver more

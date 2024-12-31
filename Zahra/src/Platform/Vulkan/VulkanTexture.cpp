@@ -36,30 +36,6 @@ namespace Zahra
 			return VK_SAMPLER_ADDRESS_MODE_MAX_ENUM;
 		}
 
-		uint32_t BytesPerPixel(ImageFormat format)
-		{
-			// TODO: fill this out
-			switch (format)
-			{
-				//case ImageFormat::R8_UN:				return
-				//case ImageFormat::R8_UI:				return
-				//case ImageFormat::R16_UI:				return
-				//case ImageFormat::R32_UI:				return
-				//case ImageFormat::R32_F:				return
-				//case ImageFormat::RG8_UN:				return
-				//case ImageFormat::RG16_F:				return
-				//case ImageFormat::RG32_F:				return
-				case ImageFormat::RGBA_UN:				return 4;
-				case ImageFormat::SRGBA:				return 4;
-				//case ImageFormat::RGBA16_F:			return
-				//case ImageFormat::RGBA32_F:			return
-				//case ImageFormat::B10R11G11_UF:		return
-				//case ImageFormat::DepthStencil:		return
-			}
-
-			Z_CORE_ASSERT(false, "Unsupported image format");
-			return VK_FORMAT_UNDEFINED;
-		}
 	}
 
 	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, const std::string& filepath)
@@ -79,7 +55,7 @@ namespace Zahra
 		m_Width = width;
 		m_Height = height;
 
-		uint32_t size = width * height * VulkanUtils::BytesPerPixel(m_Format);
+		uint32_t size = width * height * Image::BytesPerPixel(m_Format);
 		SetData((void*)imageData, size);
 
 		stbi_image_free(imageData);
@@ -112,7 +88,7 @@ namespace Zahra
 		m_Width = 1;
 		m_Height = 1;
 
-		uint32_t size = VulkanUtils::BytesPerPixel(m_Format);
+		uint32_t size = Image::BytesPerPixel(m_Format);
 		SetData((void*)&colour, size);
 	}
 

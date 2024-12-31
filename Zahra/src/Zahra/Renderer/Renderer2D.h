@@ -2,8 +2,8 @@
 
 #include "Zahra/Core/Application.h"
 #include "Zahra/Core/Types.h"
-#include "Zahra/Renderer/Camera.h"
-#include "Zahra/Renderer/EditorCamera.h"
+#include "Zahra/Renderer/Cameras/Camera.h"
+#include "Zahra/Renderer/Cameras/EditorCamera.h"
 #include "Zahra/Renderer/IndexBuffer.h"
 #include "Zahra/Renderer/Mesh.h"
 #include "Zahra/Renderer/RenderPass.h"
@@ -59,7 +59,6 @@ namespace Zahra
 		~Renderer2D();
 		
 		void BeginScene(const glm::mat4& cameraView, const glm::mat4& cameraProjection);
-		//void BeginScene(const Camera& camera, const glm::mat4& transform);
 		void BeginScene(const EditorCamera& camera);
 		void EndScene();
 

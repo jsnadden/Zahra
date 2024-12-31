@@ -10,13 +10,13 @@
 
 namespace Zahra
 {
-	/*enum class GPUQueueType
+	enum class GPUQueueType
 	{
 		Graphics,
 		Present,
 		Transfer,
 		Compute
-	};*/
+	};
 
 	struct QueueFamilyIndices
 	{
@@ -34,7 +34,7 @@ namespace Zahra
 			return GraphicsIndex.has_value() && PresentIndex.has_value();
 		}
 
-		/*const std::optional<uint32_t>& GetIndex(GPUQueueType queueType)
+		const std::optional<uint32_t>& GetIndex(GPUQueueType queueType)
 		{
 			switch (queueType)
 			{
@@ -45,7 +45,7 @@ namespace Zahra
 			}
 
 			Z_CORE_ASSERT(false, "Unrecognised GPUQueueType");
-		}*/
+		}
 
 	};
 
@@ -72,11 +72,12 @@ namespace Zahra
 		VkImageView CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags);
 		VkSampler CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode addressMode, VkSamplerMipmapMode mipmapMode);
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void CopyPixelToBuffer(VkImage image, VkBuffer buffer, int32_t x, int32_t y);
 		void CopyVulkanImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
 		void TransitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 		VkCommandBuffer GetTemporaryCommandBuffer(bool begin = true);
-		void EndTemporaryCommandBuffer(VkCommandBuffer commandBuffer);
+		void EndTemporaryCommandBuffer(VkCommandBuffer commandBuffer, GPUQueueType queueType = GPUQueueType::Graphics);
 
 		VkCommandBuffer GetSecondaryCommandBuffer();
 

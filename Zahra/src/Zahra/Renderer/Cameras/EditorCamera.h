@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Camera.h"
 #include "Zahra/Events/Event.h"
 #include "Zahra/Events/MouseEvent.h"
+#include "Zahra/Renderer/Cameras/Camera.h"
 
 #include <glm/glm.hpp>
 

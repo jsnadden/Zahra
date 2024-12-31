@@ -140,7 +140,7 @@ namespace Zahra
 			auto& attachments = vulkanRenderPass->GetClearAttachments();
 			auto& rects = vulkanRenderPass->GetClearRects();
 
-			vkCmdClearAttachments(commandBuffer, attachments.size(), attachments.data(), rects.size(), rects.data());
+			vkCmdClearAttachments(commandBuffer, (uint32_t)attachments.size(), attachments.data(), (uint32_t)rects.size(), rects.data());
 		}
 	}
 

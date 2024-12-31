@@ -88,7 +88,7 @@ namespace Zahra
 			return VK_IMAGE_LAYOUT_MAX_ENUM;
 		}
 
-		static VkAccessFlags DstAccessForLayoutTransition(ImageLayout layout)
+		static VkAccessFlags AccessFlagForLayoutTransition(ImageLayout layout)
 		{
 			switch (layout)
 			{
@@ -97,12 +97,13 @@ namespace Zahra
 				case ImageLayout::Texture: return VK_ACCESS_SHADER_READ_BIT;
 				case ImageLayout::TransferSource: return VK_ACCESS_TRANSFER_READ_BIT;
 				case ImageLayout::TransferDestination: return VK_ACCESS_TRANSFER_WRITE_BIT;
+				case ImageLayout::Unspecified: return 0;
 			}
 			Z_CORE_ASSERT(false, "Unsupported image layout");
 			return VK_ACCESS_FLAG_BITS_MAX_ENUM;
 		}
 
-		static VkPipelineStageFlags DstStageForLayoutTransition(ImageLayout layout)
+		static VkPipelineStageFlags StageFlagForLayoutTransition(ImageLayout layout)
 		{
 			switch (layout)
 			{
@@ -111,6 +112,7 @@ namespace Zahra
 				case ImageLayout::Texture: return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 				case ImageLayout::TransferSource: return VK_PIPELINE_STAGE_TRANSFER_BIT;
 				case ImageLayout::TransferDestination: return VK_PIPELINE_STAGE_TRANSFER_BIT;
+				case ImageLayout::Unspecified: return 0;
 			}
 			Z_CORE_ASSERT(false, "Unsupported image layout");
 			return VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
@@ -133,12 +135,14 @@ namespace Zahra
 
 		void SetData(const VkBuffer& srcBuffer);
 
+		virtual void* ReadPixel(int32_t x, int32_t y) override;
+
 		const VkExtent2D GetDimensions() const { return { m_Specification.Width, m_Specification.Height }; }
 		VkFormat GetVkFormat() const { return VulkanUtils::VulkanFormat(m_Specification.Format); }
 		const VkImageView& GetVkImageView() const { return m_ImageView; }
 		const VkImage& GetVkImage() const { return m_Image; }
 		const VkSampler& GetVkSampler() const { return m_Sampler; }
-		const VkImageLayout& GetExpectedLayout() const { return m_CurrentLayout; }
+		const VkImageLayout& GetExpectedLayout() const { return VulkanUtils::VulkanImageLayout(m_CurrentLayout); }
 
 	private:
 		Image2DSpecification m_Specification;
@@ -149,7 +153,11 @@ namespace Zahra
 
 		VkSampler m_Sampler = VK_NULL_HANDLE;
 
-		VkImageLayout m_CurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		VkBuffer m_PixelBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory m_PixelBufferMemory = VK_NULL_HANDLE;
+		void* m_PixelBufferMappedAddress = nullptr;
+
+		ImageLayout m_CurrentLayout = ImageLayout::Unspecified;
 
 		void Init();
 		void Cleanup();
@@ -157,6 +165,10 @@ namespace Zahra
 		void CreateAndAllocateImage();
 		void CreateImageView();
 		void CreateSampler();
-		//void TransitionLayout();
+		void CreatePixelBuffer();
+
+		// NOT CURRENTLY USED
+		void TransitionLayout(ImageLayout from, ImageLayout to);
+		void TransitionLayout(ImageLayout to) { TransitionLayout(m_CurrentLayout, to); }
 	};
 }

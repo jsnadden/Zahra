@@ -361,7 +361,7 @@ namespace Zahra
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = vertexInputBindingDescriptions.size();
+		vertexInputInfo.vertexBindingDescriptionCount = (uint32_t)vertexInputBindingDescriptions.size();
 		vertexInputInfo.pVertexBindingDescriptions = vertexInputBindingDescriptions.data();
 		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexInputAttributes.size();
 		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributes.data();

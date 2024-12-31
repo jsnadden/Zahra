@@ -219,10 +219,10 @@
     <ClInclude Include="src\Zahra\Maths\Maths.h">
       <Filter>src\Zahra\Maths</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Camera.h">
+    <ClInclude Include="src\Zahra\Renderer\Cameras\Camera.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\EditorCamera.h">
+    <ClInclude Include="src\Zahra\Renderer\Cameras\EditorCamera.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h">
@@ -294,7 +294,7 @@
     <ClInclude Include="src\Zahra\Scene\Scene.h">
       <Filter>src\Zahra\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Scene\SceneCamera.h">
+    <ClInclude Include="src\Zahra\Renderer\Cameras\SceneCamera.h">
       <Filter>src\Zahra\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Scene\SceneSerialiser.h">
@@ -1664,7 +1664,7 @@
     <ClCompile Include="src\Zahra\Maths\Maths.cpp">
       <Filter>src\Zahra\Maths</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\EditorCamera.cpp">
+    <ClCompile Include="src\Zahra\Renderer\Cameras\EditorCamera.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp">
@@ -1724,7 +1724,7 @@
     <ClCompile Include="src\Zahra\Scene\Scene.cpp">
       <Filter>src\Zahra\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Scene\SceneCamera.cpp">
+    <ClCompile Include="src\Zahra\Renderer\Cameras\SceneCamera.cpp">
       <Filter>src\Zahra\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Scene\SceneSerialiser.cpp">

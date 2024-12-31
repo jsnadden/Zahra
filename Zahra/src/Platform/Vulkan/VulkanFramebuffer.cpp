@@ -14,7 +14,7 @@ namespace Zahra
 		if (m_Specification.Height == 0)
 			m_Specification.Height = Renderer::GetSwapchainHeight();
 
-		m_ColourAttachmentCount = m_Specification.ColourAttachmentSpecs.size();
+		m_ColourAttachmentCount = (uint32_t)m_Specification.ColourAttachmentSpecs.size();
 		CreateAttachments();
 	}
 

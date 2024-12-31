@@ -1,13 +1,13 @@
 #include "EditorLayer.h"
 
+#include "Zahra/Maths/Maths.h"
 #include "Zahra/Scene/SceneSerialiser.h"
 #include "Zahra/Utils/PlatformUtils.h"
-#include "Zahra/Maths/Maths.h"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <ImGui/imgui_internal.h>
 #include <ImGui/imgui.h>
 #include <ImGuizmo.h>
-#include <glm/gtc/type_ptr.hpp>
 
 namespace Zahra
 {
@@ -21,6 +21,17 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// VIEWPORT FRAMEBUFFER
 		{
+
+			Image2DSpecification imageSpec{};
+			imageSpec.Name = "Editor_ColourPickingAttachment";
+			imageSpec.Format = ImageFormat::R32_SI;
+			imageSpec.Width = 1;
+			imageSpec.Height = 1;
+			imageSpec.Sampled = true;
+			imageSpec.TransferSource = true;
+			imageSpec.CreatePixelBuffer = true;
+			m_ColourPickingAttachment = Image2D::Create(imageSpec);
+
 			FramebufferSpecification framebufferSpec{};
 			framebufferSpec.Name = "Editor_ViewportFramebuffer";
 			framebufferSpec.Width = 1;
@@ -31,6 +42,7 @@ namespace Zahra
 			}
 			{
 				auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
+				attachment.InheritFrom = m_ColourPickingAttachment;
 				attachment.Format = ImageFormat::R32_SI;
 				attachment.ClearColour.iColour = glm::ivec4(-1, 0, 0, 1);
 			}
@@ -119,6 +131,7 @@ namespace Zahra
 			{
 				ImGuiLayer::GetOrCreate()->DeregisterTexture(m_ViewportTextureHandle);
 
+				m_ColourPickingAttachment->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 				m_ViewportFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 				m_ViewportTexture->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 				m_ViewportTextureHandle = ImGuiLayer::GetOrCreate()->RegisterTexture(m_ViewportTexture);
@@ -153,14 +166,14 @@ namespace Zahra
 				}
 				case SceneState::Play:
 				{
-					// TODO: ressurect
-					//m_ActiveScene->OnUpdateRuntime(dt);
+					m_ActiveScene->OnUpdateRuntime(dt);
+					m_ActiveScene->OnRenderRuntime(m_Renderer2D);
 					break;
 				}
 				case SceneState::Simulate:
 				{
-					// TODO: ressurect
-					// m_ActiveScene->OnUpdateSimulation(dt, m_EditorCamera);
+					m_ActiveScene->OnUpdateSimulation(dt);
+					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera);
 					break;
 				}
 
@@ -574,7 +587,7 @@ namespace Zahra
 	// TODO: move highight rendering to Scene, or SceneRenderer
 	void EditorLayer::UIHighlightSelection()
 	{
-		/*if (Entity selection = m_SceneHierarchyPanel.GetSelectedEntity())
+		if (Entity selection = m_SceneHierarchyPanel.GetSelectedEntity())
 		{
 			TransformComponent entityTransform = selection.GetComponents<TransformComponent>();
 
@@ -585,8 +598,10 @@ namespace Zahra
 				if (cameraEntity)
 				{
 					Camera camera = cameraEntity.GetComponents<CameraComponent>().Camera;
-					glm::mat4 cameraTransform = cameraEntity.GetComponents<TransformComponent>().GetTransform();
-					m_Renderer2D->BeginScene(camera, cameraTransform);
+					glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponents<TransformComponent>().GetTransform());
+					glm::mat4 cameraProjection = camera.GetProjection();
+					m_Renderer2D->BeginScene(cameraView, cameraProjection);
+					// TODO: billboard this
 					m_Renderer2D->DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
 					m_Renderer2D->EndScene();
 				}
@@ -594,12 +609,13 @@ namespace Zahra
 			else
 			{
 				m_Renderer2D->BeginScene(m_EditorCamera);
+				// TODO: billboard this
 				m_Renderer2D->DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
 				m_Renderer2D->EndScene();
 			}
 			
 			
-		}*/
+		}
 	}
 
 	void EditorLayer::UIStatsWindow()
@@ -853,16 +869,14 @@ namespace Zahra
 
 	void EditorLayer::ReadHoveredEntity()
 	{
-		// TODO: compare performance between this GPU-side colour picking method, and CPU-side raycasting
+		// TODO: compare performance: reading IDs from a framebuffer attachment vs CPU-side raycasting
 
 		ImVec2 mouse = ImGui::GetMousePos();
 		mouse.x -= m_ViewportBounds[0].x;
 		mouse.y -= m_ViewportBounds[0].y;
-		mouse.y = m_ViewportSize.y - mouse.y;
 
-		//int32_t hoveredID = m_Framebuffer->ReadPixel(1, (int)mouse.x, (int)mouse.y);
-
-		//m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.Raw());
+		int32_t hoveredID = *((int32_t*)m_ColourPickingAttachment->ReadPixel((int)mouse.x, (int)mouse.y));
+		m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.Raw());
 	}
 
 	
