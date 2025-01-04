@@ -183,7 +183,7 @@ namespace Zahra
 
 	bool VulkanFramebuffer::ValidateSpecification()
 	{
-		// TODO: check attachment specs are sensible
+		// TODO: check whether attachment specs are sensible
 		return true;
 	}
 }

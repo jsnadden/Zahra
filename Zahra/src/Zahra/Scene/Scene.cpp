@@ -101,7 +101,7 @@ namespace Zahra
 			});
 
 		// copy the remaing components
-		CopyComponent(AllComponents{}, srcRegistry, destRegistry, guidToNewHandle);
+		CopyComponent(MostComponents{}, srcRegistry, destRegistry, guidToNewHandle);
 
 		// set active camera
 		Entity oldCamera = srcScene->GetActiveCamera();
@@ -140,7 +140,7 @@ namespace Zahra
 		Entity copy = CreateEntity(newTag);
 
 		// copy the remaining components
-		CopyComponentIfExists(AllComponents{}, entity, copy);
+		CopyComponentIfExists(MostComponents{}, entity, copy);
 
 		return copy;
 	}
@@ -267,7 +267,7 @@ namespace Zahra
 			b2BodyDef bodyDef;
 			bodyDef.type = ZRigidBodyTypeToBox2D(bodyComp.Type);
 			bodyDef.position.Set(transformComp.Translation.x, transformComp.Translation.y);
-			bodyDef.angle = transformComp.EulerAngles.z;
+			bodyDef.angle = transformComp.GetEulers().z;
 
 			m_PhysicsBodies[e] = m_PhysicsWorld->CreateBody(&bodyDef);
 			m_PhysicsBodies[e]->SetFixedRotation(bodyComp.FixedRotation);
@@ -323,15 +323,17 @@ namespace Zahra
 		for (auto e : view)
 		{
 			Entity entity = { e, this };
-			auto& transformComp = entity.GetComponents<TransformComponent>();
-			auto& bodyComp = entity.GetComponents<RigidBody2DComponent>();
+			auto& tc = entity.GetComponents<TransformComponent>();
+			//auto& bc = entity.GetComponents<RigidBody2DComponent>();
 
 			const auto& position = m_PhysicsBodies[e]->GetPosition();
 			const auto& rotation = m_PhysicsBodies[e]->GetAngle();
 
-			transformComp.Translation.x = position.x;
-			transformComp.Translation.y = position.y;
-			transformComp.EulerAngles.z = rotation;
+			tc.Translation.x = position.x;
+			tc.Translation.y = position.y;
+
+			auto eulers = tc.GetEulers();
+			tc.SetRotation({ eulers.x, eulers.y, rotation });
 		}
 	}
 
@@ -404,7 +406,7 @@ namespace Zahra
 				glm::vec3 scale = transform.Scale * glm::vec3(collider.HalfExtent * 2.0f, 1.0f);
 
 				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), glm::vec3(transform.Translation.x, transform.Translation.y, 0.f))
-					* glm::rotate(glm::mat4(1.0f), transform.EulerAngles.z, glm::vec3(0.0f, 0.0f, 1.0f))
+					* glm::rotate(glm::mat4(1.0f), transform.GetEulers().z, glm::vec3(0.0f, 0.0f, 1.0f))
 					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
 					* glm::scale(glm::mat4(1.0f), scale);
 
@@ -417,7 +419,7 @@ namespace Zahra
 				auto [transform, collider] = circleColliders.get<TransformComponent, CircleColliderComponent>(entity);
 
 				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), transform.Translation)
-					* glm::rotate(glm::mat4(1.0f), transform.EulerAngles.z, glm::vec3(0.0f, 0.0f, 1.0f))
+					* glm::rotate(glm::mat4(1.0f), transform.GetEulers().z, glm::vec3(0.0f, 0.0f, 1.0f))
 					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
 					* glm::scale(glm::mat4(1.f), glm::vec3(collider.Radius * 2.05f));
 

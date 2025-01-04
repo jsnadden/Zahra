@@ -18,8 +18,6 @@ namespace Zahra
 	// - mipmapping
 	// - blending parameters in specification
 	// - push constants
-	// - resizing
-	// - output to texture
 
 	struct RenderPassSpecification
 	{

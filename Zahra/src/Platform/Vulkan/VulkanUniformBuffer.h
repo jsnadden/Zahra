@@ -19,7 +19,7 @@ namespace Zahra
 		VkDescriptorBufferInfo& GetVkDescriptorBufferInfo() { return m_BufferInfo; }
 
 	private:
-		Buffer m_Data; // TODO: do I need local storage?
+		Buffer m_Data;
 		VkBuffer m_VulkanBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory m_VulkanBufferMemory = VK_NULL_HANDLE;
 		void* m_MappedAddress = nullptr;

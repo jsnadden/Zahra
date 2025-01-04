@@ -34,7 +34,6 @@ void SandboxLayer::OnAttach()
 		framebufferSpec.Name = "Sandbox_ViewportFramebuffer";
 		framebufferSpec.Width = m_ViewportWidth;
 		framebufferSpec.Height = m_ViewportHeight;
-		framebufferSpec.ClearColour = { .0f, .0f, .0f };
 		{
 			auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
 			attachment.InheritFrom = m_ViewportRenderTarget;
@@ -75,7 +74,7 @@ void SandboxLayer::OnAttach()
 
 			auto& tc = entity.GetComponents<Zahra::TransformComponent>();
 			tc.Translation = { y, .0f, x };
-			tc.EulerAngles = { glm::atan(x) , .0f, .0f };
+			tc.SetRotation({ glm::atan(x) , .0f, .0f });
 			tc.Scale = { .8f * scale, .8f * scale, .8f * scale };
 
 			auto& sc = entity.AddComponent<Zahra::SpriteComponent>();
@@ -126,7 +125,10 @@ void SandboxLayer::OnUpdate(float dt)
 	{
 		for (uint32_t j = 0; j < n; j++)
 		{
-			m_EntityGrid[i][j].GetComponents<Zahra::TransformComponent>().EulerAngles += glm::vec3(.0f, dt, .0f);
+			auto& tc = m_EntityGrid[i][j].GetComponents<Zahra::TransformComponent>();
+			glm::vec3 eulers = tc.GetEulers();
+			eulers += glm::vec3(.0f, dt, .0f);
+			tc.SetRotation(eulers);
 		}
 	}
 

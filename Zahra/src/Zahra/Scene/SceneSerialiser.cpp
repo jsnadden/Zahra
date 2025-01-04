@@ -173,10 +173,6 @@ namespace Zahra
 
 	static void SerialiseEntity(YAML::Emitter& out, Entity entity)
 	{
-		// TODO: learn about "reflection" so that I can understand
-		// how to do this without having to remember to add new
-		// stuff here for each new component type
-
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// GUID
 		Z_CORE_ASSERT(entity.HasComponents<IDComponent>(), "All entities must have an IDComponent");
@@ -206,7 +202,7 @@ namespace Zahra
 		{
 			auto& transform = entity.GetComponents<TransformComponent>();
 			out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
-			out << YAML::Key << "EulerAngles" << YAML::Value << transform.EulerAngles;
+			out << YAML::Key << "EulerAngles" << YAML::Value << transform.GetEulers();
 			out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
 		}
 		out << YAML::EndMap;
@@ -421,7 +417,7 @@ namespace Zahra
 					auto& transform = entity.GetComponents<TransformComponent>();
 
 					transform.Translation = transformNode["Translation"].as<glm::vec3>();
-					transform.EulerAngles = transformNode["EulerAngles"].as<glm::vec3>();
+					transform.SetRotation(transformNode["EulerAngles"].as<glm::vec3>());
 					transform.Scale = transformNode["Scale"].as<glm::vec3>();
 				}
 

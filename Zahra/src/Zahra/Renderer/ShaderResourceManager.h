@@ -10,7 +10,7 @@ namespace Zahra
 	struct ShaderResourceManagerSpecification
 	{
 		Ref<Shader> Shader;
-		uint32_t FirstSet, LastSet; // may require refactoring when moving beyond Vulkan, not sure how DX12 binds uniforms
+		uint32_t FirstSet = 0, LastSet = 2; // may require refactoring when moving beyond Vulkan, not sure how DX12 binds uniforms
 	};
 	
 	class ShaderResourceManager : public RefCounted

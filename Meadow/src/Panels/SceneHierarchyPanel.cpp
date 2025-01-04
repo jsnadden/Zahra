@@ -225,9 +225,9 @@ namespace Zahra
 					MeadowUIPatterns::DrawFloat3Controls("Position", component.Translation);
 					MeadowUIPatterns::DrawFloat3Controls("Dimensions", component.Scale, 1.0f, .05f, true);
 
-					glm::vec3& rotation = glm::degrees(component.EulerAngles);
+					glm::vec3 rotation = glm::degrees(component.GetEulers());
 					MeadowUIPatterns::DrawFloat3Controls("Euler Angles", rotation, .0f, 1.f);
-					component.EulerAngles = glm::radians(rotation);
+					component.SetRotation(glm::radians(rotation));
 				}, true, false);
 		
 		MeadowUIPatterns::DrawComponent<SpriteComponent>("Sprite Component", entity, [](auto& component)

@@ -579,7 +579,11 @@ namespace Zahra
 			
 			// Feedback manipulated transform
 			if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
-				Maths::DecomposeTransform(transform, tc.Translation, tc.EulerAngles, tc.Scale);
+			{
+				glm::vec3 eulers;
+				Maths::DecomposeTransform(transform, tc.Translation, eulers, tc.Scale);
+				tc.SetRotation(eulers);
+			}
 
 		}
 	}

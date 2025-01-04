@@ -22,7 +22,7 @@ namespace Zahra
 	};
 
 	
-	struct FileData // TODO: add more types as they come up, also should move this to somewhere in Zahra (asset manager?)
+	struct FileData // TODO: add more types as they come up, also should move some of this to somewhere in Zahra (asset manager?)
 	{
 		enum class ContentType
 		{
@@ -42,7 +42,7 @@ namespace Zahra
 		FileData(std::filesystem::path path, uint32_t size)
 			: Path(path), Size(size)
 		{
-			// TODO: fill this out with other types (might be worth making this conversion a helper function)
+			// TODO: fill this out with other types (might be worth making this conversion a helper function or map)
 			if (path.extension().string() == ".zsc")
 				Type = ContentType::Scene;
 			else if (path.extension().string() == ".png") // TODO: include other formats!!

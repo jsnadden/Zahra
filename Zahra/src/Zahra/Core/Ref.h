@@ -8,8 +8,6 @@
 namespace Zahra
 {
 
-	// TODO: finish replacing shared_ptr with a custom Ref implementation
-
 	class RefCounted
 	{
 	public:

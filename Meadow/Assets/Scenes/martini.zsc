@@ -383,7 +383,7 @@ Entities:
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Translation: [0, -1.60000002, 11.1499996]
+      Translation: [0, -3.70000005, 19.2000008]
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:

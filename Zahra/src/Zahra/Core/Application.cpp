@@ -24,13 +24,12 @@ namespace Zahra
 
 		Renderer::SetConfig(m_Specification.RendererConfig);
 
-		// TODO: maybe fill out more WindowProperties details before window creation?
+		// TODO: other WindowProperties?
 		m_Window = Window::Create(WindowProperties(specification.Name));
 		m_Window->SetEventCallback(Z_BIND_EVENT_FN(Application::OnEvent));
 		
 		Renderer::Init();
 
-		// TODO: ressurect
 		ScriptEngine::Init();
 
 		if (m_Specification.ImGuiConfig.Enabled)
@@ -44,7 +43,6 @@ namespace Zahra
 	
 	Application::~Application()
 	{
-		// TODO: ressurect
 		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
 	}

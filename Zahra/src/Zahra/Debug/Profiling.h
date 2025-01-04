@@ -8,8 +8,6 @@
 #include <algorithm>
 #include <thread>
 
-// TODO: this profiler seems to have terrible performance, and skews its own results... FIND A BETTER WAY!!
-
 namespace Zahra
 {
 	struct ProfileResult

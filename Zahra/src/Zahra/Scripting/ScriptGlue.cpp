@@ -11,7 +11,7 @@ namespace Zahra
 {
 	namespace InternalCalls
 	{
-#pragma region ENGINE CORE
+		#pragma region ENGINE CORE
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// INPUT
@@ -91,9 +91,9 @@ namespace Zahra
 			return (float)Application::Get().GetWindow().GetHeight();
 		}
 
-#pragma endregion
+		#pragma endregion
 
-#pragma region ECS
+		#pragma region ECS
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// ENTITY
@@ -121,13 +121,13 @@ namespace Zahra
 		static void TransformComponent_GetEulers(ZGUID guid, glm::vec3* eulers)
 		{
 			Entity entity = ScriptEngine::GetEntity(guid);
-			*eulers = entity.GetComponents<TransformComponent>().EulerAngles;
+			*eulers = entity.GetComponents<TransformComponent>().GetEulers();
 		}
 
 		static void TransformComponent_SetEulers(ZGUID guid, glm::vec3* eulers)
 		{
 			Entity entity = ScriptEngine::GetEntity(guid);
-			entity.GetComponents<TransformComponent>().EulerAngles = *eulers;
+			entity.GetComponents<TransformComponent>().SetRotation(*eulers);
 		}
 
 		static void TransformComponent_GetScale(ZGUID guid, glm::vec3* scale)

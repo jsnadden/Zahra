@@ -161,7 +161,7 @@ namespace Zahra
 			s_Data.TestSceneResourceManager->Update();
 		}
 
-		Z_CORE_INFO("Core rendering engine initialised");
+		Z_CORE_INFO("Rendering engine initialised");
 	}
 
 	void Renderer::Shutdown()

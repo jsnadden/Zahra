@@ -1,4 +1,4 @@
-Scene: script_testing.zsc
+Scene: basic_script.zsc
 ActiveCameraGUID: 11346088561474433269
 Entities:
   - Entity: 11346088561474433269

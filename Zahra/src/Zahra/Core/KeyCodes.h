@@ -2,7 +2,7 @@
 
 namespace Zahra
 {
-	// TODO: Currently this works with GLFW, but we need to make this system compatible with different platforms
+	// TODO: compatibility with windowing libraries other than GLFW
 
 	typedef enum class KeyCode : uint16_t
 	{

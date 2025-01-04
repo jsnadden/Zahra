@@ -36,6 +36,15 @@ namespace Zahra
 
 	};
 
+	struct HierarchyComponent
+	{
+		ZGUID Parent;
+		std::vector<ZGUID> Children;
+
+		HierarchyComponent() = default;
+		HierarchyComponent(const HierarchyComponent&) = default;
+	};
+
 	struct TagComponent
 	{
 		std::string Tag;
@@ -52,7 +61,6 @@ namespace Zahra
 	struct TransformComponent
 	{
 		glm::vec3 Translation = { .0f, .0f, .0f };
-		glm::vec3 EulerAngles = { .0f, .0f, .0f };
 		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
 		TransformComponent() = default;
@@ -63,9 +71,43 @@ namespace Zahra
 		glm::mat4 GetTransform() const
 		{
 			return glm::translate(glm::mat4(1.0f), Translation)
-				 * glm::toMat4(glm::quat(EulerAngles))
+				 * glm::toMat4(Quaternion)
 				 * glm::scale(glm::mat4(1.0f), Scale);
 		}
+
+		glm::mat4 GetRotation() const
+		{
+			return glm::toMat4(Quaternion);
+		}
+
+		glm::vec3 GetEulers() const
+		{
+			return EulerAngles;
+		}
+
+		glm::quat GetQuaternion() const
+		{
+			return Quaternion;
+		}
+
+		void SetRotation(const glm::vec3& eulerAngles)
+		{
+			EulerAngles = eulerAngles;
+			Quaternion = glm::quat(eulerAngles);
+		}
+
+		// TODO: decompose quaternion into euler angle representation, attempting to maintain
+		// continuity with current euler angle values i.e. no sudden "flips"
+		/*void SetRotation(const glm::quat& quaternion)
+		{
+			Quaternion = quaternion;
+			
+			???
+		}*/
+
+	private:
+		glm::vec3 EulerAngles = { 0.f, 0.f, 0.f };
+		glm::quat Quaternion = { 1.f, 0.f, 0.f, 0.f };
 
 	};
 
@@ -75,7 +117,7 @@ namespace Zahra
 	struct SpriteComponent
 	{
 		glm::vec4 Tint{ 1.0f, 1.0f, 1.0f, 1.0f };
-		Ref<Texture2D> Texture = nullptr; // TODO: material system?
+		Ref<Texture2D> Texture = nullptr; // TODO: replace with a material?
 		float TextureTiling = 1.0f;
 		bool Animated = false;
 
@@ -140,7 +182,7 @@ namespace Zahra
 		template <typename T>
 		void Bind()
 		{
-			InstantiateScript = []() { return static_cast<NativeScriptableEntity*>(new T()); }; // Note this requires a default constructor (no params)
+			InstantiateScript = []() { return static_cast<NativeScriptableEntity*>(new T()); }; // Note this requires a default constructor
 			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 		}
 
@@ -162,7 +204,7 @@ namespace Zahra
 
 	};
 
-	struct RectColliderComponent // TODO: triangles and circles?
+	struct RectColliderComponent
 	{
 		glm::vec2 Offset = { .0f, .0f };
 		glm::vec2 HalfExtent = { .5f, .5f };
@@ -204,7 +246,7 @@ namespace Zahra
 
 	};
 
-	using AllComponents = ComponentGroup<
+	using MostComponents = ComponentGroup<
 		TransformComponent,
 		SpriteComponent, CircleComponent,
 		CameraComponent,

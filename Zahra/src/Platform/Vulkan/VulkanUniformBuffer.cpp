@@ -47,7 +47,7 @@ namespace Zahra
 		vkMapMemory(device->GetVkDevice(), m_VulkanBufferMemory, 0, size, 0, &m_MappedAddress);
 
 		m_BufferInfo.buffer = m_VulkanBuffer;
-		m_BufferInfo.offset = 0; // TODO: for performance it might be better to pack multiple buffers together e.g. for multiple frames-in-flight etc.
+		m_BufferInfo.offset = 0;
 		m_BufferInfo.range = size;
 	}
 

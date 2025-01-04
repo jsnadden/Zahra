@@ -90,7 +90,7 @@ namespace Zahra
 
 	private:
 		entt::entity m_EntityHandle{ entt::null };
-		Scene* m_Scene = nullptr; // TODO: Should be a weak (aka non-owning) reference. Once again, need our own reference counting!
+		Scene* m_Scene = nullptr; // TODO: Should be a WeakRef
 	};
 
 }

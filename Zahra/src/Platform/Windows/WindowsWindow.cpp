@@ -365,26 +365,6 @@ namespace Zahra
 		m_WindowData.Fullscreen = !m_WindowData.Fullscreen;
 	}
 
-	bool WindowsWindow::IsVSync() const
-	{
-		return m_WindowData.VSync;
-	}
-
-	void WindowsWindow::SetVSync(bool enabled)
-	{
-		// TODO: make this actually work...
-		/*if (enabled)
-		{
-			glfwSwapInterval(1);
-		}
-		else
-		{
-			glfwSwapInterval(0);
-		}*/
-
-		m_WindowData.VSync = enabled;
-	}	
-	
 	void WindowsWindow::WriteConfig()
 	{
 		Z_CORE_TRACE("Saving configuration for window '{0}'", m_WindowData.Title);
@@ -475,7 +455,7 @@ namespace Zahra
 
 		if (auto fullscreenNode = data["Fullscreen"])  SetFullscreen(fullscreenNode.as<bool>());
 
-		if (auto vsyncNode = data["VSync"]) SetVSync(vsyncNode.as<bool>());
+		//if (auto vsyncNode = data["VSync"]) SetVSync(vsyncNode.as<bool>());
 
 	}
 

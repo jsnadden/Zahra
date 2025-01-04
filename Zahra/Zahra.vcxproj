@@ -191,6 +191,7 @@
     <ClInclude Include="src\Zahra\Events\KeyEvent.h" />
     <ClInclude Include="src\Zahra\Events\MouseEvent.h" />
     <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\Zahra\Maths\GeometricPrimitives.h" />
     <ClInclude Include="src\Zahra\Maths\Maths.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\Camera.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\EditorCamera.h" />

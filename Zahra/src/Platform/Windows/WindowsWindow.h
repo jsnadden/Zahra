@@ -29,9 +29,6 @@ namespace Zahra
 		virtual bool IsFullscreen() const override;
 		virtual void SetFullscreen(bool enabled) override;
 
-		virtual bool IsVSync() const override;
-		virtual void SetVSync(bool enabled) override;
-
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_WindowData.EventCallback = callback; };
 
 		virtual void WriteConfig() override;

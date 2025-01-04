@@ -44,8 +44,6 @@ namespace Zahra
 		Presentation,
 	};
 
-	// TODO: make room for 3d images
-
 	struct Image2DSpecification
 	{
 		std::string Name = "anonymous_image"; // for debugging
