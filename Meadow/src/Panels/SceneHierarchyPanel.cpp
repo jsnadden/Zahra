@@ -25,7 +25,7 @@ namespace Zahra
 		m_Camera = &camera;
 	}
 
-	void SceneHierarchyPanel::OnImGuiRender()
+	void SceneHierarchyPanel::OnImGuiRender(bool physicsOn)
 	{
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// HIERARCHY PANEL
@@ -52,7 +52,7 @@ namespace Zahra
 					{
 						Entity entity{ entityId, m_Context.Raw() };
 
-						DrawEntityNode(entity);
+						DrawEntityNode(entity, physicsOn);
 
 					});
 
@@ -69,7 +69,7 @@ namespace Zahra
 			// right clicking on empty window space brings up this menu
 			if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 			{
-				if (ImGui::MenuItem("Init New Entity"))
+				if (ImGui::MenuItem("Add New Entity"))
 				{
 					m_Selected = m_Context->CreateEntity("New Entity");
 				}
@@ -89,7 +89,7 @@ namespace Zahra
 		{
 			if (m_Selected)
 			{
-				DrawComponents(m_Selected);
+				DrawComponents(m_Selected, physicsOn);
 
 				// right click to add components
 				if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
@@ -101,16 +101,14 @@ namespace Zahra
 				}
 
 				if (m_ShowAddComponentsModal)
-					AddComponentsModal(m_Selected);
+					AddComponentsModal(m_Selected, physicsOn);
 			}
 		}
 
 		ImGui::End();
 	}
 
-	// TODO: address issues with deleting or otherwise manipulating entities/components with physics, during runtime!
-
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
+	void SceneHierarchyPanel::DrawEntityNode(Entity entity, bool physicsOn)
 	{
 		std::string& tag = entity.GetComponents<TagComponent>().Tag;
 		
@@ -142,7 +140,7 @@ namespace Zahra
 			if (ImGui::MenuItem("Duplicate entity"))
 				m_Selected = m_Context->DuplicateEntity(entity);
 
-			if (ImGui::MenuItem("Delete entity"))
+			if (ImGui::MenuItem("Delete entity", "", nullptr, !physicsOn))
 				entityDeleted = true;
 
 			ImGui::EndPopup();
@@ -165,8 +163,8 @@ namespace Zahra
 
 	}
 		
-	void SceneHierarchyPanel::DrawComponents(Entity entity)
-	{
+	void SceneHierarchyPanel::DrawComponents(Entity entity, bool physicsOn)
+	{ 
 		Z_CORE_ASSERT(entity.HasComponents<TagComponent>(), "All entities must have a TagComponent")
 
 			std::string& tag = entity.GetComponents<TagComponent>().Tag;
@@ -313,62 +311,79 @@ namespace Zahra
 					}
 				});
 		
-		MeadowUIPatterns::DrawComponent<RigidBody2DComponent>("2D Rigid Body Component", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<RigidBody2DComponent>("2D Rigid Body Component", entity, [physicsOn](auto& component)
 			{
-				
-				const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
-				RigidBody2DComponent::BodyType currentBodyType = (RigidBody2DComponent::BodyType)MeadowUIPatterns::DrawComboControl("Body Type", bodyTypeStrings, 3, (int)component.Type);
-				component.Type = currentBodyType;
+				if (!physicsOn)
+				{
+					const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
+					RigidBody2DComponent::BodyType currentBodyType = (RigidBody2DComponent::BodyType)MeadowUIPatterns::DrawComboControl("Body Type", bodyTypeStrings, 3, (int)component.Type);
+					component.Type = currentBodyType;
 
-				MeadowUIPatterns::DrawBoolControl("Non-Rotating", component.FixedRotation);
+					MeadowUIPatterns::DrawBoolControl("Non-Rotating", component.FixedRotation);
+				}
 			});
 
-		MeadowUIPatterns::DrawComponent<RectColliderComponent>("2D Rectangular Collider Component", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<RectColliderComponent>("2D Rectangular Collider Component", entity, [physicsOn](auto& component)
 			{
-				MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
-				MeadowUIPatterns::DrawFloat2Controls("Size", component.HalfExtent, 0.5f, .05f, true);
+				if (!physicsOn)
+				{
+					MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
+					MeadowUIPatterns::DrawFloat2Controls("Size", component.HalfExtent, 0.5f, .05f, true);
 
-				// TODO: investigate physically reasonable ranges
-				MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
-				MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
-				MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
-				MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
+					// TODO: investigate physically reasonable ranges
+					MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
+					MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
+					MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
+					MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
+				}
 			});
 
-		MeadowUIPatterns::DrawComponent<CircleColliderComponent>("2D Circular Collider Component", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<CircleColliderComponent>("2D Circular Collider Component", entity, [physicsOn](auto& component)
 			{
-				MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
-				MeadowUIPatterns::DrawFloatControl("Radius", component.Radius, .01f, true, .01f, 100.f);
+				if (!physicsOn)
+				{
+					MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
+					MeadowUIPatterns::DrawFloatControl("Radius", component.Radius, .01f, true, .01f, 100.f);
 
-				// TODO: investigate physically reasonable ranges
-				MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
-				MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
-				MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
-				MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
+					// TODO: investigate physically reasonable ranges
+					MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
+					MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
+					MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
+					MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
+				}
 			});
 		
 	}
-
-	void SceneHierarchyPanel::AddComponentsModal(Entity entity)
+	
+	void SceneHierarchyPanel::AddComponentsModal(Entity entity, bool physicsOn)
 	{
 		ImGui::OpenPopup("Add Component(s)##Modal");
 
 		ImVec2 center = ImGui::GetMousePos();
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.6f, 0.6f));
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(.5f, .5f));
 
 		if (ImGui::BeginPopupModal("Add Component(s)##Modal", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
 		{
 			bool clicked = false;
 
-			clicked |= MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
-			clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleComponent>("Circle", m_Selected);
-			clicked |= MeadowUIPatterns::AddComponentMenuItem<ScriptComponent>("Script", m_Selected);
-			clicked |= MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
-			clicked |= MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected);
-			clicked |= MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected);
-			clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleColliderComponent>("2D Circular Collider", m_Selected);
+			ImGuiHoveredFlags hoveredFlags = ImGuiHoveredFlags_NoPopupHierarchy | ImGuiHoveredFlags_RootWindow | ImGuiHoveredFlags_ChildWindows;
+			clicked |= ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsWindowHovered(hoveredFlags);
+
+			if (ImGui::BeginChild("Add Component(s)##ModalChild", ImVec2(200, 140)))
+			{
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<SpriteComponent>("Sprite", m_Selected);
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleComponent>("Circle", m_Selected);
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<ScriptComponent>("Script", m_Selected);
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected, !physicsOn);
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected, !physicsOn);
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleColliderComponent>("2D Circular Collider", m_Selected, !physicsOn);
+
+				ImGui::EndChild();
+			}
 
 			clicked |= ImGui::Button("Close");
+			
 
 			if (clicked)
 			{

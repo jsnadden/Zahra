@@ -73,7 +73,7 @@ namespace Zahra
 		std::string m_SceneName;
 
 		std::unique_ptr<b2World>(m_PhysicsWorld);
-		std::map<entt::entity, b2Body*> m_PhysicsBodies;
+		//std::map<entt::entity, b2Body*> m_PhysicsBodies;
 
 		entt::basic_registry<entt::entity> m_Registry;
 		std::unordered_map<ZGUID, entt::entity> m_EntityMap;

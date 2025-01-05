@@ -204,7 +204,7 @@ namespace Zahra
 		UIControls();
 		UIStatsWindow();
 
-		m_SceneHierarchyPanel.OnImGuiRender();
+		m_SceneHierarchyPanel.OnImGuiRender(m_SceneState != SceneState::Edit);
 		m_ContentBrowserPanel.OnImGuiRender();
 	}
 

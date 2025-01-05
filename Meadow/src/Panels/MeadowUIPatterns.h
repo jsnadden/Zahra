@@ -65,7 +65,7 @@ namespace Zahra
 				entity.AddComponent<T>();
 				ImGui::CloseCurrentPopup();
 
-				return true;
+				return active;
 			}
 
 			return false;
@@ -78,7 +78,7 @@ namespace Zahra
 
 			if (logarithmic)
 			{
-				flags = 32 & 64;
+				flags = ImGuiSliderFlags_Logarithmic & ImGuiSliderFlags_NoRoundToFormat;
 				min = speed;
 			}
 
@@ -298,9 +298,11 @@ namespace Zahra
 
 		}
 
-		void DrawBoolControl(const std::string& label, bool& value)
+		void DrawBoolControl(const std::string& label, bool& value, bool disabled = false)
 		{
 			ImGui::PushID(label.c_str());
+
+			bool localValue = value;
 
 			ImGui::TableNextColumn();
 
@@ -312,7 +314,10 @@ namespace Zahra
 			ImGui::TableNextColumn();
 
 			{
-				ImGui::Checkbox("##bool", &value);
+				if (disabled)
+					ImGui::Checkbox("##bool", &localValue);
+				else
+					ImGui::Checkbox("##bool", &value);
 			}
 
 			ImGui::PopID();
@@ -347,9 +352,11 @@ namespace Zahra
 			return edited;
 		}
 
-		int32_t DrawComboControl(const std::string& label, const char** options, uint32_t count, int32_t currentValue)
+		int32_t DrawComboControl(const std::string& label, const char** options, uint32_t count, int32_t currentValue, bool disabled = false)
 		{
 			int32_t newValue = currentValue;
+
+			ImGuiSelectableFlags flags = disabled ? ImGuiSelectableFlags_Disabled : 0;
 
 			ImGui::PushID(label.c_str());
 
@@ -363,13 +370,14 @@ namespace Zahra
 			ImGui::TableNextColumn();
 
 			{
-				if (ImGui::BeginCombo("##options", options[currentValue]))
+				if (ImGui::BeginCombo("##options", options[currentValue], flags))
 				{
 					for (uint32_t i = 0; i < count; i++)
 					{
 						if (ImGui::Selectable(options[i], currentValue == i))
 						{
-							newValue = i;
+							if (!disabled)
+								newValue = i;
 						}
 
 						if (currentValue == i)

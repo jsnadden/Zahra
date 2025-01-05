@@ -11,66 +11,231 @@ namespace Djinn
 
 	public class TransformComponent : Component
 	{
-		public Vector3 Translation = Vector3.Zero;
-		public Vector3 EulerAngles = Vector3.Zero;
-		public Vector3 Scale = Vector3.One;
+		public Vector3 Translation
+		{
+			get
+			{
+				Zahra.TransformComponent_GetTranslation(Entity.GUID, out Vector3 translation);
+				return translation;
+			}
+			set
+			{
+				Zahra.TransformComponent_SetTranslation(Entity.GUID, ref value);
+			}
+		}
+
+		public Vector3 EulerAngles
+		{
+			get
+			{
+				Zahra.TransformComponent_GetEulers(Entity.GUID, out Vector3 eulers);
+				return eulers;
+			}
+			set
+			{
+				Zahra.TransformComponent_SetEulers(Entity.GUID, ref value);
+			}
+		}
+
+		public Vector3 Scale
+		{
+			get
+			{
+				Zahra.TransformComponent_GetScale(Entity.GUID, out Vector3 scale);
+				return scale;
+			}
+			set
+			{
+				Zahra.TransformComponent_SetScale(Entity.GUID, ref value);
+			}
+		}
 	}
 
 	public class SpriteComponent : Component
 	{
-		public Vector4 Tint = Vector4.One;
-		// TODO: textures and animation
+		public Vector4 Tint
+		{
+			get
+			{
+				Zahra.SpriteComponent_GetTint(Entity.GUID, out Vector4 tint);
+				return tint;
+			}
+			set
+			{
+				Zahra.SpriteComponent_SetTint(Entity.GUID, ref value);
+			}
+		}
+
+		// TODO: texturing, animation, etc.
 	}
 
 	public class CircleComponent : Component
 	{
-		public Vector4 Colour = Vector4.One;
-		public float Thickness = 1.0f;
-		public float Fade = .005f;
+		public Vector4 Colour
+		{
+			get
+			{
+				Zahra.CircleComponent_GetColour(Entity.GUID, out Vector4 colour);
+				return colour;
+			}
+			set
+			{
+				Zahra.CircleComponent_SetColour(Entity.GUID, ref value);
+			}
+		}
+
+		public float Thickness
+		{
+			get
+			{
+				return Zahra.CircleComponent_GetThickness(Entity.GUID);
+			}
+			set
+			{
+				Zahra.CircleComponent_SetThickness(Entity.GUID, value);
+			}
+		}
+
+		public float Fade
+		{
+			get
+			{
+				return Zahra.CircleComponent_GetFade(Entity.GUID);
+			}
+			set
+			{
+				Zahra.CircleComponent_SetFade(Entity.GUID, value);
+			}
+		}
 	}
 
 	public enum ProjectionType { Orthographic = 0, Perspective = 1 };
 
 	public class CameraComponent : Component
 	{
-		public ProjectionType ProjectionType = ProjectionType.Orthographic;
-		public float VerticalSize = 10.0f;
-		public float NearPlane = -1.0f;
-		public float FarPlane = 1.0f;
-		public bool FixedAspectRatio = false;
+		public ProjectionType ProjectionType
+		{
+			get
+			{
+				return Zahra.CameraComponent_GetProjectionType(Entity.GUID);
+			}
+			set
+			{
+				Zahra.CameraComponent_SetProjectionType(Entity.GUID, (int)value);
+			}
+		}
+
+		public float VerticalFOV
+		{
+			get
+			{
+				return Zahra.CameraComponent_GetVerticalFOV(Entity.GUID);
+			}
+			set
+			{
+				Zahra.CameraComponent_SetVerticalFOV(Entity.GUID, value);
+			}
+		}
+
+		public float NearPlane
+		{
+			get
+			{
+				return Zahra.CameraComponent_GetNearPlane(Entity.GUID);
+			}
+			set
+			{
+				Zahra.CameraComponent_SetNearPlane(Entity.GUID, value);
+			}
+		}
+
+		public float FarPlane
+		{
+			get
+			{
+				return Zahra.CameraComponent_GetFarPlane(Entity.GUID);
+			}
+			set
+			{
+				Zahra.CameraComponent_SetFarPlane(Entity.GUID, value);
+			}
+		}
+
+		public bool FixedAspectRatio
+		{
+			get
+			{
+				return Zahra.CameraComponent_GetFixedAspectRatio(Entity.GUID);
+			}
+			set
+			{
+				Zahra.CameraComponent_SetFixedAspectRatio(Entity.GUID, value);
+			}
+		}
 	}
 
 	public class ScriptComponent : Component
 	{
-		public string ScriptName = "";
+		public string GetScriptName()
+		{
+			return Djinn.Zahra.ScriptComponent_GetScriptName(Entity.GUID);
+		}
 	}
 
 	public enum BodyType { Static = 0, Dynamic = 1, Kinematic = 2 };
 
 	public class RigidBody2DComponent : Component
-	{		
-		public BodyType Type = BodyType.Static;
-		public bool FixedRotation = false;
+	{
+		public void ApplyLinearImpulse(Vector2 impulse, bool wake)
+		{
+			Zahra.RigidBody2DComponent_ApplyLinearImpulse(Entity.GUID, ref impulse, wake);
+		}
+
+		public BodyType BodyType
+		{
+			get
+			{
+				return Djinn.Zahra.RigidBody2DComponent_GetBodyType(Entity.GUID);
+			}
+			set
+			{
+				Djinn.Zahra.RigidBody2DComponent_SetBodyType(Entity.GUID, value);
+			}
+		}
+
+		public bool FixedRotation
+		{
+			get
+			{
+				return Djinn.Zahra.RigidBody2DComponent_GetFixedRotation(Entity.GUID);
+			}
+			set
+			{
+				Djinn.Zahra.RigidBody2DComponent_SetFixedRotation(Entity.GUID, value);
+			}
+		}
 	}
 
 	public class RectColliderComponent : Component
 	{
-		public Vector2 Offset = Vector2.Zero;
-		public Vector2 HalfExtent = new Vector2(.5f);
-		public float Density = 1.0f;
-		public float Friction = .5f;
-		public float Restitution = .5f;
-		public float RestitutionThreshold = .5f;
+		// TODO: implement
+		/*Offset;
+		HalfExtent;
+		Density;
+		Friction;
+		Restitution;
+		RestitutionThreshold;*/
 	}
 
 	public class CircleColliderComponent : Component
 	{
-		public Vector2 Offset = Vector2.Zero;
-		public float Radius = .5f;
-		public float Density = 1.0f;
-		public float Friction = .5f;
-		public float Restitution = .5f;
-		public float RestitutionThreshold = .5f;
+		// TODO: implement
+		/*Offset;
+		Radius;
+		Density;
+		Friction;
+		Restitution;
+		RestitutionThreshold;*/
 	}
 
 }

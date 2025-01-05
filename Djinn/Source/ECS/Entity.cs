@@ -10,18 +10,35 @@ namespace Djinn
 
 		public readonly ulong GUID;
 
-		public Vector3 Translation
+		/*public Vector3 Translation
 		{
 			get
 			{
-				Vector3 translation = Vector3.Zero;
-				Zahra.TransformComponent_GetTranslation(GUID, out translation);
+				Zahra.TransformComponent_GetTranslation(GUID, out Vector3 translation);
 				return translation;
 			}
 			set
 			{
 				Zahra.TransformComponent_SetTranslation(GUID, ref value);
 			}
+		}*/
+
+		public bool HasComponent<T>() where T : Component, new()
+		{
+			Type componentType = typeof(T);
+			return Zahra.Entity_HasComponent(GUID, componentType);
+		}
+
+		public T GetComponent<T>() where T : Component, new()
+		{
+			if (!HasComponent<T>())
+				return null;
+
+			// TODO: should have a cache of created components that we can search here,
+			// so we're not just creating new ones EVERY time this is called
+			T component =  new T() { Entity = this };
+			return component;
+
 		}
 
 	}

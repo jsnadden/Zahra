@@ -184,11 +184,16 @@ namespace Zahra
 
 	void Scene::OnSimulationStop()
 	{
-		for (auto& body : m_PhysicsBodies) m_PhysicsWorld->DestroyBody(body.second);
-		m_PhysicsBodies.clear();
-		m_PhysicsWorld = nullptr;
+		auto view = m_Registry.view<RigidBody2DComponent>();
+		for (auto e : view)
+		{
+			Entity entity = { e, this };
+			auto& bodyComp = entity.GetComponents<RigidBody2DComponent>();
+			m_PhysicsWorld->DestroyBody((b2Body*)bodyComp.RuntimeBody);
+			bodyComp.RuntimeBody = nullptr;
+		}
 
-		
+		m_PhysicsWorld = nullptr;
 	}
 
 	void Scene::OnUpdateEditor(float dt)
@@ -269,8 +274,9 @@ namespace Zahra
 			bodyDef.position.Set(transformComp.Translation.x, transformComp.Translation.y);
 			bodyDef.angle = transformComp.GetEulers().z;
 
-			m_PhysicsBodies[e] = m_PhysicsWorld->CreateBody(&bodyDef);
-			m_PhysicsBodies[e]->SetFixedRotation(bodyComp.FixedRotation);
+			auto physicsBody = m_PhysicsWorld->CreateBody(&bodyDef);
+			bodyComp.RuntimeBody = (void*)physicsBody;
+			physicsBody->SetFixedRotation(bodyComp.FixedRotation);
 
 			if (entity.HasComponents<RectColliderComponent>())
 			{
@@ -286,7 +292,7 @@ namespace Zahra
 				fixtureDef.restitution = collider.Restitution;
 				fixtureDef.restitutionThreshold = collider.RestitutionThreshold;
 
-				m_PhysicsBodies[e]->CreateFixture(&fixtureDef);
+				physicsBody->CreateFixture(&fixtureDef);
 			}
 
 			if (entity.HasComponents<CircleColliderComponent>())
@@ -305,7 +311,7 @@ namespace Zahra
 				fixtureDef.restitution = collider.Restitution;
 				fixtureDef.restitutionThreshold = collider.RestitutionThreshold;
 
-				m_PhysicsBodies[e]->CreateFixture(&fixtureDef);
+				physicsBody->CreateFixture(&fixtureDef);
 			}
 		}
 	}
@@ -324,10 +330,12 @@ namespace Zahra
 		{
 			Entity entity = { e, this };
 			auto& tc = entity.GetComponents<TransformComponent>();
-			//auto& bc = entity.GetComponents<RigidBody2DComponent>();
+			auto& bc = entity.GetComponents<RigidBody2DComponent>();
 
-			const auto& position = m_PhysicsBodies[e]->GetPosition();
-			const auto& rotation = m_PhysicsBodies[e]->GetAngle();
+			auto physicsBody = (b2Body*)bc.RuntimeBody;
+
+			const auto& position = physicsBody->GetPosition();
+			const auto& rotation = physicsBody->GetAngle();
 
 			tc.Translation.x = position.x;
 			tc.Translation.y = position.y;

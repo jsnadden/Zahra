@@ -199,6 +199,10 @@ namespace Zahra
 		// TODO: add other body attributes from b2Body e.g. b2ContactListener for callbacks on collision
 		bool FixedRotation = false;
 
+		// TODO: remove this in favour of being able to retrieve this from the
+		// physics engine, using the entity guid
+		void* RuntimeBody = nullptr;
+
 		RigidBody2DComponent() = default;
 		RigidBody2DComponent(const RigidBody2DComponent&) = default;
 

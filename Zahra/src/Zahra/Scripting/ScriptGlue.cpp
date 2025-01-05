@@ -1,14 +1,21 @@
 #include "zpch.h"
 #include "ScriptGlue.h"
 
-#include "Zahra/Scripting/ScriptEngine.h"
 #include "Zahra/Core/Application.h"
+#include "Zahra/Scene/Components.h"
+#include "Zahra/Scripting/ScriptEngine.h"
 
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/object.h>
+#include <mono/metadata/reflection.h>
+
+// TODO: don't include this here, instead encapsulate it in a physics library
+#include <box2d/b2_body.h>
 
 namespace Zahra
 {
+	static std::unordered_map <MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFns;
+
 	namespace InternalCalls
 	{
 		#pragma region ENGINE CORE
@@ -94,15 +101,19 @@ namespace Zahra
 		#pragma endregion
 
 		#pragma region ECS
-
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// ENTITY
-		/*template <typename T>
-		static bool Entity_HasComponent(ZGUID guid)
+		static bool Entity_HasComponent(ZGUID guid, MonoReflectionType* componentType)
 		{
 			Entity entity = ScriptEngine::GetEntity(guid);
-			entity.HasComponents<T>();
-		}*/
+			Z_CORE_ASSERT(entity, "No Entity with this ID exists in the current Scene")
+
+			MonoType* managedType = mono_reflection_type_get_type(componentType);
+			Z_CORE_ASSERT(s_EntityHasComponentFns.find(managedType) != s_EntityHasComponentFns.end(),
+				"This reflected component type was never registered with ScriptGlue");
+			
+			return s_EntityHasComponentFns.at(managedType)(entity);
+		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// TRANSFORM COMPONENT
@@ -212,7 +223,7 @@ namespace Zahra
 			entity.GetComponents<CameraComponent>().Camera.SetProjectionType((SceneCamera::ProjectionType)type);
 		}
 
-		static float CameraComponent_GetVerticalSize(ZGUID guid)
+		static float CameraComponent_GetVerticalFOV(ZGUID guid)
 		{
 			Entity entity = ScriptEngine::GetEntity(guid);
 			SceneCamera& camera = entity.GetComponents<CameraComponent>().Camera;
@@ -226,7 +237,7 @@ namespace Zahra
 			return 0;
 		}
 
-		static void CameraComponent_SetVerticalSize(ZGUID guid, float size)
+		static void CameraComponent_SetVerticalFOV(ZGUID guid, float size)
 		{
 			Entity entity = ScriptEngine::GetEntity(guid);
 			SceneCamera& camera = entity.GetComponents<CameraComponent>().Camera;
@@ -315,6 +326,16 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// 2D RIGID BODY COMPONENT
+		static void RigidBody2DComponent_ApplyLinearImpulse(ZGUID guid, glm::vec2* impulse, bool wake)
+		{
+			Entity entity = ScriptEngine::GetEntity(guid);
+
+			// TODO: create a physics engine that can encapsulate b2 calls e.g.
+			auto body = (b2Body*)entity.GetComponents<RigidBody2DComponent>().RuntimeBody;
+			
+			body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+		}
+
 		static int RigidBody2DComponent_GetBodyType(ZGUID guid)
 		{
 			Entity entity = ScriptEngine::GetEntity(guid);
@@ -488,10 +509,41 @@ namespace Zahra
 		}
 
 		#pragma endregion
+	}	
 
+	template <typename... ComponentTypes>
+	static void RegisterType(MonoImage* coreAssemblyImage)
+	{
+		([&]()
+			{
+				std::string managedTypename = typeid(ComponentTypes).name();
+
+				size_t trimPoint = managedTypename.find_last_of(":");
+				Z_CORE_ASSERT(trimPoint != std::string::npos, "managedTypename is not of the anticipated form 'struct Zahra::...'");
+
+				managedTypename = "Djinn." + managedTypename.substr(trimPoint + 1);
+				//Z_CORE_TRACE("Script engine has registered component type '{}'", managedTypename);
+
+				MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), coreAssemblyImage);
+				Z_CORE_ASSERT(managedType, "No such type can be found in Djinn");
+
+				s_EntityHasComponentFns[managedType] = [](Entity entity) { return entity.HasComponents<ComponentTypes>(); };
+			}
+		(), ...);
 	}
 
-	#define Z_REGISTER_INTERNAL_CALL(name) mono_add_internal_call("Djinn.Zahra::"#name, (void*)InternalCalls::name);
+	template<typename... ComponentTypes>
+	static void RegisterType(ComponentGroup<ComponentTypes...>, MonoImage* coreAssemblyImage)
+	{
+		RegisterType<ComponentTypes...>(coreAssemblyImage);
+	}
+
+	void ScriptGlue::RegisterComponentTypes(MonoImage* coreAssemblyImage)
+	{
+		RegisterType(MostComponents{}, coreAssemblyImage);
+	}
+
+#define Z_REGISTER_INTERNAL_CALL(name) mono_add_internal_call("Djinn.Zahra::"#name, (void*)InternalCalls::name);
 
 	void ScriptGlue::RegisterFunctions()
 	{
@@ -523,6 +575,10 @@ namespace Zahra
 		#pragma region ECS
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
+		// ENTITY
+		Z_REGISTER_INTERNAL_CALL(Entity_HasComponent);
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// TRANSFORM COMPONENT
 		Z_REGISTER_INTERNAL_CALL(TransformComponent_GetTranslation);
 		Z_REGISTER_INTERNAL_CALL(TransformComponent_SetTranslation);
@@ -549,8 +605,8 @@ namespace Zahra
 		// CAMERA COMPONENT
 		Z_REGISTER_INTERNAL_CALL(CameraComponent_GetProjectionType);
 		Z_REGISTER_INTERNAL_CALL(CameraComponent_SetProjectionType);
-		Z_REGISTER_INTERNAL_CALL(CameraComponent_GetVerticalSize);
-		Z_REGISTER_INTERNAL_CALL(CameraComponent_SetVerticalSize);
+		Z_REGISTER_INTERNAL_CALL(CameraComponent_GetVerticalFOV);
+		Z_REGISTER_INTERNAL_CALL(CameraComponent_SetVerticalFOV);
 		Z_REGISTER_INTERNAL_CALL(CameraComponent_GetNearPlane);
 		Z_REGISTER_INTERNAL_CALL(CameraComponent_SetNearPlane);
 		Z_REGISTER_INTERNAL_CALL(CameraComponent_GetFarPlane);
@@ -564,6 +620,7 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// 2D RIGID BODY COMPONENT
+		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetFixedRotation);
@@ -600,10 +657,6 @@ namespace Zahra
 		Z_REGISTER_INTERNAL_CALL(CircleColliderComponent_GetRestitutionThreshold);
 		Z_REGISTER_INTERNAL_CALL(CircleColliderComponent_SetRestitutionThreshold);
 
-
 		#pragma endregion
-
 	}
-	
 }
-

@@ -2,8 +2,13 @@
 
 #include "Zahra/Scene/Entity.h"
 
+extern "C" {
+	typedef struct _MonoImage MonoImage;
+}
+
 namespace Zahra
 {
+
 	class EntityScriptType;
 	class Scene;
 
@@ -31,7 +36,11 @@ namespace Zahra
 		static void LoadCoreAssembly(std::filesystem::path filepath);
 		static void ShutdownMonoDomains();
 
-		static void ReflectAssemblyTypes();
+		static void ReflectEntityTypes();
+
+		//static MonoImage* GetCoreAssemblyImage();
+
+		friend class ScriptGlue;
 	};
 
 }

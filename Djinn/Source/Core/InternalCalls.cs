@@ -52,105 +52,112 @@ namespace Djinn
 		#endregion
 
 		#region ECS
+		///////////////////////////////////////////////////////////////////////////////////////////////////
+		// ENTITY
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_HasComponent(ulong guid, Type componentType);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// TRANSFORM COMPONENT
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void TransformComponent_GetTranslation(ulong guid, out Vector3 translation);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetTranslation(ulong guid, out Vector3 translation);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void TransformComponent_SetTranslation(ulong guid, ref Vector3 translation);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetTranslation(ulong guid, ref Vector3 translation);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void TransformComponent_GetEulers(ulong guid, out Vector3 eulers);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetEulers(ulong guid, out Vector3 eulers);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void TransformComponent_SetEulers(ulong guid, ref Vector3 eulers);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetEulers(ulong guid, ref Vector3 eulers);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void TransformComponent_GetScale(ulong guid, out Vector3 scale);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetScale(ulong guid, out Vector3 scale);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void TransformComponent_SetScale(ulong guid, ref Vector3 scale);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetScale(ulong guid, ref Vector3 scale);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// SPRITE COMPONENT
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void SpriteComponent_GetTint(ulong guid, out Vector4 tint);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteComponent_GetTint(ulong guid, out Vector4 tint);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void SpriteComponent_SetTint(ulong guid, ref Vector4 tint);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteComponent_SetTint(ulong guid, ref Vector4 tint);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// CIRCLE COMPONENT
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void CircleComponent_GetColour(ulong guid, out Vector4 tint);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void CircleComponent_GetColour(ulong guid, out Vector4 tint);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void CircleComponent_SetColour(ulong guid, ref Vector4 tint);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void CircleComponent_SetColour(ulong guid, ref Vector4 tint);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static float CircleComponent_GetThickness(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float CircleComponent_GetThickness(ulong guid);
 			
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void CircleComponent_SetThickness(ulong guid, float thickness);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void CircleComponent_SetThickness(ulong guid, float thickness);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static float CircleComponent_GetFade(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float CircleComponent_GetFade(ulong guid);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void CircleComponent_SetFade(ulong guid, float fade);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void CircleComponent_SetFade(ulong guid, float fade);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// CAMERA COMPONENT
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static ProjectionType CameraComponent_GetProjectionType(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static ProjectionType CameraComponent_GetProjectionType(ulong guid);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void CameraComponent_SetProjectionType(ulong guid, int type);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetProjectionType(ulong guid, int type);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static float CameraComponent_GetVerticalSize(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetVerticalFOV(ulong guid);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void CameraComponent_SetVerticalSize(ulong guid, float size);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetVerticalFOV(ulong guid, float size);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static float CameraComponent_GetNearPlane(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetNearPlane(ulong guid);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void CameraComponent_SetNearPlane(ulong guid, float nearPlane);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetNearPlane(ulong guid, float nearPlane);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static float CameraComponent_GetFarPlane(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetFarPlane(ulong guid);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void CameraComponent_SetFarPlane(ulong guid, float farPlane);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetFarPlane(ulong guid, float farPlane);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static bool CameraComponent_GetFixedAspectRatio(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool CameraComponent_GetFixedAspectRatio(ulong guid);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void CameraComponent_SetFixedAspectRatio(ulong guid, bool value);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetFixedAspectRatio(ulong guid, bool value);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// SCRIPT COMPONENT
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static string ScriptComponent_GetScriptName(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static string ScriptComponent_GetScriptName(ulong guid);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// 2D RIGID BODY COMPONENT
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static BodyType RigidBody2DComponent_GetBodyType(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_ApplyLinearImpulse(ulong guid, ref Vector2 impulse, bool wake);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void RigidBody2DComponent_SetBodyType(ulong guid, BodyType bodyType);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static BodyType RigidBody2DComponent_GetBodyType(ulong guid);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static bool RigidBody2DComponent_GetFixedRotation(ulong guid);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetBodyType(ulong guid, BodyType bodyType);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void RigidBody2DComponent_SetFixedRotation(ulong guid, bool fix);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool RigidBody2DComponent_GetFixedRotation(ulong guid);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetFixedRotation(ulong guid, bool fix);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// RECTANGULAR COLLIDER COMPONENT

@@ -117,13 +117,16 @@ namespace Zahra
 
 		void InvokeOnCreate()
 		{
-			m_Class->InvokeMethod(m_Object, m_OnCreate, nullptr);
+			if (m_OnCreate)
+				m_Class->InvokeMethod(m_Object, m_OnCreate, nullptr);
 		}
 
 		void InvokeOnUpdate(float dt)
 		{
 			void* ptr = &dt;
-			m_Class->InvokeMethod(m_Object, m_OnUpdate, &ptr);
+
+			if (m_OnUpdate)
+				m_Class->InvokeMethod(m_Object, m_OnUpdate, &ptr);
 		}
 
 	private:
@@ -158,8 +161,9 @@ namespace Zahra
 
 		InitMonoDomains();
 		LoadCoreAssembly("Resources/Scripts/Djinn.dll");
-		ReflectAssemblyTypes();
+		ReflectEntityTypes();
 
+		ScriptGlue::RegisterComponentTypes(s_SEData->CoreAssemblyImage);
 		ScriptGlue::RegisterFunctions();
 
 		Z_CORE_INFO("Script engine initialised");
@@ -219,6 +223,7 @@ namespace Zahra
 
 	Entity ScriptEngine::GetEntity(ZGUID guid)
 	{
+		Z_CORE_ASSERT(s_SEData->SceneContext);
 		return s_SEData->SceneContext->GetEntity(guid);
 	}
 
@@ -260,12 +265,12 @@ namespace Zahra
 		s_SEData->RootDomain = nullptr;
 	}
 
-	void ScriptEngine::ReflectAssemblyTypes()
+	void ScriptEngine::ReflectEntityTypes()
 	{
-		Z_CORE_TRACE("");
-		Z_CORE_TRACE("=================================================================================");
-		Z_CORE_TRACE("MONO METADATA REFLECTION");
-		Z_CORE_TRACE("---------------------------------------------------------------------------------");
+		//Z_CORE_TRACE("");
+		//Z_CORE_TRACE("=================================================================================");
+		//Z_CORE_TRACE("MONO METADATA REFLECTION");
+		//Z_CORE_TRACE("---------------------------------------------------------------------------------");
 
 		// re-initialise record of entity types
 		s_SEData->EntityScriptTypes.clear();
@@ -293,13 +298,18 @@ namespace Zahra
 			{
 				std::string fullName = reflectedNamespace + "." + reflectedName;
 				s_SEData->EntityScriptTypes[fullName] = Ref<EntityScriptType>::Create(reflectedClass);
-				Z_CORE_TRACE("{} is an Entity type", fullName);
+				//Z_CORE_TRACE("{} is an Entity type", fullName);
 			}
 		}
 
-		Z_CORE_TRACE("=================================================================================");
+		//Z_CORE_TRACE("=================================================================================");
 
 	}
+
+	/*MonoImage* ScriptEngine::GetCoreAssemblyImage()
+	{
+		return s_SEData->CoreAssemblyImage;
+	}*/
 
 		
 }

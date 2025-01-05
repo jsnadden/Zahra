@@ -34,6 +34,9 @@
     <Filter Include="src\Zahra\Renderer">
       <UniqueIdentifier>{F8DD9396-E4C1-54EC-4D22-4F3F39253F6E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Zahra\Renderer\Cameras">
+      <UniqueIdentifier>{E379742F-CF89-2000-3843-851E24720F99}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Zahra\Scene">
       <UniqueIdentifier>{AFD84494-1B64-B258-2475-354D907F0E59}</UniqueIdentifier>
     </Filter>
@@ -216,14 +219,20 @@
     <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h">
       <Filter>src\Zahra\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Maths\GeometricPrimitives.h">
+      <Filter>src\Zahra\Maths</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Maths\Maths.h">
       <Filter>src\Zahra\Maths</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Cameras\Camera.h">
-      <Filter>src\Zahra\Renderer</Filter>
+      <Filter>src\Zahra\Renderer\Cameras</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Cameras\EditorCamera.h">
-      <Filter>src\Zahra\Renderer</Filter>
+      <Filter>src\Zahra\Renderer\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\Cameras\SceneCamera.h">
+      <Filter>src\Zahra\Renderer\Cameras</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h">
       <Filter>src\Zahra\Renderer</Filter>
@@ -292,9 +301,6 @@
       <Filter>src\Zahra\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Scene\Scene.h">
-      <Filter>src\Zahra\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Cameras\SceneCamera.h">
       <Filter>src\Zahra\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Scene\SceneSerialiser.h">
@@ -1575,7 +1581,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Maths\GeometricPrimitives.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp">
@@ -1666,7 +1671,10 @@
       <Filter>src\Zahra\Maths</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Cameras\EditorCamera.cpp">
-      <Filter>src\Zahra\Renderer</Filter>
+      <Filter>src\Zahra\Renderer\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Renderer\Cameras\SceneCamera.cpp">
+      <Filter>src\Zahra\Renderer\Cameras</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp">
       <Filter>src\Zahra\Renderer</Filter>
@@ -1723,9 +1731,6 @@
       <Filter>src\Zahra\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Scene\Scene.cpp">
-      <Filter>src\Zahra\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Cameras\SceneCamera.cpp">
       <Filter>src\Zahra\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Scene\SceneSerialiser.cpp">
