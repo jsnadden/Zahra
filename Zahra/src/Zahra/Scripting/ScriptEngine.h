@@ -2,6 +2,8 @@
 
 #include "Zahra/Scene/Entity.h"
 
+// TODO: replace mono with something better documented XD
+
 extern "C"
 {
 	typedef struct _MonoAssembly		MonoAssembly;
@@ -15,26 +17,37 @@ extern "C"
 
 namespace Zahra
 {
-	enum class ScriptEntityFieldType
+	enum class ScriptFieldType
 	{
+		// Simple types		
+		sByte,
+		Byte,
+		Short,
+		uShort,
 		Int,
+		uInt,
+		Long,
+		uLong,
+
 		Float,
+		Double,
+
+		Char,
 		Bool,
 
-		Vec2,
-		Vec3,
-		Vec4
+		// Djinn custom types
+		Entity,
+
+		Vector2,
+		Vector3,
+		Vector4,
+		Quaternion,
 	};
 
-	struct ScriptEntityField
+	struct ScriptField
 	{
 		std::string Name;
-		ScriptEntityFieldType Type;
-
-	private:
-		MonoClassField* MonoField;
-
-		friend class ScriptEntityType;
+		ScriptFieldType Type;
 	};
 
 	class ScriptEntityType : public RefCounted
@@ -56,7 +69,6 @@ namespace Zahra
 		MonoClass* GetMonoClass() { return m_Class; }
 		const std::string& GetNamespace() { return m_Namespace; }
 		const std::string& GetName() { return m_Name; }
-		const std::string& GetFullName() const { return m_Namespace + "." + m_Name; }
 
 	private:
 		MonoClass* m_Class = nullptr;
@@ -64,7 +76,8 @@ namespace Zahra
 		std::string m_Namespace;
 		std::string m_Name;
 
-		std::vector<ScriptEntityField> m_Fields;
+		std::vector<ScriptField> m_PublicFields;
+		std::vector<MonoClassField*> m_MonoFields;
 	};
 
 	class ScriptEntityInstance : public RefCounted

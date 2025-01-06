@@ -10,40 +10,42 @@
 #include <mono/metadata/class.h>
 #include <mono/metadata/object.h>
 #include <mono/metadata/mono-gc.h>
-
-namespace MonoUtils
-{
-	static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath)
-	{
-		Z_CORE_ASSERT(std::filesystem::exists(assemblyPath), "Assembly file does not exist");
-
-		uint32_t fileSize = 0;
-		char* fileData = Zahra::FileIO::ReadBytes(assemblyPath, &fileSize);
-
-		// NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
-		MonoImageOpenStatus status;
-		MonoImage* image = mono_image_open_from_data_full(fileData, fileSize, 1, &status, 0);
-
-		if (status != MONO_IMAGE_OK)
-		{
-			const char* errorMessage = mono_image_strerror(status);
-			Z_CORE_ERROR("Failed to load MonoImage: {0}", errorMessage);
-			return nullptr;
-		}
-
-		std::string assemblyPathString = assemblyPath.string();
-		MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPathString.c_str(), &status, 0);
-		mono_image_close(image);
-
-		// Don't forget to free the file data
-		delete[] fileData;
-
-		return assembly;
-	}
-}
+#include <mono/metadata/tabledefs.h>
 
 namespace Zahra
 {
+	namespace MonoUtils
+	{
+		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath)
+		{
+			Z_CORE_ASSERT(std::filesystem::exists(assemblyPath), "Assembly file does not exist");
+
+			uint32_t fileSize = 0;
+			char* fileData = Zahra::FileIO::ReadBytes(assemblyPath, &fileSize);
+
+			// NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
+			MonoImageOpenStatus status;
+			MonoImage* image = mono_image_open_from_data_full(fileData, fileSize, 1, &status, 0);
+
+			if (status != MONO_IMAGE_OK)
+			{
+				const char* errorMessage = mono_image_strerror(status);
+				Z_CORE_ERROR("Failed to load MonoImage: {0}", errorMessage);
+				return nullptr;
+			}
+
+			std::string assemblyPathString = assemblyPath.string();
+			MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPathString.c_str(), &status, 0);
+			mono_image_close(image);
+
+			// Don't forget to free the file data
+			delete[] fileData;
+
+			return assembly;
+		}
+
+	}
+
 	struct ScriptEngineData
 	{
 		MonoDomain* RootDomain = nullptr;
@@ -59,6 +61,30 @@ namespace Zahra
 		std::unordered_map<ZGUID, Ref<ScriptEntityInstance>> ScriptEntityInstances;
 
 		Scene* SceneContext = nullptr;
+
+		const std::unordered_map<std::string, ScriptFieldType> MonoTypeNameToScriptFieldType = 
+		{
+			// Simple types
+			{ "System.SByte",		ScriptFieldType::sByte },
+			{ "System.Byte",		ScriptFieldType::Byte },
+			{ "System.Int16",		ScriptFieldType::Short },
+			{ "System.UInt16",		ScriptFieldType::uShort },
+			{ "System.Int32",		ScriptFieldType::Int },
+			{ "System.UInt32",		ScriptFieldType::uInt },
+			{ "System.Int64",		ScriptFieldType::Long },
+			{ "System.UInt64",		ScriptFieldType::uLong },
+			{ "System.Single",		ScriptFieldType::Float },
+			{ "System.Double",		ScriptFieldType::Double },
+			{ "System.Char",		ScriptFieldType::Char },
+			{ "System.Boolean",		ScriptFieldType::Bool },
+
+			// Djinn custom types
+			{ "Djinn.Entity",		ScriptFieldType::Entity },
+			{ "Djinn.Vector2",		ScriptFieldType::Vector2 },
+			{ "Djinn.Vector3",		ScriptFieldType::Vector3 },
+			{ "Djinn.Vector4",		ScriptFieldType::Vector4 },
+			{ "Djinn.Quaternion",	ScriptFieldType::Quaternion },
+		};
 	};
 
 	static ScriptEngineData* s_SEData;
@@ -221,6 +247,8 @@ namespace Zahra
 		m_Class = other.m_Class;
 		m_Namespace = other.m_Namespace;
 		m_Name = other.m_Name;
+		m_PublicFields = other.m_PublicFields;
+		m_MonoFields = other.m_MonoFields;
 	}
 
 	ScriptEntityType::ScriptEntityType(MonoImage* image, const std::string& classNamespace, const std::string& className)
@@ -250,13 +278,23 @@ namespace Zahra
 	void ScriptEntityType::ReflectFields()
 	{
 		void* iterator = nullptr;MonoClassField* field;
+		std::string fullClassName = m_Namespace + "." + m_Name;
+		Z_CORE_TRACE("Public fields for Entity class {}:", fullClassName);
 
 		while (MonoClassField* monoField = mono_class_get_fields(m_Class, &iterator))
 		{
-			auto& field = m_Fields.emplace_back();
-			field.MonoField = monoField;
-			field.Name = mono_field_get_name(monoField);
-			auto type = mono_field_get_type(monoField);
+			uint32_t flags = mono_field_get_flags(monoField);
+			if (flags & FIELD_ATTRIBUTE_PUBLIC) // found a public field!
+			{
+				m_MonoFields.push_back(monoField);
+				auto& field = m_PublicFields.emplace_back();
+
+				field.Name = mono_field_get_name(monoField);
+
+				MonoType* monoType = mono_field_get_type(monoField);
+				std::string monoTypeName = mono_type_get_name(monoType);
+				field.Type = s_SEData->MonoTypeNameToScriptFieldType.at(monoTypeName);
+			}
 		}
 	}
 

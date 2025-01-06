@@ -8,6 +8,13 @@ namespace Bud
 		WASD() : base() {}
 		WASD(ulong guid) : base(guid) {}
 
+		public float power;
+
+		public Vector2 vector2;
+		public Entity entity;
+		public char character;
+		public Quaternion quat;
+
 		private TransformComponent transformComponent;
 		private RigidBody2DComponent rigidBody2DComponent;
 
@@ -15,6 +22,8 @@ namespace Bud
 		{
 			transformComponent = GetComponent<TransformComponent>();
 			rigidBody2DComponent = GetComponent<RigidBody2DComponent>();
+
+			power = 10.0f;
 		}
 
 		public void OnUpdate(float dt)
@@ -44,7 +53,7 @@ namespace Bud
 			}
 
 			//force.Normalise();
-			force *= 10.0f;
+			force *= power;
 
 			rigidBody2DComponent.ApplyForce(force, true);
 			//rigidBody2DComponent.ApplyLinearImpulse(impulse * dt, true);
