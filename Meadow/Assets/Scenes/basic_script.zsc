@@ -30,7 +30,7 @@ Entities:
       Thickness: 1
       Fade: 0.00499999989
     ScriptComponent:
-      ScriptName: Sandbox.WASD
+      ScriptName: Bud.WASD
     RigidBody2DComponent:
       Type: Dynamic
       FixedRotation: false

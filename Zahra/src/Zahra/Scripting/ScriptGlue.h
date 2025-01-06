@@ -7,7 +7,7 @@ namespace Zahra
 	class ScriptGlue
 	{
 	public:
-		static void RegisterComponentTypes(MonoImage* coreAssemblyImage);
+		static void RegisterComponentTypes(MonoImage* assemblyImage);
 		static void RegisterFunctions();
 	};
 }

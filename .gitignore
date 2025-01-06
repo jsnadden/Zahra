@@ -3,9 +3,10 @@ profiling/
 *.log
 
 # binaries
-bin-int/
+**/bin-int/
 **/bin/
-Intermediates/
+**/Intermediates/
+**/Binaries/
 !vendor/premake/bin/
 
 # vs files

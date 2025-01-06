@@ -6,22 +6,9 @@ namespace Djinn
 	public class Entity
 	{
 		protected Entity() { GUID = 0; }
-		internal Entity(ulong guid) { GUID = guid; }
+		protected Entity(ulong guid) { GUID = guid; }
 
 		public readonly ulong GUID;
-
-		/*public Vector3 Translation
-		{
-			get
-			{
-				Zahra.TransformComponent_GetTranslation(GUID, out Vector3 translation);
-				return translation;
-			}
-			set
-			{
-				Zahra.TransformComponent_SetTranslation(GUID, ref value);
-			}
-		}*/
 
 		public bool HasComponent<T>() where T : Component, new()
 		{

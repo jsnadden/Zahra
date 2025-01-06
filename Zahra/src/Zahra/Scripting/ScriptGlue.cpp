@@ -321,7 +321,7 @@ namespace Zahra
 		static MonoString* ScriptComponent_GetScriptName(ZGUID guid)
 		{
 			Entity entity = ScriptEngine::GetEntity(guid);
-			return (MonoString*)ScriptEngine::GetMonoString(entity.GetComponents<ScriptComponent>().ScriptName);
+			return ScriptEngine::GetMonoString(entity.GetComponents<ScriptComponent>().ScriptName);
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -334,6 +334,16 @@ namespace Zahra
 			auto body = (b2Body*)entity.GetComponents<RigidBody2DComponent>().RuntimeBody;
 			
 			body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+		}
+
+		static void RigidBody2DComponent_ApplyForce(ZGUID guid, glm::vec2* force, bool wake)
+		{
+			Entity entity = ScriptEngine::GetEntity(guid);
+
+			// TODO: create a physics engine that can encapsulate b2 calls e.g.
+			auto body = (b2Body*)entity.GetComponents<RigidBody2DComponent>().RuntimeBody;
+
+			body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
 		}
 
 		static int RigidBody2DComponent_GetBodyType(ZGUID guid)
@@ -512,7 +522,7 @@ namespace Zahra
 	}	
 
 	template <typename... ComponentTypes>
-	static void RegisterType(MonoImage* coreAssemblyImage)
+	static void RegisterType(MonoImage* assemblyImage)
 	{
 		([&]()
 			{
@@ -524,7 +534,7 @@ namespace Zahra
 				managedTypename = "Djinn." + managedTypename.substr(trimPoint + 1);
 				//Z_CORE_TRACE("Script engine has registered component type '{}'", managedTypename);
 
-				MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), coreAssemblyImage);
+				MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), assemblyImage);
 				Z_CORE_ASSERT(managedType, "No such type can be found in Djinn");
 
 				s_EntityHasComponentFns[managedType] = [](Entity entity) { return entity.HasComponents<ComponentTypes>(); };
@@ -533,14 +543,14 @@ namespace Zahra
 	}
 
 	template<typename... ComponentTypes>
-	static void RegisterType(ComponentGroup<ComponentTypes...>, MonoImage* coreAssemblyImage)
+	static void RegisterType(ComponentGroup<ComponentTypes...>, MonoImage* assemblyImage)
 	{
-		RegisterType<ComponentTypes...>(coreAssemblyImage);
+		RegisterType<ComponentTypes...>(assemblyImage);
 	}
 
-	void ScriptGlue::RegisterComponentTypes(MonoImage* coreAssemblyImage)
+	void ScriptGlue::RegisterComponentTypes(MonoImage* assemblyImage)
 	{
-		RegisterType(MostComponents{}, coreAssemblyImage);
+		RegisterType(MostComponents{}, assemblyImage);
 	}
 
 #define Z_REGISTER_INTERNAL_CALL(name) mono_add_internal_call("Djinn.Zahra::"#name, (void*)InternalCalls::name);
@@ -621,6 +631,7 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// 2D RIGID BODY COMPONENT
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
+		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetFixedRotation);

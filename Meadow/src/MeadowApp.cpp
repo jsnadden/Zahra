@@ -25,6 +25,7 @@ namespace Zahra
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
+		// TODO: maybe a lot of this can come from project config
 		ApplicationSpecification spec;
 		spec.Name = "Meadow";
 		spec.Version = ApplicationVersion(0, 1, 0);

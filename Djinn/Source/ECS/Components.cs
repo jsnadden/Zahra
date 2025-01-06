@@ -191,34 +191,21 @@ namespace Djinn
 			Zahra.RigidBody2DComponent_ApplyLinearImpulse(Entity.GUID, ref impulse, wake);
 		}
 
-		public BodyType BodyType
+		public void ApplyForce(Vector2 force, bool wake)
 		{
-			get
-			{
-				return Djinn.Zahra.RigidBody2DComponent_GetBodyType(Entity.GUID);
-			}
-			set
-			{
-				Djinn.Zahra.RigidBody2DComponent_SetBodyType(Entity.GUID, value);
-			}
+			Zahra.RigidBody2DComponent_ApplyForce(Entity.GUID, ref force, wake);
 		}
 
-		public bool FixedRotation
-		{
-			get
-			{
-				return Djinn.Zahra.RigidBody2DComponent_GetFixedRotation(Entity.GUID);
-			}
-			set
-			{
-				Djinn.Zahra.RigidBody2DComponent_SetFixedRotation(Entity.GUID, value);
-			}
-		}
+		// TODO: not much point in a script setting these parameters, unless we can also
+		// trigger a reset of the box2d physicsworld...
+		/*BodyType
+		FixedRotation*/
 	}
 
 	public class RectColliderComponent : Component
 	{
-		// TODO: implement
+		// TODO: not much point in a script setting these parameters, unless we can also
+		// trigger a reset of the box2d physicsworld...
 		/*Offset;
 		HalfExtent;
 		Density;
@@ -229,7 +216,8 @@ namespace Djinn
 
 	public class CircleColliderComponent : Component
 	{
-		// TODO: implement
+		// TODO: not much point in a script setting these parameters, unless we can also
+		// trigger a reset of the box2d physicsworld...
 		/*Offset;
 		Radius;
 		Density;

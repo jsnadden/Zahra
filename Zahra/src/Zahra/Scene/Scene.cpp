@@ -208,6 +208,9 @@ namespace Zahra
 
 	void Scene::OnUpdateRuntime(float dt)
 	{
+		// TODO: Should scripts be invoked before or after the physics update? Maybe both?
+		// (I should probably read more of Game Engine Architecture)
+
 		auto& view = m_Registry.view<ScriptComponent>();
 		for (auto e : view)
 		{

@@ -1,9 +1,9 @@
 ﻿
 using Djinn;
 
-namespace Sandbox
+namespace Bud
 {
-	public class WASD : Djinn.Entity
+	public class WASD : Entity
 	{
 		WASD() : base() {}
 		WASD(ulong guid) : base(guid) {}
@@ -22,31 +22,32 @@ namespace Sandbox
 			/*float framerate = 1.0f / dt;
 			Djinn.Zahra.Log_Trace($"Framerate: {framerate} fps");*/
 
+			Vector2 force = Vector2.Zero;
 			Vector2 impulse = Vector2.Zero;
-
-			if (Zahra.Input_IsKeyDown(KeyCode.W))
-			{
-				impulse.Y = 1.0f;
-			}
-			else if (Zahra.Input_IsKeyDown(KeyCode.S))
-			{
-				impulse.Y = -1.0f;
-			}
 			
-			if (Zahra.Input_IsKeyDown(KeyCode.A))
+			if (Input.IsKeyDown(KeyCode.A))
 			{
-				impulse.X = -1.0f;
+				force.X = -1.0f;
 			}
-			else if (Zahra.Input_IsKeyDown(KeyCode.D))
+			else if (Input.IsKeyDown(KeyCode.D))
 			{
-				impulse.X = 1.0f;
+				force.X = 1.0f;
 			}
 
-			//impulse.Normalise();
-			impulse *= .05f;
+			if (Input.IsKeyDown(KeyCode.W))
+			{
+				force.Y = 2.0f;
+			}
+			else if (Input.IsKeyDown(KeyCode.S))
+			{
+				force.Y = -2.0f;
+			}
 
-			rigidBody2DComponent.ApplyLinearImpulse(impulse, true);
-			//transformComponent.Translation += impulse * dt;
+			//force.Normalise();
+			force *= 10.0f;
+
+			rigidBody2DComponent.ApplyForce(force, true);
+			//rigidBody2DComponent.ApplyLinearImpulse(impulse * dt, true);
 		}
 	}
 }
