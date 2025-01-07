@@ -242,12 +242,14 @@ namespace Zahra
 				MeadowUIPatterns::DrawFloatControl("Fade", component.Fade, .001f, true, .001f, 10.f, "%.3f");
 			});
 
-		MeadowUIPatterns::DrawComponent<ScriptComponent>("Script Component", entity, [](auto& component)
+		MeadowUIPatterns::DrawComponent<ScriptComponent>("Script Component", entity, [entity](auto& component)
 			{
-				// TODO: make this a combo box and populate from .first in ScriptEngine::GetEntityTypes
+				// TODO: make this a combo box and populate from .first in ScriptEngine::GetScriptClasses
+
+				bool validScript = ScriptEngine::ValidScriptClass(component.ScriptName);
 
 				glm::vec3 textColour = glm::vec3(.95f, .1f, .1f);
-				if (ScriptEngine::ValidEntityClass(component.ScriptName))
+				if (validScript)
 					textColour = glm::vec3(.1f, .95f, .1f);
 
 				char buffer[64];
@@ -257,6 +259,28 @@ namespace Zahra
 				{
 					if (ImGui::IsWindowFocused())
 						component.ScriptName = std::string(buffer);
+				}
+
+				Ref<ScriptInstance> instance;
+				if (validScript)
+					instance = ScriptEngine::GetScriptInstance(entity);
+
+				if (!instance)
+					return;
+
+				for (auto& field : instance->GetEntityClass()->GetPublicFields())
+				{
+					switch (field.Type)
+					{
+						case ScriptFieldType::Float:
+						{
+							float value;
+							instance->GetScriptFieldValue(field.Name, (void*)&value);
+
+							if (MeadowUIPatterns::DrawFloatControl(field.Name, value))
+								instance->SetScriptFieldValue(field.Name, (void*)&value);
+						}
+					}
 				}
 
 			});

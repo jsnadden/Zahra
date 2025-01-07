@@ -1,24 +1,17 @@
 #pragma once
 
 #include "Zahra/Scene/Entity.h"
+#include "Zahra/Scripting/MonoExterns.h"
 
 // TODO: replace mono with something better documented XD
-
-extern "C"
-{
-	typedef struct _MonoAssembly		MonoAssembly;
-	typedef struct _MonoClass			MonoClass;
-	typedef struct _MonoClassField		MonoClassField;
-	typedef struct _MonoImage			MonoImage;
-	typedef struct _MonoMethod			MonoMethod;
-	typedef struct _MonoObject			MonoObject;
-	typedef struct _MonoString			MonoString;
-}
+// also maybe refactor to use numerical IDs for classes/instances/fields, instead of strings
 
 namespace Zahra
 {
 	enum class ScriptFieldType
 	{
+		None,
+
 		// Simple types		
 		sByte,
 		Byte,
@@ -46,54 +39,73 @@ namespace Zahra
 
 	struct ScriptField
 	{
+		ScriptFieldType Type = ScriptFieldType::None;
 		std::string Name;
-		ScriptFieldType Type;
 	};
 
-	class ScriptEntityType : public RefCounted
+	class ScriptClass : public RefCounted
 	{
 	public:
-		ScriptEntityType() = default;
-		ScriptEntityType(const ScriptEntityType& other);
-		ScriptEntityType(MonoImage* image, const std::string& classNamespace, const std::string& className);
+		ScriptClass() = default;
+		ScriptClass(const ScriptClass& other);
+
+		bool IsSubclassOf(ScriptClass& other, bool checkInterfaces = false);
+
+		const std::string& GetName() { return m_FullClassName; }
+		const std::vector<ScriptField>& GetPublicFields() const { return m_PublicFields; }
+
+	protected:
+		ScriptClass(MonoImage* image, const std::string& classNamespace, const std::string& className);
+
+		MonoClass* GetMonoClass() { return m_MonoClass; }
+		MonoMethod* GetMethod(const std::string& methodName, int numArgs);
+		const std::unordered_map<std::string, MonoClassField*>& GetMonoFields() { return m_MonoFields; }
 
 		MonoObject* Instantiate();
-
-		MonoMethod* GetMethod(const std::string& methodName, int numArgs);
 		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** args);
 
 		void ReflectFields();
-
-		bool IsSubclassOf(ScriptEntityType& other, bool checkInterfaces = false);
-
-		MonoClass* GetMonoClass() { return m_Class; }
-		const std::string& GetNamespace() { return m_Namespace; }
-		const std::string& GetName() { return m_Name; }
+		//void ReflectMethods();
 
 	private:
-		MonoClass* m_Class = nullptr;
+		MonoClass* m_MonoClass = nullptr;
 
-		std::string m_Namespace;
-		std::string m_Name;
+		std::string m_FullClassName;
 
 		std::vector<ScriptField> m_PublicFields;
-		std::vector<MonoClassField*> m_MonoFields;
+		std::unordered_map<std::string, MonoClassField*> m_MonoFields;
+
+		friend class ScriptInstance;
+		friend class ScriptEngine;
 	};
 
-	class ScriptEntityInstance : public RefCounted
+	class ScriptInstance : public RefCounted
 	{
 	public:
-		ScriptEntityInstance(Ref<ScriptEntityType> scriptClass, ZGUID guid);
+		ScriptInstance(Ref<ScriptClass> scriptClass, ZGUID guid);
 
+		Ref<ScriptClass> GetEntityClass() { return m_EntityClass; }
+
+		void GetScriptFieldValue(const std::string& fieldName, void* destination);
+		void SetScriptFieldValue(const std::string& fieldName, void* source);
+
+	protected:
 		void InvokeOnCreate();
-		void InvokeOnUpdate(float dt);
+		void InvokeEarlyUpdate(float dt);
+		void InvokeLateUpdate(float dt);
+
+		MonoObject* GetMonoObject() const { return m_MonoObject; }
 
 	private:
-		Ref<ScriptEntityType> m_Class;
-		MonoObject* m_Object = nullptr;
-		MonoMethod* m_Constructor = nullptr;
+		Ref<ScriptClass> m_EntityClass;
+		MonoObject* m_MonoObject = nullptr;
+
+		MonoMethod* m_ConstructFromGUID = nullptr;
 		MonoMethod* m_OnCreate = nullptr;
-		MonoMethod* m_OnUpdate = nullptr;
+		MonoMethod* m_OnEarlyUpdate = nullptr; // pre-physics
+		MonoMethod* m_OnLateUpdate = nullptr; // post-physics
+
+		friend class ScriptEngine;
 	};
 
 	class ScriptEngine
@@ -105,15 +117,18 @@ namespace Zahra
 		static void OnRuntimeStart(Scene* scene);
 		static void OnRuntimeStop();
 
-		static void InstantiateScript(Entity entity);
-		static void UpdateScript(Entity entity, float dt);
+		static void CreateScriptInstance(Entity entity);
+		static void ScriptInstanceEarlyUpdate(Entity entity, float dt);
+		static void ScriptInstanceLateUpdate(Entity entity, float dt);
 
-		static std::unordered_map<std::string, Ref<ScriptEntityType>> GetEntityTypes();
-		static bool ValidEntityClass(const std::string& fullName);
+		static const std::unordered_map<std::string, Ref<ScriptClass>>& GetScriptClasses();
+		static bool ValidScriptClass(const std::string& fullName);
+
+		static Ref<ScriptInstance> GetScriptInstance(Entity entity);
 
 		static Entity GetEntity(ZGUID guid);
 
-		static MonoString* GetMonoString(const std::string& string);
+		static MonoString* StdStringToMonoString(const std::string& string);
 
 	private:
 		static void InitMonoDomains();
@@ -121,9 +136,9 @@ namespace Zahra
 		
 		static void LoadAssembly(const std::filesystem::path& library, MonoAssembly*& assembly, MonoImage*& assemblyImage);
 
-		static void ReflectScriptEntities();
+		static void ReflectScriptClasses();
 
-		friend class ScriptGlue;
+		//friend class ScriptGlue;
 	};
 
 }

@@ -71,9 +71,10 @@ namespace Zahra
 			return false;
 		}
 
-		void DrawFloatControl(const std::string& label, float& value, float speed = .05f,
+		bool DrawFloatControl(const std::string& label, float& value, float speed = .05f,
 			bool logarithmic = false, float min = -FLT_MAX / INT_MAX, float max = FLT_MAX / INT_MAX, const char* format = "%.2f")
 		{
+			bool valueChanged = false;
 			ImGuiSliderFlags flags = 0;
 
 			if (logarithmic)
@@ -96,17 +97,19 @@ namespace Zahra
 			ImGui::TableNextColumn();
 			{
 				ImGui::PushItemWidth(ImGui::CalcItemWidth());
-				ImGui::DragFloat("##X", &value, speed, min, max, format, flags);
+				valueChanged = ImGui::DragFloat("##X", &value, speed, min, max, format, flags);
 				ImGui::PopItemWidth();
 			}
 
 			ImGui::PopID();
 
+			return valueChanged;
 		}
 
-		void DrawFloat2Controls(const std::string& label, glm::vec2& values, float resetValue = .0f, float speed = .05f,
+		bool DrawFloat2Controls(const std::string& label, glm::vec2& values, float resetValue = .0f, float speed = .05f,
 			bool logarithmic = false, float min = -FLT_MAX / INT_MAX, float max = FLT_MAX / INT_MAX)
 		{
+			bool valueChanged = false;
 			ImGuiSliderFlags flags = 0;
 
 			if (logarithmic)
@@ -179,11 +182,13 @@ namespace Zahra
 			ImGui::PopStyleVar(2);
 			ImGui::PopID();
 
+			return valueChanged;
 		}
 
-		void DrawFloat3Controls(const std::string& label, glm::vec3& values, float resetValue = .0f, float speed = .05f,
+		bool DrawFloat3Controls(const std::string& label, glm::vec3& values, float resetValue = .0f, float speed = .05f,
 			bool logarithmic = false, float min = -FLT_MAX / INT_MAX, float max = FLT_MAX / INT_MAX)
 		{
+			bool valueChanged = false;
 			ImGuiSliderFlags flags = 0;
 
 			if (logarithmic)
@@ -275,6 +280,7 @@ namespace Zahra
 			ImGui::PopStyleVar(2);
 			ImGui::PopID();
 
+			return valueChanged;
 		}
 
 		void DrawRGBAControl(const std::string& label, glm::vec4& values)

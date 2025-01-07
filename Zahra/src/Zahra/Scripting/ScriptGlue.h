@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Scripting/ScriptEngine.h"
+#include "Zahra/Scripting/MonoExterns.h"
 
 namespace Zahra
 {

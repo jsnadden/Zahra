@@ -321,7 +321,7 @@ namespace Zahra
 		static MonoString* ScriptComponent_GetScriptName(ZGUID guid)
 		{
 			Entity entity = ScriptEngine::GetEntity(guid);
-			return ScriptEngine::GetMonoString(entity.GetComponents<ScriptComponent>().ScriptName);
+			return ScriptEngine::StdStringToMonoString(entity.GetComponents<ScriptComponent>().ScriptName);
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////

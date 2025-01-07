@@ -221,6 +221,7 @@
     <ClInclude Include="src\Zahra\Scene\Scene.h" />
     <ClInclude Include="src\Zahra\Scene\SceneSerialiser.h" />
     <ClInclude Include="src\Zahra\Scene\ScriptableEntity.h" />
+    <ClInclude Include="src\Zahra\Scripting\MonoExterns.h" />
     <ClInclude Include="src\Zahra\Scripting\ScriptEngine.h" />
     <ClInclude Include="src\Zahra\Scripting\ScriptGlue.h" />
     <ClInclude Include="src\Zahra\Utils\FileIO.h" />
