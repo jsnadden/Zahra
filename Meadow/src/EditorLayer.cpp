@@ -161,19 +161,19 @@ namespace Zahra
 				case SceneState::Edit:
 				{
 					m_ActiveScene->OnUpdateEditor(dt);
-					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera);
+					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera, m_SceneHierarchyPanel.GetSelectedEntity(), m_HighlightSelectionColour);
 					break;
 				}
 				case SceneState::Play:
 				{
 					m_ActiveScene->OnUpdateRuntime(dt);
-					m_ActiveScene->OnRenderRuntime(m_Renderer2D);
+					m_ActiveScene->OnRenderRuntime(m_Renderer2D, m_SceneHierarchyPanel.GetSelectedEntity(), m_HighlightSelectionColour);
 					break;
 				}
 				case SceneState::Simulate:
 				{
 					m_ActiveScene->OnUpdateSimulation(dt);
-					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera);
+					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera, m_SceneHierarchyPanel.GetSelectedEntity(), m_HighlightSelectionColour);
 					break;
 				}
 
@@ -182,8 +182,6 @@ namespace Zahra
 					Z_CORE_ASSERT(false, "Invalid SceneState");
 				}
 			}
-
-			UIHighlightSelection();
 
 			if (m_ViewportHovered)
 			{
@@ -589,38 +587,10 @@ namespace Zahra
 	}
 
 	// TODO: move highight rendering to Scene, or SceneRenderer
-	void EditorLayer::UIHighlightSelection()
-	{
-		if (Entity selection = m_SceneHierarchyPanel.GetSelectedEntity())
-		{
-			TransformComponent entityTransform = selection.GetComponents<TransformComponent>();
-
-			if (m_SceneState == SceneState::Play)
-			{
-				Entity cameraEntity = m_ActiveScene->GetActiveCamera();
-
-				if (cameraEntity)
-				{
-					Camera camera = cameraEntity.GetComponents<CameraComponent>().Camera;
-					glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponents<TransformComponent>().GetTransform());
-					glm::mat4 cameraProjection = camera.GetProjection();
-					m_Renderer2D->BeginScene(cameraView, cameraProjection);
-					// TODO: billboard this
-					m_Renderer2D->DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
-					m_Renderer2D->EndScene();
-				}
-			}
-			else
-			{
-				m_Renderer2D->BeginScene(m_EditorCamera);
-				// TODO: billboard this
-				m_Renderer2D->DrawQuadBoundingBox(entityTransform.GetTransform(), m_HighlightSelectionColour);
-				m_Renderer2D->EndScene();
-			}
-			
-			
-		}
-	}
+	//void EditorLayer::UIHighlightSelection()
+	//{
+	//	
+	//}
 
 	void EditorLayer::UIStatsWindow()
 	{

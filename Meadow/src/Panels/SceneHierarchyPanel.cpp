@@ -1,5 +1,4 @@
 #include "SceneHierarchyPanel.h"
-
 #include "MeadowUIPatterns.h"
 
 #include "Zahra/Scripting/ScriptEngine.h"
@@ -245,6 +244,7 @@ namespace Zahra
 		MeadowUIPatterns::DrawComponent<ScriptComponent>("Script Component", entity, [entity](auto& component)
 			{
 				// TODO: make this a combo box and populate from .first in ScriptEngine::GetScriptClasses
+				// (also change ScriptComponent::ScriptName out for a script asset guid)
 
 				bool validScript = ScriptEngine::ValidScriptClass(component.ScriptName);
 
@@ -255,7 +255,7 @@ namespace Zahra
 				char buffer[64];
 				strcpy_s(buffer, component.ScriptName.c_str());
 				
-				if (MeadowUIPatterns::DrawTextEdit("Script name", buffer, sizeof(buffer), textColour))
+				if (MeadowUIPatterns::DrawTextEdit("Script Class", buffer, sizeof(buffer), textColour))
 				{
 					if (ImGui::IsWindowFocused())
 						component.ScriptName = std::string(buffer);
@@ -270,16 +270,60 @@ namespace Zahra
 
 				for (auto& field : instance->GetEntityClass()->GetPublicFields())
 				{
+					std::string fieldLabel = ScriptUtils::ScriptFieldTypeName(field.Type);
+					fieldLabel += " ";
+					fieldLabel += field.Name;
+					
 					switch (field.Type)
 					{
+						case ScriptFieldType::Bool:
+						{
+							bool value = instance->GetScriptFieldValue<bool>(field);
+
+							if (MeadowUIPatterns::DrawBoolControl(fieldLabel, value))
+								instance->SetScriptFieldValue<bool>(field, value);
+
+							break;
+						}
 						case ScriptFieldType::Float:
 						{
-							float value;
-							instance->GetScriptFieldValue(field.Name, (void*)&value);
+							float value = instance->GetScriptFieldValue<float>(field);
 
-							if (MeadowUIPatterns::DrawFloatControl(field.Name, value))
-								instance->SetScriptFieldValue(field.Name, (void*)&value);
+							if (MeadowUIPatterns::DrawFloatControl(fieldLabel, value))
+								instance->SetScriptFieldValue<float>(field, value);
+
+							break;
 						}
+						case ScriptFieldType::Vector2:
+						{
+							glm::vec2 value = instance->GetScriptFieldValue<glm::vec2>(field);
+
+							if (MeadowUIPatterns::DrawFloat2Controls(fieldLabel, value))
+								instance->SetScriptFieldValue<glm::vec2>(field, value);
+
+							break;
+						}
+						case ScriptFieldType::Vector3:
+						{
+							glm::vec3 value = instance->GetScriptFieldValue<glm::vec3>(field);
+
+							if (MeadowUIPatterns::DrawFloat3Controls(fieldLabel, value))
+								instance->SetScriptFieldValue<glm::vec3>(field, value);
+
+							break;
+						}
+						case ScriptFieldType::Vector4:
+						{
+							glm::vec4 value = instance->GetScriptFieldValue<glm::vec4>(field);
+
+							if (MeadowUIPatterns::DrawRGBAControl(fieldLabel, value))
+								instance->SetScriptFieldValue<glm::vec4>(field, value);
+
+							break;
+						}
+
+						default:
+							break;
 					}
 				}
 

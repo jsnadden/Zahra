@@ -64,26 +64,22 @@ namespace Zahra
 
 		const std::unordered_map<std::string, ScriptFieldType> MonoTypeNameToScriptFieldType = 
 		{
-			// Simple types
+			{ "System.Boolean",		ScriptFieldType::Bool },
 			{ "System.SByte",		ScriptFieldType::sByte },
 			{ "System.Byte",		ScriptFieldType::Byte },
 			{ "System.Int16",		ScriptFieldType::Short },
 			{ "System.UInt16",		ScriptFieldType::uShort },
+			{ "System.Char",		ScriptFieldType::Char },
 			{ "System.Int32",		ScriptFieldType::Int },
 			{ "System.UInt32",		ScriptFieldType::uInt },
 			{ "System.Int64",		ScriptFieldType::Long },
 			{ "System.UInt64",		ScriptFieldType::uLong },
 			{ "System.Single",		ScriptFieldType::Float },
 			{ "System.Double",		ScriptFieldType::Double },
-			{ "System.Char",		ScriptFieldType::Char },
-			{ "System.Boolean",		ScriptFieldType::Bool },
-
-			// Djinn custom types
 			{ "Djinn.Entity",		ScriptFieldType::Entity },
 			{ "Djinn.Vector2",		ScriptFieldType::Vector2 },
 			{ "Djinn.Vector3",		ScriptFieldType::Vector3 },
 			{ "Djinn.Vector4",		ScriptFieldType::Vector4 },
-			{ "Djinn.Quaternion",	ScriptFieldType::Quaternion },
 		};
 	};
 
@@ -261,7 +257,7 @@ namespace Zahra
 		m_MonoClass = other.m_MonoClass;
 		m_FullClassName = other.m_FullClassName;
 		m_PublicFields = other.m_PublicFields;
-		m_MonoFields = other.m_MonoFields;
+		//m_MonoFields = other.m_MonoFields;
 	}
 
 	ScriptClass::ScriptClass(MonoImage* image, const std::string& classNamespace, const std::string& className)
@@ -297,17 +293,15 @@ namespace Zahra
 			uint32_t flags = mono_field_get_flags(monoField);
 			if (flags & FIELD_ATTRIBUTE_PUBLIC) // found a public field!
 			{
-				auto& field = m_PublicFields.emplace_back();
-
 				MonoType* monoType = mono_field_get_type(monoField);
 				std::string monoTypeName = mono_type_get_name(monoType);
 				auto it = s_SEData->MonoTypeNameToScriptFieldType.find(monoTypeName);
-				Z_CORE_ASSERT(it != s_SEData->MonoTypeNameToScriptFieldType.end(), "Unrecognised field type");
+				Z_CORE_ASSERT(it != s_SEData->MonoTypeNameToScriptFieldType.end(), "Unsupported field type");
+
+				auto& field = m_PublicFields.emplace_back();
 				field.Type = it->second;
-
 				field.Name = mono_field_get_name(monoField);
-
-				m_MonoFields[field.Name] = monoField;
+				field.MonoField = monoField;
 			}
 		}
 	}
@@ -348,26 +342,6 @@ namespace Zahra
 		m_EntityClass->InvokeMethod(m_MonoObject, m_ConstructFromGUID, &args);
 	}
 
-	void ScriptInstance::GetScriptFieldValue(const std::string& fieldName, void* destination)
-	{
-		auto& allFields = m_EntityClass->GetMonoFields();
-		auto& it = allFields.find(fieldName);
-		Z_CORE_ASSERT(it != allFields.end(), "No field with this name was found");
-		MonoClassField* field = it->second;
-
-		mono_field_get_value(m_MonoObject, field, destination);
-	}
-
-	void ScriptInstance::SetScriptFieldValue(const std::string& fieldName, void* source)
-	{
-		auto& allFields = m_EntityClass->GetMonoFields();
-		auto& it = allFields.find(fieldName);
-		Z_CORE_ASSERT(it != allFields.end(), "No field with this name was found");
-		MonoClassField* field = it->second;
-
-		mono_field_set_value(m_MonoObject, field, source);
-	}
-
 	void ScriptInstance::InvokeOnCreate()
 	{
 		if (m_OnCreate)
@@ -388,6 +362,16 @@ namespace Zahra
 
 		if (m_OnLateUpdate)
 			m_EntityClass->InvokeMethod(m_MonoObject, m_OnLateUpdate, &ptr);
+	}
+
+	void ScriptInstance::GetScriptFieldValue(MonoObject* object, MonoClassField* field, void* destination)
+	{
+		mono_field_get_value(object, field, destination);
+	}
+
+	void ScriptInstance::SetScriptFieldValue(MonoObject* object, MonoClassField* field, void* source)
+	{
+		mono_field_set_value(object, field, source);
 	}
 
 }

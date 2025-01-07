@@ -225,14 +225,15 @@ namespace Zahra
 		}
 	}
 
-	void Scene::OnRenderEditor(Ref<Renderer2D> renderer, EditorCamera& camera)
+	void Scene::OnRenderEditor(Ref<Renderer2D> renderer, EditorCamera& camera, Entity selection, const glm::vec4 highlightColour)
 	{
 		renderer->BeginScene(camera);
 		RenderEntities(renderer);
+		RenderSelection(renderer, selection, highlightColour);
 		renderer->EndScene();
 	}
 
-	void Scene::OnRenderRuntime(Ref<Renderer2D> renderer)
+	void Scene::OnRenderRuntime(Ref<Renderer2D> renderer, Entity selection, const glm::vec4 highlightColour)
 	{
 		if (m_ActiveCamera != entt::null)
 		{
@@ -242,10 +243,11 @@ namespace Zahra
 
 			renderer->BeginScene(cameraView, cameraProjection);
 			RenderEntities(renderer);
+			RenderSelection(renderer, selection, highlightColour);
 			renderer->EndScene();
 		}
 	}
-
+	
 	static b2BodyType ZRigidBodyTypeToBox2D(RigidBody2DComponent::BodyType type)
 	{
 		switch (type)
@@ -266,7 +268,7 @@ namespace Zahra
 
 	void Scene::InitPhysicsWorld()
 	{
-		b2Vec2 gravity = { .0f, -9.8f }; // TODO: make this setable?
+		b2Vec2 gravity = { .0f, -9.8f };
 		m_PhysicsWorld = std::make_unique<b2World>(gravity);
 
 		auto view = m_Registry.view<RigidBody2DComponent>();
@@ -442,6 +444,16 @@ namespace Zahra
 			}
 
 		}
+	}
+
+	void Scene::RenderSelection(Ref<Renderer2D>& renderer, Entity selection, const glm::vec4& highlightColour)
+	{
+		if (!selection)
+			return;
+
+		TransformComponent entityTransform = selection.GetComponents<TransformComponent>();
+		renderer->DrawQuadBoundingBox(entityTransform.GetTransform(), highlightColour);
+		
 	}
 
 

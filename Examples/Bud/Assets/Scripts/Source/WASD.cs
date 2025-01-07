@@ -1,19 +1,29 @@
 ﻿
 using Djinn;
+using System.Reflection;
 
 namespace Bud
 {
 	public class WASD : Entity
 	{
 		WASD() : base() {}
-		WASD(ulong guid) : base(guid) {}
+		WASD(ulong guid) : base(guid) { }
+
+		public float Power;
+		public float Resistance;
+		public bool AntiGravity;
+		public Vector4 Tint;
 
 		public void OnCreate()
 		{
 			transformComponent = GetComponent<TransformComponent>();
 			rigidBody2DComponent = GetComponent<RigidBody2DComponent>();
+			circleComponent = GetComponent<CircleComponent>();
 
-			power = 100.0f;
+			Power = 10.0f;
+			Resistance = .5f;
+			AntiGravity = false;
+			Tint = new Vector4(1.0f);
 		}
 
 		public void OnEarlyUpdate(float dt)
@@ -40,25 +50,35 @@ namespace Bud
 
 			force.Normalise();
 			force.Y *= 2.0f;
-			force *= power;
+			force *= Power;
+
+			float mass = .0f;
+			if (HasComponent<CircleColliderComponent>())
+			{
+				float radius = GetComponent<CircleColliderComponent>().Radius;
+				float density = GetComponent<CircleColliderComponent>().Density;
+				mass = 3.1415f * radius * radius * density;
+			}
+
+			if (AntiGravity)
+				force.Y += 9.8f * mass;
+
+			Vector2 velocity = rigidBody2DComponent.GetVelocity();
+			force += velocity * -Resistance;
 
 			rigidBody2DComponent.ApplyForce(force, true);
+
+			circleComponent.Colour = Tint;
 		}
 
 		public void OnLateUpdate(float dt)
 		{
-
+			
 		}
-
-		public float power;
-
-		public Vector2 vector2;
-		public Entity entity;
-		public char character;
-		public Quaternion quat;
 
 		private TransformComponent transformComponent;
 		private RigidBody2DComponent rigidBody2DComponent;
+		private CircleComponent circleComponent;
 
 	}
 }

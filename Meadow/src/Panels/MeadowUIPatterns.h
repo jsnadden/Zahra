@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Zahra/Scene/Entity.h"
+#include "Zahra/Scripting/ScriptEngine.h"
 
 #include <ImGui/imgui_internal.h>
 #include <ImGui/imgui.h>
@@ -283,8 +284,9 @@ namespace Zahra
 			return valueChanged;
 		}
 
-		void DrawRGBAControl(const std::string& label, glm::vec4& values)
+		bool DrawRGBAControl(const std::string& label, glm::vec4& values)
 		{
+			bool valueChanged = false;
 			ImGui::PushID(label.c_str());
 
 			ImGui::TableNextColumn();
@@ -297,15 +299,17 @@ namespace Zahra
 			ImGui::TableNextColumn();
 						
 			{
-				ImGui::ColorEdit4("##RGBA", glm::value_ptr(values));
+				valueChanged = ImGui::ColorEdit4("##RGBA", glm::value_ptr(values));
 			}
 
 			ImGui::PopID();
 
+			return valueChanged;
 		}
 
-		void DrawBoolControl(const std::string& label, bool& value, bool disabled = false)
+		bool DrawBoolControl(const std::string& label, bool& value, bool disabled = false)
 		{
+			bool valueChanged = false;
 			ImGui::PushID(label.c_str());
 
 			bool localValue = value;
@@ -320,14 +324,13 @@ namespace Zahra
 			ImGui::TableNextColumn();
 
 			{
-				if (disabled)
-					ImGui::Checkbox("##bool", &localValue);
-				else
-					ImGui::Checkbox("##bool", &value);
+				if (!disabled)
+					valueChanged = ImGui::Checkbox("##bool", &value);
 			}
 
 			ImGui::PopID();
 
+			return valueChanged;
 		}
 
 		bool DrawTextEdit(const std::string& label, char* buffer, int32_t bufferLength, const glm::vec3& textColour)
@@ -432,8 +435,5 @@ namespace Zahra
 
 			ImGui::PopID();
 		}
-
-		
 	};
-
 }

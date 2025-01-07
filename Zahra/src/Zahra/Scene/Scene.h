@@ -38,8 +38,8 @@ namespace Zahra
 		void OnUpdateSimulation(float dt);
 		void OnUpdateRuntime(float dt);
 
-		void OnRenderEditor(Ref<Renderer2D> renderer, EditorCamera& camera);
-		void OnRenderRuntime(Ref<Renderer2D> renderer);
+		void OnRenderEditor(Ref<Renderer2D> renderer, EditorCamera& camera, Entity selection, const glm::vec4 highlightColour);
+		void OnRenderRuntime(Ref<Renderer2D> renderer, Entity selection, const glm::vec4 highlightColour);
 
 		// TODO: replace Box2D with a 3d physics engine (e.g. Nvidia PhysX)
 		void InitPhysicsWorld();
@@ -87,7 +87,9 @@ namespace Zahra
 		friend class PropertiesPanel;
 		friend class SceneSerialiser;
 
+		// TODO: move these to SceneRenderer
 		void RenderEntities(Ref<Renderer2D>& renderer);
+		void RenderSelection(Ref<Renderer2D>& renderer, Entity selection, const glm::vec4& highlightColour);
 	};
 
 }

@@ -12,35 +12,60 @@ namespace Zahra
 	{
 		None,
 
-		// Simple types		
+		// Simple types
+		Bool,
 		sByte,
 		Byte,
 		Short,
 		uShort,
+		Char,
 		Int,
 		uInt,
 		Long,
 		uLong,
-
 		Float,
 		Double,
 
-		Char,
-		Bool,
-
-		// Djinn custom types
+		// Djinn types
 		Entity,
-
 		Vector2,
 		Vector3,
 		Vector4,
-		Quaternion,
 	};
+
+	namespace ScriptUtils
+	{
+		inline const char* ScriptFieldTypeName(ScriptFieldType type)
+		{
+			switch (type)
+			{
+				case ScriptFieldType::Bool:			return "bool";
+				case ScriptFieldType::sByte:		return "sbyte";
+				case ScriptFieldType::Byte:			return "byte";
+				case ScriptFieldType::Short:		return "short";
+				case ScriptFieldType::uShort:		return "ushort";
+				case ScriptFieldType::Char:			return "utf16";
+				case ScriptFieldType::Int:			return "int";
+				case ScriptFieldType::uInt:			return "uint";
+				case ScriptFieldType::Long:			return "long";
+				case ScriptFieldType::uLong:		return "ulong";
+				case ScriptFieldType::Float:		return "float";
+				case ScriptFieldType::Double:		return "double";
+				case ScriptFieldType::Entity:		return "entity";
+				case ScriptFieldType::Vector2:		return "vec2";
+				case ScriptFieldType::Vector3:		return "vec3";
+				case ScriptFieldType::Vector4:		return "vec4";
+			}
+			Z_CORE_ASSERT(false, "Unsupported ScriptFieldType");
+			return "";
+		}
+	}
 
 	struct ScriptField
 	{
 		ScriptFieldType Type = ScriptFieldType::None;
 		std::string Name;
+		MonoClassField* MonoField;
 	};
 
 	class ScriptClass : public RefCounted
@@ -59,7 +84,7 @@ namespace Zahra
 
 		MonoClass* GetMonoClass() { return m_MonoClass; }
 		MonoMethod* GetMethod(const std::string& methodName, int numArgs);
-		const std::unordered_map<std::string, MonoClassField*>& GetMonoFields() { return m_MonoFields; }
+		//const std::unordered_map<std::string, MonoClassField*>& GetMonoFields() { return m_MonoFields; }
 
 		MonoObject* Instantiate();
 		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** args);
@@ -73,7 +98,7 @@ namespace Zahra
 		std::string m_FullClassName;
 
 		std::vector<ScriptField> m_PublicFields;
-		std::unordered_map<std::string, MonoClassField*> m_MonoFields;
+		//std::unordered_map<std::string, MonoClassField*> m_MonoFields;
 
 		friend class ScriptInstance;
 		friend class ScriptEngine;
@@ -86,8 +111,20 @@ namespace Zahra
 
 		Ref<ScriptClass> GetEntityClass() { return m_EntityClass; }
 
-		void GetScriptFieldValue(const std::string& fieldName, void* destination);
-		void SetScriptFieldValue(const std::string& fieldName, void* source);
+		template <typename T>
+		T GetScriptFieldValue(const ScriptField& field)
+		{
+			T value;
+			GetScriptFieldValue(m_MonoObject, field.MonoField, (void*)&value);
+
+			return value;
+		}
+
+		template <typename T>
+		void SetScriptFieldValue(const ScriptField& field, T& value)
+		{
+			SetScriptFieldValue(m_MonoObject, field.MonoField, (void*)&value);
+		}
 
 	protected:
 		void InvokeOnCreate();
@@ -104,6 +141,9 @@ namespace Zahra
 		MonoMethod* m_OnCreate = nullptr;
 		MonoMethod* m_OnEarlyUpdate = nullptr; // pre-physics
 		MonoMethod* m_OnLateUpdate = nullptr; // post-physics
+
+		void GetScriptFieldValue(MonoObject* object, MonoClassField* field, void* destination);
+		void SetScriptFieldValue(MonoObject* object, MonoClassField* field, void* source);
 
 		friend class ScriptEngine;
 	};
@@ -137,8 +177,6 @@ namespace Zahra
 		static void LoadAssembly(const std::filesystem::path& library, MonoAssembly*& assembly, MonoImage*& assemblyImage);
 
 		static void ReflectScriptClasses();
-
-		//friend class ScriptGlue;
 	};
 
 }

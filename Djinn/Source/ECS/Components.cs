@@ -184,6 +184,7 @@ namespace Djinn
 
 	public enum BodyType { Static = 0, Dynamic = 1, Kinematic = 2 };
 
+	// TODO: before writing setters for physics parameters, I'll need to figure 
 	public class RigidBody2DComponent : Component
 	{
 		public void ApplyLinearImpulse(Vector2 impulse, bool wake)
@@ -196,34 +197,190 @@ namespace Djinn
 			Zahra.RigidBody2DComponent_ApplyForce(Entity.GUID, ref force, wake);
 		}
 
-		// TODO: not much point in a script setting these parameters, unless we can also
-		// trigger a reset of the box2d physicsworld...
+		public Vector2 GetVelocity()
+		{
+			Zahra.RigidBody2DComponent_GetVelocity(Entity.GUID, out Vector2 velocity);
+			return velocity;
+		}
+
+		public BodyType GetBodyType
+		{
+			get
+			{
+				return Zahra.RigidBody2DComponent_GetBodyType(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
+
+		public bool FixedRotation
+		{
+			get
+			{
+				return Zahra.RigidBody2DComponent_GetFixedRotation(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
 		/*BodyType
 		FixedRotation*/
 	}
 
 	public class RectColliderComponent : Component
 	{
-		// TODO: not much point in a script setting these parameters, unless we can also
-		// trigger a reset of the box2d physicsworld...
-		/*Offset;
-		HalfExtent;
-		Density;
-		Friction;
-		Restitution;
-		RestitutionThreshold;*/
+		public Vector2 Offset
+		{
+			get
+			{
+				Zahra.RectColliderComponent_GetOffset(Entity.GUID, out Vector2 offset);
+				return offset;
+			}
+			set
+			{
+
+			}
+		}
+
+		public Vector2 HalfExtent
+		{
+			get
+			{
+				Zahra.RectColliderComponent_GetHalfExtent(Entity.GUID, out Vector2 halfExtent);
+				return halfExtent;
+			}
+			set
+			{
+
+			}
+		}
+
+		public float Density
+		{
+			get
+			{
+				return Zahra.RectColliderComponent_GetDensity(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
+
+		public float Friction
+		{
+			get
+			{
+				return Zahra.RectColliderComponent_GetFriction(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
+
+		public float Restitution
+		{
+			get
+			{
+				return Zahra.RectColliderComponent_GetRestitution(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
+
+		public float RestitutionThreshold
+		{
+			get
+			{
+				return Zahra.RectColliderComponent_GetRestitutionThreshold(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
 	}
 
 	public class CircleColliderComponent : Component
 	{
-		// TODO: not much point in a script setting these parameters, unless we can also
-		// trigger a reset of the box2d physicsworld...
-		/*Offset;
-		Radius;
-		Density;
-		Friction;
-		Restitution;
-		RestitutionThreshold;*/
+		public Vector2 Offset
+		{
+			get
+			{
+				Zahra.CircleColliderComponent_GetOffset(Entity.GUID, out Vector2 offset);
+				return offset;
+			}
+			set
+			{
+
+			}
+		}
+
+		public float Radius
+		{
+			get
+			{
+				return Zahra.CircleColliderComponent_GetRadius(Entity.GUID);
+			}
+			set
+			{
+				
+			}
+		}
+
+		public float Density
+		{
+			get
+			{
+				return Zahra.CircleColliderComponent_GetDensity(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
+
+		public float Friction
+		{
+			get
+			{
+				return Zahra.CircleColliderComponent_GetFriction(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
+
+		public float Restitution
+		{
+			get
+			{
+				return Zahra.CircleColliderComponent_GetRestitution(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
+
+		public float RestitutionThreshold
+		{
+			get
+			{
+				return Zahra.CircleColliderComponent_GetRestitutionThreshold(Entity.GUID);
+			}
+			set
+			{
+
+			}
+		}
 	}
 
 }

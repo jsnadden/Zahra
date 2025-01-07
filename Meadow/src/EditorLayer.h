@@ -56,7 +56,6 @@ namespace Zahra
 		void UIControls();
 		void UIViewport();
 		void UIGizmos();
-		void UIHighlightSelection();
 		void UIStatsWindow(); // TODO: break up stats window into several tabs?
 
 		glm::vec4 m_HighlightSelectionColour = { 0.92f, 0.72f, 0.18f, 1.00f };
