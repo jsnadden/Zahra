@@ -13,7 +13,7 @@ namespace Zahra
 	namespace MeadowUIPatterns
 	{
 		template <typename T, typename UIFunction>
-		void DrawComponent(const std::string& name, Entity entity, UIFunction ComponentInterface, bool defaultOpen = false, bool removeable = true)
+		void DrawComponent(const std::string& name, Entity entity, UIFunction EditComponentFields, bool defaultOpen = false, bool removeable = true, bool defaultLayout = true)
 		{
 			if (entity.HasComponents<T>())
 			{
@@ -40,15 +40,22 @@ namespace Zahra
 
 				if (open)
 				{
-					if (ImGui::BeginTable(typeid(T).name(), 2))
+					if (defaultLayout)
 					{
-						ImGui::TableSetupColumn("labels", ImGuiTableColumnFlags_WidthFixed, 150.f); // TODO: figure out a nice column width policy
-						ImGui::TableSetupColumn("controls");
-						
-						ComponentInterface(component);
+						if (ImGui::BeginTable(typeid(T).name(), 2))
+						{
+							ImGui::TableSetupColumn("labels", ImGuiTableColumnFlags_WidthFixed, 150.f); // TODO: figure out a nice column width policy
+							ImGui::TableSetupColumn("controls");
 
-						ImGui::EndTable();
+							EditComponentFields(component);
+
+							ImGui::EndTable();
+						}
 					}
+					else
+					{
+						EditComponentFields(component);
+					}				
 					
 					ImGui::TreePop();
 				}
@@ -426,6 +433,9 @@ namespace Zahra
 						strcpy_s(filepath, (const char*)payload->Data);
 
 						Texture2DSpecification textureSpec{};
+						if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
+							textureSpec.Format = ImageFormat::RGBA_UN;
+
 						texture = Texture2D::CreateFromFile(textureSpec, filepath);
 					}
 
@@ -435,5 +445,6 @@ namespace Zahra
 
 			ImGui::PopID();
 		}
+
 	};
 }

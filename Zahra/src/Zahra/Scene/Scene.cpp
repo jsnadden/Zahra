@@ -15,7 +15,7 @@
 
 namespace Zahra
 {
-	static Scene::DebugRenderSettings s_OverlayMode;
+	static Scene::DebugRenderSettings s_DebugRenderSettings;
 
 	Scene::Scene(const std::string& sceneName)
 	{
@@ -227,9 +227,16 @@ namespace Zahra
 
 	void Scene::OnRenderEditor(Ref<Renderer2D> renderer, EditorCamera& camera, Entity selection, const glm::vec4 highlightColour)
 	{
+		renderer->ResetStats();
+
+		if (s_DebugRenderSettings.LineWidth > 0.0f)
+			renderer->SetLineWidth(s_DebugRenderSettings.LineWidth);
+
 		renderer->BeginScene(camera);
-		RenderEntities(renderer);
-		RenderSelection(renderer, selection, highlightColour);
+		{
+			RenderEntities(renderer);
+			RenderDebug(renderer, selection, highlightColour);
+		}
 		renderer->EndScene();
 	}
 
@@ -241,9 +248,16 @@ namespace Zahra
 			glm::mat4 cameraView = glm::inverse(activeCameraEntity.GetComponents<TransformComponent>().GetTransform());
 			glm::mat4 cameraProjection = activeCameraEntity.GetComponents<CameraComponent>().Camera.GetProjection();
 
+			renderer->ResetStats();
+
+			if (s_DebugRenderSettings.LineWidth > 0.0f)
+				renderer->SetLineWidth(s_DebugRenderSettings.LineWidth);
+
 			renderer->BeginScene(cameraView, cameraProjection);
-			RenderEntities(renderer);
-			RenderSelection(renderer, selection, highlightColour);
+			{
+				RenderEntities(renderer);
+				RenderDebug(renderer, selection, highlightColour);
+			}
 			renderer->EndScene();
 		}
 	}
@@ -263,7 +277,7 @@ namespace Zahra
 		}
 
 		Z_CORE_ASSERT(false, "Invalid BodyType value");
-		return b2BodyType::b2_staticBody; // just to prevent warnings *eye roll*
+		return b2BodyType::b2_staticBody;
 	}
 
 	void Scene::InitPhysicsWorld()
@@ -389,7 +403,7 @@ namespace Zahra
 
 	Scene::DebugRenderSettings& Scene::GetDebugRenderSettings()
 	{
-		return s_OverlayMode;
+		return s_DebugRenderSettings;
 	}
 
 	void Scene::RenderEntities(Ref<Renderer2D>& renderer)
@@ -412,12 +426,18 @@ namespace Zahra
 
 			renderer->DrawCircle(transform.GetTransform(), circle.Colour, circle.Thickness, circle.Fade, (int)entity);
 		}
+	}
 
-		if (s_OverlayMode.ShowColliders)
+	void Scene::RenderDebug(Ref<Renderer2D>& renderer, Entity selection, const glm::vec4& selectionColour)
+	{
+		if (s_DebugRenderSettings.ShowColliders)
 		{
 			auto rectColliders = m_Registry.view<TransformComponent, RectColliderComponent>();
 			for (auto entity : rectColliders)
 			{
+				if (entity == (entt::entity)selection)
+					continue;
+
 				auto [transform, collider] = rectColliders.get<TransformComponent, RectColliderComponent>(entity);
 
 				glm::vec3 scale = transform.Scale * glm::vec3(collider.HalfExtent * 2.0f, 1.0f);
@@ -427,7 +447,7 @@ namespace Zahra
 					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
 					* glm::scale(glm::mat4(1.0f), scale);
 
-				renderer->DrawQuadBoundingBox(colliderTransform, s_OverlayMode.ColliderColour, (int)entity);
+				renderer->DrawQuadBoundingBox(colliderTransform, s_DebugRenderSettings.ColliderColour, (int)entity);
 			}
 
 			auto circleColliders = m_Registry.view<TransformComponent, CircleColliderComponent>();
@@ -440,20 +460,17 @@ namespace Zahra
 					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
 					* glm::scale(glm::mat4(1.f), glm::vec3(collider.Radius * 2.05f));
 
-				renderer->DrawCircle(colliderTransform, s_OverlayMode.ColliderColour, .02f / collider.Radius, .001f, (int)entity);
+				renderer->DrawCircle(colliderTransform, s_DebugRenderSettings.ColliderColour, .02f / collider.Radius, .001f, (int)entity);
 			}
 
 		}
-	}
 
-	void Scene::RenderSelection(Ref<Renderer2D>& renderer, Entity selection, const glm::vec4& highlightColour)
-	{
-		if (!selection)
-			return;
+		if (selection)
+		{
+			TransformComponent entityTransform = selection.GetComponents<TransformComponent>();
+			renderer->DrawQuadBoundingBox(entityTransform.GetTransform(), selectionColour);
+		}
 
-		TransformComponent entityTransform = selection.GetComponents<TransformComponent>();
-		renderer->DrawQuadBoundingBox(entityTransform.GetTransform(), highlightColour);
-		
 	}
 
 

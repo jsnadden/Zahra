@@ -253,8 +253,6 @@ namespace Zahra
 
 	void Renderer2D::BeginScene(const glm::mat4& cameraView, const glm::mat4& cameraProjection)
 	{
-		ResetStats();
-
 		glm::mat4 cameraPV = cameraProjection * cameraView;
 
 		m_CameraUniformBufferSet->SetData(Renderer::GetCurrentFrameIndex(), &cameraPV, sizeof(glm::mat4));

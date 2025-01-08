@@ -255,11 +255,19 @@ namespace Zahra
 				char buffer[64];
 				strcpy_s(buffer, component.ScriptName.c_str());
 				
-				if (MeadowUIPatterns::DrawTextEdit("Script Class", buffer, sizeof(buffer), textColour))
+				if (ImGui::BeginTable(typeid(ScriptComponent).name(), 2))
 				{
-					if (ImGui::IsWindowFocused())
-						component.ScriptName = std::string(buffer);
-				}
+					ImGui::TableSetupColumn("labels", ImGuiTableColumnFlags_WidthFixed, 100.f);
+					ImGui::TableSetupColumn("controls");
+
+					if (MeadowUIPatterns::DrawTextEdit("Script Class", buffer, sizeof(buffer), textColour))
+					{
+						if (ImGui::IsWindowFocused())
+							component.ScriptName = std::string(buffer);
+					}
+
+					ImGui::EndTable();
+				}				
 
 				Ref<ScriptInstance> instance;
 				if (validScript)
@@ -268,66 +276,93 @@ namespace Zahra
 				if (!instance)
 					return;
 
-				for (auto& field : instance->GetEntityClass()->GetPublicFields())
+				ImGui::Text("Public Fields");
+
+				if (ImGui::BeginTable("##PublicFields", 3, ImGuiTableFlags_RowBg))// | ImGuiTableFlags_Borders))
 				{
-					std::string fieldLabel = ScriptUtils::ScriptFieldTypeName(field.Type);
-					fieldLabel += " ";
-					fieldLabel += field.Name;
+					ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 60);
+					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 150);
+					ImGui::TableSetupColumn("Value");
 					
-					switch (field.Type)
+					ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+					ImGui::TableHeadersRow();
+					ImGui::PopFont();
+
+					for (auto& field : instance->GetEntityClass()->GetPublicFields())
 					{
-						case ScriptFieldType::Bool:
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(ScriptUtils::ScriptFieldTypeName(field.Type));
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text(field.Name.c_str());
+
+						ImGui::TableSetColumnIndex(2);
+
+						ImGui::PushID(field.Name.c_str());
+						ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+						switch (field.Type)
 						{
-							bool value = instance->GetScriptFieldValue<bool>(field);
+							case ScriptFieldType::Bool:
+							{
+								bool value = instance->GetScriptFieldValue<bool>(field);
 
-							if (MeadowUIPatterns::DrawBoolControl(fieldLabel, value))
-								instance->SetScriptFieldValue<bool>(field, value);
+								if (ImGui::Checkbox(value ? "True" : "False", &value))
+									instance->SetScriptFieldValue<bool>(field, value);
 
-							break;
+								break;
+							}
+							case ScriptFieldType::Float:
+							{
+								float value = instance->GetScriptFieldValue<float>(field);
+
+								if (ImGui::InputFloat("", &value))
+									instance->SetScriptFieldValue<float>(field, value);
+
+								break;
+							}
+							case ScriptFieldType::Vector2:
+							{
+								glm::vec2 value = instance->GetScriptFieldValue<glm::vec2>(field);
+
+								if (ImGui::InputFloat2("", glm::value_ptr(value)))
+									instance->SetScriptFieldValue<glm::vec2>(field, value);
+
+								break;
+							}
+							case ScriptFieldType::Vector3:
+							{
+								glm::vec3 value = instance->GetScriptFieldValue<glm::vec3>(field);
+
+								if (ImGui::InputFloat3("", glm::value_ptr(value)))
+									instance->SetScriptFieldValue<glm::vec3>(field, value);
+
+								break;
+							}
+							case ScriptFieldType::Vector4:
+							{
+								glm::vec4 value = instance->GetScriptFieldValue<glm::vec4>(field);
+
+								if (ImGui::InputFloat4("", glm::value_ptr(value)))
+									instance->SetScriptFieldValue<glm::vec4>(field, value);
+
+								break;
+							}
+
+							default:
+								break;
 						}
-						case ScriptFieldType::Float:
-						{
-							float value = instance->GetScriptFieldValue<float>(field);
-
-							if (MeadowUIPatterns::DrawFloatControl(fieldLabel, value))
-								instance->SetScriptFieldValue<float>(field, value);
-
-							break;
-						}
-						case ScriptFieldType::Vector2:
-						{
-							glm::vec2 value = instance->GetScriptFieldValue<glm::vec2>(field);
-
-							if (MeadowUIPatterns::DrawFloat2Controls(fieldLabel, value))
-								instance->SetScriptFieldValue<glm::vec2>(field, value);
-
-							break;
-						}
-						case ScriptFieldType::Vector3:
-						{
-							glm::vec3 value = instance->GetScriptFieldValue<glm::vec3>(field);
-
-							if (MeadowUIPatterns::DrawFloat3Controls(fieldLabel, value))
-								instance->SetScriptFieldValue<glm::vec3>(field, value);
-
-							break;
-						}
-						case ScriptFieldType::Vector4:
-						{
-							glm::vec4 value = instance->GetScriptFieldValue<glm::vec4>(field);
-
-							if (MeadowUIPatterns::DrawRGBAControl(fieldLabel, value))
-								instance->SetScriptFieldValue<glm::vec4>(field, value);
-
-							break;
-						}
-
-						default:
-							break;
+						ImGui::PopItemWidth();
+						ImGui::PopID();
 					}
+
+					ImGui::EndTable();
 				}
 
-			});
+				
+
+			}, false, true, false);
 
 		MeadowUIPatterns::DrawComponent<CameraComponent>("Camera Component", entity, [&](auto& component)
 				{
@@ -339,8 +374,6 @@ namespace Zahra
 					{
 						m_Context->SetActiveCamera(entity);
 					}
-
-
 
 					const char* projectionTypeStrings[] = { "Orthographic", "Perspective" };
 					SceneCamera::ProjectionType currentProjectionType = (SceneCamera::ProjectionType)MeadowUIPatterns::DrawComboControl("Projection Type", projectionTypeStrings, 2, (int)camera.GetProjectionType());
@@ -379,52 +412,45 @@ namespace Zahra
 					}
 				});
 		
-		MeadowUIPatterns::DrawComponent<RigidBody2DComponent>("2D Rigid Body Component", entity, [physicsOn](auto& component)
+		MeadowUIPatterns::DrawComponent<RigidBody2DComponent>("2D Rigid Body Component", entity, [](auto& component)
 			{
-				if (!physicsOn)
-				{
-					const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
-					RigidBody2DComponent::BodyType currentBodyType = (RigidBody2DComponent::BodyType)MeadowUIPatterns::DrawComboControl("Body Type", bodyTypeStrings, 3, (int)component.Type);
-					component.Type = currentBodyType;
+				const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
+				RigidBody2DComponent::BodyType currentBodyType = (RigidBody2DComponent::BodyType)MeadowUIPatterns::DrawComboControl("Body Type", bodyTypeStrings, 3, (int)component.Type);
+				component.Type = currentBodyType;
 
-					MeadowUIPatterns::DrawBoolControl("Non-Rotating", component.FixedRotation);
-				}
+				MeadowUIPatterns::DrawBoolControl("Non-Rotating", component.FixedRotation);
 			});
 
-		MeadowUIPatterns::DrawComponent<RectColliderComponent>("2D Rectangular Collider Component", entity, [physicsOn](auto& component)
+		MeadowUIPatterns::DrawComponent<RectColliderComponent>("2D Rectangular Collider Component", entity, [](auto& component)
 			{
-				if (!physicsOn)
-				{
-					MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
-					MeadowUIPatterns::DrawFloat2Controls("Size", component.HalfExtent, 0.5f, .05f, true);
+				MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
+				MeadowUIPatterns::DrawFloat2Controls("Size", component.HalfExtent, 0.5f, .05f, true);
 
-					// TODO: investigate physically reasonable ranges
-					MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
-					MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
-					MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
-					MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
-				}
+				// TODO: investigate physically reasonable ranges
+				MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
 			});
 
-		MeadowUIPatterns::DrawComponent<CircleColliderComponent>("2D Circular Collider Component", entity, [physicsOn](auto& component)
+		MeadowUIPatterns::DrawComponent<CircleColliderComponent>("2D Circular Collider Component", entity, [](auto& component)
 			{
-				if (!physicsOn)
-				{
-					MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
-					MeadowUIPatterns::DrawFloatControl("Radius", component.Radius, .01f, true, .01f, 100.f);
+				MeadowUIPatterns::DrawFloat2Controls("Offset", component.Offset);
+				MeadowUIPatterns::DrawFloatControl("Radius", component.Radius, .01f, true, .01f, 100.f);
 
-					// TODO: investigate physically reasonable ranges
-					MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
-					MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
-					MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
-					MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
-				}
+				// TODO: investigate physically reasonable ranges
+				MeadowUIPatterns::DrawFloatControl("Density", component.Density, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Friction", component.Friction, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Restitution", component.Restitution, .01f, false, .0f, 1.f);
+				MeadowUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
 			});
 		
 	}
 	
 	void SceneHierarchyPanel::AddComponentsModal(Entity entity, bool physicsOn)
 	{
+		// TODO: add checkboxes and an "add multiple" button
+
 		ImGui::OpenPopup("Add Component(s)##Modal");
 
 		ImVec2 center = ImGui::GetMousePos();

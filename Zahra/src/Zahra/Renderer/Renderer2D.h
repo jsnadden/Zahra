@@ -92,6 +92,7 @@ namespace Zahra
 		};
 
 		const Statistics& GetStats() { return m_Stats; }
+		void ResetStats() { memset(&m_Stats, 0, sizeof(Statistics)); }
 
 	private:
 		Renderer2DSpecification m_Specification;
@@ -160,8 +161,6 @@ namespace Zahra
 
 		void Init();
 		void Shutdown();
-
-		void ResetStats() { memset(&m_Stats, 0, sizeof(Statistics)); }
 
 		void AddNewQuadBatch();
 		void AddNewCircleBatch();

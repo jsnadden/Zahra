@@ -65,6 +65,7 @@ namespace Zahra
 		{
 			bool ShowColliders = false;
 			glm::vec4 ColliderColour = { 0.80f, 0.55f, 0.00f, 1.00f };
+			float LineWidth = 3.0f;
 		};
 
 		static DebugRenderSettings& GetDebugRenderSettings();
@@ -89,7 +90,7 @@ namespace Zahra
 
 		// TODO: move these to SceneRenderer
 		void RenderEntities(Ref<Renderer2D>& renderer);
-		void RenderSelection(Ref<Renderer2D>& renderer, Entity selection, const glm::vec4& highlightColour);
+		void RenderDebug(Ref<Renderer2D>& renderer, Entity selection, const glm::vec4& highlightColour);
 	};
 
 }

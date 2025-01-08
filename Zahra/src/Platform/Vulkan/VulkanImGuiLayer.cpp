@@ -35,7 +35,7 @@ namespace Zahra
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		// NOTE: if at some stage I want to enable multi-viewports (i.e. pop-out windows),
 		// there are a few issues I'll need to contend with. I can render a scene to a
