@@ -43,6 +43,9 @@ namespace Zahra
 	
 	Application::~Application()
 	{
+		// should clean up all content prior to shutting down core systems... right?
+		m_LayerStack.PopAll();
+
 		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
 	}

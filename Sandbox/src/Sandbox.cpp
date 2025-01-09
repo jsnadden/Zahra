@@ -136,7 +136,7 @@ void SandboxLayer::OnUpdate(float dt)
 	Zahra::Renderer::BeginRenderPass(m_ClearPass, false, true);
 	Zahra::Renderer::EndRenderPass();
 
-	m_Scene->OnRenderEditor(m_Renderer2D, m_Camera);
+	m_Scene->OnRenderEditor(m_Renderer2D, m_Camera, {}, {});
 }
 
 void SandboxLayer::OnImGuiRender()

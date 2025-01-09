@@ -309,6 +309,9 @@
     <ClInclude Include="src\Zahra\Scene\ScriptableEntity.h">
       <Filter>src\Zahra\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Scripting\MonoExterns.h">
+      <Filter>src\Zahra\Scripting</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Scripting\ScriptEngine.h">
       <Filter>src\Zahra\Scripting</Filter>
     </ClInclude>
@@ -1581,7 +1584,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Scripting\MonoExterns.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp">

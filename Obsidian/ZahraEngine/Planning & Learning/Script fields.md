@@ -1,0 +1,5 @@
+- ~~give `ScriptEngine` a map from an entity's `GUID` to a buffer for storing field values for an attached script, so that these can be set prior to runtime (e.g. in the editor)~~
+- ~~on (de)serialization we move record/load this map's data to/from a YAML table~~
+- when runtime begins, look for corresponding fields in the script and set their values from our map (ignoring ones we cannot find)
+- ~~when a `ScriptComponent` is created with a valid `ScriptName`, allocate a corresponding buffer~~
+- when an extant `ScriptComponent` is updated, (re)allocate or free its storage buffer as appropriate

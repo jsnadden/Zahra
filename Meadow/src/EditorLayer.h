@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SceneState.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 
@@ -35,11 +36,6 @@ namespace Zahra
 
 		std::map<std::string, Ref<Texture2D>> m_Icons;
 		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
-
-		enum class SceneState
-		{
-			Edit = 0, Play = 1, Simulate = 2, Paused = 3
-		};
 
 		SceneState m_SceneState = SceneState::Edit;
 

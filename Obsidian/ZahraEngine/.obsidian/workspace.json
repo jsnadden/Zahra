@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Planning & Learning/Renderer architecture.md",
+                "file": "Planning & Learning/Script fields.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Renderer architecture"
+              "title": "Script fields"
             }
           }
         ]
@@ -164,10 +164,11 @@
   },
   "active": "e3f6df8361cc3fd2",
   "lastOpenFiles": [
+    "Planning & Learning/Renderer architecture.md",
+    "Planning & Learning/Script fields.md",
     "Planning & Learning/Vulkan resources.canvas",
     "Planning & Learning/Rendering pipeline.canvas",
     "TODO/Rethinking the RenderPass interface.md",
-    "Planning & Learning/Renderer architecture.md",
     "TODO/Memory Management.md",
     "TODO/Resource Management.md",
     "TODO/Untitled.md",

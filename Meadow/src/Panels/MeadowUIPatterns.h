@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../SceneState.h"
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 
@@ -444,6 +445,162 @@ namespace Zahra
 			}
 
 			ImGui::PopID();
+		}
+
+		void DrawScriptFieldTable(Entity entity, SceneState sceneState)
+		{
+			Z_CORE_ASSERT(entity.HasComponents<ScriptComponent>());
+
+			ImGui::Text("Public Fields");
+
+			if (ImGui::BeginTable("##PublicFields", 3, ImGuiTableFlags_RowBg))// | ImGuiTableFlags_Borders))
+			{
+				ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 60);
+				ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 150);
+				ImGui::TableSetupColumn("Value");
+
+				ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+				ImGui::TableHeadersRow();
+				ImGui::PopFont();
+
+				if (sceneState == SceneState::Play)
+				{
+					auto instance = ScriptEngine::GetScriptInstance(entity);
+					Z_CORE_ASSERT(instance);
+
+					for (auto& field : instance->GetScriptClass()->GetPublicFields())
+					{
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(ScriptUtils::GetScriptFieldTypeName(field.Type));
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text(field.Name.c_str());
+
+						ImGui::TableSetColumnIndex(2);
+
+						ImGui::PushID(field.Name.c_str());
+						ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+						switch (field.Type)
+						{
+							case ScriptFieldType::Bool:
+							{
+								bool value = instance->GetScriptFieldValue<bool>(field);
+
+								if (ImGui::Checkbox(value ? "True" : "False", &value))
+									instance->SetScriptFieldValue<bool>(field, value);
+
+								break;
+							}
+							case ScriptFieldType::Float:
+							{
+								float value = instance->GetScriptFieldValue<float>(field);
+
+								if (ImGui::InputFloat("", &value))
+									instance->SetScriptFieldValue<float>(field, value);
+
+								break;
+							}
+							case ScriptFieldType::Vector2:
+							{
+								glm::vec2 value = instance->GetScriptFieldValue<glm::vec2>(field);
+
+								if (ImGui::InputFloat2("", glm::value_ptr(value)))
+									instance->SetScriptFieldValue<glm::vec2>(field, value);
+
+								break;
+							}
+							case ScriptFieldType::Vector3:
+							{
+								glm::vec3 value = instance->GetScriptFieldValue<glm::vec3>(field);
+
+								if (ImGui::InputFloat3("", glm::value_ptr(value)))
+									instance->SetScriptFieldValue<glm::vec3>(field, value);
+
+								break;
+							}
+							case ScriptFieldType::Vector4:
+							{
+								glm::vec4 value = instance->GetScriptFieldValue<glm::vec4>(field);
+
+								if (ImGui::InputFloat4("", glm::value_ptr(value)))
+									instance->SetScriptFieldValue<glm::vec4>(field, value);
+
+								break;
+							}
+						}
+						ImGui::PopItemWidth();
+						ImGui::PopID();
+					}
+				}
+				else 
+				{
+					auto scriptComponent = entity.GetComponents<ScriptComponent>();
+					auto scriptClass = ScriptEngine::GetScriptClassIfValid(scriptComponent.ScriptName);
+					Z_CORE_ASSERT(scriptClass);
+					auto fields = scriptClass->GetPublicFields();
+
+					auto buffer = ScriptEngine::GetScriptFieldStorage(entity.GetGUID());
+
+					for (uint64_t i = 0; i < fields.size(); i++)
+					{
+						auto& field = fields[i];
+						uint64_t offset = 8 * i;
+
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(ScriptUtils::GetScriptFieldTypeName(field.Type));
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text(field.Name.c_str());
+
+						ImGui::TableSetColumnIndex(2);
+
+						ImGui::PushID(field.Name.c_str());
+						ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+						switch (field.Type)
+						{
+						case ScriptFieldType::Bool:
+						{
+							bool value = buffer.ReadAs<bool>(offset);
+							if (ImGui::Checkbox(value ? "True" : "False", &value))
+								buffer.Write((void*)&value, sizeof(bool), offset);
+							break;
+						}
+						case ScriptFieldType::Float:
+						{
+							float value = buffer.ReadAs<float>(offset);
+							if (ImGui::InputFloat("", &value))
+								buffer.Write((void*)&value, sizeof(float), offset);
+							break;
+						}
+						// TODO: figure these out
+						/*case ScriptFieldType::Vector2:
+						{
+
+							break;
+						}
+						case ScriptFieldType::Vector3:
+						{
+
+							break;
+						}
+						case ScriptFieldType::Vector4:
+						{
+
+							break;
+						}*/
+						}
+						ImGui::PopItemWidth();
+						ImGui::PopID();
+					}
+					
+				}
+
+				ImGui::EndTable();
+			}
 		}
 
 	};

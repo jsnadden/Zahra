@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Zahra/Core/Buffer.h"
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/MonoExterns.h"
 
@@ -35,7 +36,7 @@ namespace Zahra
 
 	namespace ScriptUtils
 	{
-		inline const char* ScriptFieldTypeName(ScriptFieldType type)
+		inline const char* GetScriptFieldTypeName(ScriptFieldType type)
 		{
 			switch (type)
 			{
@@ -109,7 +110,7 @@ namespace Zahra
 	public:
 		ScriptInstance(Ref<ScriptClass> scriptClass, ZGUID guid);
 
-		Ref<ScriptClass> GetEntityClass() { return m_EntityClass; }
+		Ref<ScriptClass> GetScriptClass() { return m_ScriptClass; }
 
 		template <typename T>
 		T GetScriptFieldValue(const ScriptField& field)
@@ -134,7 +135,7 @@ namespace Zahra
 		MonoObject* GetMonoObject() const { return m_MonoObject; }
 
 	private:
-		Ref<ScriptClass> m_EntityClass;
+		Ref<ScriptClass> m_ScriptClass;
 		MonoObject* m_MonoObject = nullptr;
 
 		MonoMethod* m_ConstructFromGUID = nullptr;
@@ -162,11 +163,16 @@ namespace Zahra
 		static void ScriptInstanceLateUpdate(Entity entity, float dt);
 
 		static const std::unordered_map<std::string, Ref<ScriptClass>>& GetScriptClasses();
+		static const Ref<ScriptClass> GetScriptClassIfValid(const std::string& fullName);
 		static bool ValidScriptClass(const std::string& fullName);
 
 		static Ref<ScriptInstance> GetScriptInstance(Entity entity);
 
-		static Entity GetEntity(ZGUID guid);
+		static void UpdateScriptFieldStorage(Entity entity);
+		static void FreeScriptFieldStorage(Entity entity);
+		static Buffer GetScriptFieldStorage(ZGUID guid);
+
+		static Entity GetEntityFromGUID(ZGUID guid);
 
 		static MonoString* StdStringToMonoString(const std::string& string);
 

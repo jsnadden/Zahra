@@ -202,7 +202,7 @@ namespace Zahra
 		UIControls();
 		UIStatsWindow();
 
-		m_SceneHierarchyPanel.OnImGuiRender(m_SceneState != SceneState::Edit);
+		m_SceneHierarchyPanel.OnImGuiRender(m_SceneState);
 		m_ContentBrowserPanel.OnImGuiRender();
 	}
 
@@ -594,7 +594,9 @@ namespace Zahra
 
 	void EditorLayer::UIStatsWindow()
 	{
-		auto& stats = m_Renderer2D->GetStats();
+		auto& renderer2DStats = m_Renderer2D->GetStats();
+		auto& allocationStats = Zahra::Memory::GetAllocationStats();
+		auto& allocationStatsMap = Zahra::Allocator::GetAllocationStatsMap();
 
 		if (ImGui::Begin("Stats", NULL, ImGuiWindowFlags_NoCollapse))
 		{
@@ -605,12 +607,67 @@ namespace Zahra
 
 			ImGui::SeparatorText("Renderer 2D");
 			{
-				ImGui::Text("Quads: %u", stats.QuadCount);
-				ImGui::Text("Circles: %u", stats.CircleCount);
-				ImGui::Text("Lines: %u", stats.LineCount);
-				ImGui::Text("Draw calls: %u", stats.DrawCalls);
+				ImGui::Text("Quads: %u", renderer2DStats.QuadCount);
+				ImGui::Text("Circles: %u", renderer2DStats.CircleCount);
+				ImGui::Text("Lines: %u", renderer2DStats.LineCount);
+				ImGui::Text("Draw calls: %u", renderer2DStats.DrawCalls);
 				ImGui::TextWrapped("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
 					m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");
+			}
+
+			ImGui::SeparatorText("Memory");
+			{
+				float currentAllocations;
+
+				if (ImGui::BeginTable("##MemoryUsageStats", 2, ImGuiTableColumnFlags_NoResize | ImGuiTableFlags_RowBg))
+				{
+					ImGui::TableSetupColumn("Category");
+					ImGui::TableSetupColumn("Allocations", ImGuiTableColumnFlags_WidthFixed, 100);
+					ImGui::TableHeadersRow();
+
+					for (auto& [file, stats] : allocationStatsMap)
+					{
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0);
+						{
+							ImGui::Text("%s", file);
+						}
+						ImGui::TableSetColumnIndex(1);
+						{
+							currentAllocations = (float)(stats.TotalAllocated - stats.TotalFreed);
+
+							if (currentAllocations >= BIT(20))
+								ImGui::Text(" %.1f MB", currentAllocations / BIT(20));
+							else if (currentAllocations >= BIT(10))
+								ImGui::Text(" %.1f KB", currentAllocations / BIT(10));
+							else
+								ImGui::Text(" %.0f bytes", currentAllocations);
+						}
+					}
+
+					ImGui::PushStyleColor(ImGuiCol_Text, { 0.97f, 0.77f, 0.22f, 1.0f });
+					{
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0);
+						{
+							ImGui::Text("Total");
+						}
+						ImGui::TableSetColumnIndex(1);
+						{
+							currentAllocations = (float)(allocationStats.TotalAllocated - allocationStats.TotalFreed);
+
+							if (currentAllocations >= BIT(20))
+								ImGui::Text(" %.1f MB", currentAllocations / BIT(20));
+							else if (currentAllocations >= BIT(10))
+								ImGui::Text(" %.1f KB", currentAllocations / BIT(10));
+							else
+								ImGui::Text(" %.1f bytes", currentAllocations);
+						}
+					}
+					ImGui::PopStyleColor();
+
+					ImGui::EndTable();
+				}
 			}
 
 			ImGui::End();
@@ -619,7 +676,7 @@ namespace Zahra
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		if (m_ViewportHovered)
+		if (m_ViewportHovered && m_SceneState != SceneState::Play)
 			m_EditorCamera.OnEvent(event);
 
 		m_ContentBrowserPanel.OnEvent(event);
@@ -634,101 +691,98 @@ namespace Zahra
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Keyboard shortcuts
 		
-		if (m_SceneState == SceneState::Edit)
+		if (ImGuizmo::IsUsing())
+			return false; // avoids crash bug when an entity is deleted during manipulation
+
+		bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		bool alt = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
+
+		switch (event.GetKeyCode())
 		{
-			if (ImGuizmo::IsUsing())
-				return false; // avoids crash bug when an entity is deleted during manipulation
-
-			bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-			bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
-			bool alt = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
-
-			switch (event.GetKeyCode())
+			case KeyCode::S:
 			{
-				case KeyCode::S:
+				if (ctrl && shift)
 				{
-					if (ctrl && shift)
-					{
-						SaveAsSceneFile();
-						return true;
-					}
-					else if (ctrl)
-					{
-						SaveSceneFile();
-						return true;
-					}
-
-					break;
-				}
-				case KeyCode::N:
-				{
-					if (ctrl)
-					{
-						NewScene();
-						return true;
-					}
-
-					break;
-				}
-				case KeyCode::O:
-				{
-					if (ctrl)
-					{
-						OpenSceneFile();
-						return true;
-					}
-
-					break;
-				}
-				case KeyCode::Q:
-				{
-					if (m_ViewportFocused)
-						m_GizmoType = -1;
-
-					break;
-				}
-				case KeyCode::W:
-				{
-					if (m_ViewportFocused)
-						m_GizmoType = 7;
-
-					break;
-				}
-				case KeyCode::E:
-				{
-					if (m_ViewportFocused)
-						m_GizmoType = 120;
-
-					break;
-				}
-				case KeyCode::R:
-				{
-					if (m_ViewportFocused)
-						m_GizmoType = 896;
-
-					break;
-				}
-				case KeyCode::D:
-				{
-					if (ctrl && m_SceneState == SceneState::Edit)
-					{
-						Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
-						if (selection)
-						{
-							Entity copy = m_EditorScene->DuplicateEntity(selection);
-							m_SceneHierarchyPanel.SelectEntity(copy);
-						}
-						return true;
-					}
-
-					break;
-				}
-				case KeyCode::F11:
-				{
-					Window& window = Application::Get().GetWindow();
-					window.SetFullscreen(!window.IsFullscreen());
+					SaveAsSceneFile();
 					return true;
 				}
+				else if (ctrl)
+				{
+					SaveSceneFile();
+					return true;
+				}
+
+				break;
+			}
+			case KeyCode::N:
+			{
+				if (ctrl)
+				{
+					NewScene();
+					return true;
+				}
+
+				break;
+			}
+			case KeyCode::O:
+			{
+				if (ctrl)
+				{
+					OpenSceneFile();
+					return true;
+				}
+
+				break;
+			}
+			case KeyCode::Q:
+			{
+				if (m_ViewportFocused && m_SceneState == SceneState::Edit)
+					m_GizmoType = -1;
+
+				break;
+			}
+			case KeyCode::W:
+			{
+				if (m_ViewportFocused && m_SceneState == SceneState::Edit)
+					m_GizmoType = 7;
+
+				break;
+			}
+			case KeyCode::E:
+			{
+				if (m_ViewportFocused && m_SceneState == SceneState::Edit)
+					m_GizmoType = 120;
+
+				break;
+			}
+			case KeyCode::R:
+			{
+				if (m_ViewportFocused && m_SceneState == SceneState::Edit)
+					m_GizmoType = 896;
+
+				break;
+			}
+			case KeyCode::D:
+			{
+				if (ctrl && m_SceneState == SceneState::Edit)
+				{
+					Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
+					if (selection)
+					{
+						Entity copy = m_EditorScene->DuplicateEntity(selection);
+						m_SceneHierarchyPanel.SelectEntity(copy);
+					}
+					return true;
+				}
+
+				break;
+			}
+			case KeyCode::F11:
+			{
+				Window& window = Application::Get().GetWindow();
+				window.SetFullscreen(!window.IsFullscreen());
+				return true;
 			}
 		}
 

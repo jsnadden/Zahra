@@ -164,6 +164,8 @@ namespace Zahra
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;
+		ScriptComponent(const std::string& scriptName)
+			: ScriptName(scriptName) {}
 	};
 
 	class NativeScriptableEntity;

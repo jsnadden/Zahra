@@ -9,11 +9,7 @@ namespace Zahra
 
 	LayerStack::~LayerStack()
 	{
-		for (Layer* layer : m_Layers)
-		{
-			layer->OnDetach();
-			delete layer;
-		}
+		PopAll();
 	}
 
 	void LayerStack::PushLayer(Layer* layer)
@@ -46,5 +42,14 @@ namespace Zahra
 		{
 			m_Layers.erase(it);
 		}
+	}
+	void LayerStack::PopAll()
+	{
+		for (Layer* layer : m_Layers)
+		{
+			layer->OnDetach();
+			delete layer;
+		}
+		m_Layers.clear();
 	}
 }

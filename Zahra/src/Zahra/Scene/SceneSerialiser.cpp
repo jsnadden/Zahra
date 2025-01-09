@@ -1,7 +1,8 @@
 #include "zpch.h"
 #include "SceneSerialiser.h"
 
-#include "Entity.h"
+#include "Zahra/Scene/Entity.h"
+#include "Zahra/Scripting/ScriptEngine.h"
 
 #define YAML_CPP_STATIC_DEFINE
 #include <yaml-cpp/yaml.h>
@@ -277,6 +278,85 @@ namespace Zahra
 			{
 				auto& script = entity.GetComponents<ScriptComponent>();
 				out << YAML::Key << "ScriptName" << YAML::Value << script.ScriptName;
+
+				out << YAML::Key << "FieldValues";
+				out << YAML::BeginMap;
+				{
+					auto fields = ScriptEngine::GetScriptClassIfValid(script.ScriptName)->GetPublicFields();
+					auto buffer = ScriptEngine::GetScriptFieldStorage(entityGUID);
+
+					for (uint64_t i = 0; i < fields.size(); i++)
+					{
+						auto& field = fields[i];
+						uint64_t offset = 8 * i;
+						
+						switch (field.Type)
+						{
+							case ScriptFieldType::Bool:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<bool>(offset);
+								break;
+							}
+							case ScriptFieldType::sByte:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int8_t>(offset);
+								break;
+							}
+							case ScriptFieldType::Byte:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint8_t>(offset);
+								break;
+							}
+							case ScriptFieldType::Short:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int16_t>(offset);
+								break;
+							}
+							case ScriptFieldType::uShort:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint16_t>(offset);
+								break;
+							}
+							case ScriptFieldType::Char:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint16_t>(offset);
+								break;
+							}
+							case ScriptFieldType::Int:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int32_t>(offset);
+								break;
+							}
+							case ScriptFieldType::uInt:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint32_t>(offset);
+								break;
+							}
+							case ScriptFieldType::Long:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int64_t>(offset);
+								break;
+							}
+							case ScriptFieldType::uLong:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint64_t>(offset);
+								break;
+							}
+							case ScriptFieldType::Float:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<float>(offset);
+								break;
+							}
+							case ScriptFieldType::Double:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<double>(offset);
+								break;
+							}
+							// TODO: include Djinn types
+						}
+					}
+				}
+				out << YAML::EndMap;
 			}
 			out << YAML::EndMap;
 		}
@@ -389,7 +469,8 @@ namespace Zahra
 
 		bool hasActiveCamera = (bool)data["ActiveCameraGUID"];
 		uint64_t cameraGUID;
-		if (hasActiveCamera) cameraGUID = data["ActiveCameraGUID"].as<uint64_t>();
+		if (hasActiveCamera)
+			cameraGUID = data["ActiveCameraGUID"].as<uint64_t>();
 
 		Texture2DSpecification textureSpec{};
 		if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
@@ -476,9 +557,103 @@ namespace Zahra
 				auto scriptNode = entityNode["ScriptComponent"];
 				if (scriptNode)
 				{
-					auto& script = entity.AddComponent<ScriptComponent>();
+					auto& script = entity.AddComponent<ScriptComponent>(scriptNode["ScriptName"].as<std::string>());
 
-					script.ScriptName = scriptNode["ScriptName"].as<std::string>();
+					auto fieldNodes = scriptNode["FieldValues"];
+					auto scriptClass = ScriptEngine::GetScriptClassIfValid(script.ScriptName);
+
+					if (fieldNodes && scriptClass)
+					{
+						auto fields = scriptClass->GetPublicFields();
+						auto buffer = ScriptEngine::GetScriptFieldStorage(entityGUID);
+
+						for (uint64_t i = 0; i < fields.size(); i++)
+						{
+							auto& field = fields[i];
+							uint64_t offset = 8 * i;
+
+							auto fieldNode = fieldNodes[field.Name];
+							if (!fieldNode)
+								continue;
+
+							switch (field.Type)
+							{
+								case ScriptFieldType::Bool:
+								{
+									bool value = fieldNode.as<bool>();
+									buffer.Write((void*)&value, sizeof(bool), offset);
+									break;
+								}
+								case ScriptFieldType::sByte:
+								{
+									int8_t value = fieldNode.as<int8_t>();
+									buffer.Write((void*)&value, sizeof(int8_t), offset);
+									break;
+								}
+								case ScriptFieldType::Byte:
+								{
+									uint8_t value = fieldNode.as<uint8_t>();
+									buffer.Write((void*)&value, sizeof(uint8_t), offset);
+									break;
+								}
+								case ScriptFieldType::Short:
+								{
+									int16_t value = fieldNode.as<int16_t>();
+									buffer.Write((void*)&value, sizeof(int16_t), offset);
+									break;
+								}
+								case ScriptFieldType::uShort:
+								{
+									uint16_t value = fieldNode.as<uint16_t>();
+									buffer.Write((void*)&value, sizeof(uint16_t), offset);
+									break;
+								}
+								case ScriptFieldType::Char:
+								{
+									uint16_t value = fieldNode.as<uint16_t>();
+									buffer.Write((void*)&value, sizeof(uint16_t), offset);
+									break;
+								}
+								case ScriptFieldType::Int:
+								{
+									int32_t value = fieldNode.as<int32_t>();
+									buffer.Write((void*)&value, sizeof(int32_t), offset);
+									break;
+								}
+								case ScriptFieldType::uInt:
+								{
+									uint32_t value = fieldNode.as<uint32_t>();
+									buffer.Write((void*)&value, sizeof(uint32_t), offset);
+									break;
+								}
+								case ScriptFieldType::Long:
+								{
+									int64_t value = fieldNode.as<int64_t>();
+									buffer.Write((void*)&value, sizeof(int64_t), offset);
+									break;
+								}
+								case ScriptFieldType::uLong:
+								{
+									uint64_t value = fieldNode.as<uint64_t>();
+									buffer.Write((void*)&value, sizeof(uint64_t), offset);
+									break;
+								}
+								case ScriptFieldType::Float:
+								{
+									float value = fieldNode.as<float>();
+									buffer.Write((void*)&value, sizeof(float), offset);
+									break;
+								}
+								case ScriptFieldType::Double:
+								{
+									double value = fieldNode.as<double>();
+									buffer.Write((void*)&value, sizeof(double), offset);
+									break;
+								}
+								// TODO: include Djinn types
+							}
+						}
+					}
 				}
 
 				auto rigidBody2DNode = entityNode["RigidBody2DComponent"];

@@ -28,6 +28,12 @@ namespace Zahra
 		Entity DuplicateEntity(Entity entity);
 		Entity GetEntity(ZGUID guid);
 
+		// entt signal callbacks
+		void InitCameraComponentViewportSize(entt::basic_registry<entt::entity>& registry, entt::entity e);
+		void UpdateScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e);
+		void FreeScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e);
+		void DestroyScriptComponentBeforeIDComponent(entt::basic_registry<entt::entity>& registry, entt::entity e);
+
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 
@@ -52,14 +58,6 @@ namespace Zahra
 
 		void SetActiveCamera(Entity entity);
 		Entity GetActiveCamera();
-
-		void InitCameraComponent(entt::basic_registry<entt::entity>& registry, entt::entity entity)
-		{
-			Z_CORE_ASSERT(m_Registry.valid(entity), "Entity does not belong to this scene");
-
-			if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
-				m_Registry.get<CameraComponent>(entity).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-		}
 
 		struct DebugRenderSettings
 		{

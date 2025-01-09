@@ -59,24 +59,25 @@ namespace Zahra
 
 		std::unordered_map<std::string, Ref<ScriptClass>> ScriptClasses;
 		std::unordered_map<ZGUID, Ref<ScriptInstance>> ScriptInstances;
+		std::map<ZGUID, Buffer> ScriptFieldStorage;
 
 		Scene* SceneContext = nullptr;
 
 		const std::unordered_map<std::string, ScriptFieldType> MonoTypeNameToScriptFieldType = 
 		{
-			{ "System.Boolean",		ScriptFieldType::Bool },
-			{ "System.SByte",		ScriptFieldType::sByte },
-			{ "System.Byte",		ScriptFieldType::Byte },
-			{ "System.Int16",		ScriptFieldType::Short },
-			{ "System.UInt16",		ScriptFieldType::uShort },
-			{ "System.Char",		ScriptFieldType::Char },
-			{ "System.Int32",		ScriptFieldType::Int },
-			{ "System.UInt32",		ScriptFieldType::uInt },
-			{ "System.Int64",		ScriptFieldType::Long },
-			{ "System.UInt64",		ScriptFieldType::uLong },
-			{ "System.Single",		ScriptFieldType::Float },
-			{ "System.Double",		ScriptFieldType::Double },
-			{ "Djinn.Entity",		ScriptFieldType::Entity },
+			{ "System.Boolean",		ScriptFieldType::Bool    },
+			{ "System.SByte",		ScriptFieldType::sByte   },
+			{ "System.Byte",		ScriptFieldType::Byte    },
+			{ "System.Int16",		ScriptFieldType::Short   },
+			{ "System.UInt16",		ScriptFieldType::uShort  },
+			{ "System.Char",		ScriptFieldType::Char    },
+			{ "System.Int32",		ScriptFieldType::Int     },
+			{ "System.UInt32",		ScriptFieldType::uInt    },
+			{ "System.Int64",		ScriptFieldType::Long    },
+			{ "System.UInt64",		ScriptFieldType::uLong   },
+			{ "System.Single",		ScriptFieldType::Float   },
+			{ "System.Double",		ScriptFieldType::Double  },
+			{ "Djinn.Entity",		ScriptFieldType::Entity  },
 			{ "Djinn.Vector2",		ScriptFieldType::Vector2 },
 			{ "Djinn.Vector3",		ScriptFieldType::Vector3 },
 			{ "Djinn.Vector4",		ScriptFieldType::Vector4 },
@@ -106,6 +107,9 @@ namespace Zahra
 
 	void ScriptEngine::Shutdown()
 	{
+		for (auto& element : s_SEData->ScriptFieldStorage)
+			element.second.Release();
+
 		ShutdownMonoDomains();
 
 		delete s_SEData;
@@ -155,12 +159,22 @@ namespace Zahra
 		return s_SEData->ScriptClasses;
 	}
 
+	const Ref<ScriptClass> ScriptEngine::GetScriptClassIfValid(const std::string& fullName)
+	{
+		auto it = s_SEData->ScriptClasses.find(fullName);
+
+		if (it == s_SEData->ScriptClasses.end())
+			return nullptr;
+		else
+			return it->second;
+	}
+
 	bool ScriptEngine::ValidScriptClass(const std::string& fullName)
 	{
 		return s_SEData->ScriptClasses.find(fullName) != s_SEData->ScriptClasses.end();
 	}
 
-	Entity ScriptEngine::GetEntity(ZGUID guid)
+	Entity ScriptEngine::GetEntityFromGUID(ZGUID guid)
 	{
 		Z_CORE_ASSERT(s_SEData->SceneContext);
 		return s_SEData->SceneContext->GetEntity(guid);
@@ -251,6 +265,47 @@ namespace Zahra
 
 		return nullptr;
 	}
+	
+	/*Buffer Scene::GetScriptFieldStorage(ZGUID guid)
+	{
+		
+	}*/
+
+	void ScriptEngine::UpdateScriptFieldStorage(Entity entity)
+	{
+		Z_CORE_ASSERT(entity.HasComponents<ScriptComponent>());
+		auto& component = entity.GetComponents<ScriptComponent>();
+
+		if (ValidScriptClass(component.ScriptName))
+		{
+			uint64_t fieldCount = s_SEData->ScriptClasses[component.ScriptName]->GetPublicFields().size();
+
+			auto& buffer = s_SEData->ScriptFieldStorage[entity.GetGUID()];
+			buffer.Allocate(8 * fieldCount);
+			buffer.ZeroInitialise();
+		}
+		else
+		{
+			auto it = s_SEData->ScriptFieldStorage.find(entity.GetGUID());
+			if (it != s_SEData->ScriptFieldStorage.end())
+				it->second.Release();
+		}
+	}
+
+	void ScriptEngine::FreeScriptFieldStorage(Entity entity)
+	{
+		auto it = s_SEData->ScriptFieldStorage.find(entity.GetGUID());
+		if (it != s_SEData->ScriptFieldStorage.end())
+			it->second.Release();
+	}
+
+	Buffer ScriptEngine::GetScriptFieldStorage(ZGUID guid)
+	{
+		auto it = s_SEData->ScriptFieldStorage.find(guid);
+		Z_CORE_ASSERT(it != s_SEData->ScriptFieldStorage.end());
+
+		return it->second;
+	}
 
 	ScriptClass::ScriptClass(const ScriptClass& other)
 	{
@@ -326,26 +381,26 @@ namespace Zahra
 
 
 	ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, ZGUID guid)
-		: m_EntityClass(scriptClass)
+		: m_ScriptClass(scriptClass)
 	{
-		m_MonoObject = m_EntityClass->Instantiate();
+		m_MonoObject = m_ScriptClass->Instantiate();
 
-		m_ConstructFromGUID		= m_EntityClass->GetMethod(".ctor", 1);
-		m_OnCreate				= m_EntityClass->GetMethod("OnCreate", 0);
-		m_OnEarlyUpdate			= m_EntityClass->GetMethod("OnEarlyUpdate", 1);
-		m_OnLateUpdate			= m_EntityClass->GetMethod("OnLateUpdate", 1);
+		m_ConstructFromGUID		= m_ScriptClass->GetMethod(".ctor", 1);
+		m_OnCreate				= m_ScriptClass->GetMethod("OnCreate", 0);
+		m_OnEarlyUpdate			= m_ScriptClass->GetMethod("OnEarlyUpdate", 1);
+		m_OnLateUpdate			= m_ScriptClass->GetMethod("OnLateUpdate", 1);
 
 		Z_CORE_ASSERT(m_ConstructFromGUID && m_OnCreate && m_OnEarlyUpdate && m_OnLateUpdate,
 			"ScriptClass is missing a required method");
 
 		void* args = &guid;
-		m_EntityClass->InvokeMethod(m_MonoObject, m_ConstructFromGUID, &args);
+		m_ScriptClass->InvokeMethod(m_MonoObject, m_ConstructFromGUID, &args);
 	}
 
 	void ScriptInstance::InvokeOnCreate()
 	{
 		if (m_OnCreate)
-			m_EntityClass->InvokeMethod(m_MonoObject, m_OnCreate, nullptr);
+			m_ScriptClass->InvokeMethod(m_MonoObject, m_OnCreate, nullptr);
 	}
 
 	void ScriptInstance::InvokeEarlyUpdate(float dt)
@@ -353,7 +408,7 @@ namespace Zahra
 		void* ptr = &dt;
 
 		if (m_OnEarlyUpdate)
-			m_EntityClass->InvokeMethod(m_MonoObject, m_OnEarlyUpdate, &ptr);
+			m_ScriptClass->InvokeMethod(m_MonoObject, m_OnEarlyUpdate, &ptr);
 	}
 
 	void ScriptInstance::InvokeLateUpdate(float dt)
@@ -361,7 +416,7 @@ namespace Zahra
 		void* ptr = &dt;
 
 		if (m_OnLateUpdate)
-			m_EntityClass->InvokeMethod(m_MonoObject, m_OnLateUpdate, &ptr);
+			m_ScriptClass->InvokeMethod(m_MonoObject, m_OnLateUpdate, &ptr);
 	}
 
 	void ScriptInstance::GetScriptFieldValue(MonoObject* object, MonoClassField* field, void* destination)

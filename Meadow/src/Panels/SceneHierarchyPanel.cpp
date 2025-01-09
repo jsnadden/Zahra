@@ -3,8 +3,6 @@
 
 #include "Zahra/Scripting/ScriptEngine.h"
 
-#include <iomanip>
-
 namespace Zahra
 {
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context, EditorCamera& camera)
@@ -24,7 +22,7 @@ namespace Zahra
 		m_Camera = &camera;
 	}
 
-	void SceneHierarchyPanel::OnImGuiRender(bool physicsOn)
+	void SceneHierarchyPanel::OnImGuiRender(SceneState sceneState)
 	{
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// HIERARCHY PANEL
@@ -51,7 +49,7 @@ namespace Zahra
 					{
 						Entity entity{ entityId, m_Context.Raw() };
 
-						DrawEntityNode(entity, physicsOn);
+						DrawEntityNode(entity, sceneState);
 
 					});
 
@@ -88,7 +86,7 @@ namespace Zahra
 		{
 			if (m_Selected)
 			{
-				DrawComponents(m_Selected, physicsOn);
+				DrawComponents(m_Selected, sceneState);
 
 				// right click to add components
 				if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
@@ -100,14 +98,14 @@ namespace Zahra
 				}
 
 				if (m_ShowAddComponentsModal)
-					AddComponentsModal(m_Selected, physicsOn);
+					AddComponentsModal(m_Selected, sceneState);
 			}
 		}
 
 		ImGui::End();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity, bool physicsOn)
+	void SceneHierarchyPanel::DrawEntityNode(Entity entity, SceneState sceneState)
 	{
 		std::string& tag = entity.GetComponents<TagComponent>().Tag;
 		
@@ -139,7 +137,7 @@ namespace Zahra
 			if (ImGui::MenuItem("Duplicate entity"))
 				m_Selected = m_Context->DuplicateEntity(entity);
 
-			if (ImGui::MenuItem("Delete entity", "", nullptr, !physicsOn))
+			if (ImGui::MenuItem("Delete entity", "", nullptr, sceneState == SceneState::Edit))
 				entityDeleted = true;
 
 			ImGui::EndPopup();
@@ -162,7 +160,7 @@ namespace Zahra
 
 	}
 		
-	void SceneHierarchyPanel::DrawComponents(Entity entity, bool physicsOn)
+	void SceneHierarchyPanel::DrawComponents(Entity entity, SceneState sceneState)
 	{ 
 		Z_CORE_ASSERT(entity.HasComponents<TagComponent>(), "All entities must have a TagComponent")
 
@@ -241,7 +239,7 @@ namespace Zahra
 				MeadowUIPatterns::DrawFloatControl("Fade", component.Fade, .001f, true, .001f, 10.f, "%.3f");
 			});
 
-		MeadowUIPatterns::DrawComponent<ScriptComponent>("Script Component", entity, [entity](auto& component)
+		MeadowUIPatterns::DrawComponent<ScriptComponent>("Script Component", entity, [entity, sceneState](auto& component)
 			{
 				// TODO: make this a combo box and populate from .first in ScriptEngine::GetScriptClasses
 				// (also change ScriptComponent::ScriptName out for a script asset guid)
@@ -264,103 +262,16 @@ namespace Zahra
 					{
 						if (ImGui::IsWindowFocused())
 							component.ScriptName = std::string(buffer);
+
+						validScript = ScriptEngine::ValidScriptClass(component.ScriptName);
 					}
 
 					ImGui::EndTable();
 				}				
 
-				Ref<ScriptInstance> instance;
 				if (validScript)
-					instance = ScriptEngine::GetScriptInstance(entity);
-
-				if (!instance)
-					return;
-
-				ImGui::Text("Public Fields");
-
-				if (ImGui::BeginTable("##PublicFields", 3, ImGuiTableFlags_RowBg))// | ImGuiTableFlags_Borders))
-				{
-					ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 60);
-					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 150);
-					ImGui::TableSetupColumn("Value");
-					
-					ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-					ImGui::TableHeadersRow();
-					ImGui::PopFont();
-
-					for (auto& field : instance->GetEntityClass()->GetPublicFields())
-					{
-						ImGui::TableNextRow();
-
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text(ScriptUtils::ScriptFieldTypeName(field.Type));
-
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text(field.Name.c_str());
-
-						ImGui::TableSetColumnIndex(2);
-
-						ImGui::PushID(field.Name.c_str());
-						ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
-						switch (field.Type)
-						{
-							case ScriptFieldType::Bool:
-							{
-								bool value = instance->GetScriptFieldValue<bool>(field);
-
-								if (ImGui::Checkbox(value ? "True" : "False", &value))
-									instance->SetScriptFieldValue<bool>(field, value);
-
-								break;
-							}
-							case ScriptFieldType::Float:
-							{
-								float value = instance->GetScriptFieldValue<float>(field);
-
-								if (ImGui::InputFloat("", &value))
-									instance->SetScriptFieldValue<float>(field, value);
-
-								break;
-							}
-							case ScriptFieldType::Vector2:
-							{
-								glm::vec2 value = instance->GetScriptFieldValue<glm::vec2>(field);
-
-								if (ImGui::InputFloat2("", glm::value_ptr(value)))
-									instance->SetScriptFieldValue<glm::vec2>(field, value);
-
-								break;
-							}
-							case ScriptFieldType::Vector3:
-							{
-								glm::vec3 value = instance->GetScriptFieldValue<glm::vec3>(field);
-
-								if (ImGui::InputFloat3("", glm::value_ptr(value)))
-									instance->SetScriptFieldValue<glm::vec3>(field, value);
-
-								break;
-							}
-							case ScriptFieldType::Vector4:
-							{
-								glm::vec4 value = instance->GetScriptFieldValue<glm::vec4>(field);
-
-								if (ImGui::InputFloat4("", glm::value_ptr(value)))
-									instance->SetScriptFieldValue<glm::vec4>(field, value);
-
-								break;
-							}
-
-							default:
-								break;
-						}
-						ImGui::PopItemWidth();
-						ImGui::PopID();
-					}
-
-					ImGui::EndTable();
-				}
-
-				
+					MeadowUIPatterns::DrawScriptFieldTable(entity, sceneState);
+								
 
 			}, false, true, false);
 
@@ -447,7 +358,7 @@ namespace Zahra
 		
 	}
 	
-	void SceneHierarchyPanel::AddComponentsModal(Entity entity, bool physicsOn)
+	void SceneHierarchyPanel::AddComponentsModal(Entity entity, SceneState sceneState)
 	{
 		// TODO: add checkboxes and an "add multiple" button
 
@@ -469,9 +380,9 @@ namespace Zahra
 				clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleComponent>("Circle", m_Selected);
 				clicked |= MeadowUIPatterns::AddComponentMenuItem<ScriptComponent>("Script", m_Selected);
 				clicked |= MeadowUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
-				clicked |= MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected, !physicsOn);
-				clicked |= MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected, !physicsOn);
-				clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleColliderComponent>("2D Circular Collider", m_Selected, !physicsOn);
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected, sceneState == SceneState::Edit);
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected, sceneState == SceneState::Edit);
+				clicked |= MeadowUIPatterns::AddComponentMenuItem<CircleColliderComponent>("2D Circular Collider", m_Selected, sceneState == SceneState::Edit);
 
 				ImGui::EndChild();
 			}

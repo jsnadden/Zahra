@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Zahra.h"
-#include "Zahra/Scene/Scene.h"
+#include "../SceneState.h"
+
+#include <Zahra.h>
 
 namespace Zahra
 {
@@ -14,7 +15,7 @@ namespace Zahra
 		void SetContext(const Ref<Scene>& context);
 		void SetEditorCamera(EditorCamera& camera);
 
-		void OnImGuiRender(bool physicsOn);
+		void OnImGuiRender(SceneState sceneState);
 
 		// TODO: is there a better way of doing this (e.g. listeners have callback functions OnSelectionChange()?)
 		Entity GetSelectedEntity() const { return m_Selected; }
@@ -29,9 +30,9 @@ namespace Zahra
 
 		bool m_ShowAddComponentsModal = false;
 
-		void DrawEntityNode(Entity entity, bool physicsOn);
-		void DrawComponents(Entity entity, bool physicsOn);
-		void AddComponentsModal(Entity entity, bool physicsOn);
+		void DrawEntityNode(Entity entity, SceneState sceneState);
+		void DrawComponents(Entity entity, SceneState sceneState);
+		void AddComponentsModal(Entity entity, SceneState sceneState);
 
 		//friend class PropertiesPanel;
 	};

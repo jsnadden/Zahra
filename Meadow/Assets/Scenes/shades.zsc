@@ -31,6 +31,10 @@ Entities:
       Fade: 0.00499999989
     ScriptComponent:
       ScriptName: Bud.WASD
+      FieldValues:
+        Power: 0
+        Resistance: 0
+        AntiGravity: false
     RigidBody2DComponent:
       Type: Dynamic
       FixedRotation: false

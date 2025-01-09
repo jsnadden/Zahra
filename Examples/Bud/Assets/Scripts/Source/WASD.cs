@@ -12,18 +12,15 @@ namespace Bud
 		public float Power;
 		public float Resistance;
 		public bool AntiGravity;
-		public Vector4 Tint;
 
 		public void OnCreate()
 		{
 			transformComponent = GetComponent<TransformComponent>();
 			rigidBody2DComponent = GetComponent<RigidBody2DComponent>();
-			circleComponent = GetComponent<CircleComponent>();
 
 			Power = 10.0f;
-			Resistance = .5f;
+			Resistance = 1.0f;
 			AntiGravity = false;
-			Tint = new Vector4(1.0f);
 		}
 
 		public void OnEarlyUpdate(float dt)
@@ -64,11 +61,9 @@ namespace Bud
 				force.Y += 9.8f * mass;
 
 			Vector2 velocity = rigidBody2DComponent.GetVelocity();
-			force += velocity * -Resistance;
+			force += velocity * -velocity.Norm() * Resistance;
 
 			rigidBody2DComponent.ApplyForce(force, true);
-
-			circleComponent.Colour = Tint;
 		}
 
 		public void OnLateUpdate(float dt)
@@ -78,7 +73,6 @@ namespace Bud
 
 		private TransformComponent transformComponent;
 		private RigidBody2DComponent rigidBody2DComponent;
-		private CircleComponent circleComponent;
 
 	}
 }

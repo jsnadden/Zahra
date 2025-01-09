@@ -1,10 +1,11 @@
 #pragma once
 
-// This is for use by client apps
+// For use by client apps
 
 //------------CORE---------------------
 #include "Zahra/Core/Application.h"
 #include "Zahra/Core/Assert.h"
+#include "Zahra/Core/Buffer.h"
 #include "Zahra/Core/GUID.h"
 #include "Zahra/Core/Input.h"
 #include "Zahra/Core/KeyCodes.h"
@@ -14,6 +15,7 @@
 #include "Zahra/Core/MouseCodes.h"
 #include "Zahra/Core/Ref.h"
 #include "Zahra/Core/Scope.h"
+#include "Zahra/Core/Thread.h"
 #include "Zahra/Core/Timer.h"
 
 //------------DEBUG--------------------
@@ -22,7 +24,7 @@
 //------------IMGUI--------------------
 #include "Zahra/ImGui/ImGuiLayer.h"
 
-//------------RENDERING----------------
+//------------RENDERER----------------
 #include "Zahra/Renderer/Cameras/Camera.h"
 #include "Zahra/Renderer/Cameras/EditorCamera.h"
 #include "Zahra/Renderer/Cameras/SceneCamera.h"
@@ -42,8 +44,10 @@
 #include "Zahra/Renderer/VertexBuffer.h"
 
 //------------SCENE--------------------
-#include "Zahra/Scene/Scene.h"
 #include "Zahra/Scene/Components.h"
 #include "Zahra/Scene/Entity.h"
+#include "Zahra/Scene/Scene.h"
 #include "Zahra/Scene/ScriptableEntity.h"
 
+//------------SCRIPTING----------------
+#include "Zahra/Scripting/ScriptEngine.h"

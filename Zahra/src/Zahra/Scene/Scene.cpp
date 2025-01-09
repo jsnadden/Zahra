@@ -21,10 +21,17 @@ namespace Zahra
 	{
 		m_SceneName = sceneName;
 
+		// connect entt callback signals
 		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<IDComponent>>();
 		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<TagComponent>>();
 		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<TransformComponent>>();
-		m_Registry.on_construct<CameraComponent>().connect<&Scene::InitCameraComponent>(this);
+
+		m_Registry.on_construct<CameraComponent>().connect<&Scene::InitCameraComponentViewportSize>(this);
+
+		m_Registry.on_construct<ScriptComponent>().connect<&Scene::UpdateScriptComponentFieldStorage>(this);
+		m_Registry.on_update<ScriptComponent>().connect<&Scene::UpdateScriptComponentFieldStorage>(this);
+		m_Registry.on_destroy<ScriptComponent>().connect<&Scene::FreeScriptComponentFieldStorage>(this);
+		m_Registry.on_destroy<IDComponent>().connect<&Scene::DestroyScriptComponentBeforeIDComponent>(this);
 	}
 
 	Scene::~Scene()
@@ -149,6 +156,39 @@ namespace Zahra
 	{
 		Z_CORE_ASSERT(m_EntityMap.find(guid) != m_EntityMap.end());
 		return { m_EntityMap.at(guid), this };
+	}
+
+	void Scene::InitCameraComponentViewportSize(entt::basic_registry<entt::entity>& registry, entt::entity e)
+	{
+		Z_CORE_ASSERT(m_Registry.valid(e), "Entity does not belong to this scene");
+
+		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
+			m_Registry.get<CameraComponent>(e).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	}
+
+	void Scene::UpdateScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e)
+	{
+		Z_CORE_ASSERT(m_Registry.valid(e), "Entity does not belong to this scene");
+
+		ScriptEngine::UpdateScriptFieldStorage({ e, this });
+	}
+
+	void Scene::FreeScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e)
+	{
+		Z_CORE_ASSERT(m_Registry.valid(e), "Entity does not belong to this scene");
+
+		Entity entity = { e, this };
+		Z_CORE_ASSERT(entity.HasComponents<IDComponent>(), "Freeing field storage requires a guid for buffer lookup");
+
+		ScriptEngine::FreeScriptFieldStorage(entity);
+	}
+
+	void Scene::DestroyScriptComponentBeforeIDComponent(entt::basic_registry<entt::entity>& registry, entt::entity e)
+	{
+		// must remove ScriptComponent before IDComponent
+		Entity entity = { e, this };
+		if (entity.HasComponents<ScriptComponent>())
+			entity.RemoveComponent<ScriptComponent>();
 	}
 
 	void Scene::OnRuntimeStart()
@@ -389,7 +429,7 @@ namespace Zahra
 		Z_CORE_ASSERT(m_Registry.valid(entity), "Entity does not belong to this scene");
 
 		if (entity.HasComponents<CameraComponent>())
-			InitCameraComponent(m_Registry, entity);
+			InitCameraComponentViewportSize(m_Registry, entity);
 		else
 			entity.AddComponent<CameraComponent>();
 
@@ -455,7 +495,7 @@ namespace Zahra
 			{
 				auto [transform, collider] = circleColliders.get<TransformComponent, CircleColliderComponent>(entity);
 
-				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), transform.Translation)
+				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), glm::vec3(transform.Translation.x, transform.Translation.y, 0.f))
 					* glm::rotate(glm::mat4(1.0f), transform.GetEulers().z, glm::vec3(0.0f, 0.0f, 1.0f))
 					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
 					* glm::scale(glm::mat4(1.f), glm::vec3(collider.Radius * 2.05f));
