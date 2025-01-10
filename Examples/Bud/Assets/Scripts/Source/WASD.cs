@@ -1,6 +1,5 @@
-﻿
-using Djinn;
-using System.Reflection;
+﻿using Djinn;
+using Djinn.CustomAttributes;
 
 namespace Bud
 {
@@ -9,16 +8,24 @@ namespace Bud
 		WASD() : base() {}
 		WASD(ulong guid) : base(guid) { }
 
-		public float Power = 50.0f;
-		public float Resistance = 1.0f;
-		public bool AntiGravity = false;
+		private TransformComponent transformComponent;
+		private RigidBody2DComponent rigidBody2DComponent;
 
+		// The [ExposedField] attribute signals to Zahra's ScriptEngine that these
+		// fields can be accessed and initialised (at script instantiation)
+		[ExposedField] private float Power = 50.0f;
+		[ExposedField] public float Resistance = 1.0f;
+		[ExposedField] public bool AntiGravity = false;
+
+		// The OnCreate method is to be called at script initialisation, after the
+		// constructor has been called AND the exposed fields have been initialised
 		public void OnCreate()
 		{
 			transformComponent = GetComponent<TransformComponent>();
 			rigidBody2DComponent = GetComponent<RigidBody2DComponent>();
 		}
 
+		// The OnEarlyUpdate method is to be called at the top of each frame
 		public void OnEarlyUpdate(float dt)
 		{
 			Vector2 force = Vector2.Zero;
@@ -62,13 +69,12 @@ namespace Bud
 			rigidBody2DComponent.ApplyForce(force, true);
 		}
 
+		// The OnLateUpdate method is to be called each frame, between when the physics
+		// engine has run its simulations, and when scene rendering begins
 		public void OnLateUpdate(float dt)
 		{
 			
 		}
-
-		private TransformComponent transformComponent;
-		private RigidBody2DComponent rigidBody2DComponent;
 
 	}
 }

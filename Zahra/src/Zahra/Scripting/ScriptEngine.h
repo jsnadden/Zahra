@@ -90,7 +90,7 @@ namespace Zahra
 		MonoObject* Instantiate();
 		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** args);
 
-		void ReflectFields();
+		//void ReflectFields();
 		//void ReflectMethods();
 
 	private:
@@ -182,7 +182,7 @@ namespace Zahra
 		
 		static void LoadAssembly(const std::filesystem::path& library, MonoAssembly*& assembly, MonoImage*& assemblyImage);
 
-		static void ReflectScriptClasses();
+		static void Reflect();
 	};
 
 }

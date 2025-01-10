@@ -57,6 +57,8 @@ namespace Zahra
 		MonoAssembly* AppAssembly = nullptr;
 		MonoImage* AppAssemblyImage = nullptr;
 
+		Ref<ScriptClass> ExposedAttribute;
+
 		std::unordered_map<std::string, Ref<ScriptClass>> ScriptClasses;
 		std::unordered_map<ZGUID, Ref<ScriptInstance>> ScriptInstances;
 		
@@ -98,7 +100,8 @@ namespace Zahra
 		LoadAssembly("../Examples/Bud/Assets/Scripts/Binaries/Djinn.dll", s_SEData->CoreAssembly, s_SEData->CoreAssemblyImage);
 		LoadAssembly("../Examples/Bud/Assets/Scripts/Binaries/BudScripts.dll", s_SEData->AppAssembly, s_SEData->AppAssemblyImage);
 		
-		ReflectScriptClasses();
+		//ReflectCustomAttributes();
+		Reflect();
 
 		ScriptGlue::RegisterComponentTypes(s_SEData->CoreAssemblyImage);
 		ScriptGlue::RegisterFunctions();
@@ -229,35 +232,80 @@ namespace Zahra
 		s_SEData->RootDomain = nullptr;
 	}
 
-	void ScriptEngine::ReflectScriptClasses()
+	/*void ScriptEngine::ReflectCustomAttributes()
 	{
-		// re-initialise record of entity types
+		const MonoTableInfo* customAttributeTable = mono_image_get_table_info(s_SEData->AppAssemblyImage, MONO_TABLE_CUSTOMATTRIBUTE);
+		int32_t attributeCount = mono_table_info_get_rows(customAttributeTable);
+
+		for (int32_t row = 0; row < attributeCount; row++)
+		{
+			uint32_t attributeData[MONO_CUSTOM_ATTR_SIZE];
+			mono_metadata_decode_row(customAttributeTable, row, attributeData, MONO_CUSTOM_ATTR_SIZE);
+
+
+		}
+	}*/
+
+	void ScriptEngine::Reflect()
+	{
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		// FIND ALL ENTITY TYPES
 		s_SEData->ScriptClasses.clear();
-
-		// get typedefs table (one row per reflected class)
-		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_SEData->AppAssemblyImage, MONO_TABLE_TYPEDEF);
-		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-
-		// get entity base class for comparison
 		ScriptClass entityClass(s_SEData->CoreAssemblyImage, "Djinn", "Entity");
 
-		for (int32_t i = 0; i < numTypes; i++)
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_SEData->AppAssemblyImage, MONO_TABLE_TYPEDEF);
+		int32_t typeCount = mono_table_info_get_rows(typeDefinitionsTable);
+
+		for (int32_t row = 0; row < typeCount; row++)
 		{
 			uint32_t classData[MONO_TYPEDEF_SIZE];
-			mono_metadata_decode_row(typeDefinitionsTable, i, classData, MONO_TYPEDEF_SIZE);
+			mono_metadata_decode_row(typeDefinitionsTable, row, classData, MONO_TYPEDEF_SIZE);
 
 			// table stores opaque IDs in place of string data
 			std::string reflectedNamespace = mono_metadata_string_heap(s_SEData->AppAssemblyImage, classData[MONO_TYPEDEF_NAMESPACE]);
 			std::string reflectedName = mono_metadata_string_heap(s_SEData->AppAssemblyImage, classData[MONO_TYPEDEF_NAME]);
 			ScriptClass reflectedClass(s_SEData->AppAssemblyImage, reflectedNamespace, reflectedName);
 
+			if (!strcmp(reflectedName.c_str(), "exposed"))
+				Z_CORE_INFO("exposed class is in row {}", row);
+
 			// record entity types
 			if (reflectedClass.IsSubclassOf(entityClass))
 			{
-				reflectedClass.ReflectFields();
-
 				std::string fullName = reflectedNamespace + "." + reflectedName;
 				s_SEData->ScriptClasses[fullName] = Ref<ScriptClass>::Create(reflectedClass);
+			}
+
+			if (!strcmp(reflectedName.c_str(), "exposed"))
+				s_SEData->ExposedAttribute = Ref<ScriptClass>::Create(reflectedClass);
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		// FIND EXPOSED ENTITY TYPE FIELDS
+		ScriptClass exposedAttribute(s_SEData->CoreAssemblyImage, "Djinn.CustomAttributes", "ExposedField");
+
+		for (auto& [name, scriptClass] : s_SEData->ScriptClasses)
+		{
+			void* iterator = nullptr;
+
+			while (MonoClassField* monoField = mono_class_get_fields(scriptClass->m_MonoClass, &iterator))
+			{
+				// Only fields with the custom [ExposedField] attribute are managed externally
+				auto attributes = mono_custom_attrs_from_field(scriptClass->m_MonoClass, monoField);
+				if (!attributes)
+					continue;
+				if (!mono_custom_attrs_has_attr(attributes, exposedAttribute.m_MonoClass))
+					continue;
+
+				MonoType* monoType = mono_field_get_type(monoField);
+				std::string monoTypeName = mono_type_get_name(monoType);
+				auto it = s_SEData->MonoTypeNameToScriptFieldType.find(monoTypeName);
+				Z_CORE_ASSERT(it != s_SEData->MonoTypeNameToScriptFieldType.end(), "Unsupported field type");
+
+				auto& field = scriptClass->m_PublicFields.emplace_back();
+				field.Type = it->second;
+				field.Name = mono_field_get_name(monoField);
+				field.MonoField = monoField;
 			}
 		}
 	}
@@ -354,28 +402,6 @@ namespace Zahra
 	{
 		Z_CORE_ASSERT(mono_object_get_class(instance) == m_MonoClass, "Object is not an instance of this class");
 		return mono_runtime_invoke(method, instance, args, nullptr); // TODO: expose fourth argument (exception handling)
-	}
-
-	void ScriptClass::ReflectFields()
-	{
-		void* iterator = nullptr;
-
-		while (MonoClassField* monoField = mono_class_get_fields(m_MonoClass, &iterator))
-		{
-			uint32_t flags = mono_field_get_flags(monoField);
-			if (flags & FIELD_ATTRIBUTE_PUBLIC) // found a public field!
-			{
-				MonoType* monoType = mono_field_get_type(monoField);
-				std::string monoTypeName = mono_type_get_name(monoType);
-				auto it = s_SEData->MonoTypeNameToScriptFieldType.find(monoTypeName);
-				Z_CORE_ASSERT(it != s_SEData->MonoTypeNameToScriptFieldType.end(), "Unsupported field type");
-
-				auto& field = m_PublicFields.emplace_back();
-				field.Type = it->second;
-				field.Name = mono_field_get_name(monoField);
-				field.MonoField = monoField;
-			}
-		}
 	}
 
 	/*void ScriptClass::ReflectMethods()
