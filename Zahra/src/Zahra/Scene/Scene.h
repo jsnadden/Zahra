@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Zahra/Core/Buffer.h"
 #include "Zahra/Renderer/Cameras/EditorCamera.h"
 #include "Zahra/Renderer/Renderer2D.h"
 #include "Zahra/Scene/Components.h"
@@ -30,9 +31,9 @@ namespace Zahra
 
 		// entt signal callbacks
 		void InitCameraComponentViewportSize(entt::basic_registry<entt::entity>& registry, entt::entity e);
-		void UpdateScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e);
-		void FreeScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e);
-		void DestroyScriptComponentBeforeIDComponent(entt::basic_registry<entt::entity>& registry, entt::entity e);
+		void AllocateScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e);
+		/*void FreeScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e);
+		void DestroyScriptComponentBeforeIDComponent(entt::basic_registry<entt::entity>& registry, entt::entity e);*/
 
 		void OnRuntimeStart();
 		void OnRuntimeStop();
@@ -59,6 +60,9 @@ namespace Zahra
 		void SetActiveCamera(Entity entity);
 		Entity GetActiveCamera();
 
+		void AllocateScriptFieldStorage(Entity entity);
+		Buffer GetScriptFieldStorage(Entity entity);
+
 		struct DebugRenderSettings
 		{
 			bool ShowColliders = false;
@@ -71,15 +75,16 @@ namespace Zahra
 	private:
 		std::string m_SceneName;
 
-		std::unique_ptr<b2World>(m_PhysicsWorld);
-		//std::map<entt::entity, b2Body*> m_PhysicsBodies;
-
 		entt::basic_registry<entt::entity> m_Registry;
 		std::unordered_map<ZGUID, entt::entity> m_EntityMap;
 
 		entt::entity m_ActiveCamera = entt::null;
-
 		float m_ViewportWidth = 1.0f, m_ViewportHeight = 1.0f;
+
+		std::map<ZGUID, Buffer> m_ScriptFieldStorage;
+
+		std::unique_ptr<b2World>(m_PhysicsWorld);
+		//std::map<entt::entity, b2Body*> m_PhysicsBodies;
 
 		friend class Entity;
 		friend class SceneHierarchyPanel;

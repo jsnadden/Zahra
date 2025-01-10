@@ -239,7 +239,7 @@ namespace Zahra
 				MeadowUIPatterns::DrawFloatControl("Fade", component.Fade, .001f, true, .001f, 10.f, "%.3f");
 			});
 
-		MeadowUIPatterns::DrawComponent<ScriptComponent>("Script Component", entity, [entity, sceneState](auto& component)
+		MeadowUIPatterns::DrawComponent<ScriptComponent>("Script Component", entity, [&](auto& component)
 			{
 				// TODO: make this a combo box and populate from .first in ScriptEngine::GetScriptClasses
 				// (also change ScriptComponent::ScriptName out for a script asset guid)
@@ -270,7 +270,7 @@ namespace Zahra
 				}				
 
 				if (validScript)
-					MeadowUIPatterns::DrawScriptFieldTable(entity, sceneState);
+					MeadowUIPatterns::DrawScriptFieldTable(entity, sceneState, m_Context->GetScriptFieldStorage(entity));
 								
 
 			}, false, true, false);

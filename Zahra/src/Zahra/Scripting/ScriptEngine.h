@@ -66,7 +66,7 @@ namespace Zahra
 	{
 		ScriptFieldType Type = ScriptFieldType::None;
 		std::string Name;
-		MonoClassField* MonoField;
+		MonoClassField* MonoField = nullptr;
 	};
 
 	class ScriptClass : public RefCounted
@@ -138,7 +138,7 @@ namespace Zahra
 		Ref<ScriptClass> m_ScriptClass;
 		MonoObject* m_MonoObject = nullptr;
 
-		MonoMethod* m_ConstructFromGUID = nullptr;
+		MonoMethod* m_Constructor = nullptr;
 		MonoMethod* m_OnCreate = nullptr;
 		MonoMethod* m_OnEarlyUpdate = nullptr; // pre-physics
 		MonoMethod* m_OnLateUpdate = nullptr; // post-physics
@@ -168,9 +168,9 @@ namespace Zahra
 
 		static Ref<ScriptInstance> GetScriptInstance(Entity entity);
 
-		static void UpdateScriptFieldStorage(Entity entity);
+		/*static void UpdateScriptFieldStorage(Entity entity);
 		static void FreeScriptFieldStorage(Entity entity);
-		static Buffer GetScriptFieldStorage(ZGUID guid);
+		static Buffer GetScriptFieldStorage(ZGUID guid);*/
 
 		static Entity GetEntityFromGUID(ZGUID guid);
 

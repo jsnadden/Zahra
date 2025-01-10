@@ -28,22 +28,23 @@ namespace Zahra
 
 		m_Registry.on_construct<CameraComponent>().connect<&Scene::InitCameraComponentViewportSize>(this);
 
-		m_Registry.on_construct<ScriptComponent>().connect<&Scene::UpdateScriptComponentFieldStorage>(this);
-		m_Registry.on_update<ScriptComponent>().connect<&Scene::UpdateScriptComponentFieldStorage>(this);
-		m_Registry.on_destroy<ScriptComponent>().connect<&Scene::FreeScriptComponentFieldStorage>(this);
-		m_Registry.on_destroy<IDComponent>().connect<&Scene::DestroyScriptComponentBeforeIDComponent>(this);
+		m_Registry.on_construct<ScriptComponent>().connect<&Scene::AllocateScriptComponentFieldStorage>(this);
+		m_Registry.on_update<ScriptComponent>().connect<&Scene::AllocateScriptComponentFieldStorage>(this);
 	}
 
 	Scene::~Scene()
 	{
 		m_EntityMap.clear();
 		m_Registry.clear();
+
+		for (auto& [guid, buffer] : m_ScriptFieldStorage)
+			buffer.Release();
+		m_ScriptFieldStorage.clear();
 	}
 
 	template<typename... ComponentType>
 	static void CopyComponent(entt::registry& srcReg, entt::registry& destReg, const std::unordered_map<ZGUID, entt::entity>& guidToNewHandle)
 	{
-
 		([&]()
 			{
 				auto componentView = srcReg.view<ComponentType>();
@@ -57,7 +58,6 @@ namespace Zahra
 				}
 			}
 		(), ...);
-
 	}
 
 	template<typename... ComponentType>
@@ -107,12 +107,20 @@ namespace Zahra
 				guidToNewHandle[guid] = (entt::entity)newEntity;
 			});
 
-		// copy the remaing components
+		// copy the remaining components
 		CopyComponent(MostComponents{}, srcRegistry, destRegistry, guidToNewHandle);
 
 		// set active camera
 		Entity oldCamera = srcScene->GetActiveCamera();
 		if (oldCamera) destScene->SetActiveCamera({ guidToNewHandle[oldCamera.GetGUID()] , destScene.Raw() });
+
+		// copy field storage buffer
+		for (auto& [guid, srcBuffer] : srcScene->m_ScriptFieldStorage)
+		{
+			auto& destBuffer = destScene->m_ScriptFieldStorage[guid];
+			destBuffer.Release();
+			destBuffer = Buffer::Copy(srcBuffer);
+		}
 
 		return destScene;
 	}
@@ -128,9 +136,10 @@ namespace Zahra
 
 	Entity Scene::CreateEntity(uint64_t guid, const std::string& name)
 	{
-		Entity entity = Scene::CreateEntity(name);
+		Entity entity = { m_Registry.create(), this };
+		entity.GetComponents<TagComponent>().Tag = name.empty() ? "unnamed_entity" : name;
 		entity.GetComponents<IDComponent>().ID = { guid };
-		m_EntityMap[entity.GetGUID()] = entity;
+		m_EntityMap[guid] = entity;
 		return entity;
 	}
 
@@ -166,30 +175,30 @@ namespace Zahra
 			m_Registry.get<CameraComponent>(e).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 
-	void Scene::UpdateScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e)
+	void Scene::AllocateScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e)
 	{
 		Z_CORE_ASSERT(m_Registry.valid(e), "Entity does not belong to this scene");
 
-		ScriptEngine::UpdateScriptFieldStorage({ e, this });
+		AllocateScriptFieldStorage({ e, this });
 	}
 
-	void Scene::FreeScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e)
-	{
-		Z_CORE_ASSERT(m_Registry.valid(e), "Entity does not belong to this scene");
+	//void Scene::FreeScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e)
+	//{
+	//	Z_CORE_ASSERT(m_Registry.valid(e), "Entity does not belong to this scene");
 
-		Entity entity = { e, this };
-		Z_CORE_ASSERT(entity.HasComponents<IDComponent>(), "Freeing field storage requires a guid for buffer lookup");
+	//	Entity entity = { e, this };
+	//	Z_CORE_ASSERT(entity.HasComponents<IDComponent>(), "Freeing field storage requires a guid for buffer lookup");
 
-		ScriptEngine::FreeScriptFieldStorage(entity);
-	}
+	//	FreeScriptFieldStorage(entity);
+	//}
 
-	void Scene::DestroyScriptComponentBeforeIDComponent(entt::basic_registry<entt::entity>& registry, entt::entity e)
-	{
-		// must remove ScriptComponent before IDComponent
-		Entity entity = { e, this };
-		if (entity.HasComponents<ScriptComponent>())
-			entity.RemoveComponent<ScriptComponent>();
-	}
+	//void Scene::DestroyScriptComponentBeforeIDComponent(entt::basic_registry<entt::entity>& registry, entt::entity e)
+	//{
+	//	// must remove ScriptComponent before IDComponent
+	//	Entity entity = { e, this };
+	//	if (entity.HasComponents<ScriptComponent>())
+	//		entity.RemoveComponent<ScriptComponent>();
+	//}
 
 	void Scene::OnRuntimeStart()
 	{
@@ -439,6 +448,31 @@ namespace Zahra
 	Entity Scene::GetActiveCamera()
 	{
 		return { m_ActiveCamera, this };
+	}
+
+	void Scene::AllocateScriptFieldStorage(Entity entity)
+	{
+		auto& component = entity.GetComponents<ScriptComponent>();
+
+		if (auto scriptClass = ScriptEngine::GetScriptClassIfValid(component.ScriptName))
+		{
+			uint64_t fieldCount = scriptClass->GetPublicFields().size();
+			auto& buffer = m_ScriptFieldStorage[entity.GetGUID()];
+
+			if (buffer.GetSize() != 8 * fieldCount)
+			{
+				buffer.Allocate(8 * fieldCount);
+				buffer.ZeroInitialise();
+			}
+		}
+	}
+
+	Buffer Scene::GetScriptFieldStorage(Entity entity)
+	{
+		auto result = m_ScriptFieldStorage.find(entity.GetGUID());
+		Z_CORE_ASSERT(result != m_ScriptFieldStorage.end());
+
+		return result->second;
 	}
 
 	Scene::DebugRenderSettings& Scene::GetDebugRenderSettings()

@@ -447,7 +447,7 @@ namespace Zahra
 			ImGui::PopID();
 		}
 
-		void DrawScriptFieldTable(Entity entity, SceneState sceneState)
+		void DrawScriptFieldTable(Entity entity, SceneState sceneState, Buffer& storage)
 		{
 			Z_CORE_ASSERT(entity.HasComponents<ScriptComponent>());
 
@@ -541,8 +541,6 @@ namespace Zahra
 					Z_CORE_ASSERT(scriptClass);
 					auto fields = scriptClass->GetPublicFields();
 
-					auto buffer = ScriptEngine::GetScriptFieldStorage(entity.GetGUID());
-
 					for (uint64_t i = 0; i < fields.size(); i++)
 					{
 						auto& field = fields[i];
@@ -564,16 +562,16 @@ namespace Zahra
 						{
 						case ScriptFieldType::Bool:
 						{
-							bool value = buffer.ReadAs<bool>(offset);
+							bool value = storage.ReadAs<bool>(offset);
 							if (ImGui::Checkbox(value ? "True" : "False", &value))
-								buffer.Write((void*)&value, sizeof(bool), offset);
+								storage.Write((void*)&value, sizeof(bool), offset);
 							break;
 						}
 						case ScriptFieldType::Float:
 						{
-							float value = buffer.ReadAs<float>(offset);
+							float value = storage.ReadAs<float>(offset);
 							if (ImGui::InputFloat("", &value))
-								buffer.Write((void*)&value, sizeof(float), offset);
+								storage.Write((void*)&value, sizeof(float), offset);
 							break;
 						}
 						// TODO: figure these out

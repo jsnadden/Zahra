@@ -32,8 +32,8 @@ Entities:
     ScriptComponent:
       ScriptName: Bud.WASD
       FieldValues:
-        Power: 0
-        Resistance: 0
+        Power: 15
+        Resistance: 0.5
         AntiGravity: false
     RigidBody2DComponent:
       Type: Dynamic

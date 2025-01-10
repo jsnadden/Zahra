@@ -59,7 +59,8 @@ namespace Zahra
 
 		std::unordered_map<std::string, Ref<ScriptClass>> ScriptClasses;
 		std::unordered_map<ZGUID, Ref<ScriptInstance>> ScriptInstances;
-		std::map<ZGUID, Buffer> ScriptFieldStorage;
+		
+		//std::map<ZGUID, Buffer> ScriptFieldStorage;
 
 		Scene* SceneContext = nullptr;
 
@@ -107,9 +108,6 @@ namespace Zahra
 
 	void ScriptEngine::Shutdown()
 	{
-		for (auto& element : s_SEData->ScriptFieldStorage)
-			element.second.Release();
-
 		ShutdownMonoDomains();
 
 		delete s_SEData;
@@ -131,12 +129,27 @@ namespace Zahra
 	void ScriptEngine::CreateScriptInstance(Entity entity)
 	{
 		Z_CORE_ASSERT(entity.HasComponents<ScriptComponent>())
-
 		auto& component = entity.GetComponents<ScriptComponent>();
-		if (ValidScriptClass(component.ScriptName))
+
+		auto it = s_SEData->ScriptClasses.find(component.ScriptName);
+		if (it != s_SEData->ScriptClasses.end())
 		{
-			Ref<ScriptInstance> instance = Ref<ScriptInstance>::Create(s_SEData->ScriptClasses[component.ScriptName], entity.GetGUID());
+			auto& scriptClass = it->second;
+			Ref<ScriptInstance> instance = Ref<ScriptInstance>::Create(scriptClass, entity.GetGUID());
 			s_SEData->ScriptInstances[entity.GetGUID()] = instance;
+
+			auto fields = scriptClass->GetPublicFields();
+			auto buffer = s_SEData->SceneContext->GetScriptFieldStorage(entity);
+
+			for (uint64_t i = 0; i < fields.size(); i++)
+			{
+				auto field = fields[i];
+				uint64_t offset = 8 * i;
+
+				// TODO: extend this to work with complex types, where
+				// the buffer will store a pointer instead
+				instance->SetScriptFieldValue<byte>(field, buffer[offset]);
+			}
 
 			instance->InvokeOnCreate();
 		}
@@ -265,47 +278,51 @@ namespace Zahra
 
 		return nullptr;
 	}
-	
-	/*Buffer Scene::GetScriptFieldStorage(ZGUID guid)
-	{
-		
-	}*/
 
-	void ScriptEngine::UpdateScriptFieldStorage(Entity entity)
+	/*void ScriptEngine::UpdateScriptFieldStorage(Entity entity)
 	{
 		Z_CORE_ASSERT(entity.HasComponents<ScriptComponent>());
 		auto& component = entity.GetComponents<ScriptComponent>();
+
+		auto& storage = s_SEData->ScriptFieldStorage[s_SEData->SceneContext->GetName()];
 
 		if (ValidScriptClass(component.ScriptName))
 		{
 			uint64_t fieldCount = s_SEData->ScriptClasses[component.ScriptName]->GetPublicFields().size();
 
-			auto& buffer = s_SEData->ScriptFieldStorage[entity.GetGUID()];
-			buffer.Allocate(8 * fieldCount);
-			buffer.ZeroInitialise();
+			auto& buffer = storage[entity.GetGUID()];
+			if (buffer.GetSize() < 8 * fieldCount)
+			{
+				buffer.Allocate(8 * fieldCount);
+				buffer.ZeroInitialise();
+			}
 		}
 		else
 		{
-			auto it = s_SEData->ScriptFieldStorage.find(entity.GetGUID());
-			if (it != s_SEData->ScriptFieldStorage.end())
+			auto it = storage.find(entity.GetGUID());
+			if (it != storage.end())
 				it->second.Release();
 		}
 	}
 
 	void ScriptEngine::FreeScriptFieldStorage(Entity entity)
 	{
-		auto it = s_SEData->ScriptFieldStorage.find(entity.GetGUID());
-		if (it != s_SEData->ScriptFieldStorage.end())
+		auto& storage = s_SEData->ScriptFieldStorage[s_SEData->SceneContext->GetName()];
+
+		auto it = storage.find(entity.GetGUID());
+		if (it != storage.end())
 			it->second.Release();
 	}
 
 	Buffer ScriptEngine::GetScriptFieldStorage(ZGUID guid)
 	{
-		auto it = s_SEData->ScriptFieldStorage.find(guid);
-		Z_CORE_ASSERT(it != s_SEData->ScriptFieldStorage.end());
+		auto& storage = s_SEData->ScriptFieldStorage[s_SEData->SceneContext->GetName()];
+
+		auto it = storage.find(guid);
+		Z_CORE_ASSERT(it != storage.end());
 
 		return it->second;
-	}
+	}*/
 
 	ScriptClass::ScriptClass(const ScriptClass& other)
 	{
@@ -385,16 +402,16 @@ namespace Zahra
 	{
 		m_MonoObject = m_ScriptClass->Instantiate();
 
-		m_ConstructFromGUID		= m_ScriptClass->GetMethod(".ctor", 1);
+		m_Constructor			= m_ScriptClass->GetMethod(".ctor", 1);
 		m_OnCreate				= m_ScriptClass->GetMethod("OnCreate", 0);
 		m_OnEarlyUpdate			= m_ScriptClass->GetMethod("OnEarlyUpdate", 1);
 		m_OnLateUpdate			= m_ScriptClass->GetMethod("OnLateUpdate", 1);
 
-		Z_CORE_ASSERT(m_ConstructFromGUID && m_OnCreate && m_OnEarlyUpdate && m_OnLateUpdate,
+		Z_CORE_ASSERT(m_Constructor && m_OnCreate && m_OnEarlyUpdate && m_OnLateUpdate,
 			"ScriptClass is missing a required method");
 
 		void* args = &guid;
-		m_ScriptClass->InvokeMethod(m_MonoObject, m_ConstructFromGUID, &args);
+		m_ScriptClass->InvokeMethod(m_MonoObject, m_Constructor, &args);
 	}
 
 	void ScriptInstance::InvokeOnCreate()

@@ -9,18 +9,14 @@ namespace Bud
 		WASD() : base() {}
 		WASD(ulong guid) : base(guid) { }
 
-		public float Power;
-		public float Resistance;
-		public bool AntiGravity;
+		public float Power = 50.0f;
+		public float Resistance = 1.0f;
+		public bool AntiGravity = false;
 
 		public void OnCreate()
 		{
 			transformComponent = GetComponent<TransformComponent>();
 			rigidBody2DComponent = GetComponent<RigidBody2DComponent>();
-
-			Power = 10.0f;
-			Resistance = 1.0f;
-			AntiGravity = false;
 		}
 
 		public void OnEarlyUpdate(float dt)

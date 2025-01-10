@@ -172,7 +172,7 @@ namespace Zahra
 	SceneSerialiser::SceneSerialiser(const Ref<Scene>& scene)
 		: m_Scene(scene) {}
 
-	static void SerialiseEntity(YAML::Emitter& out, Entity entity)
+	static void SerialiseEntity(YAML::Emitter& out, Entity entity, Ref<Scene> scene)
 	{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// GUID
@@ -283,7 +283,7 @@ namespace Zahra
 				out << YAML::BeginMap;
 				{
 					auto fields = ScriptEngine::GetScriptClassIfValid(script.ScriptName)->GetPublicFields();
-					auto buffer = ScriptEngine::GetScriptFieldStorage(entityGUID);
+					auto buffer = scene->GetScriptFieldStorage(entity);
 
 					for (uint64_t i = 0; i < fields.size(); i++)
 					{
@@ -437,7 +437,7 @@ namespace Zahra
 				Entity entity = { entityHandle, m_Scene.Raw() };
 				if (!entity) return;
 
-				SerialiseEntity(out, entity);
+				SerialiseEntity(out, entity, m_Scene);
 			});
 
 		out << YAML::EndSeq;
@@ -565,7 +565,7 @@ namespace Zahra
 					if (fieldNodes && scriptClass)
 					{
 						auto fields = scriptClass->GetPublicFields();
-						auto buffer = ScriptEngine::GetScriptFieldStorage(entityGUID);
+						auto buffer = m_Scene->GetScriptFieldStorage(entity);
 
 						for (uint64_t i = 0; i < fields.size(); i++)
 						{
