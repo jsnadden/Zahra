@@ -57,9 +57,8 @@ namespace Zahra
 		MonoAssembly* AppAssembly = nullptr;
 		MonoImage* AppAssemblyImage = nullptr;
 
-		Ref<ScriptClass> ExposedAttribute;
-
 		std::unordered_map<std::string, Ref<ScriptClass>> ScriptClasses;
+		std::vector<const char*> ScriptClassNames;
 		std::unordered_map<ZGUID, Ref<ScriptInstance>> ScriptInstances;
 		
 		//std::map<ZGUID, Buffer> ScriptFieldStorage;
@@ -147,10 +146,8 @@ namespace Zahra
 			for (uint64_t i = 0; i < fields.size(); i++)
 			{
 				auto field = fields[i];
-				uint64_t offset = 8 * i;
+				uint64_t offset = 16 * i;
 
-				// TODO: extend this to work with complex types, where
-				// the buffer will store a pointer instead
 				instance->SetScriptFieldValue<byte>(field, buffer[offset]);
 			}
 
@@ -173,6 +170,11 @@ namespace Zahra
 	const std::unordered_map<std::string, Ref<ScriptClass>>& ScriptEngine::GetScriptClasses()
 	{
 		return s_SEData->ScriptClasses;
+	}
+
+	const std::vector<const char*>& ScriptEngine::GetScriptClassNames()
+	{
+		return s_SEData->ScriptClassNames;
 	}
 
 	const Ref<ScriptClass> ScriptEngine::GetScriptClassIfValid(const std::string& fullName)
@@ -274,10 +276,8 @@ namespace Zahra
 			{
 				std::string fullName = reflectedNamespace + "." + reflectedName;
 				s_SEData->ScriptClasses[fullName] = Ref<ScriptClass>::Create(reflectedClass);
+				s_SEData->ScriptClassNames.push_back(fullName.c_str());
 			}
-
-			if (!strcmp(reflectedName.c_str(), "exposed"))
-				s_SEData->ExposedAttribute = Ref<ScriptClass>::Create(reflectedClass);
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -339,9 +339,9 @@ namespace Zahra
 			uint64_t fieldCount = s_SEData->ScriptClasses[component.ScriptName]->GetPublicFields().size();
 
 			auto& buffer = storage[entity.GetGUID()];
-			if (buffer.GetSize() < 8 * fieldCount)
+			if (buffer.GetSize() < 16 * fieldCount)
 			{
-				buffer.Allocate(8 * fieldCount);
+				buffer.Allocate(16 * fieldCount);
 				buffer.ZeroInitialise();
 			}
 		}

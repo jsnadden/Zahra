@@ -459,9 +459,9 @@ namespace Zahra
 			uint64_t fieldCount = scriptClass->GetPublicFields().size();
 			auto& buffer = m_ScriptFieldStorage[entity.GetGUID()];
 
-			if (buffer.GetSize() != 8 * fieldCount)
+			if (buffer.GetSize() != 16 * fieldCount)
 			{
-				buffer.Allocate(8 * fieldCount);
+				buffer.Allocate(16 * fieldCount);
 				buffer.ZeroInitialise();
 			}
 		}

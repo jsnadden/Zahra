@@ -484,6 +484,8 @@ namespace Zahra
 						ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
 						switch (field.Type)
 						{
+							// TODO: figure these out for all types (note: ImGui only supports
+							// control widgets for at most 32-bit values :S)
 							case ScriptFieldType::Bool:
 							{
 								bool value = instance->GetScriptFieldValue<bool>(field);
@@ -499,6 +501,17 @@ namespace Zahra
 
 								if (ImGui::InputFloat("", &value))
 									instance->SetScriptFieldValue<float>(field, value);
+
+								break;
+							}
+							case ScriptFieldType::Entity:
+							{
+								ZGUID value = instance->GetScriptFieldValue<ZGUID>(field);
+								std::string entityID = std::to_string((uint64_t)value);
+
+								// TODO: this should display the corresponding entity's
+								// name (if there is one), and be editable (somehow)
+								ImGui::Text(entityID.c_str());
 
 								break;
 							}
@@ -544,7 +557,7 @@ namespace Zahra
 					for (uint64_t i = 0; i < fields.size(); i++)
 					{
 						auto& field = fields[i];
-						uint64_t offset = 8 * i;
+						uint64_t offset = 16 * i;
 
 						ImGui::TableNextRow();
 
@@ -560,36 +573,57 @@ namespace Zahra
 						ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
 						switch (field.Type)
 						{
-						case ScriptFieldType::Bool:
-						{
-							bool value = storage.ReadAs<bool>(offset);
-							if (ImGui::Checkbox(value ? "True" : "False", &value))
-								storage.Write((void*)&value, sizeof(bool), offset);
-							break;
-						}
-						case ScriptFieldType::Float:
-						{
-							float value = storage.ReadAs<float>(offset);
-							if (ImGui::InputFloat("", &value))
-								storage.Write((void*)&value, sizeof(float), offset);
-							break;
-						}
-						// TODO: figure these out
-						/*case ScriptFieldType::Vector2:
-						{
+							case ScriptFieldType::Bool:
+							{
+								bool value = storage.ReadAs<bool>(offset);
+								if (ImGui::Checkbox(value ? "True" : "False", &value))
+									storage.Write((void*)&value, sizeof(bool), offset);
+								break;
+							}
+							case ScriptFieldType::Float:
+							{
+								float value = storage.ReadAs<float>(offset);
+								if (ImGui::InputFloat("", &value))
+									storage.Write((void*)&value, sizeof(float), offset);
+								break;
+							}
+							case ScriptFieldType::Entity:
+							{
+								ZGUID value = storage.ReadAs<ZGUID>(offset);
+								std::string entityID = std::to_string((uint64_t)value);
 
-							break;
-						}
-						case ScriptFieldType::Vector3:
-						{
+								// TODO: this should display the corresponding entity's
+									// name (if there is one), and be editable (somehow)
+								ImGui::Text(entityID.c_str());
+								break;
+							}
+							case ScriptFieldType::Vector2:
+							{
+								glm::vec2 value = storage.ReadAs<glm::vec2>(offset);
 
-							break;
-						}
-						case ScriptFieldType::Vector4:
-						{
+								if (ImGui::InputFloat2("", glm::value_ptr(value)))
+									storage.Write((void*)&value, sizeof(glm::vec2), offset);
 
-							break;
-						}*/
+								break;
+							}
+							case ScriptFieldType::Vector3:
+							{
+								glm::vec3 value = storage.ReadAs<glm::vec3>(offset);
+
+								if (ImGui::InputFloat3("", glm::value_ptr(value)))
+									storage.Write((void*)&value, sizeof(glm::vec3), offset);
+
+								break;
+							}
+							case ScriptFieldType::Vector4:
+							{
+								glm::vec4 value = storage.ReadAs<glm::vec4>(offset);
+
+								if (ImGui::InputFloat4("", glm::value_ptr(value)))
+									storage.Write((void*)&value, sizeof(glm::vec4), offset);
+
+								break;
+							}
 						}
 						ImGui::PopItemWidth();
 						ImGui::PopID();

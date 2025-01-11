@@ -247,8 +247,8 @@ namespace Zahra
 
 		SceneHierarchyUIPatterns::DrawComponent<ScriptComponent>("Script Component", entity, [&](auto& component)
 			{
-				// TODO: make this a combo box and populate from .first in ScriptEngine::GetScriptClasses
-				// (also change ScriptComponent::ScriptName out for a script asset guid)
+				// TODO: make this a combo box and populate from ScriptEngine (this will require
+				// us to change ScriptComponent::ScriptName out for a script asset guid)
 
 				bool validScript = ScriptEngine::ValidScriptClass(component.ScriptName);
 

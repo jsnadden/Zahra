@@ -288,7 +288,7 @@ namespace Zahra
 					for (uint64_t i = 0; i < fields.size(); i++)
 					{
 						auto& field = fields[i];
-						uint64_t offset = 8 * i;
+						uint64_t offset = 16 * i;
 						
 						switch (field.Type)
 						{
@@ -352,7 +352,26 @@ namespace Zahra
 								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<double>(offset);
 								break;
 							}
-							// TODO: include Djinn types
+							case ScriptFieldType::Entity:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<ZGUID>(offset);
+								break;
+							}
+							case ScriptFieldType::Vector2:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<glm::vec2>(offset);
+								break;
+							}
+							case ScriptFieldType::Vector3:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<glm::vec3>(offset);
+								break;
+							}
+							case ScriptFieldType::Vector4:
+							{
+								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<glm::vec4>(offset);
+								break;
+							}
 						}
 					}
 				}
@@ -571,7 +590,7 @@ namespace Zahra
 						for (uint64_t i = 0; i < fields.size(); i++)
 						{
 							auto& field = fields[i];
-							uint64_t offset = 8 * i;
+							uint64_t offset = 16 * i;
 
 							auto fieldNode = fieldNodes[field.Name];
 							if (!fieldNode)
@@ -651,7 +670,30 @@ namespace Zahra
 									buffer.Write((void*)&value, sizeof(double), offset);
 									break;
 								}
-								// TODO: include Djinn types
+								case ScriptFieldType::Entity:
+								{
+									ZGUID value = fieldNode.as<uint64_t>();
+									buffer.Write((void*)&value, sizeof(ZGUID), offset);
+									break;
+								}
+								case ScriptFieldType::Vector2:
+								{
+									glm::vec2 value = fieldNode.as<glm::vec2>();
+									buffer.Write((void*)&value, sizeof(glm::vec2), offset);
+									break;
+								}
+								case ScriptFieldType::Vector3:
+								{
+									glm::vec3 value = fieldNode.as<glm::vec3>();
+									buffer.Write((void*)&value, sizeof(glm::vec3), offset);
+									break;
+								}
+								case ScriptFieldType::Vector4:
+								{
+									glm::vec4 value = fieldNode.as<glm::vec4>();
+									buffer.Write((void*)&value, sizeof(glm::vec4), offset);
+									break;
+								}
 							}
 						}
 					}

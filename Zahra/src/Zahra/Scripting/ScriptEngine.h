@@ -163,6 +163,7 @@ namespace Zahra
 		static void ScriptInstanceLateUpdate(Entity entity, float dt);
 
 		static const std::unordered_map<std::string, Ref<ScriptClass>>& GetScriptClasses();
+		static const std::vector<const char*>& GetScriptClassNames();
 		static const Ref<ScriptClass> GetScriptClassIfValid(const std::string& fullName);
 		static bool ValidScriptClass(const std::string& fullName);
 
