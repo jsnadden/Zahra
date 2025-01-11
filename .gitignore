@@ -20,6 +20,6 @@ profiling/
 # directories
 
 Zahra/vendor/VulkanSDK
-Meadow/Cache
+Meadow/Cache/
 scripts/__pycache__
 .Rproj.user
