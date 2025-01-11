@@ -164,8 +164,9 @@
   },
   "active": "e3f6df8361cc3fd2",
   "lastOpenFiles": [
-    "Planning & Learning/Renderer architecture.md",
+    "Planning & Learning/Undo & Redo stacks.md",
     "Planning & Learning/Script fields.md",
+    "Planning & Learning/Renderer architecture.md",
     "Planning & Learning/Vulkan resources.canvas",
     "Planning & Learning/Rendering pipeline.canvas",
     "TODO/Rethinking the RenderPass interface.md",

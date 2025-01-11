@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../SceneState.h"
+#include "Editor/SceneState.h"
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 
@@ -11,7 +11,7 @@
 namespace Zahra
 {
 
-	namespace MeadowUIPatterns
+	namespace SceneHierarchyUIPatterns
 	{
 		template <typename T, typename UIFunction>
 		void DrawComponent(const std::string& name, Entity entity, UIFunction EditComponentFields, bool defaultOpen = false, bool removeable = true, bool defaultLayout = true)

@@ -9,18 +9,20 @@ project "Meadow"
 
 	files
 	{
-		"src/**.h",
-		"src/**.cpp"
+		"Source/**.h",
+		"Source/**.cpp"
 	}
 
 	includedirs
 	{
+		"Source",
 		"%{wks.location}/Zahra/vendor/spdlog/include",
 		"%{wks.location}/Zahra/src",
 		"%{wks.location}/Zahra/vendor",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.EnTT}",
-		"%{IncludeDir.ImGuizmo}"
+		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.yaml_cpp}"
 	}
 
 	links

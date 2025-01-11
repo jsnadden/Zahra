@@ -98,7 +98,6 @@ namespace Zahra
 	void Application::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowClosedEvent>(Z_BIND_EVENT_FN(Application::OnWindowClosed));
 		dispatcher.Dispatch<WindowResizedEvent>(Z_BIND_EVENT_FN(Application::OnWindowResized));
 		dispatcher.Dispatch<WindowMinimisedEvent>(Z_BIND_EVENT_FN(Application::OnWindowMinimised));
 
@@ -108,6 +107,8 @@ namespace Zahra
 			(*it)->OnEvent(e);
 		}
 
+		if (!e.Handled)
+			dispatcher.Dispatch<WindowClosedEvent>(Z_BIND_EVENT_FN(Application::OnWindowClosed));
 	}
 
 	void Application::PushLayer(Layer* layer)

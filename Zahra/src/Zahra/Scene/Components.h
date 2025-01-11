@@ -17,7 +17,7 @@ namespace Zahra
 	// For every component struct added, make sure to do the following:
 	// 1) give it a default constructor and copy constructor
 	// 2) add to registry (bottom of this header)
-	// 3) include MeadowUIPatterns::DrawComponent and AddComponentsModal UI code (SceneHierarchyPanel.cpp)
+	// 3) include SceneHierarchyUIPatterns::DrawComponent and AddComponentsModal UI code (SceneHierarchyPanel.cpp)
 	// 4) add serialisation code (SceneSerialiser.cpp)
 	// 5) write a corresponding class in Djinn (Components.cs)
 	// 6) connect script get/set functions (ScriptGlue.cpp & InternalCalls.cs)

@@ -189,7 +189,7 @@ namespace Zahra
 		out << YAML::BeginMap;
 		{
 			auto& tag = entity.GetComponents<TagComponent>().Tag;
-			Z_CORE_TRACE("Serialising entity {0} (GUID = {1})", tag, entityGUID);
+			//Z_CORE_TRACE("Serialising entity {0} (GUID = {1})", tag, entityGUID);
 
 			out << YAML::Key << "Tag" << YAML::Value << tag;
 		}
@@ -414,33 +414,34 @@ namespace Zahra
 	void SceneSerialiser::SerialiseYaml(const std::string& filepath)
 	{
 		std::string sceneName = m_Scene->GetName();
-		Z_CORE_TRACE("Serialising scene '{0}'", sceneName);
+		//Z_CORE_TRACE("Serialising scene '{0}'", sceneName);
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-
-		out << YAML::Key << "Scene";
-		out << YAML::Value << sceneName;
-
-		if (Entity activeCamera = m_Scene->GetActiveCamera())
 		{
-			out << YAML::Key << "ActiveCameraGUID";
-			out << YAML::Value << activeCamera.GetGUID();
-		}
+			out << YAML::Key << "Scene";
+			out << YAML::Value << sceneName;
 
-		out << YAML::Key << "Entities";
-		out << YAML::Value << YAML::BeginSeq;
-
-		m_Scene->m_Registry.sort<entt::entity>([](const auto& lhs, const auto& rhs) { return lhs < rhs; });
-		m_Scene->m_Registry.view<entt::entity>().each([&](auto entityHandle)
+			if (Entity activeCamera = m_Scene->GetActiveCamera())
 			{
-				Entity entity = { entityHandle, m_Scene.Raw() };
-				if (!entity) return;
+				out << YAML::Key << "ActiveCameraGUID";
+				out << YAML::Value << activeCamera.GetGUID();
+			}
 
-				SerialiseEntity(out, entity, m_Scene);
-			});
+			out << YAML::Key << "Entities";
+			out << YAML::Value << YAML::BeginSeq;
+			{
+				m_Scene->m_Registry.sort<entt::entity>([](const auto& lhs, const auto& rhs) { return lhs < rhs; });
+				m_Scene->m_Registry.view<entt::entity>().each([&](auto entityHandle)
+					{
+						Entity entity = { entityHandle, m_Scene.Raw() };
+						if (!entity) return;
 
-		out << YAML::EndSeq;
+						SerialiseEntity(out, entity, m_Scene);
+					});
+			}
+			out << YAML::EndSeq;
+		}
 		out << YAML::EndMap;
 
 		std::ofstream fout(filepath);
@@ -465,7 +466,7 @@ namespace Zahra
 
 		std::string sceneName = data["Scene"].as<std::string>();
 		m_Scene->SetName(sceneName);
-		Z_CORE_TRACE("Deserialising scene '{0}'", sceneName);
+		//Z_CORE_TRACE("Deserialising scene '{0}'", sceneName);
 
 		bool hasActiveCamera = (bool)data["ActiveCameraGUID"];
 		uint64_t cameraGUID;
@@ -487,7 +488,7 @@ namespace Zahra
 				auto tagNode = entityNode["TagComponent"];
 				if (tagNode) tag = tagNode["Tag"].as<std::string>();
 
-				Z_CORE_TRACE("Deserialising entity {0} (GUID = {1})", tag, entityGUID);
+				//Z_CORE_TRACE("Deserialising entity {0} (GUID = {1})", tag, entityGUID);
 
 				Entity entity = m_Scene->CreateEntity(entityGUID, tag);
 

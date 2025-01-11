@@ -23,7 +23,7 @@ Entities:
       Tag: circle
     TransformComponent:
       Translation: [0, 0, 0]
-      EulerAngles: [0, 0, 0]
+      EulerAngles: [0, -0, 0]
       Scale: [1, 1, 1]
     CircleComponent:
       Colour: [1, 1, 1, 1]
@@ -32,9 +32,9 @@ Entities:
     ScriptComponent:
       ScriptName: Bud.WASD
       FieldValues:
-        Power: 15
-        Resistance: 0.5
-        AntiGravity: false
+        InputForce: 30
+        DragCoeff: 0.100000001
+        IgnoreGravity: false
     RigidBody2DComponent:
       Type: Dynamic
       FixedRotation: false

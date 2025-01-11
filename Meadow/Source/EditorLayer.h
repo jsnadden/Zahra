@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SceneState.h"
+#include "Editor/SceneState.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 
@@ -23,10 +23,17 @@ namespace Zahra
 		void OnEvent(Event& event) override;
 		bool OnKeyPressedEvent(KeyPressedEvent& event);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
+		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& event);
+		bool OnWindowClosed(WindowClosedEvent& event);
 
 	private:
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
+
+		SceneState m_SceneState = SceneState::Edit;
+
+		const wchar_t* m_FileTypesFilter[2] = { L"Zahra Scene", L"*.zsc" };
+		std::filesystem::path m_WorkingSceneFilepath;
 
 		// TODO: replace with a general SceneRenderer class including 2D and 3D rendering
 		Ref<Renderer2D> m_Renderer2D;
@@ -34,54 +41,63 @@ namespace Zahra
 
 		EditorCamera m_EditorCamera{ .5f, 1.78f, .1f, 1000.f };
 
-		std::map<std::string, Ref<Texture2D>> m_Icons;
-		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
-
-		SceneState m_SceneState = SceneState::Edit;
-
 		void ScenePlay();
 		void SceneSimulate();
 		void SceneStop();
-
-		// Saving/opening scene files
-		const wchar_t* m_FileTypesFilter[2] = { L"Zahra Scene", L"*.zsc" };
-		std::filesystem::path m_CurrentFilePath;
-
+		
 		void UIMenuBar();
 		void UIAboutWindow(); bool m_ShowAboutWindow = false;
 		void UIControls();
 		void UIViewport();
-		void UIGizmos();
+		void UIGizmo();
 		void UIStatsWindow(); // TODO: break up stats window into several tabs?
+		void UISaveChangesPrompt();
 
-		glm::vec4 m_HighlightSelectionColour = { 0.92f, 0.72f, 0.18f, 1.00f };
+		std::map<std::string, Ref<Texture2D>> m_Icons;
+		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
+
+		void DoAfterHandlingUnsavedChanges(std::function<void()> callback);
+		bool m_ShowSaveChangesPrompt = false;
+		std::function<void()> m_SaveChangesCallback;
 
 		void NewScene();
 		void OpenSceneFile();
 		void OpenSceneFile(std::filesystem::path filepath);
-		void SaveSceneFile();
-		void SaveAsSceneFile();
+		bool SaveSceneFile();
+		bool SaveAsSceneFile();
+
+		void WriteConfigFile();
+		void ReadConfigFile();
+
+		Timer m_SceneCacheTimer;
+		uint32_t m_SceneCacheIndex = 0;
+		void CacheWorkingScene();
+
+		const float c_FramerateRefreshInterval = .5f;
+		Timer m_FramerateRefreshTimer;
+		float m_Framerate = .0f;
 
 		// Viewport
 		Ref<Image2D> m_ColourPickingAttachment;
 		Ref<Framebuffer> m_ViewportFramebuffer;
 		Ref<Texture2D> m_ViewportTexture;
 		ImGuiTextureHandle m_ViewportTextureHandle = nullptr;
+		Entity m_HoveredEntity;
 		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
 		glm::vec2 m_ViewportBounds[2] = { {}, {} };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
+		glm::vec4 m_HighlightSelectionColour = { 0.92f, 0.72f, 0.18f, 1.00f };
+
+		// Transform gizmos
 		int32_t m_GizmoType = -1;
-		Entity m_HoveredEntity;
+		bool m_GizmoWasUsedLastFrame = false;
+		TransformComponent m_CachedTransform;
 
 		void ReadHoveredEntity();
 
 		// Editor panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
-
-		const float c_FramerateRefreshInterval = .5f;
-		Zahra::Timer m_FramerateRefreshTimer;
-		float m_Framerate = .0f;
 
 	};
 }

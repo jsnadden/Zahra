@@ -367,7 +367,7 @@ namespace Zahra
 
 	void WindowsWindow::WriteConfig()
 	{
-		Z_CORE_TRACE("Saving configuration for window '{0}'", m_WindowData.Title);
+		//Z_CORE_TRACE("Saving configuration for window '{0}'", m_WindowData.Title);
 
 		WindowState currentState = GetState();
 		SetState(WindowState::Default);
@@ -410,21 +410,24 @@ namespace Zahra
 		out << YAML::EndMap;
 
 		std::filesystem::path configDir = Application::Get().GetSpecification().WorkingDirectory / "Config";
-		if (!std::filesystem::exists(configDir)) std::filesystem::create_directories(configDir);
+		if (!std::filesystem::exists(configDir))
+			std::filesystem::create_directories(configDir);
 
 		std::filesystem::path configFile = configDir / ("window_config_" + m_WindowData.Title + ".yml");
 		std::ofstream fout(configFile.c_str());
 		fout << out.c_str();
 
+		fout.close();
 	}
 
 	void WindowsWindow::ReadConfig()
 	{
 		std::filesystem::path configDir = Application::Get().GetSpecification().WorkingDirectory / "Config";
 		std::filesystem::path configFile = configDir / ("window_config_" + m_WindowData.Title + ".yml");
-		if (!std::filesystem::exists(configFile)) return;
+		if (!std::filesystem::exists(configFile))
+			return;
 
-		Z_CORE_TRACE("Loading configuration for window '{0}'", m_WindowData.Title);
+		//Z_CORE_TRACE("Loading configuration for window '{0}'", m_WindowData.Title);
 
 		YAML::Node data;
 		try
@@ -433,7 +436,7 @@ namespace Zahra
 		}
 		catch (const YAML::ParserException& ex)
 		{
-			Z_CORE_ERROR("Failed to load window configuration file '{0}'\n     {1}", configFile.filename().string(), ex.what());
+			Z_CORE_ERROR("Failed to load window configuration file '{0}':\n{1}", configFile.filename().string(), ex.what());
 		}
 
 		if (auto rectNode = data["WindowRectangle"])

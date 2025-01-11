@@ -13,9 +13,9 @@ namespace Bud
 
 		// The [ExposedField] attribute signals to Zahra's ScriptEngine that these
 		// fields can be accessed and initialised (at script instantiation)
-		[ExposedField] private float Power = 50.0f;
-		[ExposedField] public float Resistance = 1.0f;
-		[ExposedField] public bool AntiGravity = false;
+		[ExposedField] private float InputForce = 50.0f;
+		[ExposedField] public float DragCoeff = 1.0f;
+		[ExposedField] public bool IgnoreGravity = false;
 
 		// The OnCreate method is to be called at script initialisation, after the
 		// constructor has been called AND the exposed fields have been initialised
@@ -50,21 +50,25 @@ namespace Bud
 
 			force.Normalise();
 			force.Y *= 2.0f;
-			force *= Power;
+			force *= InputForce;
 
 			float mass = .0f;
 			if (HasComponent<CircleColliderComponent>())
 			{
-				float radius = GetComponent<CircleColliderComponent>().Radius;
 				float density = GetComponent<CircleColliderComponent>().Density;
-				mass = 3.1415f * radius * radius * density;
+				mass = density * 3.141592f * .25f * transformComponent.Scale.X * transformComponent.Scale.Y;
+			}
+			else if (HasComponent<RectColliderComponent>())
+			{
+				float density = GetComponent<RectColliderComponent>().Density;
+				mass = density * transformComponent.Scale.X * transformComponent.Scale.Y;
 			}
 
-			if (AntiGravity)
+			if (IgnoreGravity)
 				force.Y += 9.8f * mass;
 
 			Vector2 velocity = rigidBody2DComponent.GetVelocity();
-			force += velocity * -velocity.Norm() * Resistance;
+			force += velocity * -velocity.Norm() * DragCoeff;
 
 			rigidBody2DComponent.ApplyForce(force, true);
 		}

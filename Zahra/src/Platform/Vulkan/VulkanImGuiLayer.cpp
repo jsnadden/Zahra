@@ -94,8 +94,8 @@ namespace Zahra
 		ImGui_ImplVulkan_Init(&imguiInfo);
 
 		// TODO: write a font library so that I don't have to rely on imgui's internal font vector
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("..\\Meadow\\Resources\\Fonts\\Inter\\Inter-Regular.ttf", 18.0f); // font 0
-		io.Fonts->AddFontFromFileTTF("..\\Meadow\\Resources\\Fonts\\Inter\\Inter-Bold.ttf", 18.0f); // font 1
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("../Meadow/Resources/Fonts/Inter/Inter-Regular.ttf", 18.0f); // font 0
+		io.Fonts->AddFontFromFileTTF("../Meadow/Resources/Fonts/Inter/Inter-Bold.ttf", 18.0f); // font 1
 
 	}
 
