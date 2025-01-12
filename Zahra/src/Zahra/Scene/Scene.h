@@ -23,10 +23,11 @@ namespace Zahra
 
 		static Ref<Scene> CopyScene(Ref<Scene> oldScene);
 
-		Entity CreateEntity(const std::string& name = "unnamed_entity");
-		Entity CreateEntity(uint64_t guid, const std::string& name = "unnamed_entity");
+		Entity CreateEntity(const std::string& name = "New Entity");
+		Entity CreateEntity(uint64_t guid, const std::string& name = "New Entity");
 		void DestroyEntity(Entity entity);
-		Entity DuplicateEntity(Entity entity);
+		void DestroyEntity(ZGUID guid);
+		Entity DuplicateEntity(Entity extantEntity, ZGUID newID = {});
 		Entity GetEntity(ZGUID guid);
 
 		// avoid this method as much as possible
@@ -91,7 +92,6 @@ namespace Zahra
 
 		friend class Entity;
 		friend class SceneHierarchyPanel;
-		friend class PropertiesPanel;
 		friend class SceneSerialiser;
 
 		// TODO: move these to SceneRenderer

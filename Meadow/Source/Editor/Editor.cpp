@@ -49,10 +49,10 @@ namespace Zahra
 		if (s_EditorData.UndoStack.empty())
 			return;
 
-		auto& action = s_EditorData.UndoStack.back();
+		auto action = s_EditorData.UndoStack.back();
+		s_EditorData.UndoStack.pop_back();
 		action.Undo();
 		s_EditorData.RedoStack.push_back(action);
-		s_EditorData.UndoStack.pop_back();
 
 		s_EditorData.Balance--;
 	}

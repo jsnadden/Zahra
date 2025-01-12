@@ -6,6 +6,84 @@
 
 namespace Zahra
 {
+	namespace SceneEdits
+	{
+		static void CreateEntity(Ref<Scene>& editorScene, Entity& selection)
+		{
+			ZGUID id;
+			EditAction createEntityAction;
+			createEntityAction.Do = [&, id]()
+				{
+					editorScene->CreateEntity(id);
+				};
+			createEntityAction.Undo = [&, id]()
+				{
+					if (selection)
+					{
+						if (selection.GetGUID() == id)
+							selection = {};
+					}
+
+					editorScene->DestroyEntity(id);
+				};
+			Editor::NewAction(createEntityAction);
+
+			selection = editorScene->GetEntity(id);
+		}
+
+		static void DestroyEntity(Ref<Scene>& editorScene, Entity& entity, Entity& selection)
+		{
+			// TODO: this is going to be a pain:
+			//	Go through every possible component, recording whether the entity has one, and if so, its data.
+			//	The do command is easy enough:
+			//			1) just capture [&, GUID]
+			//			2) deselect if entity == selection
+			//			3) destroy entity using its GUID 
+			//	The undo command is going to be more of a pain:
+			//			1) capture the cached component and bool values i.e. [&, cachedT, hasT, ...]
+			//			2) create entity using its previous GUID and Tag values
+			//			3) for each component type T: if hasT, then add a T and set it equal to cachedT
+
+		}
+
+		static void DuplicateEntity(Ref<Scene>& editorScene, Entity& entity, Entity& selection)
+		{
+			/*ZGUID extantID = entity.GetGUID();
+				ZGUID newID;
+
+				EditAction duplicateEntity;
+				duplicateEntity.Do = [&, extantID, newID]()
+					{
+						m_Context->DuplicateEntity(m_Context->GetEntity(extantID), newID);
+					};
+				duplicateEntity.Undo = [&, newID]()
+					{
+						if (m_Selected)
+						{
+							if (m_Selected.GetGUID() == newID)
+								m_Selected = {};
+						}
+
+						m_Context->DestroyEntity(newID);
+					};
+				Editor::NewAction(duplicateEntity);
+
+				m_Selected = m_Context->GetEntity(newID);*/
+		}
+
+		template <typename Component>
+		static void AddComponent(Ref<Scene>& editorScene, Entity& entity, Component& component, Entity& selection)
+		{
+
+		}
+
+		template <typename Component>
+		static void RemoveComponent(Ref<Scene>& editorScene, Entity& entity, Entity& selection)
+		{
+
+		}
+	}
+
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context, EditorCamera& camera)
 	{
 		SetContext(context);
@@ -44,42 +122,40 @@ namespace Zahra
 
 				ImGui::TableNextColumn();
 
-				// this forces the entities to be displayed in order of their entt::entity handle
+				// this sets the order in which entities are displayed in the panel (well, after hierarchical ordering at least)
 				m_Context->m_Registry.sort<entt::entity>([](const auto& lhs, const auto& rhs) { return lhs < rhs; });
 				
 				// TODO: once we have parent/child relationships, this top
 				// layer of the hierarchy should only include parentless entities
-				auto entityView = m_Context->m_Registry.view<entt::entity>();
-				entityView.use<entt::entity>();
-				entityView.each([&](auto entityId)
-					{
-						Entity entity{ entityId, m_Context.Raw() };
+				auto view = m_Context->m_Registry.view<entt::entity>();
+				view.use<entt::entity>();
+				for (auto& e : view)
+				{
+					Entity entity{ e, m_Context.Raw() };
 
-						DrawEntityNode(entity, sceneState);
-
-					});
+					DrawEntityNode(entity, sceneState);
+				}
 
 				ImGui::TableNextColumn();
 			}
 			ImGui::EndTable();
 
 			// deselect entity when left clicking on empty window space (IsWindowHovered, without setting flags, is blocked by other items)
-			if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
 			{
 				m_Selected = {};
 			}
 
 			// right clicking on empty window space brings up this menu
-			if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
+			if (ImGui::BeginPopupContextWindow("##SceneHierarchyContextMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
 			{
 				if (ImGui::MenuItem("Add New Entity"))
 				{
-					m_Selected = m_Context->CreateEntity("New Entity");
+					// TODO: replace with an EditAction submission
+					m_Selected = m_Context->CreateEntity();					
 				}
 
-				// TODO: menuitems to create specific scriptableentity types,
-					// or entities with specific component sets
-					// (e.g. a camera, an audio source, a prop/structure, or an npc)
+				// TODO: menuitems to create prefab entities (with specific component sets and default parameters)
 
 				ImGui::EndPopup();
 			}
@@ -95,7 +171,7 @@ namespace Zahra
 				DrawComponents(m_Selected, sceneState);
 
 				// right click to add components
-				if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
+				if (ImGui::BeginPopupContextWindow("##PropertiesContextMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
 				{
 					if (ImGui::MenuItem("Add Component(s)"))
 						m_ShowAddComponentsModal = true;
@@ -133,18 +209,23 @@ namespace Zahra
 			}
 		}
 
-		bool entityDeleted = false;
+		bool entityToTheGallows = false;
 
 		if (ImGui::BeginPopupContextItem())
 		{
-			if (ImGui::MenuItem("Add child", 0, false, false))
-				int i = 0; // TODO: make this happen
+			if (ImGui::MenuItem("Add child", nullptr, false, sceneState == SceneState::Edit))
+			{
+				// TODO: implement this with HierarchyComponent
+			}
 
-			if (ImGui::MenuItem("Duplicate entity"))
+			if (ImGui::MenuItem("Duplicate entity", nullptr, false, sceneState == SceneState::Edit))
+			{
+				// TODO: replace with an EditAction submission
 				m_Selected = m_Context->DuplicateEntity(entity);
+			}
 
-			if (ImGui::MenuItem("Delete entity", "", nullptr, sceneState == SceneState::Edit))
-				entityDeleted = true;
+			if (ImGui::MenuItem("Delete entity", nullptr, false, sceneState == SceneState::Edit))
+				entityToTheGallows = true;
 
 			ImGui::EndPopup();
 		}
@@ -157,13 +238,14 @@ namespace Zahra
 		}
 
 		// cleanup
-		if (entityDeleted)
+		if (entityToTheGallows)
 		{
-			m_Context->DestroyEntity(entity);
+			// TODO: replace with an EditAction submission
 			if (m_Selected == entity)
 				m_Selected = {};
-		}
 
+			m_Context->DestroyEntity(entity);
+		}
 	}
 		
 	void SceneHierarchyPanel::DrawComponents(Entity entity, SceneState sceneState)

@@ -129,7 +129,7 @@ namespace Zahra
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
-		entity.GetComponents<TagComponent>().Tag = name.empty() ? "unnamed_entity" : name;
+		entity.GetComponents<TagComponent>().Tag = name;
 		m_EntityMap[entity.GetGUID()] = entity;
 		return entity;
 	}
@@ -137,7 +137,7 @@ namespace Zahra
 	Entity Scene::CreateEntity(uint64_t guid, const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
-		entity.GetComponents<TagComponent>().Tag = name.empty() ? "unnamed_entity" : name;
+		entity.GetComponents<TagComponent>().Tag = name;
 		entity.GetComponents<IDComponent>().ID = { guid };
 		m_EntityMap[guid] = entity;
 		return entity;
@@ -149,16 +149,27 @@ namespace Zahra
 		m_Registry.destroy(entity);
 	}
 
-	Entity Scene::DuplicateEntity(Entity entity)
+	void Scene::DestroyEntity(ZGUID guid)
+	{
+		auto it = m_EntityMap.find(guid);
+		if (it == m_EntityMap.end())
+			return;
+
+		auto entity = it->second;
+		m_EntityMap.erase(guid);
+		m_Registry.destroy(entity);
+	}
+
+	Entity Scene::DuplicateEntity(Entity extantEntity, ZGUID newID)
 	{
 		// create new component with its own IDComponent and the copied TagComponent
-		std::string newTag = entity.GetName();
-		Entity copy = CreateEntity(newTag);
+		std::string newName = extantEntity.GetName();
+		Entity newEntity = CreateEntity(newID, newName);
 
 		// copy the remaining components
-		CopyComponentIfExists(MostComponents{}, entity, copy);
+		CopyComponentIfExists(MostComponents{}, extantEntity, newEntity);
 
-		return copy;
+		return newEntity;
 	}
 
 	Entity Scene::GetEntity(ZGUID guid)

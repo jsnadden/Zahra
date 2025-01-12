@@ -961,9 +961,32 @@ namespace Zahra
 					Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
 					if (selection)
 					{
-						Entity copy = m_EditorScene->DuplicateEntity(selection);
-						m_SceneHierarchyPanel.SelectEntity(copy);
+						/*Entity copy = m_EditorScene->DuplicateEntity(selection);
+						m_SceneHierarchyPanel.SelectEntity(copy);*/
+
+						ZGUID extantID = selection.GetGUID();
+						ZGUID newID;
+
+						EditAction duplicateEntity;
+						duplicateEntity.Do = [&, extantID, newID]()
+							{
+								m_EditorScene->DuplicateEntity(m_EditorScene->GetEntity(extantID), newID);
+							};
+						duplicateEntity.Undo = [&, newID]()
+							{
+								if (Entity select = m_SceneHierarchyPanel.GetSelectedEntity())
+								{
+									if (select.GetGUID() == newID)
+										m_SceneHierarchyPanel.SelectEntity({});
+								}
+
+								m_EditorScene->DestroyEntity(newID);
+							};
+						Editor::NewAction(duplicateEntity);
+
+						m_SceneHierarchyPanel.SelectEntity(m_EditorScene->GetEntity(newID));
 					}
+
 					return true;
 				}
 
