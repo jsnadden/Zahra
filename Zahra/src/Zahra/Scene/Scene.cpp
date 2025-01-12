@@ -163,8 +163,25 @@ namespace Zahra
 
 	Entity Scene::GetEntity(ZGUID guid)
 	{
-		Z_CORE_ASSERT(m_EntityMap.find(guid) != m_EntityMap.end());
-		return { m_EntityMap.at(guid), this };
+		auto it = m_EntityMap.find(guid);
+		if (it == m_EntityMap.end())
+			return { entt::null, this };
+
+		return { it->second, this };
+	}
+
+	Entity Scene::GetEntity(const std::string_view& name)
+	{
+		auto view = m_Registry.view<entt::entity>();
+		for (auto e : view)
+		{
+			Entity entity = { e, this };
+
+			if (name == entity.GetComponents<TagComponent>().Tag)
+				return entity;
+		}
+
+		return { entt::null, this };
 	}
 
 	void Scene::InitCameraComponentViewportSize(entt::basic_registry<entt::entity>& registry, entt::entity e)
@@ -202,6 +219,8 @@ namespace Zahra
 
 	void Scene::OnRuntimeStart()
 	{
+		Z_CORE_INFO("Scene '{}' has begun runtime", m_SceneName);
+
 		OnSimulationStart();
 
 		// Initialise script behaviours
@@ -215,7 +234,6 @@ namespace Zahra
 				ScriptEngine::CreateScriptInstance(entity);
 			}
 		}
-		
 	}
 
 	void Scene::OnRuntimeStop()
@@ -224,6 +242,7 @@ namespace Zahra
 
 		ScriptEngine::OnRuntimeStop();
 
+		Z_CORE_INFO("Scene '{}' has ended runtime", m_SceneName);
 	}
 
 	void Scene::OnSimulationStart()

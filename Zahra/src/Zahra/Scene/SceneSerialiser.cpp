@@ -352,7 +352,7 @@ namespace Zahra
 								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<double>(offset);
 								break;
 							}
-							case ScriptFieldType::Entity:
+							case ScriptFieldType::EntityID:
 							{
 								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<ZGUID>(offset);
 								break;
@@ -670,7 +670,7 @@ namespace Zahra
 									buffer.Write((void*)&value, sizeof(double), offset);
 									break;
 								}
-								case ScriptFieldType::Entity:
+								case ScriptFieldType::EntityID:
 								{
 									ZGUID value = fieldNode.as<uint64_t>();
 									buffer.Write((void*)&value, sizeof(ZGUID), offset);

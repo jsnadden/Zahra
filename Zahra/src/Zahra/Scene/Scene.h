@@ -29,6 +29,9 @@ namespace Zahra
 		Entity DuplicateEntity(Entity entity);
 		Entity GetEntity(ZGUID guid);
 
+		// avoid this method as much as possible
+		Entity GetEntity(const std::string_view& name);
+
 		// entt signal callbacks
 		void InitCameraComponentViewportSize(entt::basic_registry<entt::entity>& registry, entt::entity e);
 		void AllocateScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e);

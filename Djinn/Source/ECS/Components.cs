@@ -176,10 +176,7 @@ namespace Djinn
 
 	public class ScriptComponent : Component
 	{
-		public string GetScriptName()
-		{
-			return Djinn.Zahra.ScriptComponent_GetScriptName(Entity.GUID);
-		}
+		
 	}
 
 	public enum BodyType { Static = 0, Dynamic = 1, Kinematic = 2 };

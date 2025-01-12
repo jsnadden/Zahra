@@ -43,7 +43,6 @@ namespace Zahra
 
 			return assembly;
 		}
-
 	}
 
 	struct ScriptEngineData
@@ -58,10 +57,7 @@ namespace Zahra
 		MonoImage* AppAssemblyImage = nullptr;
 
 		std::unordered_map<std::string, Ref<ScriptClass>> ScriptClasses;
-		std::vector<const char*> ScriptClassNames;
 		std::unordered_map<ZGUID, Ref<ScriptInstance>> ScriptInstances;
-		
-		//std::map<ZGUID, Buffer> ScriptFieldStorage;
 
 		Scene* SceneContext = nullptr;
 
@@ -79,7 +75,6 @@ namespace Zahra
 			{ "System.UInt64",		ScriptFieldType::uLong   },
 			{ "System.Single",		ScriptFieldType::Float   },
 			{ "System.Double",		ScriptFieldType::Double  },
-			{ "Djinn.Entity",		ScriptFieldType::Entity  },
 			{ "Djinn.Vector2",		ScriptFieldType::Vector2 },
 			{ "Djinn.Vector3",		ScriptFieldType::Vector3 },
 			{ "Djinn.Vector4",		ScriptFieldType::Vector4 },
@@ -99,7 +94,6 @@ namespace Zahra
 		LoadAssembly("../Examples/Bud/Assets/Scripts/Binaries/Djinn.dll", s_SEData->CoreAssembly, s_SEData->CoreAssemblyImage);
 		LoadAssembly("../Examples/Bud/Assets/Scripts/Binaries/BudScripts.dll", s_SEData->AppAssembly, s_SEData->AppAssemblyImage);
 		
-		//ReflectCustomAttributes();
 		Reflect();
 
 		ScriptGlue::RegisterComponentTypes(s_SEData->CoreAssemblyImage);
@@ -128,6 +122,26 @@ namespace Zahra
 		//mono_gc_collect(0); // if necessary we can trigger garbage collection here
 	}
 
+	const std::unordered_map<std::string, Ref<ScriptClass>>& ScriptEngine::GetScriptClasses()
+	{
+		return s_SEData->ScriptClasses;
+	}
+
+	const Ref<ScriptClass> ScriptEngine::GetScriptClassIfValid(const std::string& fullName)
+	{
+		auto it = s_SEData->ScriptClasses.find(fullName);
+
+		if (it == s_SEData->ScriptClasses.end())
+			return nullptr;
+		else
+			return it->second;
+	}
+
+	bool ScriptEngine::ValidScriptClass(const std::string& fullName)
+	{
+		return s_SEData->ScriptClasses.find(fullName) != s_SEData->ScriptClasses.end();
+	}
+
 	void ScriptEngine::CreateScriptInstance(Entity entity)
 	{
 		Z_CORE_ASSERT(entity.HasComponents<ScriptComponent>())
@@ -148,7 +162,43 @@ namespace Zahra
 				auto field = fields[i];
 				uint64_t offset = 16 * i;
 
-				instance->SetScriptFieldValue<byte>(field, buffer[offset]);
+				// TODO: currently this only works for fields of value types: simple types,
+				// and structs whose fields are also value types. The issue with class-valued
+				// types is their memory layout includes a header of metadata.
+				switch (ScriptUtils::GetScriptFieldTypeByteSize(field.Type))
+				{
+					case 1:
+					{
+						auto value = buffer.ReadAs<uint8_t>(offset);
+						instance->SetScriptFieldValue<uint8_t>(field, value);
+						break;
+					}
+					case 2:
+					{
+						auto value = buffer.ReadAs<uint16_t>(offset);
+						instance->SetScriptFieldValue<uint16_t>(field, value);
+						break;
+					}
+					case 4:
+					{
+						auto value = buffer.ReadAs<uint32_t>(offset);
+						instance->SetScriptFieldValue<uint32_t>(field, value);
+						break;
+					}
+					case 8:
+					{
+						auto value = buffer.ReadAs<uint64_t>(offset);
+						instance->SetScriptFieldValue<uint64_t>(field, value);
+						break;
+					}
+					case 16:
+					{
+						auto value = buffer.ReadAs<glm::vec4>(offset);
+						instance->SetScriptFieldValue<glm::vec4>(field, value);
+						break;
+					}
+				}
+				
 			}
 
 			instance->InvokeOnCreate();
@@ -167,35 +217,22 @@ namespace Zahra
 			instance->InvokeLateUpdate(dt);
 	}
 
-	const std::unordered_map<std::string, Ref<ScriptClass>>& ScriptEngine::GetScriptClasses()
-	{
-		return s_SEData->ScriptClasses;
-	}
-
-	const std::vector<const char*>& ScriptEngine::GetScriptClassNames()
-	{
-		return s_SEData->ScriptClassNames;
-	}
-
-	const Ref<ScriptClass> ScriptEngine::GetScriptClassIfValid(const std::string& fullName)
-	{
-		auto it = s_SEData->ScriptClasses.find(fullName);
-
-		if (it == s_SEData->ScriptClasses.end())
-			return nullptr;
-		else
-			return it->second;
-	}
-
-	bool ScriptEngine::ValidScriptClass(const std::string& fullName)
-	{
-		return s_SEData->ScriptClasses.find(fullName) != s_SEData->ScriptClasses.end();
-	}
-
 	Entity ScriptEngine::GetEntityFromGUID(ZGUID guid)
 	{
 		Z_CORE_ASSERT(s_SEData->SceneContext);
+
 		return s_SEData->SceneContext->GetEntity(guid);
+	}
+
+	Entity ScriptEngine::GetEntityFromName(MonoString* name)
+	{
+		Z_CORE_ASSERT(s_SEData->SceneContext);
+
+		char* string = mono_string_to_utf8(name);
+		Entity entity = s_SEData->SceneContext->GetEntity(string);
+		mono_free(string);
+
+		return entity;
 	}
 
 	MonoString* ScriptEngine::StdStringToMonoString(const std::string& string)
@@ -234,20 +271,6 @@ namespace Zahra
 		s_SEData->RootDomain = nullptr;
 	}
 
-	/*void ScriptEngine::ReflectCustomAttributes()
-	{
-		const MonoTableInfo* customAttributeTable = mono_image_get_table_info(s_SEData->AppAssemblyImage, MONO_TABLE_CUSTOMATTRIBUTE);
-		int32_t attributeCount = mono_table_info_get_rows(customAttributeTable);
-
-		for (int32_t row = 0; row < attributeCount; row++)
-		{
-			uint32_t attributeData[MONO_CUSTOM_ATTR_SIZE];
-			mono_metadata_decode_row(customAttributeTable, row, attributeData, MONO_CUSTOM_ATTR_SIZE);
-
-
-		}
-	}*/
-
 	void ScriptEngine::Reflect()
 	{
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,21 +291,18 @@ namespace Zahra
 			std::string reflectedName = mono_metadata_string_heap(s_SEData->AppAssemblyImage, classData[MONO_TYPEDEF_NAME]);
 			ScriptClass reflectedClass(s_SEData->AppAssemblyImage, reflectedNamespace, reflectedName);
 
-			if (!strcmp(reflectedName.c_str(), "exposed"))
-				Z_CORE_INFO("exposed class is in row {}", row);
-
 			// record entity types
 			if (reflectedClass.IsSubclassOf(entityClass))
 			{
 				std::string fullName = reflectedNamespace + "." + reflectedName;
 				s_SEData->ScriptClasses[fullName] = Ref<ScriptClass>::Create(reflectedClass);
-				s_SEData->ScriptClassNames.push_back(fullName.c_str());
 			}
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// FIND EXPOSED ENTITY TYPE FIELDS
 		ScriptClass exposedAttribute(s_SEData->CoreAssemblyImage, "Djinn.CustomAttributes", "ExposedField");
+		ScriptClass entityIDAttribute(s_SEData->CoreAssemblyImage, "Djinn.CustomAttributes", "EntityID");
 
 		for (auto& [name, scriptClass] : s_SEData->ScriptClasses)
 		{
@@ -306,6 +326,9 @@ namespace Zahra
 				field.Type = it->second;
 				field.Name = mono_field_get_name(monoField);
 				field.MonoField = monoField;
+
+				if (field.Type == ScriptFieldType::uLong && mono_custom_attrs_has_attr(attributes, entityIDAttribute.m_MonoClass))
+					field.Type = ScriptFieldType::EntityID;
 			}
 		}
 	}
@@ -327,57 +350,11 @@ namespace Zahra
 		return nullptr;
 	}
 
-	/*void ScriptEngine::UpdateScriptFieldStorage(Entity entity)
-	{
-		Z_CORE_ASSERT(entity.HasComponents<ScriptComponent>());
-		auto& component = entity.GetComponents<ScriptComponent>();
-
-		auto& storage = s_SEData->ScriptFieldStorage[s_SEData->SceneContext->GetName()];
-
-		if (ValidScriptClass(component.ScriptName))
-		{
-			uint64_t fieldCount = s_SEData->ScriptClasses[component.ScriptName]->GetPublicFields().size();
-
-			auto& buffer = storage[entity.GetGUID()];
-			if (buffer.GetSize() < 16 * fieldCount)
-			{
-				buffer.Allocate(16 * fieldCount);
-				buffer.ZeroInitialise();
-			}
-		}
-		else
-		{
-			auto it = storage.find(entity.GetGUID());
-			if (it != storage.end())
-				it->second.Release();
-		}
-	}
-
-	void ScriptEngine::FreeScriptFieldStorage(Entity entity)
-	{
-		auto& storage = s_SEData->ScriptFieldStorage[s_SEData->SceneContext->GetName()];
-
-		auto it = storage.find(entity.GetGUID());
-		if (it != storage.end())
-			it->second.Release();
-	}
-
-	Buffer ScriptEngine::GetScriptFieldStorage(ZGUID guid)
-	{
-		auto& storage = s_SEData->ScriptFieldStorage[s_SEData->SceneContext->GetName()];
-
-		auto it = storage.find(guid);
-		Z_CORE_ASSERT(it != storage.end());
-
-		return it->second;
-	}*/
-
 	ScriptClass::ScriptClass(const ScriptClass& other)
 	{
 		m_MonoClass = other.m_MonoClass;
 		m_FullClassName = other.m_FullClassName;
 		m_PublicFields = other.m_PublicFields;
-		//m_MonoFields = other.m_MonoFields;
 	}
 
 	ScriptClass::ScriptClass(MonoImage* image, const std::string& classNamespace, const std::string& className)
@@ -404,19 +381,6 @@ namespace Zahra
 		return mono_runtime_invoke(method, instance, args, nullptr); // TODO: expose fourth argument (exception handling)
 	}
 
-	/*void ScriptClass::ReflectMethods()
-	{
-		void* iterator = nullptr;
-
-		Z_CORE_WARN("Methods for class {}:", m_FullClassName);
-
-		while (MonoMethod* monoMethod = mono_class_get_methods(m_MonoClass, &iterator))
-		{
-			std::string methodName = mono_method_get_name(monoMethod);
-			Z_CORE_WARN("	{}", methodName);
-		}
-	}*/
-
 	bool ScriptClass::IsSubclassOf(ScriptClass& other, bool checkInterfaces)
 	{
 		return mono_class_is_subclass_of(m_MonoClass, other.GetMonoClass(), checkInterfaces);
@@ -428,10 +392,10 @@ namespace Zahra
 	{
 		m_MonoObject = m_ScriptClass->Instantiate();
 
-		m_Constructor			= m_ScriptClass->GetMethod(".ctor", 1);
-		m_OnCreate				= m_ScriptClass->GetMethod("OnCreate", 0);
-		m_OnEarlyUpdate			= m_ScriptClass->GetMethod("OnEarlyUpdate", 1);
-		m_OnLateUpdate			= m_ScriptClass->GetMethod("OnLateUpdate", 1);
+		m_Constructor	= m_ScriptClass->GetMethod(".ctor", 1);
+		m_OnCreate		= m_ScriptClass->GetMethod("OnCreate", 0);
+		m_OnEarlyUpdate	= m_ScriptClass->GetMethod("OnEarlyUpdate", 1);
+		m_OnLateUpdate	= m_ScriptClass->GetMethod("OnLateUpdate", 1);
 
 		Z_CORE_ASSERT(m_Constructor && m_OnCreate && m_OnEarlyUpdate && m_OnLateUpdate,
 			"ScriptClass is missing a required method");

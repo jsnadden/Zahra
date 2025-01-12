@@ -115,6 +115,22 @@ namespace Zahra
 			return s_EntityHasComponentFns.at(managedType)(entity);
 		}
 
+		static uint64_t Entity_FindEntityByName(MonoString* name)
+		{
+			auto entity = ScriptEngine::GetEntityFromName(name);
+
+			if ((bool)entity)
+				return entity.GetComponents<IDComponent>().ID;
+
+			return 0;
+		}
+
+		static MonoString* Entity_GetName(ZGUID guid)
+		{
+			Entity entity = ScriptEngine::GetEntityFromGUID(guid);
+			return ScriptEngine::StdStringToMonoString(entity.GetComponents<TagComponent>().Tag);
+		}
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// TRANSFORM COMPONENT
 		static void TransformComponent_GetTranslation(ZGUID guid, glm::vec3* translation)
@@ -318,11 +334,22 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// SCRIPT COMPONENT
-		static MonoString* ScriptComponent_GetScriptName(ZGUID guid)
+		// TODO: implement these properly once we've got scriptIDs (also decide if we
+		// use Z_CORE_ASSERT(entity.HasComponents<ScriptComponent>()), or just return
+		// a reserved ZGUID value (0?) if the component doesn't exist)
+		/*static ZGUID ScriptComponent_GetScriptID(ZGUID entityID)
 		{
-			Entity entity = ScriptEngine::GetEntityFromGUID(guid);
-			return ScriptEngine::StdStringToMonoString(entity.GetComponents<ScriptComponent>().ScriptName);
-		}
+			auto entity = ScriptEngine::GetEntityFromGUID(entityID);
+			auto scriptComponent = entity.GetComponents<ScriptComponent>();
+			return scriptComponent.ScriptID;
+		}*/
+
+		/*static void ScriptComponent_SetScriptID(ZGUID entityID, ZGUID scriptID)
+		{
+			auto entity = ScriptEngine::GetEntityFromGUID(entityID);
+			auto scriptComponent = entity.GetComponents<ScriptComponent>();
+			scriptComponent.ScriptID = scriptID;
+		}*/
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// 2D RIGID BODY COMPONENT
@@ -597,6 +624,8 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// ENTITY
 		Z_REGISTER_INTERNAL_CALL(Entity_HasComponent);
+		Z_REGISTER_INTERNAL_CALL(Entity_FindEntityByName);
+		Z_REGISTER_INTERNAL_CALL(Entity_GetName);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// TRANSFORM COMPONENT
@@ -636,13 +665,15 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// SCRIPT COMPONENT
-		Z_REGISTER_INTERNAL_CALL(ScriptComponent_GetScriptName);
+		//Z_REGISTER_INTERNAL_CALL(ScriptComponent_GetScriptName);
+		//Z_REGISTER_INTERNAL_CALL(ScriptComponent_SetScriptName);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// 2D RIGID BODY COMPONENT
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetVelocity);
+
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetFixedRotation);

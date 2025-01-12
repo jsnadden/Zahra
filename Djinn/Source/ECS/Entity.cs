@@ -8,7 +8,19 @@ namespace Djinn
 		protected Entity() { GUID = 0; }
 		protected Entity(ulong guid) { GUID = guid; }
 
+		public static implicit operator bool(Entity entity) => entity.GUID != 0;
+
 		public readonly ulong GUID;
+
+		public string Name
+		{
+			get
+			{
+				return Zahra.Entity_GetName(GUID);
+			}
+			set
+			{}
+		}
 
 		public bool HasComponent<T>() where T : Component, new()
 		{
@@ -26,6 +38,13 @@ namespace Djinn
 			T component =  new T() { Entity = this };
 			return component;
 
+		}
+
+		// TODO: get rid of this eventually, it's just for testing
+		public Entity FindEntityWithName(string name)
+		{
+			ulong guid = Zahra.Entity_FindEntityByName(name);			
+			return new Entity(guid);
 		}
 
 	}

@@ -504,14 +504,18 @@ namespace Zahra
 
 								break;
 							}
-							case ScriptFieldType::Entity:
+							case ScriptFieldType::EntityID:
 							{
 								ZGUID value = instance->GetScriptFieldValue<ZGUID>(field);
-								std::string entityID = std::to_string((uint64_t)value);
 
-								// TODO: this should display the corresponding entity's
-								// name (if there is one), and be editable (somehow)
-								ImGui::Text(entityID.c_str());
+								Entity otherEntity = ScriptEngine::GetEntityFromGUID(value);
+								std::string otherEntityName;
+								otherEntityName = otherEntity ?
+									otherEntity.GetComponents<TagComponent>().Tag :
+									"invalid_id";
+
+								// TODO: change to a combo box of names + a drag-and-drop target
+								ImGui::Text(otherEntityName.c_str());
 
 								break;
 							}
@@ -587,13 +591,13 @@ namespace Zahra
 									storage.Write((void*)&value, sizeof(float), offset);
 								break;
 							}
-							case ScriptFieldType::Entity:
+							case ScriptFieldType::EntityID:
 							{
 								ZGUID value = storage.ReadAs<ZGUID>(offset);
+
 								std::string entityID = std::to_string((uint64_t)value);
 
-								// TODO: this should display the corresponding entity's
-									// name (if there is one), and be editable (somehow)
+								// TODO: change to a combo box of names + a drag-and-drop target
 								ImGui::Text(entityID.c_str());
 								break;
 							}

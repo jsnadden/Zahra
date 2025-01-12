@@ -528,7 +528,7 @@ namespace Zahra
 
 		newVertex->Position = end0;
 		newVertex->Colour = colour;
-		//newVertex->EntityID = entityID;
+		newVertex->EntityID = entityID;
 		newVertex++;
 		
 		newVertex->Position = end1;

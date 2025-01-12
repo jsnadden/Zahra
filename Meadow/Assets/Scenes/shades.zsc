@@ -35,8 +35,7 @@ Entities:
         InputForce: 30
         DragCoeff: 0.100000001
         IgnoreGravity: false
-        ThatGuy: 0
-        OverThere: [5, 1, 2]
+        buddy: 0
     RigidBody2DComponent:
       Type: Dynamic
       FixedRotation: false

@@ -57,6 +57,12 @@ namespace Djinn
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_HasComponent(ulong guid, Type componentType);
 
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static ulong Entity_FindEntityByName(string name);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static string Entity_GetName(ulong guid);
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// TRANSFORM COMPONENT
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -75,7 +81,7 @@ namespace Djinn
 		internal extern static void TransformComponent_GetScale(ulong guid, out Vector3 scale);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetScale(ulong guid, ref Vector3 scale);
+		internal extern static void TransformComponent_SetScale(ulong guid, ref Vector3 scale);		
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// SPRITE COMPONENT
@@ -139,8 +145,8 @@ namespace Djinn
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// SCRIPT COMPONENT
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static string ScriptComponent_GetScriptName(ulong guid);
+		/*[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static string ScriptComponent_GetScriptName(ulong guid);*/
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// 2D RIGID BODY COMPONENT

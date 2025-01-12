@@ -1089,7 +1089,8 @@ namespace Zahra
 
 		SceneSerialiser serialiser(m_EditorScene);
 		serialiser.SerialiseYaml(m_WorkingSceneFilepath.string());
-
+		
+		WriteConfigFile();
 		Editor::OnSave();
 		return true;
 		// TODO: report/display success of file save
@@ -1107,6 +1108,7 @@ namespace Zahra
 			SceneSerialiser serialiser(m_EditorScene);
 			serialiser.SerialiseYaml(m_WorkingSceneFilepath.string());
 
+			WriteConfigFile();
 			Editor::OnSave();
 			return true;
 		}
