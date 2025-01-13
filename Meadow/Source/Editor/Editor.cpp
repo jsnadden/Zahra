@@ -7,7 +7,7 @@ namespace Zahra
 	{
 		EditorConfig Config;
 
-		std::vector<Ref<Edit>> UndoStack, RedoStack;
+		//std::vector<Ref<Edit>> UndoStack, RedoStack;
 		bool Dirty = false;
 		int32_t Balance = 0;
 
@@ -15,7 +15,22 @@ namespace Zahra
 	};
 	static EditHistoryData s_EditorData;
 
-	void Editor::Reset()
+	EditorConfig& Editor::GetConfig()
+	{
+		return s_EditorData.Config;
+	}
+
+	SceneState Editor::GetSceneState()
+	{
+		return s_EditorData.EditorSceneState;
+	}
+
+	void Editor::SetSceneState(const SceneState& sceneState)
+	{
+		s_EditorData.EditorSceneState = sceneState;
+	}
+
+	/*void Editor::Reset()
 	{
 		s_EditorData.UndoStack.clear();
 		s_EditorData.RedoStack.clear();
@@ -27,11 +42,6 @@ namespace Zahra
 	{
 		s_EditorData.Dirty = false;
 		s_EditorData.Balance = 0;
-	}
-
-	EditorConfig& Editor::GetConfig()
-	{
-		return s_EditorData.Config;
 	}
 
 	void Editor::MakeEdit(Ref<Edit>& edit)
@@ -92,16 +102,6 @@ namespace Zahra
 	bool Editor::UnsavedChanges()
 	{
 		return s_EditorData.Dirty || s_EditorData.Balance;
-	}
-
-	SceneState Editor::GetSceneState()
-	{
-		return s_EditorData.EditorSceneState;
-	}
-
-	void Editor::SetSceneState(const SceneState& sceneState)
-	{
-		s_EditorData.EditorSceneState = sceneState;
-	}
+	}*/
 
 }

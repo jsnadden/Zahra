@@ -23,17 +23,17 @@ Entities:
       Tag: circle
     TransformComponent:
       Translation: [0, 0, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [0.999999762, 0.999999762, 1]
+      EulerAngles: [0, 0, 0]
+      Scale: [1, 1, 1]
     CircleComponent:
-      Colour: [1, 1, 1, 1]
+      Colour: [0.965250969, 0.965250969, 0.454674184, 1]
       Thickness: 1
-      Fade: 0.00499999989
+      Fade: 0.523000002
     ScriptComponent:
       ScriptName: Bud.WASD
       FieldValues:
-        InputForce: 30
-        DragCoeff: 0.100000001
+        InputForce: 25
+        DragCoeff: 0.300000012
         IgnoreGravity: false
         buddy: 0
     RigidBody2DComponent:

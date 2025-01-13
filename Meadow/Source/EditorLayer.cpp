@@ -1,6 +1,6 @@
 #include "EditorLayer.h"
 
-#include "Editor/EditTypes.h"
+#include "Editor/Editor.h"
 #include "Zahra/Maths/Maths.h"
 #include "Zahra/Scene/SceneSerialiser.h"
 #include "Zahra/Utils/PlatformUtils.h"
@@ -107,8 +107,6 @@ namespace Zahra
 
 		OpenSceneFile(m_WorkingSceneFilepath);
 		m_SceneCacheTimer.Reset();
-
-		Editor::Reset();
 	}
 
 	void EditorLayer::OnDetach()
@@ -125,8 +123,6 @@ namespace Zahra
 		m_ViewportTextureHandle = nullptr;
 		m_ViewportTexture.Reset();
 		m_ViewportFramebuffer.Reset();
-
-		Editor::Reset();
 	}
 
 	void EditorLayer::OnUpdate(float dt)
@@ -313,7 +309,7 @@ namespace Zahra
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Edit"))
+			/*if (ImGui::BeginMenu("Edit"))
 			{
 				if (ImGui::MenuItem("Undo", "Ctrl+Z", false, Editor::CanUndo()))
 				{
@@ -326,7 +322,7 @@ namespace Zahra
 				}
 
 				ImGui::EndMenu();
-			}
+			}*/
 
 			if (ImGui::BeginMenu("View"))
 			{
@@ -634,41 +630,11 @@ namespace Zahra
 
 		if (ImGuizmo::IsUsing())
 		{
-			if (!m_GizmoWasUsedLastFrame)
-				m_CachedTransform = transformComponent;
-
 			glm::vec3 eulers;
 			Maths::DecomposeTransform(transform, transformComponent.Translation, eulers, transformComponent.Scale);
 			transformComponent.SetRotation(eulers);
 		}
-		else if (m_GizmoWasUsedLastFrame)
-		{
-			Ref<Edit> gizmoManipulation;
-			
-			if (m_CachedTransform.Translation != transformComponent.Translation)
-			{
-				gizmoManipulation = Ref<GizmoManipulation>::Create(transformComponent, m_CachedTransform.Translation, transformComponent.Translation, TransformationType::Translation);
-			}
-			else if (m_CachedTransform.GetEulers() != transformComponent.GetEulers())
-			{
-				gizmoManipulation = Ref<GizmoManipulation>::Create(transformComponent, m_CachedTransform.GetEulers(), transformComponent.GetEulers(), TransformationType::Rotation);
-			}
-			else if (m_CachedTransform.Scale != transformComponent.Scale)
-			{
-				gizmoManipulation = Ref<GizmoManipulation>::Create(transformComponent, m_CachedTransform.Scale, transformComponent.Scale, TransformationType::Scale);
-			}
-
-			Editor::MakeEdit(gizmoManipulation);
-		}
-
-		m_GizmoWasUsedLastFrame = ImGuizmo::IsUsing();
 	}
-
-	// TODO: move highight rendering to Scene, or SceneRenderer
-	//void EditorLayer::UIHighlightSelection()
-	//{
-	//	
-	//}
 
 	void EditorLayer::UIStatsWindow()
 	{
@@ -755,19 +721,21 @@ namespace Zahra
 	void EditorLayer::UISaveChangesPrompt()
 	{
 		if (m_ShowSaveChangesPrompt)
-			ImGui::OpenPopup("Unsaved Changes");
+			ImGui::OpenPopup("Save Changes");
 
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 		ImGui::SetNextWindowSize(ImVec2(330, 120));
 
-		if (ImGui::BeginPopupModal("Unsaved Changes", nullptr, ImGuiWindowFlags_NoResize))
+		if (ImGui::BeginPopupModal("Save Changes", nullptr, ImGuiWindowFlags_NoResize))
 		{
 			// TODO: change from scene to project?
-			const char* prompt = "The current scene has unsaved changes.\n  Would you like to save before exiting?";
+			const char* prompt = "Would you like to save before exiting?";
 			ImGui::SetCursorPosX(.5f * (330 - ImGui::CalcTextSize(prompt).x));
-			ImGui::SetCursorPosY(35);
+			ImGui::SetCursorPosY(45);
 			ImGui::Text(prompt);
+
+			// TODO: add a checkbox to disable this popup in future
 
 			ImGui::SetCursorPosY(85);
 			if (ImGui::Button("Save", ImVec2(100, 0)))
@@ -809,7 +777,7 @@ namespace Zahra
 
 	void EditorLayer::DoAfterHandlingUnsavedChanges(std::function<void()> callback)
 	{
-		if (Editor::UnsavedChanges())
+		if (Editor::GetConfig().ShowSavePrompt)
 		{
 			m_ShowSaveChangesPrompt = true;
 			m_SaveChangesCallback = callback;
@@ -845,26 +813,6 @@ namespace Zahra
 
 		switch (event.GetKeyCode())
 		{
-			case KeyCode::Z:
-			{
-				if (ctrl)
-				{
-					Editor::Undo();
-					return true;
-				}
-
-				break;
-			}
-			case KeyCode::Y:
-			{
-				if (ctrl)
-				{
-					Editor::Redo();
-					return true;
-				}
-
-				break;
-			}
 			case KeyCode::S:
 			{
 				if (Editor::GetSceneState() != SceneState::Edit)
@@ -937,10 +885,7 @@ namespace Zahra
 				{
 					Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
 					if (selection)
-					{
-						Ref<Edit> duplicateEntity = Ref<EntityDuplication>::Create(selection.GetGUID(), m_EditorScene, m_SceneHierarchyPanel);
-						Editor::MakeEdit(duplicateEntity);
-					}
+						m_EditorScene->DuplicateEntity(selection);
 
 					return true;
 				}
@@ -997,8 +942,6 @@ namespace Zahra
 
 		m_ActiveScene = m_EditorScene;
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-
-		Editor::Reset();
 	}
 
 	void EditorLayer::OpenSceneFile()
@@ -1040,8 +983,6 @@ namespace Zahra
 
 			m_ActiveScene = m_EditorScene;
 			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-
-			Editor::Reset();
 		}
 
 		// TODO: report/display success of file open
@@ -1059,7 +1000,6 @@ namespace Zahra
 		serialiser.SerialiseYaml(m_WorkingSceneFilepath.string());
 		
 		WriteConfigFile();
-		Editor::OnSave();
 		return true;
 		// TODO: report/display success of file save
 	}
@@ -1077,7 +1017,6 @@ namespace Zahra
 			serialiser.SerialiseYaml(m_WorkingSceneFilepath.string());
 
 			WriteConfigFile();
-			Editor::OnSave();
 			return true;
 		}
 
@@ -1165,22 +1104,6 @@ namespace Zahra
 
 		m_SceneCacheIndex = (m_SceneCacheIndex + 1) % Editor::GetConfig().MaxCachedScenes;
 	}
-
-	/*void EditorLayer::DeleteBackup()
-	{
-		std::filesystem::path backup = Editor::GetConfig().BackupFilepath;
-		if (!std::filesystem::exists(backup))
-			return;
-
-		try
-		{
-			std::filesystem::remove(backup);
-		}
-		catch (const std::filesystem::filesystem_error& err)
-		{
-			Z_CORE_ERROR("filesystem error: {}", err.what());
-		}
-	}*/
 
 	void EditorLayer::ReadHoveredEntity()
 	{

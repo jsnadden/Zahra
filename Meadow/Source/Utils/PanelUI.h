@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Editor/Editor.h"
-#include "Editor/EditTypes.h"
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 
@@ -110,17 +109,7 @@ namespace Zahra
 				ImGui::DragFloat("##X", &value, speed, min, max, format, flags);
 				ImGui::PopItemWidth();
 
-				static float valueCache;
-				if (ImGui::IsItemActivated())
-					valueCache = value;
-
 				valueChanged = ImGui::IsItemDeactivatedAfterEdit();
-
-				if (valueChanged)
-				{
-					Ref<Edit> floatValueEdit = Ref<ValueEdit<float>>::Create(value, valueCache, value);
-					Editor::MakeEdit(floatValueEdit);
-				}
 			}
 
 			ImGui::PopID();
@@ -145,27 +134,18 @@ namespace Zahra
 			auto boldFont = io.Fonts->Fonts[1];
 
 			ImGui::PushID(label.c_str());
-
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
 			ImGui::TableNextColumn();
-
 			{
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text(label.c_str());
 			}
 
 			ImGui::TableNextColumn();
-
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2);
 			ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
-
-			static float valueCache;
-			glm::vec2 originalValues = values;
-
 			{
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.8f, .1f, .15f, 1.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.9f, .2f, .20f, 1.0f));
@@ -173,36 +153,18 @@ namespace Zahra
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("X", buttonSize))
 				{
+					valueChanged |= values.x != resetValue;
 					values.x = resetValue;
 				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
-				
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.x;
-
-				if (ImGui::IsItemDeactivated() && values.x != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> xReset = Ref<ValueEdit<float>>::Create(values.x, valueCache, resetValue);
-					Editor::MakeEdit(xReset);
-				}
 
 				ImGui::SameLine();
 
 				ImGui::DragFloat("##X", &values.x, speed, min, max, "%.2f", flags);
-
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.x;
-
-				if (ImGui::IsItemDeactivatedAfterEdit() && values.x != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> xEdit = Ref<ValueEdit<float>>::Create(values.x, valueCache, values.x);
-					Editor::MakeEdit(xEdit);
-				}
-
 				ImGui::PopItemWidth();
+
+				valueChanged |= ImGui::IsItemDeactivatedAfterEdit();
 			}
 			ImGui::SameLine();
 			{
@@ -212,36 +174,18 @@ namespace Zahra
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("Y", buttonSize))
 				{
+					valueChanged |= values.y != resetValue;
 					values.y = resetValue;
 				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
 
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.y;
-
-				if (ImGui::IsItemDeactivated() && values.y != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> yReset = Ref<ValueEdit<float>>::Create(values.y, valueCache, resetValue);
-					Editor::MakeEdit(yReset);
-				}
-
 				ImGui::SameLine();
 
 				ImGui::DragFloat("##Y", &values.y, speed, min, max, "%.2f", flags);
-
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.y;
-
-				if (ImGui::IsItemDeactivatedAfterEdit() && values.y != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> yEdit = Ref<ValueEdit<float>>::Create(values.y, valueCache, values.y);
-					Editor::MakeEdit(yEdit);
-				}
-
 				ImGui::PopItemWidth();
+
+				valueChanged |= ImGui::IsItemDeactivatedAfterEdit();
 			}
 
 			ImGui::PopStyleVar(2);
@@ -267,27 +211,18 @@ namespace Zahra
 			auto boldFont = io.Fonts->Fonts[1];
 
 			ImGui::PushID(label.c_str());
-
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
 			ImGui::TableNextColumn();
-
 			{
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text(label.c_str());
 			}
 
 			ImGui::TableNextColumn();
-
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2);
 			ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-
-			static float valueCache;
-			glm::vec3 originalValues = values;
-
 			{
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.8f, .1f, .15f, 1.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.9f, .2f, .20f, 1.0f));
@@ -295,36 +230,18 @@ namespace Zahra
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("X", buttonSize))
 				{
+					valueChanged |= values.x != resetValue;
 					values.x = resetValue;
 				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
 
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.x;
-
-				if (ImGui::IsItemDeactivated() && values.x != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> xReset = Ref<ValueEdit<float>>::Create(values.x, valueCache, resetValue);
-					Editor::MakeEdit(xReset);
-				}
-
 				ImGui::SameLine();
 
 				ImGui::DragFloat("##X", &values.x, speed, min, max, "%.2f", flags);
-
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.x;
-
-				if (ImGui::IsItemDeactivatedAfterEdit() && values.x != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> xEdit = Ref<ValueEdit<float>>::Create(values.x, valueCache, values.x);
-					Editor::MakeEdit(xEdit);
-				}
-
 				ImGui::PopItemWidth();
+
+				valueChanged |= ImGui::IsItemDeactivatedAfterEdit();
 			}
 			ImGui::SameLine();
 			{
@@ -334,36 +251,18 @@ namespace Zahra
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("Y", buttonSize))
 				{
+					valueChanged |= values.y != resetValue;
 					values.y = resetValue;
 				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
 
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.y;
-
-				if (ImGui::IsItemDeactivated() && values.y != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> yReset = Ref<ValueEdit<float>>::Create(values.y, valueCache, resetValue);
-					Editor::MakeEdit(yReset);
-				}
-
 				ImGui::SameLine();
 
 				ImGui::DragFloat("##Y", &values.y, speed, min, max, "%.2f", flags);
-
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.y;
-
-				if (ImGui::IsItemDeactivatedAfterEdit() && values.y != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> yEdit = Ref<ValueEdit<float>>::Create(values.y, valueCache, values.y);
-					Editor::MakeEdit(yEdit);
-				}
-
 				ImGui::PopItemWidth();
+
+				valueChanged |= ImGui::IsItemDeactivatedAfterEdit();
 			}
 			ImGui::SameLine();
 			{
@@ -373,38 +272,19 @@ namespace Zahra
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("Z", buttonSize))
 				{
+					valueChanged |= values.z != resetValue;
 					values.z = resetValue;
 				}
 				ImGui::PopFont();
 				ImGui::PopStyleColor(3);
 
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.z;
-
-				if (ImGui::IsItemDeactivated() && values.z != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> zReset = Ref<ValueEdit<float>>::Create(values.z, valueCache, resetValue);
-					Editor::MakeEdit(zReset);
-				}
-
 				ImGui::SameLine();
 
 				ImGui::DragFloat("##Z", &values.z, speed, min, max, "%.2f", flags);
-
-				if (ImGui::IsItemActivated())
-					valueCache = originalValues.z;
-
-				if (ImGui::IsItemDeactivatedAfterEdit() && values.z != valueCache)
-				{
-					valueChanged = true;
-					Ref<Edit> zEdit = Ref<ValueEdit<float>>::Create(values.z, valueCache, values.z);
-					Editor::MakeEdit(zEdit);
-				}
-
 				ImGui::PopItemWidth();
-			}
 
+				valueChanged |= ImGui::IsItemDeactivatedAfterEdit();
+			}
 			ImGui::PopStyleVar(2);
 			ImGui::PopID();
 
@@ -432,69 +312,40 @@ namespace Zahra
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2);
 			ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
 
-			static glm::vec3 eulerCache;
 			glm::vec3 eulers = transform.GetEulers();
-
 			{
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.8f, .1f, .15f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.9f, .2f, .20f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.8f, .1f, .15f, 1.0f));
+				ImGui::PushFont(boldFont);
 				{
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.8f, .1f, .15f, 1.0f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.9f, .2f, .20f, 1.0f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.8f, .1f, .15f, 1.0f));
-					ImGui::PushFont(boldFont);
 					if (ImGui::Button("X", buttonSize))
-					{
 						eulers.x = 0.0f;
-					}
-					ImGui::PopFont();
-					ImGui::PopStyleColor(3);
-
-					if (ImGui::IsItemActivated())
-						eulerCache = transform.GetEulers();
-
-					eulersChanged |= ImGui::IsItemDeactivated() && (eulers != eulerCache);
 				}
+				ImGui::PopFont();
+				ImGui::PopStyleColor(3);
+
 				ImGui::SameLine();
-				{
-					ImGui::DragFloat("##X", &eulers.x, glm::radians(1.0f), .0f, .0f, "%.2f");
-
-					if (ImGui::IsItemActivated())
-						eulerCache = transform.GetEulers();
-
-					eulersChanged |= ImGui::IsItemDeactivatedAfterEdit() && (eulers != eulerCache);
-
-
-				}
+				
+				ImGui::DragFloat("##X", &eulers.x, glm::radians(1.0f), .0f, .0f, "%.2f");
 				ImGui::PopItemWidth();
 			}
 			ImGui::SameLine();
 			{
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.2f, .7f, .2f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.3f, .8f, .3f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.2f, .7f, .2f, 1.0f));
+				ImGui::PushFont(boldFont);
 				{
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.2f, .7f, .2f, 1.0f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.3f, .8f, .3f, 1.0f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.2f, .7f, .2f, 1.0f));
-					ImGui::PushFont(boldFont);
 					if (ImGui::Button("Y", buttonSize))
-					{
 						eulers.y = 0.0f;
-					}
-					ImGui::PopFont();
-					ImGui::PopStyleColor(3);
-
-					if (ImGui::IsItemActivated())
-						eulerCache = transform.GetEulers();
-
-					eulersChanged |= ImGui::IsItemDeactivated() && (eulers != eulerCache);
 				}
+				ImGui::PopFont();
+				ImGui::PopStyleColor(3);
+
 				ImGui::SameLine();
 
-				{
-					ImGui::DragFloat("##Y", &eulers.y, glm::radians(1.0f), .0f, .0f, "%.2f");
-
-					if (ImGui::IsItemActivated())
-						eulerCache = transform.GetEulers();
-
-					eulersChanged |= ImGui::IsItemDeactivatedAfterEdit() && (eulers != eulerCache);
-				}
+				ImGui::DragFloat("##Y", &eulers.y, glm::radians(1.0f), .0f, .0f, "%.2f");
 				ImGui::PopItemWidth();
 			}
 			ImGui::SameLine();
@@ -503,51 +354,32 @@ namespace Zahra
 					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.1f, .25f, .8f, 1.0f));
 					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.2f, .35f, .9f, 1.0f));
 					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.1f, .25f, .8f, 1.0f));
-					ImGui::PushFont(boldFont);
-					if (ImGui::Button("Z", buttonSize))
+					ImGui::PushFont(boldFont);					
 					{
-						eulers.z = 0.0f;
+						if (ImGui::Button("Z", buttonSize))
+							eulers.z = 0.0f;
 					}
 					ImGui::PopFont();
 					ImGui::PopStyleColor(3);
 
-					if (ImGui::IsItemActivated())
-						eulerCache = transform.GetEulers();
-
-					eulersChanged |= ImGui::IsItemDeactivated() && (eulers != eulerCache);
-
 
 				}
 				ImGui::SameLine();
-				{
-					ImGui::DragFloat("##Z", &eulers.z, glm::radians(1.0f), .0f, .0f, "%.2f");
 
-					if (ImGui::IsItemActivated())
-						eulerCache = transform.GetEulers();
-
-					eulersChanged |= ImGui::IsItemDeactivatedAfterEdit() && (eulers != eulerCache);
-				}
+				ImGui::DragFloat("##Z", &eulers.z, glm::radians(1.0f), .0f, .0f, "%.2f");
 				ImGui::PopItemWidth();
 			}
 			ImGui::PopStyleVar(2);
 			ImGui::PopID();
 
+			eulersChanged = eulers == transform.GetEulers();
 			transform.SetRotation(eulers);
-
-			if (eulersChanged)
-			{
-				Ref<Edit> eulerEdit = Ref<EulerAngleEdit>::Create(transform, eulerCache, eulers);
-				Editor::MakeEdit(eulerEdit);
-			}
 
 			return eulersChanged;
 		}
 
-		bool DrawRGBAControl(const std::string& label, glm::vec4& colour)
+		void DrawRGBAControl(const std::string& label, glm::vec4& colour)
 		{
-			glm::vec4 initialValues = colour, values = colour;
-			bool valuesChanged = false;
-
 			ImGui::PushID(label.c_str());
 			ImGui::TableNextColumn();
 			{
@@ -556,26 +388,9 @@ namespace Zahra
 			}
 			ImGui::TableNextColumn();						
 			{
-				// ImGui's colour picker doesn't play well with my undo/redo system so for now
-				// I'll just stick to typing hex codes (which tbf is a generally better choice)
-				ImGui::ColorEdit4("##RGBA", glm::value_ptr(values), ImGuiColorEditFlags_NoOptions | ImGuiColorEditFlags_DisplayHex | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoSmallPreview);
-
-				static glm::vec4 valueCache;
-				if (ImGui::IsItemActivated())
-					valueCache = initialValues;
-
-				valuesChanged = ImGui::IsItemDeactivatedAfterEdit() && (values != valueCache);
-
-				if (valuesChanged)
-				{
-					Ref<Edit> colourEdit = Ref<ValueEdit<glm::vec4>>::Create(colour, valueCache, values);
-					Editor::MakeEdit(colourEdit);
-					valueCache = values;
-				}				
+				ImGui::ColorEdit4("##RGBA", glm::value_ptr(colour), ImGuiColorEditFlags_DisplayHex);			
 			}
 			ImGui::PopID();
-
-			return valuesChanged;
 		}
 
 		bool DrawBoolControl(const std::string& label, bool& value, bool disabled = false)
@@ -594,10 +409,7 @@ namespace Zahra
 				valueChanged = ImGui::Checkbox("##bool", &localValue) && !disabled;
 
 				if (valueChanged)
-				{
-					Ref<Edit> boolValueEdit = Ref<ValueEdit<bool>>::Create(value, value, localValue);
-					Editor::MakeEdit(boolValueEdit);
-				}
+					value = localValue;
 			}
 			ImGui::PopID();
 
@@ -615,13 +427,13 @@ namespace Zahra
 				ImGui::Text(label.c_str());
 			}
 			ImGui::TableNextColumn();
+			ImGui::PushItemWidth(ImGui::GetColumnWidth());
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(textColour.r, textColour.g, textColour.b, 1.0f));
 			{
-				ImGui::PushItemWidth(ImGui::GetColumnWidth());
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(textColour.r, textColour.g, textColour.b, 1.0f));
 				edited = ImGui::InputText("##label", buffer, bufferLength);
-				ImGui::PopStyleColor();
-				ImGui::PopItemWidth();
 			}
+			ImGui::PopStyleColor();
+			ImGui::PopItemWidth();
 			ImGui::PopID();
 
 			return edited;
@@ -642,22 +454,18 @@ namespace Zahra
 				ImGui::Text(label.c_str());
 			}
 			ImGui::TableNextColumn();
-			{
-				if (ImGui::BeginCombo("##options", options[currentValue], flags))
-				{
-					for (uint32_t i = 0; i < count; i++)
-					{
-						if (ImGui::Selectable(options[i], currentValue == i))
-						{
-							if (!disabled)
-								newValue = i;
-						}
 
-						if (currentValue == i)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
+			if (ImGui::BeginCombo("##options", options[currentValue], flags))
+			{
+				for (uint32_t i = 0; i < count; i++)
+				{
+					if (ImGui::Selectable(options[i], currentValue == i) && !disabled)
+						newValue = i;
+
+					if (currentValue == i)
+						ImGui::SetItemDefaultFocus();
 				}
+				ImGui::EndCombo();
 			}
 			ImGui::PopID();
 

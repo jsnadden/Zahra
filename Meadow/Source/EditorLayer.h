@@ -87,8 +87,6 @@ namespace Zahra
 
 		// Transform gizmos
 		TransformationType m_GizmoType = TransformationType::None;
-		bool m_GizmoWasUsedLastFrame = false;
-		TransformComponent m_CachedTransform;
 
 		void ReadHoveredEntity();
 

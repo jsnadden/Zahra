@@ -1,7 +1,6 @@
 #include "SceneHierarchyPanel.h"
 
 #include "Editor/Editor.h"
-#include "Editor/EditTypes.h"
 #include "Utils/PanelUI.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 
@@ -32,8 +31,8 @@ namespace Zahra
 
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse;
 
-		if (Editor::UnsavedChanges())
-			flags |= ImGuiWindowFlags_UnsavedDocument;
+		/*if (Editor::UnsavedChanges())
+			flags |= ImGuiWindowFlags_UnsavedDocument;*/
 
 		ImGui::Begin(windowName.c_str(), 0, flags);
 		if (m_Context)
@@ -73,10 +72,7 @@ namespace Zahra
 			if (ImGui::BeginPopupContextWindow("##SceneHierarchyContextMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
 			{
 				if (ImGui::MenuItem("Add New Entity"))
-				{
-					Ref<Edit> addEntity = Ref<EntityCreation>::Create(m_Context, *this);
-					Editor::MakeEdit(addEntity);
-				}
+					m_Context->CreateEntity();
 
 				// TODO: menuitems to create prefab entities (with specific component sets and default parameters)
 
@@ -151,8 +147,8 @@ namespace Zahra
 
 			if (ImGui::MenuItem("Duplicate entity", nullptr, false, Editor::GetSceneState() == SceneState::Edit))
 			{
-				Ref<Edit> duplicateEntity = Ref<EntityDuplication>::Create(entity.GetGUID(), m_Context, *this);
-				Editor::MakeEdit(duplicateEntity);
+				if (entity)
+					m_Context->DuplicateEntity(entity);
 			}
 
 			if (ImGui::MenuItem("Delete entity", nullptr, false, Editor::GetSceneState() == SceneState::Edit))
@@ -307,16 +303,10 @@ namespace Zahra
 					}
 
 					const char* projectionTypeStrings[] = { "Orthographic", "Perspective" };
-					int32_t comboIndex = (int32_t)camera.GetProjectionType();
-					
-					if (SceneHierarchyUIPatterns::DrawComboControl("Projection Type", projectionTypeStrings, 2, comboIndex))
-					{
-						Ref<Edit> projectionEdit = Ref<ValueEdit<SceneCamera::ProjectionType>>::Create(camera.GetProjectionType(), camera.GetProjectionType(), (SceneCamera::ProjectionType)comboIndex);
-						Editor::MakeEdit(projectionEdit);
-					}
-
-					SceneCamera::ProjectionType currentProjectionType = (SceneCamera::ProjectionType)comboIndex;
-					//camera.SetProjectionType(currentProjectionType);
+					int32_t comboIndex = (int32_t)camera.GetProjectionType();					
+					SceneHierarchyUIPatterns::DrawComboControl("Projection Type", projectionTypeStrings, 2, comboIndex);
+					auto currentProjectionType = (SceneCamera::ProjectionType)comboIndex;
+					camera.SetProjectionType(currentProjectionType);
 
 					if (currentProjectionType == SceneCamera::ProjectionType::Orthographic)
 					{
@@ -354,14 +344,8 @@ namespace Zahra
 		SceneHierarchyUIPatterns::DrawComponent<RigidBody2DComponent>("2D Rigid Body Component", entity, [](auto& component)
 			{
 				const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
-				int32_t comboIndex = (int32_t)component.Type;
-				
-				if (SceneHierarchyUIPatterns::DrawComboControl("Body Type", bodyTypeStrings, 3, comboIndex, Editor::GetSceneState() != SceneState::Edit))
-				{
-					Ref<Edit> bodyEdit = Ref<ValueEdit<RigidBody2DComponent::BodyType>>::Create(component.Type, component.Type, (RigidBody2DComponent::BodyType)comboIndex);
-					Editor::MakeEdit(bodyEdit);
-				}
-				
+				int32_t comboIndex = (int32_t)component.Type;				
+				SceneHierarchyUIPatterns::DrawComboControl("Body Type", bodyTypeStrings, 3, comboIndex, Editor::GetSceneState() != SceneState::Edit);				
 				component.Type = (RigidBody2DComponent::BodyType)comboIndex;
 
 				SceneHierarchyUIPatterns::DrawBoolControl("Non-Rotating", component.FixedRotation, Editor::GetSceneState() != SceneState::Edit);
