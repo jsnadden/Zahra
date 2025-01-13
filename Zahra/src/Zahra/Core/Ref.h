@@ -233,11 +233,35 @@ namespace Zahra
 			m_Raw = ptr;
 		}
 
+		T* Raw() { return  m_Raw; }
+		const T* Raw() const { return  m_Raw; }
+
+		operator bool() { return m_Raw != nullptr; }
+		operator bool() const { return m_Raw != nullptr; }
+
 		T* operator->() { return m_Raw; }
 		const T* operator->() const { return m_Raw; }
 
 		T& operator*() { return *m_Raw; }
 		const T& operator*() const { return *m_Raw; }
+
+		bool operator==(const WeakRef<T>& other) const
+		{
+			return m_Raw == other.m_Raw;
+		}
+
+		bool operator!=(const WeakRef<T>& other) const
+		{
+			return !(*this == other);
+		}
+
+		bool EqualsObject(const WeakRef<T>& other)
+		{
+			if (!m_Raw || !other.m_Raw)
+				return false;
+
+			return *m_Raw == *other.m_Raw;
+		}
 
 		template<typename T2>
 		WeakRef<T2> As() const
@@ -246,16 +270,9 @@ namespace Zahra
 		}
 
 	private:
-		T* m_Raw = nullptr;
+		mutable T* m_Raw = nullptr;
+
+		template<class T2>
+		friend class WeakRef;
 	};
-
-	/*template<typename T>
-	using Ref = std::shared_ptr<T>;
-
-	template<typename T, typename ... Args>
-	constexpr Ref<T> CreateRef(Args&& ... args)
-	{
-		return std::make_shared<T>(std::forward<Args>(args)...);
-	}*/
-
 }

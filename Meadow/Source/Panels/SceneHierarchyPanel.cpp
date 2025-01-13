@@ -1,89 +1,12 @@
 #include "SceneHierarchyPanel.h"
 
 #include "Editor/Editor.h"
+#include "Editor/EditTypes.h"
 #include "Utils/PanelUI.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 
 namespace Zahra
 {
-	namespace SceneEdits
-	{
-		static void CreateEntity(Ref<Scene>& editorScene, Entity& selection)
-		{
-			ZGUID id;
-			EditAction createEntityAction;
-			createEntityAction.Do = [&, id]()
-				{
-					editorScene->CreateEntity(id);
-				};
-			createEntityAction.Undo = [&, id]()
-				{
-					if (selection)
-					{
-						if (selection.GetGUID() == id)
-							selection = {};
-					}
-
-					editorScene->DestroyEntity(id);
-				};
-			Editor::NewAction(createEntityAction);
-
-			selection = editorScene->GetEntity(id);
-		}
-
-		static void DestroyEntity(Ref<Scene>& editorScene, Entity& entity, Entity& selection)
-		{
-			// TODO: this is going to be a pain:
-			//	Go through every possible component, recording whether the entity has one, and if so, its data.
-			//	The do command is easy enough:
-			//			1) just capture [&, GUID]
-			//			2) deselect if entity == selection
-			//			3) destroy entity using its GUID 
-			//	The undo command is going to be more of a pain:
-			//			1) capture the cached component and bool values i.e. [&, cachedT, hasT, ...]
-			//			2) create entity using its previous GUID and Tag values
-			//			3) for each component type T: if hasT, then add a T and set it equal to cachedT
-
-		}
-
-		static void DuplicateEntity(Ref<Scene>& editorScene, Entity& entity, Entity& selection)
-		{
-			/*ZGUID extantID = entity.GetGUID();
-				ZGUID newID;
-
-				EditAction duplicateEntity;
-				duplicateEntity.Do = [&, extantID, newID]()
-					{
-						m_Context->DuplicateEntity(m_Context->GetEntity(extantID), newID);
-					};
-				duplicateEntity.Undo = [&, newID]()
-					{
-						if (m_Selected)
-						{
-							if (m_Selected.GetGUID() == newID)
-								m_Selected = {};
-						}
-
-						m_Context->DestroyEntity(newID);
-					};
-				Editor::NewAction(duplicateEntity);
-
-				m_Selected = m_Context->GetEntity(newID);*/
-		}
-
-		template <typename Component>
-		static void AddComponent(Ref<Scene>& editorScene, Entity& entity, Component& component, Entity& selection)
-		{
-
-		}
-
-		template <typename Component>
-		static void RemoveComponent(Ref<Scene>& editorScene, Entity& entity, Entity& selection)
-		{
-
-		}
-	}
-
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context, EditorCamera& camera)
 	{
 		SetContext(context);
@@ -92,7 +15,7 @@ namespace Zahra
 
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
-		m_Selected = {}; // can't reference an entity in a discarded scene!!
+		m_Selected = {}; // avoids referencing an entity from a different scene
 		m_Context = context;
 	}
 
@@ -101,7 +24,7 @@ namespace Zahra
 		m_Camera = &camera;
 	}
 
-	void SceneHierarchyPanel::OnImGuiRender(SceneState sceneState)
+	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// HIERARCHY PANEL
@@ -133,7 +56,7 @@ namespace Zahra
 				{
 					Entity entity{ e, m_Context.Raw() };
 
-					DrawEntityNode(entity, sceneState);
+					DrawEntityNode(entity);
 				}
 
 				ImGui::TableNextColumn();
@@ -151,8 +74,8 @@ namespace Zahra
 			{
 				if (ImGui::MenuItem("Add New Entity"))
 				{
-					// TODO: replace with an EditAction submission
-					m_Selected = m_Context->CreateEntity();					
+					Ref<Edit> addEntity = Ref<EntityCreation>::Create(m_Context, *this);
+					Editor::MakeEdit(addEntity);
 				}
 
 				// TODO: menuitems to create prefab entities (with specific component sets and default parameters)
@@ -168,7 +91,7 @@ namespace Zahra
 		{
 			if (m_Selected)
 			{
-				DrawComponents(m_Selected, sceneState);
+				DrawComponents(m_Selected);
 
 				// right click to add components
 				if (ImGui::BeginPopupContextWindow("##PropertiesContextMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
@@ -180,14 +103,22 @@ namespace Zahra
 				}
 
 				if (m_ShowAddComponentsModal)
-					AddComponentsModal(m_Selected, sceneState);
+					AddComponentsModal(m_Selected);
 			}
 		}
 
 		ImGui::End();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity, SceneState sceneState)
+	bool SceneHierarchyPanel::IsSelected(ZGUID entityID)
+	{
+		if (!m_Selected)
+			return false;
+
+		return m_Selected.GetGUID() == entityID;
+	}
+
+	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
 		std::string& tag = entity.GetComponents<TagComponent>().Tag;
 		
@@ -213,18 +144,18 @@ namespace Zahra
 
 		if (ImGui::BeginPopupContextItem())
 		{
-			if (ImGui::MenuItem("Add child", nullptr, false, sceneState == SceneState::Edit))
+			if (ImGui::MenuItem("Add child", nullptr, false, Editor::GetSceneState() == SceneState::Edit))
 			{
 				// TODO: implement this with HierarchyComponent
 			}
 
-			if (ImGui::MenuItem("Duplicate entity", nullptr, false, sceneState == SceneState::Edit))
+			if (ImGui::MenuItem("Duplicate entity", nullptr, false, Editor::GetSceneState() == SceneState::Edit))
 			{
-				// TODO: replace with an EditAction submission
-				m_Selected = m_Context->DuplicateEntity(entity);
+				Ref<Edit> duplicateEntity = Ref<EntityDuplication>::Create(entity.GetGUID(), m_Context, *this);
+				Editor::MakeEdit(duplicateEntity);
 			}
 
-			if (ImGui::MenuItem("Delete entity", nullptr, false, sceneState == SceneState::Edit))
+			if (ImGui::MenuItem("Delete entity", nullptr, false, Editor::GetSceneState() == SceneState::Edit))
 				entityToTheGallows = true;
 
 			ImGui::EndPopup();
@@ -248,11 +179,14 @@ namespace Zahra
 		}
 	}
 		
-	void SceneHierarchyPanel::DrawComponents(Entity entity, SceneState sceneState)
+	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{ 
 		Z_CORE_ASSERT(entity.HasComponents<TagComponent>(), "All entities must have a TagComponent")
 
-			std::string& tag = entity.GetComponents<TagComponent>().Tag;
+		std::string& tag = entity.GetComponents<TagComponent>().Tag;
+		ZGUID entityID = entity.GetGUID();
+
+		ImGui::PushID((int)entityID);
 
 		// this necessitates a max tag size of 255 ascii characters (plus null terminator)
 		char buffer[256];
@@ -290,7 +224,7 @@ namespace Zahra
 			ImGui::TableNextColumn();
 			{
 				std::stringstream stream;
-				stream << "0x" << std::uppercase << std::hex << (uint64_t)entity.GetGUID();
+				stream << "0x" << std::uppercase << std::hex << (uint64_t)entityID;
 				ImGui::Text(stream.str().c_str());
 
 				ImGui::SameLine(ImGui::GetColumnWidth() - 135.f);
@@ -307,10 +241,7 @@ namespace Zahra
 				{
 					SceneHierarchyUIPatterns::DrawFloat3Controls("Position", component.Translation);
 					SceneHierarchyUIPatterns::DrawFloat3Controls("Dimensions", component.Scale, 1.0f, .05f, true);
-
-					glm::vec3 rotation = glm::degrees(component.GetEulers());
-					SceneHierarchyUIPatterns::DrawFloat3Controls("Euler Angles", rotation, .0f, 1.f);
-					component.SetRotation(glm::radians(rotation));
+					SceneHierarchyUIPatterns::DrawEulerAngleControls(component);
 				}, true, false);
 		
 		SceneHierarchyUIPatterns::DrawComponent<SpriteComponent>("Sprite Component", entity, [](auto& component)
@@ -359,7 +290,7 @@ namespace Zahra
 				}
 
 				if (validScript)
-					SceneHierarchyUIPatterns::DrawScriptFieldTable(entity, sceneState, m_Context->GetScriptFieldStorage(entity));
+					SceneHierarchyUIPatterns::DrawScriptFieldTable(entity, m_Context->GetScriptFieldStorage(entity));
 								
 
 			}, false, true, false);
@@ -376,8 +307,16 @@ namespace Zahra
 					}
 
 					const char* projectionTypeStrings[] = { "Orthographic", "Perspective" };
-					SceneCamera::ProjectionType currentProjectionType = (SceneCamera::ProjectionType)SceneHierarchyUIPatterns::DrawComboControl("Projection Type", projectionTypeStrings, 2, (int)camera.GetProjectionType());
-					camera.SetProjectionType(currentProjectionType);
+					int32_t comboIndex = (int32_t)camera.GetProjectionType();
+					
+					if (SceneHierarchyUIPatterns::DrawComboControl("Projection Type", projectionTypeStrings, 2, comboIndex))
+					{
+						Ref<Edit> projectionEdit = Ref<ValueEdit<SceneCamera::ProjectionType>>::Create(camera.GetProjectionType(), camera.GetProjectionType(), (SceneCamera::ProjectionType)comboIndex);
+						Editor::MakeEdit(projectionEdit);
+					}
+
+					SceneCamera::ProjectionType currentProjectionType = (SceneCamera::ProjectionType)comboIndex;
+					//camera.SetProjectionType(currentProjectionType);
 
 					if (currentProjectionType == SceneCamera::ProjectionType::Orthographic)
 					{
@@ -415,10 +354,17 @@ namespace Zahra
 		SceneHierarchyUIPatterns::DrawComponent<RigidBody2DComponent>("2D Rigid Body Component", entity, [](auto& component)
 			{
 				const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
-				RigidBody2DComponent::BodyType currentBodyType = (RigidBody2DComponent::BodyType)SceneHierarchyUIPatterns::DrawComboControl("Body Type", bodyTypeStrings, 3, (int)component.Type);
-				component.Type = currentBodyType;
+				int32_t comboIndex = (int32_t)component.Type;
+				
+				if (SceneHierarchyUIPatterns::DrawComboControl("Body Type", bodyTypeStrings, 3, comboIndex, Editor::GetSceneState() != SceneState::Edit))
+				{
+					Ref<Edit> bodyEdit = Ref<ValueEdit<RigidBody2DComponent::BodyType>>::Create(component.Type, component.Type, (RigidBody2DComponent::BodyType)comboIndex);
+					Editor::MakeEdit(bodyEdit);
+				}
+				
+				component.Type = (RigidBody2DComponent::BodyType)comboIndex;
 
-				SceneHierarchyUIPatterns::DrawBoolControl("Non-Rotating", component.FixedRotation);
+				SceneHierarchyUIPatterns::DrawBoolControl("Non-Rotating", component.FixedRotation, Editor::GetSceneState() != SceneState::Edit);
 			});
 
 		SceneHierarchyUIPatterns::DrawComponent<RectColliderComponent>("2D Rectangular Collider Component", entity, [](auto& component)
@@ -445,9 +391,10 @@ namespace Zahra
 				SceneHierarchyUIPatterns::DrawFloatControl("Rest. Threshold", component.RestitutionThreshold, .01f, false, .0f);
 			});
 		
+		ImGui::PopID();
 	}
 	
-	void SceneHierarchyPanel::AddComponentsModal(Entity entity, SceneState sceneState)
+	void SceneHierarchyPanel::AddComponentsModal(Entity entity)
 	{
 		// TODO: add checkboxes and an "add multiple" button
 
@@ -469,9 +416,9 @@ namespace Zahra
 				clicked |= SceneHierarchyUIPatterns::AddComponentMenuItem<CircleComponent>("Circle", m_Selected);
 				clicked |= SceneHierarchyUIPatterns::AddComponentMenuItem<ScriptComponent>("Script", m_Selected);
 				clicked |= SceneHierarchyUIPatterns::AddComponentMenuItem<CameraComponent>("Camera", m_Selected);
-				clicked |= SceneHierarchyUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected, sceneState == SceneState::Edit);
-				clicked |= SceneHierarchyUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected, sceneState == SceneState::Edit);
-				clicked |= SceneHierarchyUIPatterns::AddComponentMenuItem<CircleColliderComponent>("2D Circular Collider", m_Selected, sceneState == SceneState::Edit);
+				clicked |= SceneHierarchyUIPatterns::AddComponentMenuItem<RigidBody2DComponent>("2D Rigid Body", m_Selected, Editor::GetSceneState() == SceneState::Edit);
+				clicked |= SceneHierarchyUIPatterns::AddComponentMenuItem<RectColliderComponent>("2D Rectangular Collider", m_Selected, Editor::GetSceneState() == SceneState::Edit);
+				clicked |= SceneHierarchyUIPatterns::AddComponentMenuItem<CircleColliderComponent>("2D Circular Collider", m_Selected, Editor::GetSceneState() == SceneState::Edit);
 
 				ImGui::EndChild();
 			}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utils/TypeDefs.h"
+
 namespace Zahra
 {
 	struct EditorConfig
@@ -8,9 +10,11 @@ namespace Zahra
 		uint32_t MaxCachedScenes = 5;
 	};
 
-	struct EditAction
+	class Edit : public RefCounted
 	{
-		std::function<void()> Do, Undo;
+	public:
+		virtual void Do() = 0;
+		virtual void Undo() = 0;
 	};
 
 	class Editor
@@ -21,7 +25,7 @@ namespace Zahra
 
 		static EditorConfig& GetConfig();
 
-		static void NewAction(EditAction& action);
+		static void MakeEdit(Ref<Edit>& edit);
 
 		static void Undo();
 		static void Redo();
@@ -29,5 +33,8 @@ namespace Zahra
 		static bool CanUndo();
 		static bool CanRedo();
 		static bool UnsavedChanges();
+
+		static SceneState GetSceneState();
+		static void SetSceneState(const SceneState& sceneState);
 	};
 }

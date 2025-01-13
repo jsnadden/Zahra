@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor/SceneState.h"
+#include "Utils/TypeDefs.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 
@@ -23,14 +23,11 @@ namespace Zahra
 		void OnEvent(Event& event) override;
 		bool OnKeyPressedEvent(KeyPressedEvent& event);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
-		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& event);
 		bool OnWindowClosed(WindowClosedEvent& event);
 
 	private:
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
-
-		SceneState m_SceneState = SceneState::Edit;
 
 		const wchar_t* m_FileTypesFilter[2] = { L"Zahra Scene", L"*.zsc" };
 		std::filesystem::path m_WorkingSceneFilepath;
@@ -89,7 +86,7 @@ namespace Zahra
 		glm::vec4 m_HighlightSelectionColour = { 0.92f, 0.72f, 0.18f, 1.00f };
 
 		// Transform gizmos
-		int32_t m_GizmoType = -1;
+		TransformationType m_GizmoType = TransformationType::None;
 		bool m_GizmoWasUsedLastFrame = false;
 		TransformComponent m_CachedTransform;
 

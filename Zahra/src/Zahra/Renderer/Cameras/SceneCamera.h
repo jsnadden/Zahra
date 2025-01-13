@@ -33,7 +33,7 @@ namespace Zahra
 		void SetViewportSize(float width, float height);
 
 		void SetProjectionType(ProjectionType type);
-		ProjectionType GetProjectionType() { return m_ProjectionType; }
+		ProjectionType& GetProjectionType() { return m_ProjectionType; }
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Orthographic data

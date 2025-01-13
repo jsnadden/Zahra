@@ -1,6 +1,6 @@
 #include "EditorLayer.h"
 
-#include "Editor/Editor.h"
+#include "Editor/EditTypes.h"
 #include "Zahra/Maths/Maths.h"
 #include "Zahra/Scene/SceneSerialiser.h"
 #include "Zahra/Utils/PlatformUtils.h"
@@ -163,7 +163,7 @@ namespace Zahra
 				m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 			}
 
-			if (m_ViewportHovered && m_SceneState != SceneState::Play)
+			if (m_ViewportHovered && Editor::GetSceneState() != SceneState::Play)
 			{
 				m_EditorCamera.OnUpdate(dt);
 			}
@@ -175,7 +175,7 @@ namespace Zahra
 			Zahra::Renderer::BeginRenderPass(m_ClearPass, false, true);
 			Zahra::Renderer::EndRenderPass();
 
-			switch (m_SceneState)
+			switch (Editor::GetSceneState())
 			{
 				case SceneState::Edit:
 				{
@@ -221,7 +221,7 @@ namespace Zahra
 		UIControls();
 		UIStatsWindow();
 
-		m_SceneHierarchyPanel.OnImGuiRender(m_SceneState);
+		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 
 		UISaveChangesPrompt();
@@ -229,9 +229,11 @@ namespace Zahra
 
 	void EditorLayer::ScenePlay()
 	{
+		CacheWorkingScene();
+
 		m_HoveredEntity = {};
 
-		m_SceneState = SceneState::Play;
+		Editor::SetSceneState(SceneState::Play);
 
 		m_ActiveScene = Scene::CopyScene(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
@@ -243,7 +245,7 @@ namespace Zahra
 	{
 		m_HoveredEntity = {};
 
-		m_SceneState = SceneState::Simulate;
+		Editor::SetSceneState(SceneState::Simulate);
 
 		m_ActiveScene = Scene::CopyScene(m_EditorScene);
 		m_ActiveScene->OnSimulationStart();
@@ -255,7 +257,7 @@ namespace Zahra
 	{
 		m_HoveredEntity = {};
 
-		switch (m_SceneState)
+		switch (Editor::GetSceneState())
 		{
 			case SceneState::Simulate:
 			{
@@ -271,7 +273,7 @@ namespace Zahra
 				Z_CORE_ASSERT(false, "SceneStop should only be called when SceneState is ::Simulate or ::Play");
 		}
 
-		m_SceneState = SceneState::Edit;
+		Editor::SetSceneState(SceneState::Edit);
 		m_ActiveScene = m_EditorScene;
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -342,16 +344,16 @@ namespace Zahra
 				ImGui::SeparatorText("Transform Gizmo");
 
 				if (ImGui::MenuItem("Select", "Q"))
-					m_GizmoType = -1;
+					m_GizmoType = TransformationType::None;
 
 				if (ImGui::MenuItem("Translate", "W"))
-					m_GizmoType = 0;
+					m_GizmoType = TransformationType::Translation;
 
 				if (ImGui::MenuItem("Rotate", "E"))
-					m_GizmoType = 1;
+					m_GizmoType = TransformationType::Rotation;
 
 				if (ImGui::MenuItem("Scale", "R"))
-					m_GizmoType = 2;
+					m_GizmoType = TransformationType::Scale;
 
 				ImGui::EndMenu();
 			}
@@ -396,7 +398,7 @@ namespace Zahra
 		float iconSize = 35.f;
 
 		ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
-		switch (m_SceneState)
+		switch (Editor::GetSceneState())
 		{
 		case SceneState::Edit:
 		{
@@ -512,6 +514,7 @@ namespace Zahra
 		ImGui::Text("Editor");
 
 		ImGui::ColorEdit4("Selection colour", glm::value_ptr(m_HighlightSelectionColour), ImGuiColorEditFlags_NoInputs);
+		ImGui::DragFloat("Selection box expansion", &sceneDebugSettings.SelectionPushOut, .001f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic& ImGuiSliderFlags_NoRoundToFormat);
 
 		ImGui::End();
 	}
@@ -540,7 +543,7 @@ namespace Zahra
 			ImGuiTextureHandle viewportTextureID = m_ViewportTextureHandle;
 			ImGui::Image(viewportTextureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2(0, 0), ImVec2(1, 1));
 
-			if (m_SceneState == SceneState::Edit)
+			if (Editor::GetSceneState() == SceneState::Edit)
 				UIGizmo();
 
 			if (ImGui::BeginDragDropTarget())
@@ -567,7 +570,7 @@ namespace Zahra
 	void EditorLayer::UIGizmo()
 	{
 		Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (!selection || m_GizmoType == -1)
+		if (!selection || m_GizmoType == TransformationType::None || m_EditorCamera.Controlled())
 			return;
 		
 		// Configure ImGuizmo
@@ -613,15 +616,23 @@ namespace Zahra
 
 		// Configure snapping
 		bool snap = Input::IsKeyPressed(Key::LeftControl);
-		float snapValue = (m_GizmoType == 120) ? 45.0f : 0.5f;
+		float snapValue = (m_GizmoType == TransformationType::Rotation) ? 45.0f : 0.5f;
 		float snapVector[3] = { snapValue, snapValue, snapValue };
 
+		// Gizmo type conversion
+		ImGuizmo::OPERATION op;
+		switch (m_GizmoType)
+		{
+			case TransformationType::Translation:	op = ImGuizmo::TRANSLATE;	break;
+			case TransformationType::Rotation:		op = ImGuizmo::ROTATE;		break;
+			case TransformationType::Scale:			op = ImGuizmo::SCALE;		break;
+		}
+
 		// Pass data to ImGuizmo
-		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GizmoType,
+		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), op,
 			ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
 
-		// Feedback manipulated transform, and cache transform for undo/redo actions
-		if (ImGuizmo::IsUsing() && !m_EditorCamera.Controlled())
+		if (ImGuizmo::IsUsing())
 		{
 			if (!m_GizmoWasUsedLastFrame)
 				m_CachedTransform = transformComponent;
@@ -630,62 +641,24 @@ namespace Zahra
 			Maths::DecomposeTransform(transform, transformComponent.Translation, eulers, transformComponent.Scale);
 			transformComponent.SetRotation(eulers);
 		}
-		else
+		else if (m_GizmoWasUsedLastFrame)
 		{
-			if (m_GizmoWasUsedLastFrame)
+			Ref<Edit> gizmoManipulation;
+			
+			if (m_CachedTransform.Translation != transformComponent.Translation)
 			{
-				if (m_CachedTransform.Translation != transformComponent.Translation)
-				{
-					glm::vec3 oldTranslation = m_CachedTransform.Translation;
-					glm::vec3 newTranslation = transformComponent.Translation;
-
-					EditAction gizmoTranslate;
-					gizmoTranslate.Do = [newTranslation, &transformComponent]()
-						{
-							transformComponent.Translation = newTranslation;
-						};
-					gizmoTranslate.Undo = [oldTranslation, &transformComponent]()
-						{
-							transformComponent.Translation = oldTranslation;
-						};
-
-					Editor::NewAction(gizmoTranslate);
-				}
-				else if (m_CachedTransform.GetEulers() != transformComponent.GetEulers())
-				{
-					glm::vec3 oldEulers = m_CachedTransform.GetEulers();
-					glm::vec3 newEulers = transformComponent.GetEulers();
-
-					EditAction gizmoRotate;
-					gizmoRotate.Do = [newEulers, &transformComponent]()
-						{
-							transformComponent.SetRotation(newEulers);
-						};
-					gizmoRotate.Undo = [oldEulers, &transformComponent]()
-						{
-							transformComponent.SetRotation(oldEulers);
-						};
-
-					Editor::NewAction(gizmoRotate);
-				}
-				else if (m_CachedTransform.Scale != transformComponent.Scale)
-				{
-					glm::vec3 oldScale = m_CachedTransform.Scale;
-					glm::vec3 newScale = transformComponent.Scale;
-
-					EditAction gizmoScale;
-					gizmoScale.Do = [newScale, &transformComponent]()
-						{
-							transformComponent.Scale = newScale;
-						};
-					gizmoScale.Undo = [oldScale, &transformComponent]()
-						{
-							transformComponent.Scale = oldScale;
-						};
-
-					Editor::NewAction(gizmoScale);
-				}
+				gizmoManipulation = Ref<GizmoManipulation>::Create(transformComponent, m_CachedTransform.Translation, transformComponent.Translation, TransformationType::Translation);
 			}
+			else if (m_CachedTransform.GetEulers() != transformComponent.GetEulers())
+			{
+				gizmoManipulation = Ref<GizmoManipulation>::Create(transformComponent, m_CachedTransform.GetEulers(), transformComponent.GetEulers(), TransformationType::Rotation);
+			}
+			else if (m_CachedTransform.Scale != transformComponent.Scale)
+			{
+				gizmoManipulation = Ref<GizmoManipulation>::Create(transformComponent, m_CachedTransform.Scale, transformComponent.Scale, TransformationType::Scale);
+			}
+
+			Editor::MakeEdit(gizmoManipulation);
 		}
 
 		m_GizmoWasUsedLastFrame = ImGuizmo::IsUsing();
@@ -791,10 +764,12 @@ namespace Zahra
 		if (ImGui::BeginPopupModal("Unsaved Changes", nullptr, ImGuiWindowFlags_NoResize))
 		{
 			// TODO: change from scene to project?
-			ImGui::SetCursorPosY(40);
-			ImGui::Text("The current scene has unsaved changes.\nWould you like to save before exiting?");
+			const char* prompt = "The current scene has unsaved changes.\n  Would you like to save before exiting?";
+			ImGui::SetCursorPosX(.5f * (330 - ImGui::CalcTextSize(prompt).x));
+			ImGui::SetCursorPosY(35);
+			ImGui::Text(prompt);
 
-			ImGui::SetCursorPosY(80);
+			ImGui::SetCursorPosY(85);
 			if (ImGui::Button("Save", ImVec2(100, 0)))
 			{
 				if (SaveSceneFile())
@@ -845,7 +820,7 @@ namespace Zahra
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		if (m_ViewportHovered && m_SceneState != SceneState::Play)
+		if (m_ViewportHovered && Editor::GetSceneState() != SceneState::Play)
 			m_EditorCamera.OnEvent(event);
 
 		m_ContentBrowserPanel.OnEvent(event);
@@ -853,7 +828,6 @@ namespace Zahra
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnKeyPressedEvent));
 		dispatcher.Dispatch<MouseButtonPressedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressedEvent));
-		dispatcher.Dispatch<MouseButtonReleasedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnMouseButtonReleasedEvent));
 		dispatcher.Dispatch<WindowClosedEvent>(Z_BIND_EVENT_FN(EditorLayer::OnWindowClosed));
 	}
 
@@ -893,6 +867,9 @@ namespace Zahra
 			}
 			case KeyCode::S:
 			{
+				if (Editor::GetSceneState() != SceneState::Edit)
+					break;
+
 				if (ctrl && shift)
 				{
 					SaveAsSceneFile();
@@ -928,63 +905,41 @@ namespace Zahra
 			}
 			case KeyCode::Q:
 			{
-				if (m_ViewportFocused && m_SceneState == SceneState::Edit)
-					m_GizmoType = -1;
+				if (m_ViewportFocused && Editor::GetSceneState() == SceneState::Edit)
+					m_GizmoType = TransformationType::None;
 
 				break;
 			}
 			case KeyCode::W:
 			{
-				if (m_ViewportFocused && m_SceneState == SceneState::Edit)
-					m_GizmoType = 7;
+				if (m_ViewportFocused && Editor::GetSceneState() == SceneState::Edit)
+					m_GizmoType = TransformationType::Translation;
 
 				break;
 			}
 			case KeyCode::E:
 			{
-				if (m_ViewportFocused && m_SceneState == SceneState::Edit)
-					m_GizmoType = 120;
+				if (m_ViewportFocused && Editor::GetSceneState() == SceneState::Edit)
+					m_GizmoType = TransformationType::Rotation;
 
 				break;
 			}
 			case KeyCode::R:
 			{
-				if (m_ViewportFocused && m_SceneState == SceneState::Edit)
-					m_GizmoType = 896;
+				if (m_ViewportFocused && Editor::GetSceneState() == SceneState::Edit)
+					m_GizmoType = TransformationType::Scale;
 
 				break;
 			}
 			case KeyCode::D:
 			{
-				if (ctrl && m_SceneState == SceneState::Edit)
+				if (ctrl && Editor::GetSceneState() == SceneState::Edit)
 				{
 					Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
 					if (selection)
 					{
-						/*Entity copy = m_EditorScene->DuplicateEntity(selection);
-						m_SceneHierarchyPanel.SelectEntity(copy);*/
-
-						ZGUID extantID = selection.GetGUID();
-						ZGUID newID;
-
-						EditAction duplicateEntity;
-						duplicateEntity.Do = [&, extantID, newID]()
-							{
-								m_EditorScene->DuplicateEntity(m_EditorScene->GetEntity(extantID), newID);
-							};
-						duplicateEntity.Undo = [&, newID]()
-							{
-								if (Entity select = m_SceneHierarchyPanel.GetSelectedEntity())
-								{
-									if (select.GetGUID() == newID)
-										m_SceneHierarchyPanel.SelectEntity({});
-								}
-
-								m_EditorScene->DestroyEntity(newID);
-							};
-						Editor::NewAction(duplicateEntity);
-
-						m_SceneHierarchyPanel.SelectEntity(m_EditorScene->GetEntity(newID));
+						Ref<Edit> duplicateEntity = Ref<EntityDuplication>::Create(selection.GetGUID(), m_EditorScene, m_SceneHierarchyPanel);
+						Editor::MakeEdit(duplicateEntity);
 					}
 
 					return true;
@@ -1020,16 +975,6 @@ namespace Zahra
 		return true;
 	}
 
-	bool EditorLayer::OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& event)
-	{
-		if (event.GetMouseButton() == MouseCode::ButtonLeft)
-		{
-			
-		}
-
-		return false;
-	}
-
 	bool EditorLayer::OnWindowClosed(WindowClosedEvent& event)
 	{
 		DoAfterHandlingUnsavedChanges([]()
@@ -1042,7 +987,7 @@ namespace Zahra
 
 	void EditorLayer::NewScene()
 	{
-		if (m_SceneState != SceneState::Edit)
+		if (Editor::GetSceneState() != SceneState::Edit)
 			SceneStop();
 
 		m_EditorScene = Ref<Scene>::Create();
@@ -1070,7 +1015,7 @@ namespace Zahra
 		if (filepath.empty())
 			return;
 		
-		if (m_SceneState != SceneState::Edit)
+		if (Editor::GetSceneState() != SceneState::Edit)
 			SceneStop();
 
 		m_HoveredEntity = {};

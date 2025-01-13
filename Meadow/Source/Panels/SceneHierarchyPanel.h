@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor/SceneState.h"
+#include "Utils/TypeDefs.h"
 
 #include <Zahra.h>
 
@@ -15,26 +15,26 @@ namespace Zahra
 		void SetContext(const Ref<Scene>& context);
 		void SetEditorCamera(EditorCamera& camera);
 
-		void OnImGuiRender(SceneState sceneState);
+		void OnImGuiRender();
 
-		// TODO: is there a better way of doing this (e.g. listeners have callback functions OnSelectionChange()?)
 		Entity GetSelectedEntity() const { return m_Selected; }
 		void SelectEntity(Entity entity) { m_Selected = entity; }
+		bool IsSelected(ZGUID entityID);
+		void Deselect() { m_Selected = {}; }
 
 
 	private:
-		Ref<Scene> m_Context;
-		EditorCamera* m_Camera = nullptr;
+		WeakRef<Scene> m_Context;
+		WeakRef<EditorCamera> m_Camera;
 
 		Entity m_Selected;
 
 		bool m_ShowAddComponentsModal = false;
 
-		void DrawEntityNode(Entity entity, SceneState sceneState);
-		void DrawComponents(Entity entity, SceneState sceneState);
-		void AddComponentsModal(Entity entity, SceneState sceneState);
+		void DrawEntityNode(Entity entity);
+		void DrawComponents(Entity entity);
+		void AddComponentsModal(Entity entity);
 
-		//friend class PropertiesPanel;
 	};
 
 }

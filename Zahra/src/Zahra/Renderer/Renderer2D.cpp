@@ -540,10 +540,12 @@ namespace Zahra
 		m_Stats.LineCount++;
 	}
 
-	void Renderer2D::DrawQuadBoundingBox(const glm::mat4& transform, const glm::vec4& colour, int entityID)
+	void Renderer2D::DrawQuadBoundingBox(const glm::mat4& transform, const glm::vec4& colour, int entityID, glm::vec3 rescale)
 	{
+		glm::mat4 rescaleTransform = glm::scale(glm::mat4(1.0f), rescale);
+
 		for (int i = 0; i < 4; i++)
-			DrawLine(transform * m_QuadTemplate[i], transform * m_QuadTemplate[(i + 1) % 4], colour, entityID);
+			DrawLine(transform * rescaleTransform * m_QuadTemplate[i], transform * rescaleTransform * m_QuadTemplate[(i + 1) % 4], colour, entityID);
 	}
 
 	void Renderer2D::OnViewportResize(uint32_t width, uint32_t height)

@@ -72,6 +72,7 @@ namespace Zahra
 			bool ShowColliders = false;
 			glm::vec4 ColliderColour = { 0.80f, 0.55f, 0.00f, 1.00f };
 			float LineWidth = 3.0f;
+			float SelectionPushOut = .03f;
 		};
 
 		static DebugRenderSettings& GetDebugRenderSettings();

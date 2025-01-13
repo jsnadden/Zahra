@@ -74,6 +74,8 @@ namespace Zahra
 			return GetComponents<TagComponent>().Tag;
 		}
 
+		//WeakRef<Scene> GetScene() { return m_Scene; }
+
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
@@ -90,7 +92,7 @@ namespace Zahra
 
 	private:
 		entt::entity m_EntityHandle{ entt::null };
-		Scene* m_Scene = nullptr; // TODO: Should be a WeakRef
+		WeakRef<Scene> m_Scene = nullptr;
 	};
 
 }

@@ -539,9 +539,6 @@ namespace Zahra
 			auto rectColliders = m_Registry.view<TransformComponent, RectColliderComponent>();
 			for (auto entity : rectColliders)
 			{
-				if (entity == (entt::entity)selection)
-					continue;
-
 				auto [transform, collider] = rectColliders.get<TransformComponent, RectColliderComponent>(entity);
 
 				glm::vec3 scale = transform.Scale * glm::vec3(collider.HalfExtent * 2.0f, 1.0f);
@@ -562,7 +559,7 @@ namespace Zahra
 				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), glm::vec3(transform.Translation.x, transform.Translation.y, 0.f))
 					* glm::rotate(glm::mat4(1.0f), transform.GetEulers().z, glm::vec3(0.0f, 0.0f, 1.0f))
 					* glm::translate(glm::mat4(1.0f), glm::vec3(collider.Offset, 0.f))
-					* glm::scale(glm::mat4(1.f), glm::vec3(collider.Radius * 2.05f));
+					* glm::scale(glm::mat4(1.f), glm::vec3(collider.Radius * 2.0f));
 
 				renderer->DrawCircle(colliderTransform, s_DebugRenderSettings.ColliderColour, .02f / collider.Radius, .001f, (int)entity);
 			}
@@ -572,7 +569,16 @@ namespace Zahra
 		if (selection)
 		{
 			TransformComponent entityTransform = selection.GetComponents<TransformComponent>();
-			renderer->DrawQuadBoundingBox(entityTransform.GetTransform(), selectionColour);
+
+			// expand selection box
+			glm::vec3 pushOut =
+			{ 
+				1.0f + s_DebugRenderSettings.SelectionPushOut / entityTransform.Scale.x,
+				1.0f + s_DebugRenderSettings.SelectionPushOut / entityTransform.Scale.y,
+				1.0f
+			};
+
+			renderer->DrawQuadBoundingBox(entityTransform.GetTransform(), selectionColour, selection, pushOut);
 		}
 
 	}
