@@ -8,9 +8,9 @@ namespace Djinn
 			return Zahra.Input_IsKeyDown(keyCode);
 		}
 
-		public static bool IsMouseButtonDown(MouseCode mouseCode)
+		public static bool IsMouseButtonPressed(MouseCode mouseCode)
 		{
-			return Zahra.Input_IsMouseButtonDown(mouseCode);
+			return Zahra.Input_IsMouseButtonPressed(mouseCode);
 		}
 
 		public static void GetMousePosition(out float x, out float y)

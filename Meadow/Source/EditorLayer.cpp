@@ -354,6 +354,14 @@ namespace Zahra
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Scripts"))
+			{
+				if (ImGui::MenuItem("Reload", "Ctrl+Shift+R", false, Editor::GetSceneState() == SceneState::Edit))
+					ScriptEngine::ReloadAssembly();
+
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu("Help"))
 			{
 				if (ImGui::MenuItem("About"))
@@ -510,7 +518,7 @@ namespace Zahra
 		ImGui::Text("Editor");
 
 		ImGui::ColorEdit4("Selection colour", glm::value_ptr(m_HighlightSelectionColour), ImGuiColorEditFlags_NoInputs);
-		ImGui::DragFloat("Selection box expansion", &sceneDebugSettings.SelectionPushOut, .001f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic& ImGuiSliderFlags_NoRoundToFormat);
+		//ImGui::DragFloat("Selection box expansion", &sceneDebugSettings.SelectionPushOut, .001f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic& ImGuiSliderFlags_NoRoundToFormat);
 
 		ImGui::End();
 	}
@@ -725,19 +733,19 @@ namespace Zahra
 
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-		ImGui::SetNextWindowSize(ImVec2(330, 120));
+		ImGui::SetNextWindowSize(ImVec2(330, 150));
 
 		if (ImGui::BeginPopupModal("Save Changes", nullptr, ImGuiWindowFlags_NoResize))
 		{
 			// TODO: change from scene to project?
-			const char* prompt = "Would you like to save before exiting?";
+			const char* prompt = "Save scene file before closing?";
 			ImGui::SetCursorPosX(.5f * (330 - ImGui::CalcTextSize(prompt).x));
 			ImGui::SetCursorPosY(45);
 			ImGui::Text(prompt);
 
 			// TODO: add a checkbox to disable this popup in future
 
-			ImGui::SetCursorPosY(85);
+			ImGui::SetCursorPosY(80);
 			if (ImGui::Button("Save", ImVec2(100, 0)))
 			{
 				if (SaveSceneFile())
@@ -771,6 +779,12 @@ namespace Zahra
 				m_SaveChangesCallback = []() {};
 			}
 
+			bool hideThis = !Editor::GetConfig().ShowSavePrompt;
+			const char* msg = "Don't show this again";
+			ImGui::SetCursorPosX(.5f * (330 - ImGui::CalcTextSize(msg).x));
+			ImGui::SetCursorPosY(115);
+			if (ImGui::Checkbox(msg, &hideThis))
+				Editor::GetConfig().ShowSavePrompt = !hideThis;
 			ImGui::EndPopup();
 		}
 	}
@@ -874,7 +888,11 @@ namespace Zahra
 			}
 			case KeyCode::R:
 			{
-				if (m_ViewportFocused && Editor::GetSceneState() == SceneState::Edit)
+				if (shift && ctrl && Editor::GetSceneState() == SceneState::Edit)
+				{
+					ScriptEngine::ReloadAssembly();
+				}
+				else if (m_ViewportFocused && Editor::GetSceneState() == SceneState::Edit)
 					m_GizmoType = TransformationType::Scale;
 
 				break;
@@ -1041,6 +1059,9 @@ namespace Zahra
 
 			out << YAML::Key << "MaxCachedScenes";
 			out << YAML::Value << config.MaxCachedScenes;
+
+			out << YAML::Key << "ShowSavePrompt";
+			out << YAML::Value << config.ShowSavePrompt;
 		}
 		out << YAML::EndMap;
 
@@ -1087,6 +1108,11 @@ namespace Zahra
 		if (auto maxCachedScenesNode = data["MaxCachedScenes"])
 		{
 			config.MaxCachedScenes = maxCachedScenesNode.as<uint32_t>();
+		}
+
+		if (auto showSavePromptNode = data["ShowSavePrompt"])
+		{
+			config.ShowSavePrompt = showSavePromptNode.as<bool>();
 		}
 	}
 

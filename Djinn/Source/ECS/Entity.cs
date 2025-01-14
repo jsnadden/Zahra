@@ -6,7 +6,13 @@ namespace Djinn
 	public class Entity
 	{
 		protected Entity() { GUID = 0; }
-		protected Entity(ulong guid) { GUID = guid; }
+		public Entity(ulong guid) { GUID = guid; }
+
+		// TODO: get rid of this eventually, it's just for testing the script system
+		public Entity(string name)
+		{
+			GUID = Zahra.Entity_FindEntityByName(name);
+		}
 
 		public static implicit operator bool(Entity entity) => entity.GUID != 0;
 
@@ -40,11 +46,10 @@ namespace Djinn
 
 		}
 
-		// TODO: get rid of this eventually, it's just for testing
-		public Entity FindEntityWithName(string name)
+		public T As<T>() where T : Entity, new()
 		{
-			ulong guid = Zahra.Entity_FindEntityByName(name);			
-			return new Entity(guid);
+			object instance = Zahra.Entity_GetScriptInstance(GUID);
+			return instance as T;
 		}
 
 	}

@@ -67,6 +67,16 @@ namespace Djinn
 			return new Vector3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 		}
 
+		public static Vector3 operator -(Vector3 a, Vector3 b)
+		{
+			return new Vector3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+		}
+
+		public static Vector3 operator *(Vector3 a, Vector3 b)
+		{
+			return new Vector3(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
+		}
+
 		public static Vector3 operator *(Vector3 vector, float scalar)
 		{
 			return new Vector3(scalar * vector.X, scalar * vector.Y, scalar * vector.Z);

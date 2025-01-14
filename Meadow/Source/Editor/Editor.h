@@ -33,13 +33,11 @@ namespace Zahra
 		// why this is a bad idea. For a start, you have to keep track of A LOT of state, and a great deal of that
 		// is highly unpredictable (as it is with any non-trivial program). Even with what seemed like the easiest
 		// thing to be able to undo/redo, namely data fields in ECS components, the fact that you have no long-term
-		// guarantee of the existence of those fields means you have either let the undo/redo stacks manage the
-		// lifetimes of all those data, or do frequent/thorough garbage collection to clear out dangling refs.
-		// Unless I wanted to write an ECS system from scratch, I should avoid doing things using this command
-		// pattern approach. If I return to this at some point, I should go the photoshop route: cache binary images
-		// and/or diffs to keep track of ALL relevant state. It might be slower, and certainly will put a limit on the
-		// undo/redo stack sizes, but there's a reason that's the standard for a lot of technical applications. In
-		// any case, I need to move on now. This was, at the very least, a great learning experience.
+		// guarantee of the existence of the component means you have either let the undo/redo stacks manage their
+		// lifetimes, or do frequent/thorough garbage collection to clear out dangling refs. If I return to this at
+		// some point, I could explore the photoshop route: cache binary images and diffs to keep track of ALL scene
+		// state. It might be slower, and certainly will put a limit on the undo/redo stack sizes, but might be overall
+		// easier to implement and maintain.
 #if 0
 		static void Reset();
 		static void OnSave();

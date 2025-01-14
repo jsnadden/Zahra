@@ -573,7 +573,7 @@ namespace Zahra
 							{
 								ZGUID value = instance->GetScriptFieldValue<ZGUID>(field);
 
-								Entity otherEntity = ScriptEngine::GetEntityFromGUID(value);
+								Entity otherEntity = ScriptEngine::GetEntity(value);
 								std::string otherEntityName;
 								otherEntityName = otherEntity ?
 									otherEntity.GetComponents<TagComponent>().Tag :

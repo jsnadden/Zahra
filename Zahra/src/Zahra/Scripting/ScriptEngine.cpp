@@ -50,9 +50,12 @@ namespace Zahra
 		MonoDomain* RootDomain = nullptr;
 		MonoDomain* AppDomain = nullptr;
 
+		// TODO: these paths should be set externally (e.g. via a project system, or in the editor)
+		const std::string CoreAssemblyFilepath = "../Examples/Bud/Assets/Scripts/Binaries/Djinn.dll";
 		MonoAssembly* CoreAssembly = nullptr;
 		MonoImage* CoreAssemblyImage = nullptr;
 
+		const std::string AppAssemblyFilepath = "../Examples/Bud/Assets/Scripts/Binaries/BudScripts.dll";
 		MonoAssembly* AppAssembly = nullptr;
 		MonoImage* AppAssemblyImage = nullptr;
 
@@ -86,20 +89,17 @@ namespace Zahra
 
 	void ScriptEngine::Init()
 	{
-		s_SEData = new ScriptEngineData();
+		s_SEData = znew ScriptEngineData();
 
-		InitMonoDomains();
-		
-		// TODO: these paths should be set externally (e.g. via a project system, or in the editor)
-		LoadAssembly("../Examples/Bud/Assets/Scripts/Binaries/Djinn.dll", s_SEData->CoreAssembly, s_SEData->CoreAssemblyImage);
-		LoadAssembly("../Examples/Bud/Assets/Scripts/Binaries/BudScripts.dll", s_SEData->AppAssembly, s_SEData->AppAssemblyImage);
-		
+		CreateRootDomain();
+		CreateAppDomain();
+		LoadAssemblies();		
 		Reflect();
 
 		ScriptGlue::RegisterComponentTypes(s_SEData->CoreAssemblyImage);
 		ScriptGlue::RegisterFunctions();
 
-		Z_CORE_INFO("Script engine initialised");
+		Z_CORE_INFO("Script engine has initialised");
 	}
 
 	void ScriptEngine::Shutdown()
@@ -107,6 +107,8 @@ namespace Zahra
 		ShutdownMonoDomains();
 
 		delete s_SEData;
+
+		Z_CORE_INFO("Script engine has shut down");
 	}
 
 	// TODO: once we have intrusive reference counting, we can pass the scene as a Ref instead of a raw pointer
@@ -120,6 +122,20 @@ namespace Zahra
 		s_SEData->SceneContext = nullptr;
 		s_SEData->ScriptInstances.clear();
 		//mono_gc_collect(0); // if necessary we can trigger garbage collection here
+	}
+
+	void ScriptEngine::ReloadAssembly()
+	{
+		mono_domain_set(mono_get_root_domain(), false);
+		mono_domain_unload(s_SEData->AppDomain);
+
+		CreateAppDomain();
+		LoadAssemblies();
+		Reflect();
+
+		ScriptGlue::RegisterComponentTypes(s_SEData->CoreAssemblyImage);
+
+		Z_CORE_INFO("Script engine reloaded");
 	}
 
 	const std::unordered_map<std::string, Ref<ScriptClass>>& ScriptEngine::GetScriptClasses()
@@ -162,9 +178,9 @@ namespace Zahra
 				auto field = fields[i];
 				uint64_t offset = 16 * i;
 
-				// TODO: currently this only works for fields of value types: simple types,
-				// and structs whose fields are also value types. The issue with class-valued
-				// types is their memory layout includes a header of metadata.
+				// TODO: currently this only works for fields of value-type: simple types,
+				// and structs whose fields are also value types. To handle a class e.g. I'd
+				// need to take into account the header section of its memory layout.
 				switch (ScriptUtils::GetScriptFieldTypeByteSize(field.Type))
 				{
 					case 1:
@@ -217,14 +233,14 @@ namespace Zahra
 			instance->InvokeLateUpdate(dt);
 	}
 
-	Entity ScriptEngine::GetEntityFromGUID(ZGUID guid)
+	Entity ScriptEngine::GetEntity(ZGUID guid)
 	{
 		Z_CORE_ASSERT(s_SEData->SceneContext);
 
 		return s_SEData->SceneContext->GetEntity(guid);
 	}
 
-	Entity ScriptEngine::GetEntityFromName(MonoString* name)
+	Entity ScriptEngine::GetEntity(MonoString* name)
 	{
 		Z_CORE_ASSERT(s_SEData->SceneContext);
 
@@ -235,23 +251,41 @@ namespace Zahra
 		return entity;
 	}
 
+	MonoObject* ScriptEngine::GetMonoObject(ZGUID guid)
+	{
+		auto it = s_SEData->ScriptInstances.find(guid);
+		if (it != s_SEData->ScriptInstances.end())
+			return it->second->GetMonoObject();
+
+		return nullptr;
+	}
+
 	MonoString* ScriptEngine::StdStringToMonoString(const std::string& string)
 	{
 		MonoString* monoString = mono_string_new(s_SEData->AppDomain, string.c_str());
 		return monoString;
 	}
 		
-	void ScriptEngine::InitMonoDomains()
+	void ScriptEngine::CreateRootDomain()
 	{
 		mono_set_assemblies_path("mono/lib");
 
 		MonoDomain* rootDomain = mono_jit_init("ZahraJITRuntime");
 		Z_CORE_ASSERT(rootDomain);
 
-		s_SEData->RootDomain = rootDomain;
+		s_SEData->RootDomain = rootDomain;		
+	}
 
-		s_SEData->AppDomain = mono_domain_create_appdomain("ZahraScriptRuntime", nullptr);
+	void ScriptEngine::CreateAppDomain()
+	{
+		s_SEData->AppDomain = mono_domain_create_appdomain("DjinnRuntime", nullptr);
 		mono_domain_set(s_SEData->AppDomain, true);
+	}
+
+	void ScriptEngine::LoadAssemblies()
+	{
+		LoadAssembly(s_SEData->CoreAssemblyFilepath, s_SEData->CoreAssembly, s_SEData->CoreAssemblyImage);
+		LoadAssembly(s_SEData->AppAssemblyFilepath, s_SEData->AppAssembly, s_SEData->AppAssemblyImage);
 	}
 
 	void ScriptEngine::LoadAssembly(const std::filesystem::path& library, MonoAssembly*& assembly, MonoImage*& assemblyImage)

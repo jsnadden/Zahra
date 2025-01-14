@@ -185,6 +185,8 @@ namespace Zahra
 		static void OnRuntimeStart(Scene* scene);
 		static void OnRuntimeStop();
 
+		static void ReloadAssembly();
+
 		static const std::unordered_map<std::string, Ref<ScriptClass>>& GetScriptClasses();
 		static const Ref<ScriptClass> GetScriptClassIfValid(const std::string& fullName);
 		static bool ValidScriptClass(const std::string& fullName);
@@ -194,17 +196,19 @@ namespace Zahra
 		static void ScriptInstanceLateUpdate(Entity entity, float dt);
 
 		static Ref<ScriptInstance> GetScriptInstance(Entity entity);
+		static MonoObject* GetMonoObject(ZGUID guid);
 
-		static Entity GetEntityFromGUID(ZGUID guid);
-		static Entity GetEntityFromName(MonoString* name);
+		static Entity GetEntity(ZGUID guid);
+		static Entity GetEntity(MonoString* name);		
 
 		static MonoString* StdStringToMonoString(const std::string& string);
 
-
 	private:
-		static void InitMonoDomains();
+		static void CreateRootDomain();
+		static void CreateAppDomain();
 		static void ShutdownMonoDomains();
 		
+		static void LoadAssemblies();
 		static void LoadAssembly(const std::filesystem::path& library, MonoAssembly*& assembly, MonoImage*& assemblyImage);
 
 		static void Reflect();

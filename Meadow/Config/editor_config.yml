@@ -1,3 +1,4 @@
 WorkingSceneFilepath: Assets\Scenes\shades.zsc
 SceneCacheInterval: 300
 MaxCachedScenes: 5
+ShowSavePrompt: false

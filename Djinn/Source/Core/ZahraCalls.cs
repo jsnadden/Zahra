@@ -9,45 +9,45 @@ namespace Djinn
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// INPUT
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static bool Input_IsKeyDown(KeyCode key);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsKeyDown(KeyCode key);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static bool Input_IsMouseButtonDown(MouseCode button);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsMouseButtonPressed(MouseCode button);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Input_GetMousePos(out float x, out float y);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void Input_GetMousePos(out float x, out float y);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static float Input_GetMouseX();
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float Input_GetMouseX();
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static float Input_GetMouseY();
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float Input_GetMouseY();
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// LOGGING
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Trace(string text);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void Log_Trace(string text);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Info(string text);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void Log_Info(string text);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Warn(string text);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void Log_Warn(string text);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Error(string text);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void Log_Error(string text);
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static void Log_Critical(string text);
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void Log_Critical(string text);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// WINDOW
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static float Window_GetWidth();
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float Window_GetWidth();
 
-			[MethodImplAttribute(MethodImplOptions.InternalCall)]
-			internal extern static float Window_GetHeight();
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float Window_GetHeight();
 
 		#endregion
 
@@ -62,6 +62,9 @@ namespace Djinn
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static string Entity_GetName(ulong guid);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static object Entity_GetScriptInstance(ulong guid);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// TRANSFORM COMPONENT
