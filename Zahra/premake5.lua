@@ -37,6 +37,7 @@ project "Zahra"
 		"vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Box2D}",
+		"%{IncludeDir.FileWatch}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",

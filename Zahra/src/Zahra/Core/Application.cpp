@@ -56,15 +56,13 @@ namespace Zahra
 
 		while (m_Running)
 		{
-			/*static int frameNumber = 0;
-			Z_CORE_TRACE("Began frame number {0}", frameNumber);
-			frameNumber++;*/
-
 			// Compute frame time
 			float frameStartTime = Time::GetTime();
-			float dt = frameStartTime - m_PreviousFrameStartTime; // actual delta time
-			//float dt = glm::min<float>(frameStartTime - m_PreviousFrameStartTime, 0.0333f); // regularised delta time
+			float dt = frameStartTime - m_PreviousFrameStartTime; // actual time step
+			//float dt = glm::min<float>(frameStartTime - m_PreviousFrameStartTime, 0.0333f); // regularised time step
 			m_PreviousFrameStartTime = frameStartTime;
+
+			FlushCommandQueue();
 
 			m_Window->PollEvents();
 
@@ -93,6 +91,23 @@ namespace Zahra
 		Z_CORE_INFO("End of run loop");
 
 		m_Window->WriteConfig();
+	}
+
+	void Application::SubmitToMainThread(const std::function<void()>& command)
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadCommandQueueMutex);
+
+		m_MainThreadCommandQueue.emplace_back(command);
+	}
+
+	void Application::FlushCommandQueue()
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadCommandQueueMutex);
+
+		for (auto& command : m_MainThreadCommandQueue)
+			command();
+
+		m_MainThreadCommandQueue.clear();
 	}
 
 	void Application::OnEvent(Event& e)

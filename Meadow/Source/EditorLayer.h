@@ -43,19 +43,26 @@ namespace Zahra
 		void SceneStop();
 		
 		void UIMenuBar();
-		void UIAboutWindow(); bool m_ShowAboutWindow = false;
-		void UIControls();
 		void UIViewport();
-		void UIGizmo();
 		void UIStatsWindow(); // TODO: break up stats window into several tabs?
-		void UISaveChangesPrompt();
+		
+		void UIGizmo();
+		TransformationType m_GizmoType = TransformationType::None;
 
+		void UIControls();
 		std::map<std::string, Ref<Texture2D>> m_Icons;
 		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
+		bool m_Paused = false;
+		int32_t m_FramesPerStep = 1;
+		int32_t m_StepCountdown = 0;
 
+		void UIAboutWindow();
+		bool m_ShowAboutWindow = false;
+
+		void UISaveChangesPrompt();
 		void DoAfterHandlingUnsavedChanges(std::function<void()> callback);
+		std::function<void()> m_AfterSaveChangesCallback;
 		bool m_ShowSaveChangesPrompt = false;
-		std::function<void()> m_SaveChangesCallback;
 
 		void NewScene();
 		void OpenSceneFile();
@@ -84,9 +91,6 @@ namespace Zahra
 		glm::vec2 m_ViewportBounds[2] = { {}, {} };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 		glm::vec4 m_HighlightSelectionColour = { 0.92f, 0.72f, 0.18f, 1.00f };
-
-		// Transform gizmos
-		TransformationType m_GizmoType = TransformationType::None;
 
 		void ReadHoveredEntity();
 

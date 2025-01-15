@@ -19,6 +19,7 @@ project "Meadow"
 		"%{wks.location}/Zahra/vendor/spdlog/include",
 		"%{wks.location}/Zahra/src",
 		"%{wks.location}/Zahra/vendor",
+		"%{IncludeDir.FileWatch}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.EnTT}",
 		"%{IncludeDir.ImGuizmo}",

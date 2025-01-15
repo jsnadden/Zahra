@@ -5,8 +5,8 @@ namespace Zahra
 	enum class SceneState
 	{
 		Edit,
-		Play,
-		Simulate
+		Simulate,
+		Play
 	};
 
 	enum class TransformationType

@@ -211,6 +211,8 @@ namespace Zahra
 		static void LoadAssemblies();
 		static void LoadAssembly(const std::filesystem::path& library, MonoAssembly*& assembly, MonoImage*& assemblyImage);
 
+		static void InitAssemblyFileWatcher();
+
 		static void Reflect();
 	};
 

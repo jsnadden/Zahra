@@ -95,10 +95,13 @@ namespace Zahra
 		}
 
 		Texture2DSpecification textureSpec{};
-		m_Icons["Play"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/play.png");
-		m_Icons["Stop"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/stop.png");
-		m_Icons["PlaySim"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/play_sim.png");
-		m_Icons["Replay"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/replay.png");
+		m_Icons["Play"]			= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/play.png");
+		m_Icons["Step"]			= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/step.png");
+		m_Icons["Reset"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/reset.png");
+		m_Icons["Stop"]			= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/stop.png");
+		m_Icons["Pause"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/pause.png");
+		m_Icons["PhysicsOn"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/physics_on.png");
+		m_Icons["PhysicsOff"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/physics_off.png");
 
 		for (auto& [name, texture] : m_Icons)
 		{
@@ -159,7 +162,7 @@ namespace Zahra
 				m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 			}
 
-			if (m_ViewportHovered && Editor::GetSceneState() != SceneState::Play)
+			if (m_ViewportHovered && (Editor::GetSceneState() == SceneState::Edit || Editor::GetSceneState() == SceneState::Simulate))
 			{
 				m_EditorCamera.OnUpdate(dt);
 			}
@@ -181,7 +184,13 @@ namespace Zahra
 				}
 				case SceneState::Play:
 				{
-					m_ActiveScene->OnUpdateRuntime(dt);
+					if (!m_Paused || m_StepCountdown > 0)
+					{
+						m_ActiveScene->OnUpdateRuntime(dt);
+
+						if (m_StepCountdown > 0)
+							m_StepCountdown--;
+					}
 					m_ActiveScene->OnRenderRuntime(m_Renderer2D, m_SceneHierarchyPanel.GetSelectedEntity(), m_HighlightSelectionColour);
 					break;
 				}
@@ -225,9 +234,13 @@ namespace Zahra
 
 	void EditorLayer::ScenePlay()
 	{
-		CacheWorkingScene();
+		if (Editor::GetSceneState() != SceneState::Play)
+			CacheWorkingScene();
 
 		m_HoveredEntity = {};
+
+		if (Editor::GetSceneState() == SceneState::Simulate)
+			m_ActiveScene->OnSimulationStop();
 
 		Editor::SetSceneState(SceneState::Play);
 
@@ -266,7 +279,7 @@ namespace Zahra
 				break;
 			}
 			default:
-				Z_CORE_ASSERT(false, "SceneStop should only be called when SceneState is ::Simulate or ::Play");
+				break;
 		}
 
 		Editor::SetSceneState(SceneState::Edit);
@@ -397,30 +410,59 @@ namespace Zahra
 
 	void EditorLayer::UIControls()
 	{
-		ImGui::Begin("Controls");
-		
+		auto sceneState = Editor::GetSceneState();
+		bool edit = sceneState == SceneState::Edit;
+		bool play = sceneState == SceneState::Play;
+		bool simulate = sceneState == SceneState::Simulate;
 		float iconSize = 35.f;
 
+		ImGui::Begin("Controls");
+		
 		ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
-		switch (Editor::GetSceneState())
-		{
-		case SceneState::Edit:
+
+		// Play/Pause buttons
+		if (edit || simulate || m_Paused)
 		{
 			if (ImGui::ImageButton(m_IconHandles["Play"], { iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
-				ScenePlay();
+				if (edit || simulate)
+					ScenePlay();
+				else
+					m_Paused = false;
 			}
 
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 			{
 				ImGui::BeginTooltip();
-				ImGui::Text("Play Scene");
+				if (edit || simulate)
+					ImGui::Text("Play Scene");
+				else
+					ImGui::Text("Resume Scene");
 				ImGui::EndTooltip();
 			}
+		}
+		else
+		{
+			if (ImGui::ImageButton(m_IconHandles["Pause"],
+				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+			{
+				m_Paused = true;
+			}
 
-			ImGui::SameLine();
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Pause Scene");
+				ImGui::EndTooltip();
+			}
+		}
 
-			if (ImGui::ImageButton(m_IconHandles["PlaySim"],
+		ImGui::SameLine();
+
+		// PhysicsOn/Off and Stop buttons
+		if (edit)
+		{
+			if (ImGui::ImageButton(m_IconHandles["PhysicsOn"],
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				SceneSimulate();
@@ -429,17 +471,31 @@ namespace Zahra
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 			{
 				ImGui::BeginTooltip();
-				ImGui::Text("Simulate Physics");
+				ImGui::Text("Physics On");
 				ImGui::EndTooltip();
 			}
-
-			break;
 		}
-		case SceneState::Play:
+		else if (simulate)
+		{
+			if (ImGui::ImageButton(m_IconHandles["PhysicsOff"],
+				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+			{
+				SceneStop();
+			}
+
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Physics Off");
+				ImGui::EndTooltip();
+			}
+		}
+		else
 		{
 			if (ImGui::ImageButton(m_IconHandles["Stop"],
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
+				m_Paused = false;
 				SceneStop();
 			}
 
@@ -449,62 +505,228 @@ namespace Zahra
 				ImGui::Text("Stop Scene");
 				ImGui::EndTooltip();
 			}
-
-			ImGui::SameLine();
-
-			if (ImGui::ImageButton(m_IconHandles["Replay"],
-				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-			{
-				SceneStop();
-				ScenePlay();
-			}
-
-			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-			{
-				ImGui::BeginTooltip();
-				ImGui::Text("Restart Scene");
-				ImGui::EndTooltip();
-			}
-
-			break;
 		}
-		case SceneState::Simulate:
+
+		// Reset button
+		if (!edit)
 		{
-			if (ImGui::ImageButton(m_IconHandles["Stop"],
-				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-			{
-				SceneStop();
-			}
-
-			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-			{
-				ImGui::BeginTooltip();
-				ImGui::Text("Stop Simulation");
-				ImGui::EndTooltip();
-			}
-
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton(m_IconHandles["Replay"],
+			if (ImGui::ImageButton(m_IconHandles["Reset"],
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
-				SceneStop();
-				SceneSimulate();
+				if (play)
+				{
+					SceneStop();
+					ScenePlay();
+				}
+				else
+				{
+					SceneStop();
+					SceneSimulate();
+				}
 			}
 
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 			{
 				ImGui::BeginTooltip();
-				ImGui::Text("Reset Simulation");
+				ImGui::Text("Reset Scene");
 				ImGui::EndTooltip();
 			}
-
-			break;
 		}
+
+		// Step button
+		if (play && m_Paused)
+		{
+			ImGui::SameLine();
+
+			if (ImGui::ImageButton(m_IconHandles["Step"],
+				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+			{
+				m_StepCountdown = m_FramesPerStep;
+			}
+
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Step Forward");
+				ImGui::EndTooltip();
+			}
+		}
+
+		/*switch (Editor::GetSceneState())
+		{
+			case SceneState::Edit:
+			{
+				if (ImGui::ImageButton(m_IconHandles["Play"], { iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+				{
+					ScenePlay();
+				}
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text("Play Scene");
+					ImGui::EndTooltip();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::ImageButton(m_IconHandles["PhysicsOn"],
+					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+				{
+					SceneSimulate();
+				}
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text("Physics On");
+					ImGui::EndTooltip();
+				}
+
+				break;
+			}
+			case SceneState::Play:
+			{
+				if (m_Paused)
+				{
+					if (ImGui::ImageButton(m_IconHandles["Play"],
+						{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+					{
+						m_Paused = false;
+					}
+
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+					{
+						ImGui::BeginTooltip();
+						ImGui::Text("Resume Scene");
+						ImGui::EndTooltip();
+					}
+				}
+				else
+				{
+					if (ImGui::ImageButton(m_IconHandles["Pause"],
+						{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+					{
+						m_Paused = true;
+					}
+
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+					{
+						ImGui::BeginTooltip();
+						ImGui::Text("Pause Scene");
+						ImGui::EndTooltip();
+					}
+				}				
+
+				ImGui::SameLine();
+				
+				if (ImGui::ImageButton(m_IconHandles["Stop"],
+					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+				{
+					SceneStop();
+				}
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text("Stop Scene");
+					ImGui::EndTooltip();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::ImageButton(m_IconHandles["Reset"],
+					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+				{
+					SceneStop();
+					ScenePlay();
+				}
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text("Reset Scene");
+					ImGui::EndTooltip();
+				}
+
+				if (m_Paused)
+				{
+					ImGui::SameLine();
+
+					if (ImGui::ImageButton(m_IconHandles["Step"],
+						{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+					{
+						m_StepCountdown = m_FramesPerStep;
+					}
+
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+					{
+						ImGui::BeginTooltip();
+						ImGui::Text("Step Forward");
+						ImGui::EndTooltip();
+					}
+				}
+
+				break;
+			}
+			case SceneState::Simulate:
+			{
+				if (ImGui::ImageButton(m_IconHandles["Play"], { iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+				{
+					ScenePlay();
+				}
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text("Play Scene");
+					ImGui::EndTooltip();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::ImageButton(m_IconHandles["PhysicsOff"],
+					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+				{
+					SceneStop();
+				}
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text("Physics Off");
+					ImGui::EndTooltip();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::ImageButton(m_IconHandles["Reset"],
+					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+				{
+					SceneStop();
+					SceneSimulate();
+				}
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text("Reset Scene");
+					ImGui::EndTooltip();
+				}
+
+				break;
+			}
 		default:
 			break;
-		}
+		}*/
 		ImGui::PopStyleColor();
+
+		ImGui::Text("Frames Per Step:");
+		ImGui::InputInt("##FramesPerStep", &m_FramesPerStep, 1, 2);
+		if (m_FramesPerStep < 1)
+			m_FramesPerStep = 1;
 
 		ImGui::Separator();
 		ImGui::Text("Debug overlay:");
@@ -753,8 +975,8 @@ namespace Zahra
 					m_ShowSaveChangesPrompt = false;
 					ImGui::CloseCurrentPopup();
 
-					m_SaveChangesCallback();
-					m_SaveChangesCallback = []() {};
+					m_AfterSaveChangesCallback();
+					m_AfterSaveChangesCallback = []() {};
 				}
 			}
 
@@ -765,8 +987,8 @@ namespace Zahra
 				m_ShowSaveChangesPrompt = false;
 				ImGui::CloseCurrentPopup();
 
-				m_SaveChangesCallback();
-				m_SaveChangesCallback = []() {};
+				m_AfterSaveChangesCallback();
+				m_AfterSaveChangesCallback = []() {};
 			}
 
 			ImGui::SameLine();
@@ -776,7 +998,7 @@ namespace Zahra
 				m_ShowSaveChangesPrompt = false;
 				ImGui::CloseCurrentPopup();
 
-				m_SaveChangesCallback = []() {};
+				m_AfterSaveChangesCallback = []() {};
 			}
 
 			bool hideThis = !Editor::GetConfig().ShowSavePrompt;
@@ -794,7 +1016,7 @@ namespace Zahra
 		if (Editor::GetConfig().ShowSavePrompt)
 		{
 			m_ShowSaveChangesPrompt = true;
-			m_SaveChangesCallback = callback;
+			m_AfterSaveChangesCallback = callback;
 		}
 		else
 			callback();
@@ -802,7 +1024,7 @@ namespace Zahra
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		if (m_ViewportHovered && Editor::GetSceneState() != SceneState::Play)
+		if (m_ViewportHovered && (Editor::GetSceneState() == SceneState::Edit || Editor::GetSceneState() == SceneState::Simulate))
 			m_EditorCamera.OnEvent(event);
 
 		m_ContentBrowserPanel.OnEvent(event);
@@ -829,18 +1051,18 @@ namespace Zahra
 		{
 			case KeyCode::S:
 			{
-				if (Editor::GetSceneState() != SceneState::Edit)
-					break;
-
-				if (ctrl && shift)
+				if (Editor::GetSceneState() == SceneState::Edit)
 				{
-					SaveAsSceneFile();
-					return true;
-				}
-				else if (ctrl)
-				{
-					SaveSceneFile();
-					return true;
+					if (ctrl && shift)
+					{
+						SaveAsSceneFile();
+						return true;
+					}
+					else if (ctrl)
+					{
+						SaveSceneFile();
+						return true;
+					}
 				}
 
 				break;

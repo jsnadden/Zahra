@@ -5,6 +5,7 @@
 #include "Zahra/Scripting/ScriptGlue.h"
 #include "Zahra/Utils/FileIO.h"
 
+#include "FileWatch.hpp"
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/class.h>
@@ -50,12 +51,21 @@ namespace Zahra
 		MonoDomain* RootDomain = nullptr;
 		MonoDomain* AppDomain = nullptr;
 
-		// TODO: these paths should be set externally (e.g. via a project system, or in the editor)
-		const std::string CoreAssemblyFilepath = "../Examples/Bud/Assets/Scripts/Binaries/Djinn.dll";
+		// TODO: get these from a ProjectConfig (when that exists...)
+		const std::filesystem::path ProjectDirectory = "../Examples/Bud";
+		const std::string ProjectScriptLibrary = "Bud.dll";
+
+		const std::filesystem::path ScriptLibraryDirectory = ProjectDirectory / "Assets/Scripts/Binaries";
+		const std::filesystem::path CoreAssemblyFilepath = ScriptLibraryDirectory / "Djinn.dll";
+		const std::filesystem::path AppAssemblyFilepath = ScriptLibraryDirectory / ProjectScriptLibrary;
+
+		// TODO: add logic to disable this filewatcher
+		// (likely unnecessary overhead in a shipped game e.g.)
+		Scope<filewatch::FileWatch<std::string>> AssemblyFileWatcher;
+		bool AssemblyReloadPending = false;
+
 		MonoAssembly* CoreAssembly = nullptr;
 		MonoImage* CoreAssemblyImage = nullptr;
-
-		const std::string AppAssemblyFilepath = "../Examples/Bud/Assets/Scripts/Binaries/BudScripts.dll";
 		MonoAssembly* AppAssembly = nullptr;
 		MonoImage* AppAssemblyImage = nullptr;
 
@@ -93,7 +103,8 @@ namespace Zahra
 
 		CreateRootDomain();
 		CreateAppDomain();
-		LoadAssemblies();		
+		LoadAssemblies();
+		InitAssemblyFileWatcher();
 		Reflect();
 
 		ScriptGlue::RegisterComponentTypes(s_SEData->CoreAssemblyImage);
@@ -114,6 +125,8 @@ namespace Zahra
 	// TODO: once we have intrusive reference counting, we can pass the scene as a Ref instead of a raw pointer
 	void ScriptEngine::OnRuntimeStart(Scene* scene)
 	{
+		s_SEData->AssemblyFileWatcher.reset();
+
 		s_SEData->SceneContext = scene;
 	}
 
@@ -121,7 +134,9 @@ namespace Zahra
 	{
 		s_SEData->SceneContext = nullptr;
 		s_SEData->ScriptInstances.clear();
-		//mono_gc_collect(0); // if necessary we can trigger garbage collection here
+		//mono_gc_collect(0); // TODO: maybe trigger garbage collection here
+
+		InitAssemblyFileWatcher();
 	}
 
 	void ScriptEngine::ReloadAssembly()
@@ -134,6 +149,8 @@ namespace Zahra
 		Reflect();
 
 		ScriptGlue::RegisterComponentTypes(s_SEData->CoreAssemblyImage);
+
+		s_SEData->AssemblyReloadPending = false;
 
 		Z_CORE_INFO("Script engine reloaded");
 	}
@@ -292,6 +309,32 @@ namespace Zahra
 	{
 		assembly = MonoUtils::LoadMonoAssembly(library);
 		assemblyImage = mono_assembly_get_image(assembly);
+
+		// TODO: add assembly validation
+	}
+
+	static void OnAppAssemblyFileWatcherEvent(const std::string& filepath, const filewatch::Event event)
+	{
+		Z_CORE_WARN("ScriptEngine::AssemblyFileWatcher reported event ('{}', '{}')", filepath.c_str(), filewatch::event_to_string(event));
+
+		if (!s_SEData->AssemblyReloadPending && event == filewatch::Event::modified)
+		{
+			// this extra logic 'debounces' this callback, as these events typically occur in rapid-fire
+			// batches whenever the assembly gets rebuilt. We only want a single assembly reload in response
+			// to this, so only the first event in the sequence will trigger it
+			s_SEData->AssemblyReloadPending = true;
+
+			// assemblies will reload at the top of the next frame
+			Application::Get().SubmitToMainThread([]()
+				{
+					ScriptEngine::ReloadAssembly();
+				});
+		}
+	}
+
+	void ScriptEngine::InitAssemblyFileWatcher()
+	{
+		s_SEData->AssemblyFileWatcher = CreateScope<filewatch::FileWatch<std::string>>(s_SEData->AppAssemblyFilepath.string(), OnAppAssemblyFileWatcherEvent);
 	}
 
 	void ScriptEngine::ShutdownMonoDomains()

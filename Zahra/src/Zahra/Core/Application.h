@@ -66,6 +66,8 @@ namespace Zahra
 
 		void Run();
 
+		void SubmitToMainThread(const std::function<void()>& command);
+
 		void OnEvent(Event& e);
 
 		void PushLayer(Layer* layer);
@@ -74,20 +76,21 @@ namespace Zahra
 		static inline Application& Get() { return *s_Instance; }
 
 		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
-
 		inline Window& GetWindow() { return *m_Window; }
+		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
 		void Exit();
 
-		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
-
 	private:
 		ApplicationSpecification m_Specification;
-
 		static Application* s_Instance;
+
+		std::vector<std::function<void()>> m_MainThreadCommandQueue;
+		std::mutex m_MainThreadCommandQueueMutex;
 
 		Scope<Window> m_Window;
 
+		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer = nullptr;
 
 		bool m_Running = true;
@@ -95,13 +98,11 @@ namespace Zahra
 
 		float m_PreviousFrameStartTime = .0f;
 
-		LayerStack m_LayerStack;
+		void FlushCommandQueue();
 
 		bool OnWindowClosed(WindowClosedEvent& e);
 		bool OnWindowResized(WindowResizedEvent& e);
 		bool OnWindowMinimised(WindowMinimisedEvent& e);
-
-
 	};
 
 	// To be defined by client app

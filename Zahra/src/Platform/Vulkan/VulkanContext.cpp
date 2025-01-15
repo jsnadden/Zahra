@@ -134,7 +134,8 @@ namespace Zahra
 			instanceCreateInfo.pNext = nullptr;
 		}
 
-		if (!CheckInstanceExtensionSupport(extensions)) throw std::runtime_error("Vulkan instance creation failed");
+		if (!CheckInstanceExtensionSupport(extensions))
+			throw std::runtime_error("Vulkan instance creation failed");
 
 		instanceCreateInfo.enabledExtensionCount = (uint32_t)(extensions.size());
 		instanceCreateInfo.ppEnabledExtensionNames = extensions.data();

@@ -3,7 +3,7 @@ include (RootDir .. "/vendor/premake/premake_customisation/solution_items.lua")
 
 workspace "Bud"
 	architecture "x86_64"
-	startproject "BudScripts"
+	startproject "Bud"
 
 	configurations
 	{
@@ -21,7 +21,7 @@ workspace "Bud"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-project "BudScripts"
+project "Bud"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"
