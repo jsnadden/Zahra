@@ -9,6 +9,7 @@
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/class.h>
+#include <mono/metadata/mono-debug.h>
 #include <mono/metadata/object.h>
 #include <mono/metadata/mono-gc.h>
 #include <mono/metadata/tabledefs.h>
@@ -17,16 +18,36 @@ namespace Zahra
 {
 	namespace MonoUtils
 	{
-		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath)
+		static bool LoadMonoAssembly(const std::filesystem::path& assemblyPath, MonoAssembly*& assembly, MonoImage*& assemblyImage, bool& debugEnabled)
 		{
 			Z_CORE_ASSERT(std::filesystem::exists(assemblyPath), "Assembly file does not exist");
 
 			uint32_t fileSize = 0;
-			char* fileData = Zahra::FileIO::ReadBytes(assemblyPath, &fileSize);
+			char* assemblyFileContents = Zahra::FileIO::ReadBytes(assemblyPath, &fileSize);
 
-			// NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
+			// NOTE: We can't use this image for anything other than loading the assembly, because this image doesn't have a reference to the assembly
 			MonoImageOpenStatus status;
-			MonoImage* image = mono_image_open_from_data_full(fileData, fileSize, 1, &status, 0);
+			MonoImage* tempImage = mono_image_open_from_data_full(assemblyFileContents, fileSize, 1, &status, 0);
+
+			if (debugEnabled)
+			{
+				std::filesystem::path debugDatabase = assemblyPath;
+				debugDatabase.replace_extension(".pdb");
+
+				if (!std::filesystem::exists(debugDatabase))
+				{
+					Z_CORE_WARN("Script engine failed to load debug database '{}'. Disabling Mono debugging.",
+						debugDatabase.string().c_str());
+
+					debugEnabled = false;
+				}
+
+				char* pdbFileContents = Zahra::FileIO::ReadBytes(debugDatabase, &fileSize);
+
+				mono_debug_open_image_from_memory(tempImage, (const mono_byte*)pdbFileContents, fileSize);
+
+				delete[] pdbFileContents;
+			}
 
 			if (status != MONO_IMAGE_OK)
 			{
@@ -36,45 +57,59 @@ namespace Zahra
 			}
 
 			std::string assemblyPathString = assemblyPath.string();
-			MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPathString.c_str(), &status, 0);
-			mono_image_close(image);
+			assembly = mono_assembly_load_from_full(tempImage, assemblyPathString.c_str(), &status, 0);
+			
+			mono_image_close(tempImage);
+			delete[] assemblyFileContents;
 
-			// Don't forget to free the file data
-			delete[] fileData;
+			if (!assembly)
+			{
+				Z_CORE_ERROR("Script engine failed to load assembly '{}'", assemblyPath.string().c_str());
+				return false;
+			}
 
-			return assembly;
+			assemblyImage = mono_assembly_get_image(assembly);
+			return true;
 		}
 	}
 
 	struct ScriptEngineData
 	{
+		////////////////////
+		// Engine core
 		MonoDomain* RootDomain = nullptr;
 		MonoDomain* AppDomain = nullptr;
-
-		// TODO: get these from a ProjectConfig (when that exists...)
-		const std::filesystem::path ProjectDirectory = "../Examples/Bud";
-		const std::string ProjectScriptLibrary = "Bud.dll";
-
-		const std::filesystem::path ScriptLibraryDirectory = ProjectDirectory / "Assets/Scripts/Binaries";
-		const std::filesystem::path CoreAssemblyFilepath = ScriptLibraryDirectory / "Djinn.dll";
-		const std::filesystem::path AppAssemblyFilepath = ScriptLibraryDirectory / ProjectScriptLibrary;
-
-		// TODO: add logic to disable this filewatcher
-		// (likely unnecessary overhead in a shipped game e.g.)
-		Scope<filewatch::FileWatch<std::string>> AssemblyFileWatcher;
-		bool AssemblyReloadPending = false;
-
+		const std::filesystem::path CoreAssemblyFilepath = "Resources/Scripts/Djinn.dll";
 		MonoAssembly* CoreAssembly = nullptr;
 		MonoImage* CoreAssemblyImage = nullptr;
+
+		bool EnableFilewatcher = false;
+		Scope<filewatch::FileWatch<std::string>> AssemblyFileWatcher;
+		bool AssemblyReloadPending = false;
+		std::map<uint32_t, std::function<void()>> ReloadCallbacks;
+
+		////////////////////
+		// Project-specific
+		std::filesystem::path AppAssemblyFilepath;
 		MonoAssembly* AppAssembly = nullptr;
 		MonoImage* AppAssemblyImage = nullptr;
-
 		std::unordered_map<std::string, Ref<ScriptClass>> ScriptClasses;
+
+		////////////////////
+		// Scene-specific
+		Ref<Scene> SceneContext;
+		bool SceneRuntime = false;
 		std::unordered_map<ZGUID, Ref<ScriptInstance>> ScriptInstances;
 
-		Scene* SceneContext = nullptr;
+		////////////////////
+		// Misc.
+#ifdef Z_DEBUG
+		bool DebugEnabled = true;
+#else
+		bool DebugEnabled = false;
+#endif
 
-		const std::unordered_map<std::string, ScriptFieldType> MonoTypeNameToScriptFieldType = 
+		const std::unordered_map<std::string, ScriptFieldType> MonoTypeNameToScriptFieldType =
 		{
 			{ "System.Boolean",		ScriptFieldType::Bool    },
 			{ "System.SByte",		ScriptFieldType::sByte   },
@@ -97,20 +132,34 @@ namespace Zahra
 	static ScriptEngineData* s_SEData;
 
 
-	void ScriptEngine::Init()
+	void ScriptEngine::InitCore()
 	{
 		s_SEData = znew ScriptEngineData();
 
 		CreateRootDomain();
 		CreateAppDomain();
-		LoadAssemblies();
-		InitAssemblyFileWatcher();
-		Reflect();
+		
+		bool success = LoadCoreAssembly();
+		Z_CORE_ASSERT(success);
+		Z_CORE_INFO("Script engine has succesfully loaded core assembly {}", s_SEData->CoreAssemblyFilepath.string().c_str());
 
 		ScriptGlue::RegisterComponentTypes(s_SEData->CoreAssemblyImage);
 		ScriptGlue::RegisterFunctions();
+	}
 
-		Z_CORE_INFO("Script engine has initialised");
+	void ScriptEngine::InitApp(const std::filesystem::path& assemblyFilepath, bool enableAutoReload)
+	{
+		s_SEData->AppAssemblyFilepath = assemblyFilepath;
+		
+		if (LoadAppAssembly())
+		{
+			if (enableAutoReload)
+				InitAssemblyFileWatcher();
+			
+			RegisterAppEntityScripts();
+
+			Z_CORE_INFO("Script engine has succesfully loaded app assembly '{}'. Auto reloading {}.", assemblyFilepath.string().c_str(), enableAutoReload ? "enabled" : "disabled");
+		}
 	}
 
 	void ScriptEngine::Shutdown()
@@ -118,25 +167,6 @@ namespace Zahra
 		ShutdownMonoDomains();
 
 		delete s_SEData;
-
-		Z_CORE_INFO("Script engine has shut down");
-	}
-
-	// TODO: once we have intrusive reference counting, we can pass the scene as a Ref instead of a raw pointer
-	void ScriptEngine::OnRuntimeStart(Scene* scene)
-	{
-		s_SEData->AssemblyFileWatcher.reset();
-
-		s_SEData->SceneContext = scene;
-	}
-
-	void ScriptEngine::OnRuntimeStop()
-	{
-		s_SEData->SceneContext = nullptr;
-		s_SEData->ScriptInstances.clear();
-		//mono_gc_collect(0); // TODO: maybe trigger garbage collection here
-
-		InitAssemblyFileWatcher();
 	}
 
 	void ScriptEngine::ReloadAssembly()
@@ -145,14 +175,204 @@ namespace Zahra
 		mono_domain_unload(s_SEData->AppDomain);
 
 		CreateAppDomain();
-		LoadAssemblies();
-		Reflect();
+		
+		bool success = LoadCoreAssembly();
+		Z_CORE_ASSERT(success);
 
 		ScriptGlue::RegisterComponentTypes(s_SEData->CoreAssemblyImage);
 
+		if(LoadAppAssembly())
+		{
+			RegisterAppEntityScripts();
+
+			Z_CORE_INFO("Script engine has successfully reloaded assemblies");
+		}
+
 		s_SEData->AssemblyReloadPending = false;
 
-		Z_CORE_INFO("Script engine reloaded");
+		for (auto& [i, fn] : s_SEData->ReloadCallbacks)
+			fn();
+	}
+
+	uint64_t ScriptEngine::AddReloadCallback(const std::function<void()>& callback)
+	{
+		static uint64_t callbackCounter = 0;
+
+		uint64_t receipt = callbackCounter;
+		s_SEData->ReloadCallbacks[receipt] = callback;
+
+		callbackCounter++;
+
+		return receipt;
+	}
+
+	void ScriptEngine::RemoveReloadCallback(uint64_t receipt)
+	{
+		Z_CORE_ASSERT(s_SEData->ReloadCallbacks.find(receipt) != s_SEData->ReloadCallbacks.end());
+
+		s_SEData->ReloadCallbacks.erase(receipt);
+	}
+
+	void ScriptEngine::CreateRootDomain()
+	{
+		mono_set_assemblies_path("mono/lib");
+
+		if (s_SEData->DebugEnabled)
+		{
+			const char* argv[2] =
+			{
+				"--soft-breakpoints",
+				"--debugger-agent=transport=dt_socket,server=y,address=127.0.0.1:55555,server=y,suspend=n,loglevel=3,logfile=Logs/MonoDebug.log"
+			};
+
+			mono_jit_parse_options(2, (char**)argv);
+			mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+		}
+
+		MonoDomain* rootDomain = mono_jit_init("ZahraJITRuntime");
+		Z_CORE_ASSERT(rootDomain);
+
+		s_SEData->RootDomain = rootDomain;
+
+		if (s_SEData->DebugEnabled)
+			mono_debug_domain_create(s_SEData->RootDomain);
+	}
+
+	void ScriptEngine::CreateAppDomain()
+	{
+		s_SEData->AppDomain = mono_domain_create_appdomain("DjinnRuntime", nullptr);
+		mono_domain_set(s_SEData->AppDomain, true);
+	}
+
+	bool ScriptEngine::LoadCoreAssembly()
+	{
+		return MonoUtils::LoadMonoAssembly(
+			s_SEData->CoreAssemblyFilepath,
+			s_SEData->CoreAssembly,
+			s_SEData->CoreAssemblyImage,
+			s_SEData->DebugEnabled
+		);
+	}
+
+	bool ScriptEngine::LoadAppAssembly()
+	{
+		return MonoUtils::LoadMonoAssembly(
+			s_SEData->AppAssemblyFilepath,
+			s_SEData->AppAssembly,
+			s_SEData->AppAssemblyImage,
+			s_SEData->DebugEnabled
+		);
+	}
+
+	static void OnAppAssemblyFileWatcherEvent(const std::string& filepath, const filewatch::Event event)
+	{
+		Z_CORE_WARN("ScriptEngine::AssemblyFileWatcher reported event ('{}', '{}')", filepath.c_str(), filewatch::event_to_string(event));
+
+		if (!s_SEData->AssemblyReloadPending && event == filewatch::Event::modified)
+		{
+			// this extra logic 'debounces' this callback, as these events typically occur in rapid-fire
+			// batches whenever the assembly gets rebuilt. We only want a single assembly reload in response
+			// to this, so only the first event in the sequence will trigger it
+			s_SEData->AssemblyReloadPending = true;
+
+			// assemblies will reload at the top of the next frame
+			Application::Get().SubmitToMainThread([]()
+				{
+					ScriptEngine::ReloadAssembly();
+				});
+		}
+	}
+
+	void ScriptEngine::InitAssemblyFileWatcher()
+	{
+		s_SEData->AssemblyFileWatcher = CreateScope<filewatch::FileWatch<std::string>>(s_SEData->AppAssemblyFilepath.string(), OnAppAssemblyFileWatcherEvent);
+	}
+
+	void ScriptEngine::ShutdownMonoDomains()
+	{
+		mono_domain_set(mono_get_root_domain(), false);
+
+		mono_domain_unload(s_SEData->AppDomain);
+		s_SEData->AppDomain = nullptr;
+
+		mono_jit_cleanup(s_SEData->RootDomain);
+		s_SEData->RootDomain = nullptr;
+	}
+
+	void ScriptEngine::RegisterAppEntityScripts()
+	{
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		// FIND ALL ENTITY TYPES
+		s_SEData->ScriptClasses.clear();
+		ScriptClass entityClass(s_SEData->CoreAssemblyImage, "Djinn", "Entity");
+
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_SEData->AppAssemblyImage, MONO_TABLE_TYPEDEF);
+		int32_t typeCount = mono_table_info_get_rows(typeDefinitionsTable);
+
+		for (int32_t row = 0; row < typeCount; row++)
+		{
+			uint32_t classData[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefinitionsTable, row, classData, MONO_TYPEDEF_SIZE);
+
+			// table stores opaque IDs in place of string data
+			std::string reflectedNamespace = mono_metadata_string_heap(s_SEData->AppAssemblyImage, classData[MONO_TYPEDEF_NAMESPACE]);
+			std::string reflectedName = mono_metadata_string_heap(s_SEData->AppAssemblyImage, classData[MONO_TYPEDEF_NAME]);
+			ScriptClass reflectedClass(s_SEData->AppAssemblyImage, reflectedNamespace, reflectedName);
+
+			// record entity types
+			if (reflectedClass.IsSubclassOf(entityClass))
+			{
+				std::string fullName = reflectedNamespace + "." + reflectedName;
+				s_SEData->ScriptClasses[fullName] = Ref<ScriptClass>::Create(reflectedClass);
+			}
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		// FIND EXPOSED ENTITY TYPE FIELDS
+		ScriptClass exposedAttribute(s_SEData->CoreAssemblyImage, "Djinn.CustomAttributes", "ExposedField");
+		ScriptClass entityIDAttribute(s_SEData->CoreAssemblyImage, "Djinn.CustomAttributes", "EntityID");
+
+		for (auto& [name, scriptClass] : s_SEData->ScriptClasses)
+		{
+			void* iterator = nullptr;
+
+			while (MonoClassField* monoField = mono_class_get_fields(scriptClass->m_MonoClass, &iterator))
+			{
+				// Only fields with the custom [ExposedField] attribute are managed externally
+				auto attributes = mono_custom_attrs_from_field(scriptClass->m_MonoClass, monoField);
+				if (!attributes)
+					continue;
+				if (!mono_custom_attrs_has_attr(attributes, exposedAttribute.m_MonoClass))
+					continue;
+
+				MonoType* monoType = mono_field_get_type(monoField);
+				std::string monoTypeName = mono_type_get_name(monoType);
+				auto it = s_SEData->MonoTypeNameToScriptFieldType.find(monoTypeName);
+				Z_CORE_ASSERT(it != s_SEData->MonoTypeNameToScriptFieldType.end(), "Unsupported field type");
+
+				auto& field = scriptClass->m_PublicFields.emplace_back();
+				field.Type = it->second;
+				field.Name = mono_field_get_name(monoField);
+				field.MonoField = monoField;
+
+				if (field.Type == ScriptFieldType::uLong && mono_custom_attrs_has_attr(attributes, entityIDAttribute.m_MonoClass))
+					field.Type = ScriptFieldType::EntityID;
+			}
+		}
+	}
+
+	void ScriptEngine::OnRuntimeStart(Ref<Scene> scene)
+	{
+		s_SEData->SceneContext = scene;
+		s_SEData->SceneRuntime = true;
+	}
+
+	void ScriptEngine::OnRuntimeStop()
+	{
+		s_SEData->SceneRuntime = false;
+		s_SEData->SceneContext.Reset();
+		s_SEData->ScriptInstances.clear();
+		//mono_gc_collect(0); // TODO: maybe trigger garbage collection here
 	}
 
 	const std::unordered_map<std::string, Ref<ScriptClass>>& ScriptEngine::GetScriptClasses()
@@ -282,133 +502,6 @@ namespace Zahra
 		MonoString* monoString = mono_string_new(s_SEData->AppDomain, string.c_str());
 		return monoString;
 	}
-		
-	void ScriptEngine::CreateRootDomain()
-	{
-		mono_set_assemblies_path("mono/lib");
-
-		MonoDomain* rootDomain = mono_jit_init("ZahraJITRuntime");
-		Z_CORE_ASSERT(rootDomain);
-
-		s_SEData->RootDomain = rootDomain;		
-	}
-
-	void ScriptEngine::CreateAppDomain()
-	{
-		s_SEData->AppDomain = mono_domain_create_appdomain("DjinnRuntime", nullptr);
-		mono_domain_set(s_SEData->AppDomain, true);
-	}
-
-	void ScriptEngine::LoadAssemblies()
-	{
-		LoadAssembly(s_SEData->CoreAssemblyFilepath, s_SEData->CoreAssembly, s_SEData->CoreAssemblyImage);
-		LoadAssembly(s_SEData->AppAssemblyFilepath, s_SEData->AppAssembly, s_SEData->AppAssemblyImage);
-	}
-
-	void ScriptEngine::LoadAssembly(const std::filesystem::path& library, MonoAssembly*& assembly, MonoImage*& assemblyImage)
-	{
-		assembly = MonoUtils::LoadMonoAssembly(library);
-		assemblyImage = mono_assembly_get_image(assembly);
-
-		// TODO: add assembly validation
-	}
-
-	static void OnAppAssemblyFileWatcherEvent(const std::string& filepath, const filewatch::Event event)
-	{
-		Z_CORE_WARN("ScriptEngine::AssemblyFileWatcher reported event ('{}', '{}')", filepath.c_str(), filewatch::event_to_string(event));
-
-		if (!s_SEData->AssemblyReloadPending && event == filewatch::Event::modified)
-		{
-			// this extra logic 'debounces' this callback, as these events typically occur in rapid-fire
-			// batches whenever the assembly gets rebuilt. We only want a single assembly reload in response
-			// to this, so only the first event in the sequence will trigger it
-			s_SEData->AssemblyReloadPending = true;
-
-			// assemblies will reload at the top of the next frame
-			Application::Get().SubmitToMainThread([]()
-				{
-					ScriptEngine::ReloadAssembly();
-				});
-		}
-	}
-
-	void ScriptEngine::InitAssemblyFileWatcher()
-	{
-		s_SEData->AssemblyFileWatcher = CreateScope<filewatch::FileWatch<std::string>>(s_SEData->AppAssemblyFilepath.string(), OnAppAssemblyFileWatcherEvent);
-	}
-
-	void ScriptEngine::ShutdownMonoDomains()
-	{
-		mono_domain_set(mono_get_root_domain(), false);
-
-		mono_domain_unload(s_SEData->AppDomain);
-		s_SEData->AppDomain = nullptr;
-
-		mono_jit_cleanup(s_SEData->RootDomain);
-		s_SEData->RootDomain = nullptr;
-	}
-
-	void ScriptEngine::Reflect()
-	{
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		// FIND ALL ENTITY TYPES
-		s_SEData->ScriptClasses.clear();
-		ScriptClass entityClass(s_SEData->CoreAssemblyImage, "Djinn", "Entity");
-
-		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_SEData->AppAssemblyImage, MONO_TABLE_TYPEDEF);
-		int32_t typeCount = mono_table_info_get_rows(typeDefinitionsTable);
-
-		for (int32_t row = 0; row < typeCount; row++)
-		{
-			uint32_t classData[MONO_TYPEDEF_SIZE];
-			mono_metadata_decode_row(typeDefinitionsTable, row, classData, MONO_TYPEDEF_SIZE);
-
-			// table stores opaque IDs in place of string data
-			std::string reflectedNamespace = mono_metadata_string_heap(s_SEData->AppAssemblyImage, classData[MONO_TYPEDEF_NAMESPACE]);
-			std::string reflectedName = mono_metadata_string_heap(s_SEData->AppAssemblyImage, classData[MONO_TYPEDEF_NAME]);
-			ScriptClass reflectedClass(s_SEData->AppAssemblyImage, reflectedNamespace, reflectedName);
-
-			// record entity types
-			if (reflectedClass.IsSubclassOf(entityClass))
-			{
-				std::string fullName = reflectedNamespace + "." + reflectedName;
-				s_SEData->ScriptClasses[fullName] = Ref<ScriptClass>::Create(reflectedClass);
-			}
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		// FIND EXPOSED ENTITY TYPE FIELDS
-		ScriptClass exposedAttribute(s_SEData->CoreAssemblyImage, "Djinn.CustomAttributes", "ExposedField");
-		ScriptClass entityIDAttribute(s_SEData->CoreAssemblyImage, "Djinn.CustomAttributes", "EntityID");
-
-		for (auto& [name, scriptClass] : s_SEData->ScriptClasses)
-		{
-			void* iterator = nullptr;
-
-			while (MonoClassField* monoField = mono_class_get_fields(scriptClass->m_MonoClass, &iterator))
-			{
-				// Only fields with the custom [ExposedField] attribute are managed externally
-				auto attributes = mono_custom_attrs_from_field(scriptClass->m_MonoClass, monoField);
-				if (!attributes)
-					continue;
-				if (!mono_custom_attrs_has_attr(attributes, exposedAttribute.m_MonoClass))
-					continue;
-
-				MonoType* monoType = mono_field_get_type(monoField);
-				std::string monoTypeName = mono_type_get_name(monoType);
-				auto it = s_SEData->MonoTypeNameToScriptFieldType.find(monoTypeName);
-				Z_CORE_ASSERT(it != s_SEData->MonoTypeNameToScriptFieldType.end(), "Unsupported field type");
-
-				auto& field = scriptClass->m_PublicFields.emplace_back();
-				field.Type = it->second;
-				field.Name = mono_field_get_name(monoField);
-				field.MonoField = monoField;
-
-				if (field.Type == ScriptFieldType::uLong && mono_custom_attrs_has_attr(attributes, entityIDAttribute.m_MonoClass))
-					field.Type = ScriptFieldType::EntityID;
-			}
-		}
-	}
 
 	Ref<ScriptInstance> ScriptEngine::GetScriptInstance(Entity entity)
 	{
@@ -455,7 +548,9 @@ namespace Zahra
 	MonoObject* ScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** args)
 	{
 		Z_CORE_ASSERT(mono_object_get_class(instance) == m_MonoClass, "Object is not an instance of this class");
-		return mono_runtime_invoke(method, instance, args, nullptr); // TODO: expose fourth argument (exception handling)
+
+		MonoObject* exception = nullptr;
+		return mono_runtime_invoke(method, instance, args, &exception); // TODO: expose fourth argument (exception handling)
 	}
 
 	bool ScriptClass::IsSubclassOf(ScriptClass& other, bool checkInterfaces)

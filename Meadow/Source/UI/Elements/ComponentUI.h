@@ -11,7 +11,7 @@
 namespace Zahra
 {
 
-	namespace SceneHierarchyUIPatterns
+	namespace ComponentUI
 	{
 		template <typename T, typename UIFunction>
 		void DrawComponent(const std::string& name, Entity entity, UIFunction EditComponentFields, bool defaultOpen = false, bool removeable = true, bool defaultLayout = true)
@@ -439,10 +439,10 @@ namespace Zahra
 			return edited;
 		}
 
-		bool DrawComboControl(const std::string& label, const char** options, uint32_t count, int32_t& currentValue, bool disabled = false)
+		bool DrawComboControl(const std::string& label, const std::vector<const char*>& options, uint32_t& currentValue, bool disabled = false)
 		{
 			bool valueChanged = false;
-			int32_t newValue = currentValue;
+			uint32_t newValue = currentValue;
 
 			ImGuiSelectableFlags flags = disabled ? ImGuiSelectableFlags_Disabled : 0;
 
@@ -455,9 +455,10 @@ namespace Zahra
 			}
 			ImGui::TableNextColumn();
 
+			ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
 			if (ImGui::BeginCombo("##options", options[currentValue], flags))
 			{
-				for (uint32_t i = 0; i < count; i++)
+				for (uint32_t i = 0; i < options.size(); i++)
 				{
 					if (ImGui::Selectable(options[i], currentValue == i) && !disabled)
 						newValue = i;
@@ -467,6 +468,7 @@ namespace Zahra
 				}
 				ImGui::EndCombo();
 			}
+			ImGui::PopItemWidth();
 			ImGui::PopID();
 
 			valueChanged = currentValue != newValue;

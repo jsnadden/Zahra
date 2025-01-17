@@ -30,7 +30,9 @@ namespace Zahra
 		
 		Renderer::Init();
 
-		ScriptEngine::Init();
+		ScriptEngine::InitCore();
+		// TODO: get args from project config
+		ScriptEngine::InitApp("../Examples/Bud/Assets/Scripts/Binaries/Bud.dll", true);
 
 		if (m_Specification.ImGuiConfig.Enabled)
 		{
@@ -58,8 +60,8 @@ namespace Zahra
 		{
 			// Compute frame time
 			float frameStartTime = Time::GetTime();
-			float dt = frameStartTime - m_PreviousFrameStartTime; // actual time step
-			//float dt = glm::min<float>(frameStartTime - m_PreviousFrameStartTime, 0.0333f); // regularised time step
+			//float dt = frameStartTime - m_PreviousFrameStartTime; // actual time step
+			float dt = glm::min<float>(frameStartTime - m_PreviousFrameStartTime, 0.0333f); // regularised time step (for numerical stability)
 			m_PreviousFrameStartTime = frameStartTime;
 
 			FlushCommandQueue();

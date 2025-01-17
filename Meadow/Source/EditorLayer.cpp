@@ -19,14 +19,14 @@ namespace Zahra
 
 	void EditorLayer::OnAttach()
 	{
-		ReadConfigFile();
-		
 		auto imguiLayer = ImGuiLayer::GetOrCreate();
+		
+		ReadConfigFile();
+		Editor::SetPrimaryEditorCamera(m_EditorCamera);
+		m_SceneHierarchyPanel.CacheScriptClassNames();
 
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// VIEWPORT FRAMEBUFFER
+		// Viewport framebuffer
 		{
-
 			Image2DSpecification imageSpec{};
 			imageSpec.Name = "Editor_ColourPickingAttachment";
 			imageSpec.Format = ImageFormat::R32_SI;
@@ -60,8 +60,18 @@ namespace Zahra
 			m_ViewportTextureHandle = imguiLayer->RegisterTexture(m_ViewportTexture);
 		}
 
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// TEMPORARY
+		// Scenes
+		{
+			m_EditorScene = Ref<Scene>::Create();
+			m_ActiveScene = m_EditorScene;
+
+			Editor::SetSceneContext(m_ActiveScene);
+
+			OpenSceneFile(m_WorkingSceneFilepath);
+			m_SceneCacheTimer.Reset();
+		}
+
+		// TODO: this stuff should really be in SceneRenderer
 		{
 			Zahra::RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "Editor_ClearPass";
@@ -69,47 +79,29 @@ namespace Zahra
 			renderPassSpec.ClearColourAttachments = true;
 			renderPassSpec.ClearDepthAttachment = true;
 			m_ClearPass = Zahra::RenderPass::Create(renderPassSpec);
-		}
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// SCENE SYSTEM
-		{
-			m_EditorScene = Ref<Scene>::Create();
-			m_ActiveScene = m_EditorScene;
 
 			Renderer2DSpecification renderer2DSpec{};
 			renderer2DSpec.RenderTarget = m_ViewportFramebuffer;
 			m_Renderer2D = Ref<Renderer2D>::Create(renderer2DSpec);
 			m_Renderer2D->SetLineWidth(3.f);
-
-			/*auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
-			if (commandLineArgs.Count > 1)
-			{
-				auto sceneFilePath = commandLineArgs[1];
-				SceneSerialiser serialiser(m_EditorScene);
-				serialiser.DeserialiseYaml(sceneFilePath);
-			}*/
-
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-			m_SceneHierarchyPanel.SetEditorCamera(m_EditorCamera);
 		}
 
-		Texture2DSpecification textureSpec{};
-		m_Icons["Play"]			= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/play.png");
-		m_Icons["Step"]			= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/step.png");
-		m_Icons["Reset"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/reset.png");
-		m_Icons["Stop"]			= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/stop.png");
-		m_Icons["Pause"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/pause.png");
-		m_Icons["PhysicsOn"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/physics_on.png");
-		m_Icons["PhysicsOff"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/physics_off.png");
-
-		for (auto& [name, texture] : m_Icons)
+		// Control icons
 		{
-			m_IconHandles[name] = imguiLayer->RegisterTexture(texture);
-		}
+			Texture2DSpecification textureSpec{};
+			m_ControlIcons["Play"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/play.png");
+			m_ControlIcons["Step"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/step.png");
+			m_ControlIcons["Reset"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/reset.png");
+			m_ControlIcons["Stop"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/stop.png");
+			m_ControlIcons["Pause"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/pause.png");
+			m_ControlIcons["PhysicsOn"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/physics_on.png");
+			m_ControlIcons["PhysicsOff"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/physics_off.png");
 
-		OpenSceneFile(m_WorkingSceneFilepath);
-		m_SceneCacheTimer.Reset();
+			for (auto& [name, texture] : m_ControlIcons)
+			{
+				m_IconHandles[name] = imguiLayer->RegisterTexture(texture);
+			}
+		}
 	}
 
 	void EditorLayer::OnDetach()
@@ -179,7 +171,7 @@ namespace Zahra
 				case SceneState::Edit:
 				{
 					m_ActiveScene->OnUpdateEditor(dt);
-					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera, m_SceneHierarchyPanel.GetSelectedEntity(), m_HighlightSelectionColour);
+					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera, Editor::GetSelectedEntity(), m_HighlightSelectionColour);
 					break;
 				}
 				case SceneState::Play:
@@ -191,13 +183,21 @@ namespace Zahra
 						if (m_StepCountdown > 0)
 							m_StepCountdown--;
 					}
-					m_ActiveScene->OnRenderRuntime(m_Renderer2D, m_SceneHierarchyPanel.GetSelectedEntity(), m_HighlightSelectionColour);
+
+					m_ActiveScene->OnRenderRuntime(m_Renderer2D, Editor::GetSelectedEntity(), m_HighlightSelectionColour);
 					break;
 				}
 				case SceneState::Simulate:
 				{
-					m_ActiveScene->OnUpdateSimulation(dt);
-					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera, m_SceneHierarchyPanel.GetSelectedEntity(), m_HighlightSelectionColour);
+					if (!m_Paused || m_StepCountdown > 0)
+					{
+						m_ActiveScene->OnUpdateSimulation(dt);
+
+						if (m_StepCountdown > 0)
+							m_StepCountdown--;
+					}
+					
+					m_ActiveScene->OnRenderEditor(m_Renderer2D, m_EditorCamera, Editor::GetSelectedEntity(), m_HighlightSelectionColour);
 					break;
 				}
 
@@ -247,7 +247,7 @@ namespace Zahra
 		m_ActiveScene = Scene::CopyScene(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		Editor::SetSceneContext(m_ActiveScene);
 	}
 
 	void EditorLayer::SceneSimulate()
@@ -259,7 +259,7 @@ namespace Zahra
 		m_ActiveScene = Scene::CopyScene(m_EditorScene);
 		m_ActiveScene->OnSimulationStart();
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		Editor::SetSceneContext(m_ActiveScene);
 	}
 
 	void EditorLayer::SceneStop()
@@ -285,7 +285,7 @@ namespace Zahra
 		Editor::SetSceneState(SceneState::Edit);
 		m_ActiveScene = m_EditorScene;
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		Editor::SetSceneContext(m_ActiveScene);
 	}
 
 	void EditorLayer::UIMenuBar()
@@ -295,23 +295,26 @@ namespace Zahra
 
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("New", "Ctrl+N"))
+				if (ImGui::MenuItem("New Project..."))
+					;
+
+				if (ImGui::MenuItem("New Scene", "Ctrl+N"))
 					NewScene();
 
-				if (ImGui::MenuItem("Open...", "Ctrl+O"))
+				if (ImGui::MenuItem("Open Scene...", "Ctrl+O"))
 					OpenSceneFile();
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Save", "Ctrl+S"))					
+				if (ImGui::MenuItem("Save Scene", "Ctrl+S"))					
 					SaveSceneFile();
 
-				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+				if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
 					SaveAsSceneFile();
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Exit"))
+				if (ImGui::MenuItem("Exit", "Alt+F4"))
 				{
 					DoAfterHandlingUnsavedChanges([]()
 						{
@@ -369,7 +372,7 @@ namespace Zahra
 
 			if (ImGui::BeginMenu("Scripts"))
 			{
-				if (ImGui::MenuItem("Reload", "Ctrl+Shift+R", false, Editor::GetSceneState() == SceneState::Edit))
+				if (ImGui::MenuItem("Reload Assembly", "Ctrl+Shift+R", false, Editor::GetSceneState() == SceneState::Edit))
 					ScriptEngine::ReloadAssembly();
 
 				ImGui::EndMenu();
@@ -421,11 +424,11 @@ namespace Zahra
 		ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
 
 		// Play/Pause buttons
-		if (edit || simulate || m_Paused)
+		if (edit || m_Paused)
 		{
 			if (ImGui::ImageButton(m_IconHandles["Play"], { iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
-				if (edit || simulate)
+				if (edit)
 					ScenePlay();
 				else
 					m_Paused = false;
@@ -434,10 +437,10 @@ namespace Zahra
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 			{
 				ImGui::BeginTooltip();
-				if (edit || simulate)
-					ImGui::Text("Play Scene");
+				if (edit)
+					ImGui::Text("Begin Runtime");
 				else
-					ImGui::Text("Resume Scene");
+					ImGui::Text("Resume");
 				ImGui::EndTooltip();
 			}
 		}
@@ -452,7 +455,7 @@ namespace Zahra
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 			{
 				ImGui::BeginTooltip();
-				ImGui::Text("Pause Scene");
+				ImGui::Text("Pause");
 				ImGui::EndTooltip();
 			}
 		}
@@ -480,6 +483,7 @@ namespace Zahra
 			if (ImGui::ImageButton(m_IconHandles["PhysicsOff"],
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
+				m_Paused = false;
 				SceneStop();
 			}
 
@@ -502,7 +506,7 @@ namespace Zahra
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 			{
 				ImGui::BeginTooltip();
-				ImGui::Text("Stop Scene");
+				ImGui::Text("End Runtime");
 				ImGui::EndTooltip();
 			}
 		}
@@ -536,7 +540,7 @@ namespace Zahra
 		}
 
 		// Step button
-		if (play && m_Paused)
+		if (!edit && m_Paused)
 		{
 			ImGui::SameLine();
 
@@ -553,174 +557,6 @@ namespace Zahra
 				ImGui::EndTooltip();
 			}
 		}
-
-		/*switch (Editor::GetSceneState())
-		{
-			case SceneState::Edit:
-			{
-				if (ImGui::ImageButton(m_IconHandles["Play"], { iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-				{
-					ScenePlay();
-				}
-
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Play Scene");
-					ImGui::EndTooltip();
-				}
-
-				ImGui::SameLine();
-
-				if (ImGui::ImageButton(m_IconHandles["PhysicsOn"],
-					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-				{
-					SceneSimulate();
-				}
-
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Physics On");
-					ImGui::EndTooltip();
-				}
-
-				break;
-			}
-			case SceneState::Play:
-			{
-				if (m_Paused)
-				{
-					if (ImGui::ImageButton(m_IconHandles["Play"],
-						{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-					{
-						m_Paused = false;
-					}
-
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-					{
-						ImGui::BeginTooltip();
-						ImGui::Text("Resume Scene");
-						ImGui::EndTooltip();
-					}
-				}
-				else
-				{
-					if (ImGui::ImageButton(m_IconHandles["Pause"],
-						{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-					{
-						m_Paused = true;
-					}
-
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-					{
-						ImGui::BeginTooltip();
-						ImGui::Text("Pause Scene");
-						ImGui::EndTooltip();
-					}
-				}				
-
-				ImGui::SameLine();
-				
-				if (ImGui::ImageButton(m_IconHandles["Stop"],
-					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-				{
-					SceneStop();
-				}
-
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Stop Scene");
-					ImGui::EndTooltip();
-				}
-
-				ImGui::SameLine();
-
-				if (ImGui::ImageButton(m_IconHandles["Reset"],
-					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-				{
-					SceneStop();
-					ScenePlay();
-				}
-
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Reset Scene");
-					ImGui::EndTooltip();
-				}
-
-				if (m_Paused)
-				{
-					ImGui::SameLine();
-
-					if (ImGui::ImageButton(m_IconHandles["Step"],
-						{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-					{
-						m_StepCountdown = m_FramesPerStep;
-					}
-
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-					{
-						ImGui::BeginTooltip();
-						ImGui::Text("Step Forward");
-						ImGui::EndTooltip();
-					}
-				}
-
-				break;
-			}
-			case SceneState::Simulate:
-			{
-				if (ImGui::ImageButton(m_IconHandles["Play"], { iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-				{
-					ScenePlay();
-				}
-
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Play Scene");
-					ImGui::EndTooltip();
-				}
-
-				ImGui::SameLine();
-
-				if (ImGui::ImageButton(m_IconHandles["PhysicsOff"],
-					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-				{
-					SceneStop();
-				}
-
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Physics Off");
-					ImGui::EndTooltip();
-				}
-
-				ImGui::SameLine();
-
-				if (ImGui::ImageButton(m_IconHandles["Reset"],
-					{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
-				{
-					SceneStop();
-					SceneSimulate();
-				}
-
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Reset Scene");
-					ImGui::EndTooltip();
-				}
-
-				break;
-			}
-		default:
-			break;
-		}*/
 		ImGui::PopStyleColor();
 
 		ImGui::Text("Frames Per Step:");
@@ -795,7 +631,7 @@ namespace Zahra
 
 	void EditorLayer::UIGizmo()
 	{
-		Entity selection = m_SceneHierarchyPanel.GetSelectedEntity();
+		Entity selection = Editor::GetSelectedEntity();
 		if (!selection || m_GizmoType == TransformationType::None || m_EditorCamera.Controlled())
 			return;
 		
@@ -1123,7 +959,7 @@ namespace Zahra
 			{
 				if (ctrl && Editor::GetSceneState() == SceneState::Edit)
 				{
-					Entity& selection = m_SceneHierarchyPanel.GetSelectedEntity();
+					Entity& selection = Editor::GetSelectedEntity();
 					if (selection)
 						m_EditorScene->DuplicateEntity(selection);
 
@@ -1148,13 +984,13 @@ namespace Zahra
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
 	{
 		// block other mouse input when we're trying to use imguizmo, or move our camera around
-		if (m_EditorCamera.Controlled() || ( ImGuizmo::IsOver() && m_SceneHierarchyPanel.GetSelectedEntity() ))
+		if (m_EditorCamera.Controlled() || ( ImGuizmo::IsOver() && Editor::GetSelectedEntity() ))
 			return false;
 		
 		if (event.GetMouseButton() == MouseCode::ButtonLeft)
 		{
 			if (m_ViewportHovered)
-				m_SceneHierarchyPanel.SelectEntity(m_HoveredEntity);
+				Editor::SelectEntity(m_HoveredEntity);
 		}
 
 		return true;
@@ -1181,7 +1017,7 @@ namespace Zahra
 		m_WorkingSceneFilepath.clear();
 
 		m_ActiveScene = m_EditorScene;
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		Editor::SetSceneContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OpenSceneFile()
@@ -1222,7 +1058,7 @@ namespace Zahra
 			m_WorkingSceneFilepath = filepath;
 
 			m_ActiveScene = m_EditorScene;
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+			Editor::SetSceneContext(m_ActiveScene);
 		}
 
 		// TODO: report/display success of file open
@@ -1284,6 +1120,9 @@ namespace Zahra
 
 			out << YAML::Key << "ShowSavePrompt";
 			out << YAML::Value << config.ShowSavePrompt;
+
+			out << YAML::Key << "FramesPerStep";
+			out << YAML::Value << m_FramesPerStep;
 		}
 		out << YAML::EndMap;
 
@@ -1335,6 +1174,11 @@ namespace Zahra
 		if (auto showSavePromptNode = data["ShowSavePrompt"])
 		{
 			config.ShowSavePrompt = showSavePromptNode.as<bool>();
+		}
+
+		if (auto framesPerStepNode = data["FramesPerStep"])
+		{
+			m_FramesPerStep = framesPerStepNode.as<int32_t>();
 		}
 	}
 

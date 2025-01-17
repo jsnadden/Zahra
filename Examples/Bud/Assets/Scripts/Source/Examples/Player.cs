@@ -57,7 +57,7 @@ namespace Bud.Examples
 			if (HasComponent<CircleColliderComponent>())
 			{
 				float density = GetComponent<CircleColliderComponent>().Density;
-				mass = density * 3.141592f * .25f * transform.Scale.X * transform.Scale.Y;
+				mass = density * (float)Math.PI * .25f * transform.Scale.X * transform.Scale.Y;
 			}
 			else if (HasComponent<RectColliderComponent>())
 			{

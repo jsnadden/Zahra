@@ -1,1 +1,1 @@
-OpenAL, SDL, or perhaps try writing one from scratch (with guidance, and reference to bighazel)
+OpenAL, SDL, or perhaps try writing one from scratch (with guidance from hazel)

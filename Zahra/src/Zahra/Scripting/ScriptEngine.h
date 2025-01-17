@@ -179,13 +179,16 @@ namespace Zahra
 	class ScriptEngine
 	{
 	public:
-		static void Init();
+		static void InitCore();
+		static void InitApp(const std::filesystem::path& assemblyFilepath, bool enableAutoReload);
 		static void Shutdown();
 
-		static void OnRuntimeStart(Scene* scene);
-		static void OnRuntimeStop();
-
 		static void ReloadAssembly();
+		static uint64_t AddReloadCallback(const std::function<void()>& callback);
+		static void RemoveReloadCallback(uint64_t receipt);
+
+		static void OnRuntimeStart(Ref<Scene> scene);
+		static void OnRuntimeStop();
 
 		static const std::unordered_map<std::string, Ref<ScriptClass>>& GetScriptClasses();
 		static const Ref<ScriptClass> GetScriptClassIfValid(const std::string& fullName);
@@ -208,12 +211,13 @@ namespace Zahra
 		static void CreateAppDomain();
 		static void ShutdownMonoDomains();
 		
-		static void LoadAssemblies();
-		static void LoadAssembly(const std::filesystem::path& library, MonoAssembly*& assembly, MonoImage*& assemblyImage);
+		static bool LoadCoreAssembly();
+		static bool LoadAppAssembly();
 
 		static void InitAssemblyFileWatcher();
 
-		static void Reflect();
+		static void RegisterAppEntityScripts();
+
 	};
 
 }

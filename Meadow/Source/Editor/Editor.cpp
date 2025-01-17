@@ -1,34 +1,24 @@
 #include "zpch.h"
 #include "Editor.h"
 
+
+
 namespace Zahra
 {
-	struct EditHistoryData
+	struct EditorData
 	{
 		EditorConfig Config;
 
 		//std::vector<Ref<Edit>> UndoStack, RedoStack;
-		bool Dirty = false;
-		int32_t Balance = 0;
+		//bool Dirty = false;
+		//int32_t Balance = 0;
 
 		SceneState EditorSceneState = SceneState::Edit;
+		WeakRef<Scene> SceneContext;
+		Entity SelectedEntity;
+		WeakRef<EditorCamera> PrimaryCamera;
 	};
-	static EditHistoryData s_EditorData;
-
-	EditorConfig& Editor::GetConfig()
-	{
-		return s_EditorData.Config;
-	}
-
-	SceneState Editor::GetSceneState()
-	{
-		return s_EditorData.EditorSceneState;
-	}
-
-	void Editor::SetSceneState(const SceneState& sceneState)
-	{
-		s_EditorData.EditorSceneState = sceneState;
-	}
+	static EditorData s_EditorData;
 
 	/*void Editor::Reset()
 	{
@@ -103,5 +93,66 @@ namespace Zahra
 	{
 		return s_EditorData.Dirty || s_EditorData.Balance;
 	}*/
+
+	EditorConfig& Editor::GetConfig()
+	{
+		return s_EditorData.Config;
+	}
+
+	SceneState Editor::GetSceneState()
+	{
+		return s_EditorData.EditorSceneState;
+	}
+
+	void Editor::SetSceneState(const SceneState& sceneState)
+	{
+		s_EditorData.SelectedEntity = {};
+		s_EditorData.EditorSceneState = sceneState;
+	}
+
+	WeakRef<Scene> Editor::GetSceneContext()
+	{
+		return s_EditorData.SceneContext;
+	}
+
+	void Editor::SetSceneContext(Ref<Scene> scene)
+	{
+		s_EditorData.SelectedEntity = {};
+		s_EditorData.SceneContext = scene;
+	}
+
+	Entity Editor::GetSelectedEntity()
+	{
+		return s_EditorData.SelectedEntity;
+	}
+
+	void Editor::SelectEntity(Entity entity)
+	{
+		Z_CORE_ASSERT(!entity || entity.BelongsTo(s_EditorData.SceneContext));
+		s_EditorData.SelectedEntity = entity;
+	}
+
+	bool Editor::IsSelected(ZGUID entityID)
+	{
+		if (!s_EditorData.SelectedEntity)
+			return false;
+
+		return s_EditorData.SelectedEntity.GetGUID() == entityID;
+	}
+
+	WeakRef<EditorCamera> Editor::GetPrimaryEditorCamera()
+	{
+		return s_EditorData.PrimaryCamera;
+	}
+
+	void Editor::SetPrimaryEditorCamera(EditorCamera& camera)
+	{
+		s_EditorData.PrimaryCamera = &camera;
+	}
+
+	void Editor::CenterPrimaryEditorCamera(const glm::vec3& point)
+	{
+		s_EditorData.PrimaryCamera->Recenter(point);
+	}
 
 }

@@ -22,7 +22,8 @@ namespace Zahra
 	};
 
 	
-	struct FileData // TODO: add more types as they come up, also should move some of this to somewhere in Zahra (asset manager?)
+	// TODO: rename and move to AssetManager class, when that exists
+	struct FileData
 	{
 		enum class ContentType
 		{

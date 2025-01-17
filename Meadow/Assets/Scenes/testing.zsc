@@ -98,11 +98,12 @@ Entities:
       TextureTiling: 1
       Animated: false
     ScriptComponent:
-      ScriptName: Bud.WASD
+      ScriptName: Bud.Examples.Player
       FieldValues:
-        InputForce: 30
-        DragCoeff: 0
+        InputStrength: 20
+        Drag: 0.00999999978
         IgnoreGravity: true
+        WASD: true
     RigidBody2DComponent:
       Type: Dynamic
       FixedRotation: false

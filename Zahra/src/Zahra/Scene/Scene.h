@@ -29,6 +29,7 @@ namespace Zahra
 		void DestroyEntity(ZGUID guid);
 		Entity DuplicateEntity(Entity extantEntity, ZGUID newID = {});
 		Entity GetEntity(ZGUID guid);
+		void ForEachEntity(const std::function<void(Entity entity)>& action);
 
 		// avoid this method as much as possible
 		Entity GetEntity(const std::string_view& name);
@@ -49,8 +50,8 @@ namespace Zahra
 		void OnUpdateSimulation(float dt);
 		void OnUpdateRuntime(float dt);
 
-		void OnRenderEditor(Ref<Renderer2D> renderer, EditorCamera& camera, Entity selection, const glm::vec4 highlightColour);
-		void OnRenderRuntime(Ref<Renderer2D> renderer, Entity selection, const glm::vec4 highlightColour);
+		void OnRenderEditor(Ref<Renderer2D> renderer, const EditorCamera& camera, Entity selection, const glm::vec4& highlightColour);
+		void OnRenderRuntime(Ref<Renderer2D> renderer, Entity selection, const glm::vec4& highlightColour);
 
 		// TODO: replace Box2D with a 3d physics engine (e.g. Nvidia PhysX)
 		void InitPhysicsWorld();

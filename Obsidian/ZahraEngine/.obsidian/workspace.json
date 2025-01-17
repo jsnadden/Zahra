@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "TODO/12th of Jan 2025.md",
+                "file": "Planning & Learning/Scripting.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "12th of Jan 2025"
+              "title": "Scripting"
             }
           }
         ]
@@ -164,17 +164,17 @@
   },
   "active": "e3f6df8361cc3fd2",
   "lastOpenFiles": [
+    "Planning & Learning/Audio engine.md",
+    "Planning & Learning/Scripting.md",
     "TODO/Resource Management.md",
     "TODO/12th of Jan 2025.md",
     "TODO/Memory Management.md",
-    "Planning & Learning/Script fields.md",
     "Planning & Learning/Editor capabilities.md",
     "Planning & Learning/Undo & Redo stacks.md",
     "Planning & Learning/Renderer architecture.md",
     "Planning & Learning/Vulkan resources.canvas",
     "Planning & Learning/Rendering pipeline.canvas",
     "TODO/Rethinking the RenderPass interface.md",
-    "Planning & Learning/Audio engine.md",
     "Planning & Learning/Parallelisation.md",
     "Untitled",
     "Planning & Learning/Vulkan resource hierarchy.md",

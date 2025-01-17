@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Utils/TypeDefs.h"
-#include "Panels/ContentBrowserPanel.h"
-#include "Panels/SceneHierarchyPanel.h"
+#include "Editor/TypeDefs.h"
+#include "UI/Panels/ContentBrowserPanel.h"
+#include "UI/Panels/SceneHierarchyPanel.h"
 
 #include <Zahra.h>
 
@@ -50,10 +50,10 @@ namespace Zahra
 		TransformationType m_GizmoType = TransformationType::None;
 
 		void UIControls();
-		std::map<std::string, Ref<Texture2D>> m_Icons;
+		std::map<std::string, Ref<Texture2D>> m_ControlIcons;
 		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
 		bool m_Paused = false;
-		int32_t m_FramesPerStep = 1;
+		int32_t m_FramesPerStep = 10;
 		int32_t m_StepCountdown = 0;
 
 		void UIAboutWindow();

@@ -74,8 +74,6 @@ namespace Zahra
 			return GetComponents<TagComponent>().Tag;
 		}
 
-		//WeakRef<Scene> GetScene() { return m_Scene; }
-
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
@@ -88,6 +86,11 @@ namespace Zahra
 		bool operator!=(const Entity& other) const
 		{
 			return !(*this == other);
+		}
+
+		bool BelongsTo(WeakRef<Scene> scene)
+		{
+			return m_Scene == scene;
 		}
 
 	private:

@@ -1,4 +1,5 @@
-WorkingSceneFilepath: Assets\Scenes\shades.zsc
+WorkingSceneFilepath: Assets\Scenes\martini.zsc
 SceneCacheInterval: 300
 MaxCachedScenes: 5
 ShowSavePrompt: false
+FramesPerStep: 30

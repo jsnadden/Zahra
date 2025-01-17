@@ -181,6 +181,19 @@ namespace Zahra
 		return { it->second, this };
 	}
 
+	void Scene::ForEachEntity(const std::function<void(Entity entity)>& action)
+	{
+		// TODO: add another std::function argument to set iteration order
+		// (could also make this templated for ordering via component values)
+		//m_Registry.sort<entt::entity>([](const auto& lhs, const auto& rhs) { return lhs < rhs; });
+
+		m_Registry.view<entt::entity>().each([&](auto entityHandle)
+			{
+				Entity entity = { entityHandle, this };
+				action(entity);
+			});
+	}
+
 	Entity Scene::GetEntity(const std::string_view& name)
 	{
 		auto view = m_Registry.view<entt::entity>();
@@ -304,7 +317,7 @@ namespace Zahra
 		}
 	}
 
-	void Scene::OnRenderEditor(Ref<Renderer2D> renderer, EditorCamera& camera, Entity selection, const glm::vec4 highlightColour)
+	void Scene::OnRenderEditor(Ref<Renderer2D> renderer, const EditorCamera& camera, Entity selection, const glm::vec4& highlightColour)
 	{
 		renderer->ResetStats();
 
@@ -319,7 +332,7 @@ namespace Zahra
 		renderer->EndScene();
 	}
 
-	void Scene::OnRenderRuntime(Ref<Renderer2D> renderer, Entity selection, const glm::vec4 highlightColour)
+	void Scene::OnRenderRuntime(Ref<Renderer2D> renderer, Entity selection, const glm::vec4& highlightColour)
 	{
 		if (m_ActiveCamera != entt::null)
 		{

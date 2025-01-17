@@ -23,7 +23,7 @@ namespace Zahra
 			return nullptr;
 		}
 
-		char* buffer = new char[size];
+		char* buffer = znew char[size];
 		fileStream.read((char*)buffer, size);
 		fileStream.close();
 

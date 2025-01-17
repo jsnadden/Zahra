@@ -282,95 +282,99 @@ namespace Zahra
 				out << YAML::Key << "FieldValues";
 				out << YAML::BeginMap;
 				{
-					auto fields = ScriptEngine::GetScriptClassIfValid(script.ScriptName)->GetPublicFields();
-					auto buffer = scene->GetScriptFieldStorage(entity);
-
-					for (uint64_t i = 0; i < fields.size(); i++)
+					auto scriptClass = ScriptEngine::GetScriptClassIfValid(script.ScriptName);
+					if (scriptClass)
 					{
-						auto& field = fields[i];
-						uint64_t offset = 16 * i;
-						
-						switch (field.Type)
+						auto fields = scriptClass->GetPublicFields();
+						auto buffer = scene->GetScriptFieldStorage(entity);
+
+						for (uint64_t i = 0; i < fields.size(); i++)
 						{
-							case ScriptFieldType::Bool:
+							auto& field = fields[i];
+							uint64_t offset = 16 * i;
+
+							switch (field.Type)
 							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<bool>(offset);
-								break;
-							}
-							case ScriptFieldType::sByte:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int8_t>(offset);
-								break;
-							}
-							case ScriptFieldType::Byte:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint8_t>(offset);
-								break;
-							}
-							case ScriptFieldType::Short:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int16_t>(offset);
-								break;
-							}
-							case ScriptFieldType::uShort:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint16_t>(offset);
-								break;
-							}
-							case ScriptFieldType::Char:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint16_t>(offset);
-								break;
-							}
-							case ScriptFieldType::Int:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int32_t>(offset);
-								break;
-							}
-							case ScriptFieldType::uInt:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint32_t>(offset);
-								break;
-							}
-							case ScriptFieldType::Long:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int64_t>(offset);
-								break;
-							}
-							case ScriptFieldType::uLong:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint64_t>(offset);
-								break;
-							}
-							case ScriptFieldType::Float:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<float>(offset);
-								break;
-							}
-							case ScriptFieldType::Double:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<double>(offset);
-								break;
-							}
-							case ScriptFieldType::EntityID:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<ZGUID>(offset);
-								break;
-							}
-							case ScriptFieldType::Vector2:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<glm::vec2>(offset);
-								break;
-							}
-							case ScriptFieldType::Vector3:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<glm::vec3>(offset);
-								break;
-							}
-							case ScriptFieldType::Vector4:
-							{
-								out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<glm::vec4>(offset);
-								break;
+								case ScriptFieldType::Bool:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<bool>(offset);
+									break;
+								}
+								case ScriptFieldType::sByte:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int8_t>(offset);
+									break;
+								}
+								case ScriptFieldType::Byte:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint8_t>(offset);
+									break;
+								}
+								case ScriptFieldType::Short:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int16_t>(offset);
+									break;
+								}
+								case ScriptFieldType::uShort:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint16_t>(offset);
+									break;
+								}
+								case ScriptFieldType::Char:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint16_t>(offset);
+									break;
+								}
+								case ScriptFieldType::Int:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int32_t>(offset);
+									break;
+								}
+								case ScriptFieldType::uInt:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint32_t>(offset);
+									break;
+								}
+								case ScriptFieldType::Long:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<int64_t>(offset);
+									break;
+								}
+								case ScriptFieldType::uLong:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<uint64_t>(offset);
+									break;
+								}
+								case ScriptFieldType::Float:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<float>(offset);
+									break;
+								}
+								case ScriptFieldType::Double:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<double>(offset);
+									break;
+								}
+								case ScriptFieldType::EntityID:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<ZGUID>(offset);
+									break;
+								}
+								case ScriptFieldType::Vector2:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<glm::vec2>(offset);
+									break;
+								}
+								case ScriptFieldType::Vector3:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<glm::vec3>(offset);
+									break;
+								}
+								case ScriptFieldType::Vector4:
+								{
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<glm::vec4>(offset);
+									break;
+								}
 							}
 						}
 					}
