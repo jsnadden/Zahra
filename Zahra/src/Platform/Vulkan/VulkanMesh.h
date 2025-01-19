@@ -9,7 +9,7 @@ namespace Zahra
 	class VulkanStaticMesh : public StaticMesh
 	{
 	public:
-		VulkanStaticMesh(MeshSpecification specification);
+		VulkanStaticMesh(MeshSpecification specification, const std::filesystem::path& filepath);
 		virtual ~VulkanStaticMesh();
 
 		virtual Ref<VertexBuffer> GetVertexBuffer() override { return m_VertexBuffer.As<VertexBuffer>(); }
@@ -21,7 +21,7 @@ namespace Zahra
 		Ref<VulkanVertexBuffer> m_VertexBuffer;
 		Ref<VulkanIndexBuffer> m_IndexBuffer;
 
-		void LoadFromObj();
+		void LoadFromObj(const std::filesystem::path& filepath);
 
 	};
 

@@ -42,8 +42,6 @@ namespace Zahra
 		static void DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0);
 		static void DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh);
 		
-		static void DrawTestScene(glm::mat4 view, glm::mat4 projection);
-
 		static void SetLineWidth(float width);
 
 		struct Capabilities

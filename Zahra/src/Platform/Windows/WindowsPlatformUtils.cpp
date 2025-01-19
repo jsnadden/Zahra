@@ -12,15 +12,28 @@
 
 namespace Zahra
 {
+	// NOTE: calls new, so need to manually free the output after use
+	static const wchar_t* ConvertStringToWideChar(const std::string& string)
+	{
+		const size_t newSize = string.size() + 1;
+		wchar_t* convertedString = znew wchar_t[newSize];
+		size_t conversionCount = 0;
+		mbstowcs_s(&conversionCount, convertedString, newSize, string.c_str(), _TRUNCATE);
+
+		return convertedString;
+	}
 
 	float Time::GetTime()
 	{
 		return (float)glfwGetTime();
 	}
 
-	std::filesystem::path FileDialogs::OpenFile(const wchar_t* filterDescription, const wchar_t* filterExtension)
+	std::filesystem::path FileDialogs::OpenFile(FileTypeFilter filter)
 	{
 		std::filesystem::path filepath;
+
+		const wchar_t* filterDescription = ConvertStringToWideChar(filter.Description);
+		const wchar_t* filterExtension = ConvertStringToWideChar(filter.Extension);
 
 		IFileOpenDialog* openDialog;
 		HRESULT hresult = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
@@ -72,12 +85,18 @@ namespace Zahra
 
 		openDialog->Release();
 
+		delete[] filterDescription;
+		delete[] filterExtension;
+
 		return filepath;
 	}
 
-	std::filesystem::path FileDialogs::SaveFile(const wchar_t* filterDescription, const wchar_t* filterExtension)
+	std::filesystem::path FileDialogs::SaveFile(FileTypeFilter filter)
 	{
 		std::filesystem::path filepath;
+
+		const wchar_t* filterDescription = ConvertStringToWideChar(filter.Description);
+		const wchar_t* filterExtension = ConvertStringToWideChar(filter.Extension);
 
 		IFileSaveDialog* saveDialog;
 		HRESULT hresult = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_ALL,
@@ -128,6 +147,9 @@ namespace Zahra
 		}
 
 		saveDialog->Release();
+
+		delete[] filterDescription;
+		delete[] filterExtension;
 
 		return filepath;
 	}

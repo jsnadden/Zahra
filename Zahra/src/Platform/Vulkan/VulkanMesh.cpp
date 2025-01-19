@@ -11,7 +11,7 @@
 
 namespace Zahra
 {
-	VulkanStaticMesh::VulkanStaticMesh(MeshSpecification specification)
+	VulkanStaticMesh::VulkanStaticMesh(MeshSpecification specification, const std::filesystem::path& filepath)
 		: m_Specification(specification)
 	{
 		// TODO: make a switch-case and write loaders for other formats
@@ -19,7 +19,7 @@ namespace Zahra
 		{
 			Timer meshLoadTimer;
 			{
-				LoadFromObj();
+				LoadFromObj(filepath);
 			}
 			Z_CORE_TRACE("Mesh '{0}' took {1} ms to load", m_Specification.Name, meshLoadTimer.ElapsedMillis());
 		}
@@ -34,22 +34,20 @@ namespace Zahra
 
 	}
 
-	void VulkanStaticMesh::LoadFromObj()
+	void VulkanStaticMesh::LoadFromObj(const std::filesystem::path& filepath)
 	{
 		std::vector<MeshVertex> vertices;
 		std::unordered_map<MeshVertex, uint32_t> vertexToIndexMap; // used to avoid vertex duplication
 		std::vector<uint32_t> indices;
 
+		// TODO: replace with a more general mesh/asset loader library
 		tinyobj::attrib_t attributes;
 		std::vector<tinyobj::shape_t> triangles;
 		std::vector<tinyobj::material_t> materials;
 		std::string warning, error;
 
-		std::string sourceFilepath = Filepath(m_Specification);
-
-		if (!tinyobj::LoadObj(&attributes, &triangles, &materials, &warning, &error, sourceFilepath.c_str())) {
+		if (!tinyobj::LoadObj(&attributes, &triangles, &materials, &warning, &error, filepath.string().c_str()))
 			throw std::runtime_error(warning + error);
-		}
 
 		for (auto& triangle : triangles)
 		{

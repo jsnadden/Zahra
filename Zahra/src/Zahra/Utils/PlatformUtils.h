@@ -5,11 +5,17 @@
 
 namespace Zahra
 {
+	struct FileTypeFilter
+	{
+		std::string Description;
+		std::string Extension;
+	};
+
 	class FileDialogs
 	{
 	public:
-		static std::filesystem::path OpenFile(const wchar_t* filterDescription, const wchar_t* filterExtension);
-		static std::filesystem::path SaveFile(const wchar_t* filterDescription, const wchar_t* filterExtension);
+		static std::filesystem::path OpenFile(FileTypeFilter filter);
+		static std::filesystem::path SaveFile(FileTypeFilter filter);
 
 
 	};

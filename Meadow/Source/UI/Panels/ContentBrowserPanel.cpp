@@ -3,17 +3,14 @@
 
 #include "Zahra/Core/Input.h"
 #include "Zahra/ImGui/ImGuiLayer.h"
+#include "Zahra/Projects/Project.h"
 
 #include <ImGui/imgui.h>
-
-// TODO: later we'll get rid of this being hardcoded, in favour of a "projects" system
-static const std::filesystem::path s_AssetsRoot = "Assets";
 
 namespace Zahra
 {
 
 	ContentBrowserPanel::ContentBrowserPanel()
-		: m_CurrentPath(s_AssetsRoot)
 	{
 		m_RefreshTimer.Reset();
 
@@ -30,20 +27,31 @@ namespace Zahra
 		}
 	}
 
+	void ContentBrowserPanel::OnLoadProject()
+	{
+		m_CurrentPath = Project::GetAssetsDirectory();
+
+		if (!m_CurrentPath.empty() && !std::filesystem::exists(m_CurrentPath))
+			std::filesystem::create_directories(m_CurrentPath);
+	}
+
 	void ContentBrowserPanel::OnImGuiRender()
 	{
-		if (m_RefreshTimer.ElapsedMillis() > m_RefreshPeriod) Refresh();
+		if (m_RefreshTimer.ElapsedMillis() > m_RefreshPeriod)
+			Refresh();
 
 		ImGui::Begin("Content Browser", 0, ImGuiWindowFlags_NoCollapse);
+		{
+			m_PanelHovered = ImGui::IsWindowHovered();
+			m_PanelFocused = ImGui::IsWindowFocused();
 
-		m_PanelHovered = ImGui::IsWindowHovered();
-		m_PanelFocused = ImGui::IsWindowFocused();
+			// TODO: rightclick context menu (on blank space) to create a new directory etc.
 
-		// TODO: rightclick context menu on blank space to create a new directory etc.
+			DisplayNavBar();
 
-		DisplayNavBar();
-		DisplayCurrentDirectory();
-
+			if (!m_CurrentPath.empty())
+				DisplayCurrentDirectory();
+		}
 		ImGui::End();
 	}
 
@@ -70,8 +78,7 @@ namespace Zahra
 
 			// BACK BUTTON
 			ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-			if (ImGui::ImageButton(m_IconHandles["Back"],
-				{ iconSize, iconSize }, { 0,0 }, { 1,1 }))
+			if (ImGui::ImageButton(m_IconHandles["Back"], { iconSize, iconSize }, { 0,0 }, { 1,1 }))
 			{
 				GoBack();
 			}
@@ -228,6 +235,7 @@ namespace Zahra
 	{
 		while (!std::filesystem::exists(m_CurrentPath))
 		{
+			Z_CORE_ASSERT(!m_CurrentPath.empty());
 			m_CurrentPath = m_CurrentPath.parent_path();
 		}
 	}
@@ -237,6 +245,9 @@ namespace Zahra
 		for (auto item : std::filesystem::directory_iterator(m_CurrentPath))
 		{
 			const std::filesystem::path& path = item.path();
+
+			if (!m_BrowserOptions.ShowHidden && path.filename().string()[0] == '.')
+				continue;
 
 			if (item.is_directory())
 			{
@@ -251,6 +262,9 @@ namespace Zahra
 
 	void ContentBrowserPanel::Refresh()
 	{
+		if (m_CurrentPath.empty())
+			return;
+
 		m_Subdirectories.clear();
 		m_Files.clear();
 
@@ -261,6 +275,9 @@ namespace Zahra
 
 	bool ContentBrowserPanel::DragFile(FileData file)
 	{
+		if (m_CurrentPath.empty())
+			return false;
+
 		std::string filepath = file.Path.string();
 		std::string filename = file.Path.filename().string();
 
@@ -305,7 +322,10 @@ namespace Zahra
 
 	void ContentBrowserPanel::GoBack()
 	{
-		if (m_CurrentPath != s_AssetsRoot)
+		if (m_CurrentPath.empty())
+			return;
+
+		if (m_CurrentPath != Project::GetAssetsDirectory())
 		{
 			m_ForwardStack.push_back(m_CurrentPath);
 			m_CurrentPath = m_CurrentPath.parent_path();
@@ -315,6 +335,9 @@ namespace Zahra
 
 	void ContentBrowserPanel::GoForward()
 	{
+		if (m_CurrentPath.empty())
+			return;
+
 		if (!m_ForwardStack.empty())
 		{
 			m_CurrentPath = m_ForwardStack.back();
@@ -330,24 +353,25 @@ namespace Zahra
 	}
 	bool ContentBrowserPanel::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
 	{
-		if (!m_ChildHovered && !m_PanelHovered) return false;
+		if (m_CurrentPath.empty() || (!m_ChildHovered && !m_PanelHovered))
+			return false;
 
 		switch (event.GetMouseButton())
 		{
-		case MouseCode::Button3:
-		{
-			GoBack();
-			return true;
-		}
+			case MouseCode::Button3:
+			{
+				GoBack();
+				return true;
+			}
 
-		case MouseCode::Button4:
-		{
-			GoForward();
-			return true;
-		}
+			case MouseCode::Button4:
+			{
+				GoForward();
+				return true;
+			}
 
-		default:
-			break;
+			default:
+				break;
 		}
 
 		return false;

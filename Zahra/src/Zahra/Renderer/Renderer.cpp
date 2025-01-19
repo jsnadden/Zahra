@@ -16,13 +16,6 @@
 
 namespace Zahra
 {
-	struct TestTransforms
-	{
-		glm::mat4 Model = glm::mat4(1.0f);
-		glm::mat4 View = glm::mat4(1.0f);
-		glm::mat4 Projection = glm::mat4(1.0f);
-	};
-
 	struct RendererData
 	{
 		RendererConfig					Config;
@@ -39,13 +32,6 @@ namespace Zahra
 		Ref<Shader>						FullscreenTriangleShader;
 		Ref<ShaderResourceManager>		FullscreenTriangleResourceManager;
 		Ref<RenderPass>					FullscreenTriangleRenderPass;
-		
-		Ref<Shader>						TestSceneShader;
-		Ref<ShaderResourceManager>		TestSceneResourceManager;
-		Ref<RenderPass>					TestSceneRenderPass;
-		Ref<StaticMesh>					TestSceneMesh;
-		Ref<Texture2D>					TestSceneTexture;
-		Ref<UniformBufferSet>			TestSceneUniformBuffers;
 	};
 
 	static RendererData s_Data;
@@ -122,57 +108,11 @@ namespace Zahra
 			s_Data.FullscreenTriangleResourceManager->Update();
 		}
 
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// TEST SCENE
-		{
-			ShaderSpecification shaderSpec{};
-			shaderSpec.Name = "vulkan_tutorial";
-			s_Data.TestSceneShader = Shader::Create(shaderSpec);
-
-			ShaderResourceManagerSpecification resourceManagerSpec{};
-			resourceManagerSpec.Shader = s_Data.TestSceneShader;
-			resourceManagerSpec.FirstSet = 0;
-			resourceManagerSpec.LastSet = 0;
-			s_Data.TestSceneResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
-
-			RenderPassSpecification renderPassSpec{};
-			renderPassSpec.Name = "Renderer_TestSceneRenderPass";
-			renderPassSpec.Shader = s_Data.TestSceneShader;
-			renderPassSpec.Topology = PrimitiveTopology::Triangles;
-			renderPassSpec.RenderTarget = s_Data.PrimaryFramebuffer;
-			s_Data.TestSceneRenderPass = RenderPass::Create(renderPassSpec);
-
-			MeshSpecification meshSpec{};
-			meshSpec.Name = "viking_room";
-			s_Data.TestSceneMesh = StaticMesh::Create(meshSpec);
-
-			uint32_t framesInFlight = s_RendererAPI->GetFramesInFlight();
-			uint32_t mvpSize = sizeof(TestTransforms);
-			s_Data.TestSceneUniformBuffers = UniformBufferSet::Create(mvpSize, framesInFlight);
-			TestTransforms transforms{};
-			for (uint32_t frame = 0; frame < framesInFlight; frame++)
-				s_Data.TestSceneUniformBuffers->SetData(frame, &transforms, mvpSize);
-
-			Texture2DSpecification tutorialTextureSpec{};
-			s_Data.TestSceneTexture = Texture2D::CreateFromFile(tutorialTextureSpec, "Assets/Textures/viking_room.png");
-
-			s_Data.TestSceneResourceManager->ProvideResource("Matrices", s_Data.TestSceneUniformBuffers);
-			s_Data.TestSceneResourceManager->ProvideResource("u_Texture", s_Data.TestSceneTexture);
-			s_Data.TestSceneResourceManager->Update();
-		}
-
 		//Z_CORE_INFO("Rendering engine has initialised");
 	}
 
 	void Renderer::Shutdown()
 	{
-		s_Data.TestSceneTexture.Reset();
-		s_Data.TestSceneUniformBuffers.Reset();
-		s_Data.TestSceneMesh.Reset();
-		s_Data.TestSceneRenderPass.Reset();
-		s_Data.TestSceneResourceManager.Reset();
-		s_Data.TestSceneShader.Reset();
-
 		s_Data.FullscreenTriangleRenderPass.Reset();
 		s_Data.FullscreenTriangleResourceManager.Reset();
 		s_Data.FullscreenTriangleShader.Reset();
@@ -287,8 +227,6 @@ namespace Zahra
 		s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.PrimaryRenderTargetTexture);
 		s_Data.FullscreenTriangleResourceManager->Update();
 		s_Data.FullscreenTriangleRenderPass->OnResize();
-
-		s_Data.TestSceneRenderPass->OnResize();
 	}
 
 	void Renderer::Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)
@@ -313,23 +251,6 @@ namespace Zahra
 
 	}
 
-	void Renderer::DrawTestScene(glm::mat4 view, glm::mat4 projection)
-	{
-		float width = (float)GetSwapchainWidth();
-		float height = (float)GetSwapchainHeight();
-		uint32_t frameIndex = GetCurrentFrameIndex();
-
-		TestTransforms transforms{};
-		transforms.Model = glm::rotate(glm::mat4(1.f), glm::radians(-90.f), { 1.f, 0.f, 0.f }) * glm::rotate(glm::mat4(1.f), glm::radians(180.f), { 0.f, 0.f, 1.f });
-		transforms.View = view;
-		transforms.Projection = projection;
-
-		s_Data.TestSceneUniformBuffers->SetData(frameIndex, &transforms, sizeof(TestTransforms));
-
-		BeginRenderPass(s_Data.TestSceneRenderPass);
-		DrawMesh(s_Data.TestSceneRenderPass, s_Data.TestSceneResourceManager, s_Data.TestSceneMesh);
-		EndRenderPass();
-	}
 	void Renderer::SetLineWidth(float width)
 	{
 		s_RendererAPI->SetLineWidth(width);

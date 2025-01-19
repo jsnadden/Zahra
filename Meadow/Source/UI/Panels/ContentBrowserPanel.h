@@ -58,6 +58,8 @@ namespace Zahra
 	public:
 		ContentBrowserPanel();
 
+		void OnLoadProject();
+
 		void OnEvent(Event& event);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
 
@@ -73,6 +75,12 @@ namespace Zahra
 
 		Timer m_RefreshTimer;
 		float m_RefreshPeriod = 500.0f; // in milliseconds
+
+		struct
+		{
+			bool ShowHidden = false;
+		}
+		m_BrowserOptions;
 
 		std::map<std::string, Ref<Texture2D>> m_Icons;
 		std::map<std::string, ImGuiTextureHandle> m_IconHandles;

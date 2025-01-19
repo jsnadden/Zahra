@@ -144,6 +144,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Zahra\Projects\ProjectSerialiser.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanAllocator.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h" />
@@ -193,6 +194,7 @@
     <ClInclude Include="src\Zahra\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Zahra\Maths\GeometricPrimitives.h" />
     <ClInclude Include="src\Zahra\Maths\Maths.h" />
+    <ClInclude Include="src\Zahra\Projects\Project.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\Camera.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\EditorCamera.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\SceneCamera.h" />
@@ -648,6 +650,7 @@
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Zahra\Projects\ProjectSerialiser.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanDevice.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanFramebuffer.cpp" />
@@ -677,6 +680,7 @@
     <ClCompile Include="src\Zahra\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\Zahra\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Zahra\Maths\Maths.cpp" />
+    <ClCompile Include="src\Zahra\Projects\Project.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Cameras\EditorCamera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Cameras\SceneCamera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp" />

@@ -1,6 +1,7 @@
 #include "zpch.h"
 #include "SceneSerialiser.h"
 
+#include "Zahra/Projects/Project.h"
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 
@@ -169,7 +170,7 @@ namespace Zahra
 	//
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	SceneSerialiser::SceneSerialiser(const Ref<Scene>& scene)
+	SceneSerialiser::SceneSerialiser(Ref<Scene> scene)
 		: m_Scene(scene) {}
 
 	static void SerialiseEntity(YAML::Emitter& out, Entity entity, Ref<Scene> scene)
@@ -220,8 +221,11 @@ namespace Zahra
 				if (sprite.Texture)
 				{
 					// TODO: serialise texture as asset GUID instead
-					std::string texturePath = sprite.Texture->GetFilepath().string();
-					out << YAML::Key << "TexturePath" << YAML::Value << texturePath.c_str();
+					auto texturePath = sprite.Texture->GetFilepath();
+					auto& textureDirectory = Project::GetAssetsDirectory() / "Textures";
+					texturePath = std::filesystem::relative(texturePath, textureDirectory);
+
+					out << YAML::Key << "TexturePath" << YAML::Value << texturePath.string().c_str();
 				}
 				out << YAML::Key << "TextureTiling" << YAML::Value << sprite.TextureTiling;
 				out << YAML::Key << "Animated" << YAML::Value << sprite.Animated;
@@ -500,6 +504,8 @@ namespace Zahra
 		if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
 			textureSpec.Format = ImageFormat::RGBA_UN;
 
+		auto& textureDirectory = Project::GetAssetsDirectory() / "Textures";
+
 		auto entityNodes = data["Entities"];
 		if (entityNodes)
 		{
@@ -533,7 +539,7 @@ namespace Zahra
 
 					sprite.Tint = spriteNode["Tint"].as<glm::vec4>();
 					if (spriteNode["TexturePath"])
-						sprite.Texture = Texture2D::CreateFromFile(textureSpec, spriteNode["TexturePath"].as<std::string>());
+						sprite.Texture = Texture2D::CreateFromFile(textureSpec, textureDirectory / spriteNode["TexturePath"].as<std::string>());
 					sprite.TextureTiling = spriteNode["TextureTiling"].as<float>();
 					sprite.Animated = spriteNode["Animated"].as<bool>();
 				}

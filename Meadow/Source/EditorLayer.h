@@ -29,7 +29,10 @@ namespace Zahra
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
 
-		const wchar_t* m_FileTypesFilter[2] = { L"Zahra Scene", L"*.zsc" };
+		bool m_HaveActiveProject = false;
+		std::filesystem::path m_WorkingProjectFilepath;
+		// TODO: instead of the scene filepath, should save the scene's AssetID to config
+		// (anyway for now a path, relative to the project directory)
 		std::filesystem::path m_WorkingSceneFilepath;
 
 		// TODO: replace with a general SceneRenderer class including 2D and 3D rendering
@@ -59,23 +62,30 @@ namespace Zahra
 		void UIAboutWindow();
 		bool m_ShowAboutWindow = false;
 
+		void UINewProjectWindow();
+		bool m_ShowNewProjectWindow = false;
+
 		void UISaveChangesPrompt();
 		void DoAfterHandlingUnsavedChanges(std::function<void()> callback);
 		std::function<void()> m_AfterSaveChangesCallback;
 		bool m_ShowSaveChangesPrompt = false;
 
+		void NewProject();
+		void OpenProjectFile();
+		bool SaveProjectFile();
+		bool SaveProjectFileAs();
+
 		void NewScene();
 		void OpenSceneFile();
-		void OpenSceneFile(std::filesystem::path filepath);
+		bool OpenSceneFile(std::filesystem::path filepath);
 		bool SaveSceneFile();
-		bool SaveAsSceneFile();
+		bool SaveSceneFileAs();
+
+		bool m_AutosaveEnabled = false;
+		Timer m_AutosaveTimer;
 
 		void WriteConfigFile();
 		void ReadConfigFile();
-
-		Timer m_SceneCacheTimer;
-		uint32_t m_SceneCacheIndex = 0;
-		void CacheWorkingScene();
 
 		const float c_FramerateRefreshInterval = .5f;
 		Timer m_FramerateRefreshTimer;

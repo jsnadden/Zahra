@@ -1,4 +1,4 @@
-Scene: yajirobe.zsc
+Scene: warrior.zsc
 ActiveCameraGUID: 1779296711962239888
 Entities:
   - Entity: 1779296711962239888
@@ -27,11 +27,13 @@ Entities:
       Scale: [1.49999964, 2, 0.999999881]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\yajirobe.png
+      TexturePath: yajirobe.png
       TextureTiling: 1
       Animated: false
     ScriptComponent:
       ScriptName: Sandbox.Player
+      FieldValues:
+        {}
   - Entity: 13462953152817718162
     TagComponent:
       Tag: wall2
@@ -41,7 +43,7 @@ Entities:
       Scale: [3.99999952, 3, 0.999999881]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\brickwall.png
+      TexturePath: brickwall.png
       TextureTiling: 3
       Animated: false
   - Entity: 9534158750695785926
@@ -53,7 +55,7 @@ Entities:
       Scale: [5.5, 3, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\brickwall.png
+      TexturePath: brickwall.png
       TextureTiling: 3
       Animated: false
   - Entity: 6774678113904311529
@@ -65,42 +67,42 @@ Entities:
       Scale: [36.5999985, 35.6477585, 0.999964952]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\grass.png
+      TexturePath: grass.png
       TextureTiling: 9.92000008
       Animated: false
   - Entity: 12498955789320122893
     TagComponent:
-      Tag: wall2
+      Tag: wall3
     TransformComponent:
       Translation: [-2.50124145, 0.5, -1.9967103]
       EulerAngles: [-3.14159274, 1.5701983, -3.14159274]
       Scale: [3.99999952, 3, 0.999999881]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\brickwall.png
+      TexturePath: brickwall.png
       TextureTiling: 3
       Animated: false
   - Entity: 7263492892292694915
     TagComponent:
-      Tag: wall1
+      Tag: wall4
     TransformComponent:
       Translation: [0.25, 0.5, -4]
       EulerAngles: [0, -0, 0]
       Scale: [5.5, 3, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\brickwall.png
+      TexturePath: brickwall.png
       TextureTiling: 3
       Animated: false
   - Entity: 170503321964230537
     TagComponent:
-      Tag: wall1
+      Tag: roof
     TransformComponent:
       Translation: [0.25, 2.00000024, -1.99999988]
       EulerAngles: [-1.57079637, -0, 0]
       Scale: [5.5, 4, 0.999985218]
     SpriteComponent:
       Tint: [0.305019319, 0.305019319, 0.305019319, 1]
-      TexturePath: Assets\Textures\checkerboard.png
+      TexturePath: checkerboard.png
       TextureTiling: 3
       Animated: false

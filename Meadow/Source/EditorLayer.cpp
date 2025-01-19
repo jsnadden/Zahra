@@ -2,6 +2,7 @@
 
 #include "Editor/Editor.h"
 #include "Zahra/Maths/Maths.h"
+#include "Zahra/Projects/Project.h"
 #include "Zahra/Scene/SceneSerialiser.h"
 #include "Zahra/Utils/PlatformUtils.h"
 
@@ -14,18 +15,58 @@
 
 namespace Zahra
 {
+	static FileTypeFilter s_ProjectFilter = { "Zahra Project", "*.zpj" };
+	static FileTypeFilter s_SceneFilter = { "Zahra Scene", "*.zsc" };
+
 	EditorLayer::EditorLayer()
-		: Layer("EditorLayer") {}
+		: Layer("EditorLayer"){}
 
 	void EditorLayer::OnAttach()
 	{
-		auto imguiLayer = ImGuiLayer::GetOrCreate();
-		
+		auto imguiLayer = ImGuiLayer::GetOrCreate();		
 		ReadConfigFile();
 		Editor::SetPrimaryEditorCamera(m_EditorCamera);
 		m_SceneHierarchyPanel.CacheScriptClassNames();
+		m_AutosaveEnabled = false;
 
-		// Viewport framebuffer
+		// Project/Scene
+		{
+			m_EditorScene = Ref<Scene>::Create();
+			m_ActiveScene = m_EditorScene;
+			Editor::SetSceneContext(m_ActiveScene);
+
+			m_HaveActiveProject = Project::Load(m_WorkingProjectFilepath);
+			
+			if (m_HaveActiveProject)
+			{
+				m_ContentBrowserPanel.OnLoadProject();
+
+				if (m_WorkingSceneFilepath.empty())
+				{
+					auto startingScene = Project::GetConfig().StartingSceneFilepath;
+					if (!startingScene.empty())
+					{
+						startingScene = Project::GetAssetsDirectory() / startingScene;
+						OpenSceneFile(startingScene);
+					}
+				}
+				else
+				{
+					auto workingScene = Project::GetConfig().ProjectDirectory / m_WorkingSceneFilepath;
+					if (!OpenSceneFile(m_WorkingSceneFilepath))
+						m_WorkingSceneFilepath = "";
+				}
+			}
+			else
+			{
+				m_WorkingProjectFilepath = "";
+				m_ShowNewProjectWindow = true;
+			}
+
+			
+		}
+
+		// Viewport
 		{
 			Image2DSpecification imageSpec{};
 			imageSpec.Name = "Editor_ColourPickingAttachment";
@@ -58,17 +99,6 @@ namespace Zahra
 
 			m_ViewportTexture = Texture2D::CreateFromImage2D(m_ViewportFramebuffer->GetColourAttachment(0));
 			m_ViewportTextureHandle = imguiLayer->RegisterTexture(m_ViewportTexture);
-		}
-
-		// Scenes
-		{
-			m_EditorScene = Ref<Scene>::Create();
-			m_ActiveScene = m_EditorScene;
-
-			Editor::SetSceneContext(m_ActiveScene);
-
-			OpenSceneFile(m_WorkingSceneFilepath);
-			m_SceneCacheTimer.Reset();
 		}
 
 		// TODO: this stuff should really be in SceneRenderer
@@ -106,8 +136,6 @@ namespace Zahra
 
 	void EditorLayer::OnDetach()
 	{
-		WriteConfigFile();
-
 		m_Renderer2D.Reset();
 		m_ActiveScene.Reset();
 		m_EditorScene.Reset();
@@ -128,10 +156,15 @@ namespace Zahra
 			m_Framerate = 1.0f / dt;
 		}
 
-		if (m_SceneCacheTimer.Elapsed() > Editor::GetConfig().SceneCacheInterval)
+		if (m_AutosaveTimer.Elapsed() >= Editor::GetConfig().AutosaveInterval)
 		{
-			m_SceneCacheTimer.Reset();
-			CacheWorkingScene();
+			m_AutosaveTimer.Reset();
+
+			if (m_AutosaveEnabled)
+			{
+				// TODO: save project? editor config?
+				SaveSceneFile();
+			}
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -229,14 +262,12 @@ namespace Zahra
 		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 
+		UINewProjectWindow();
 		UISaveChangesPrompt();
 	}
 
 	void EditorLayer::ScenePlay()
 	{
-		if (Editor::GetSceneState() != SceneState::Play)
-			CacheWorkingScene();
-
 		m_HoveredEntity = {};
 
 		if (Editor::GetSceneState() == SceneState::Simulate)
@@ -310,7 +341,7 @@ namespace Zahra
 					SaveSceneFile();
 
 				if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
-					SaveAsSceneFile();
+					SaveSceneFileAs();
 
 				ImGui::Separator();
 
@@ -784,9 +815,25 @@ namespace Zahra
 		}		
 	}
 
+	void EditorLayer::UINewProjectWindow()
+	{
+		if (m_ShowNewProjectWindow)
+			ImGui::OpenPopup("New Project");
+
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		ImGui::SetNextWindowSize(ImVec2(800, 600));
+
+		if (ImGui::BeginPopupModal("New Project", nullptr, ImGuiWindowFlags_NoResize))
+		{
+			
+			ImGui::EndPopup();
+		}
+	}
+
 	void EditorLayer::UISaveChangesPrompt()
 	{
-		if (m_ShowSaveChangesPrompt)
+		if (m_HaveActiveProject && m_ShowSaveChangesPrompt)
 			ImGui::OpenPopup("Save Changes");
 
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -795,13 +842,10 @@ namespace Zahra
 
 		if (ImGui::BeginPopupModal("Save Changes", nullptr, ImGuiWindowFlags_NoResize))
 		{
-			// TODO: change from scene to project?
 			const char* prompt = "Save scene file before closing?";
 			ImGui::SetCursorPosX(.5f * (330 - ImGui::CalcTextSize(prompt).x));
 			ImGui::SetCursorPosY(45);
 			ImGui::Text(prompt);
-
-			// TODO: add a checkbox to disable this popup in future
 
 			ImGui::SetCursorPosY(80);
 			if (ImGui::Button("Save", ImVec2(100, 0)))
@@ -843,6 +887,7 @@ namespace Zahra
 			ImGui::SetCursorPosY(115);
 			if (ImGui::Checkbox(msg, &hideThis))
 				Editor::GetConfig().ShowSavePrompt = !hideThis;
+
 			ImGui::EndPopup();
 		}
 	}
@@ -873,11 +918,14 @@ namespace Zahra
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& event)
 	{
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Keyboard shortcuts
-		
-		if (ImGuizmo::IsUsing())
-			return false; // here be dragons
+		// TODO: keep adding blocking states
+		bool blockKeyInput = ImGuizmo::IsUsing()
+			|| m_ShowNewProjectWindow
+			|| m_ShowAboutWindow
+			|| m_ShowSaveChangesPrompt;
+
+		if (blockKeyInput)
+			return false;
 
 		bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
@@ -891,7 +939,7 @@ namespace Zahra
 				{
 					if (ctrl && shift)
 					{
-						SaveAsSceneFile();
+						SaveSceneFileAs();
 						return true;
 					}
 					else if (ctrl)
@@ -998,19 +1046,54 @@ namespace Zahra
 
 	bool EditorLayer::OnWindowClosed(WindowClosedEvent& event)
 	{
-		DoAfterHandlingUnsavedChanges([]()
+		DoAfterHandlingUnsavedChanges([this]()
 			{
+				WriteConfigFile();
 				Application::Get().Exit();
 			});
 
 		return true;
 	}
 
+	void EditorLayer::NewProject()
+	{
+		NewScene();
+		Project::New();
+	}
+
+	void EditorLayer::OpenProjectFile()
+	{
+		std::filesystem::path filepath = FileDialogs::OpenFile(s_ProjectFilter);
+
+		if (filepath.empty())
+			return ;
+
+		DoAfterHandlingUnsavedChanges([this, filepath]()
+			{
+				NewScene();
+				Project::Load(filepath);
+				m_ContentBrowserPanel.OnLoadProject();
+			});
+	}
+
+	bool EditorLayer::SaveProjectFile()
+	{
+		return false;
+	}
+
+	bool EditorLayer::SaveProjectFileAs()
+	{
+		return false;
+	}
+
 	void EditorLayer::NewScene()
 	{
+		m_AutosaveEnabled = false;
+
 		if (Editor::GetSceneState() != SceneState::Edit)
 			SceneStop();
 
+		m_HoveredEntity = {};
 		m_EditorScene = Ref<Scene>::Create();
 
 		m_EditorScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
@@ -1022,17 +1105,21 @@ namespace Zahra
 
 	void EditorLayer::OpenSceneFile()
 	{
-		std::filesystem::path filepath = FileDialogs::OpenFile(m_FileTypesFilter[0], m_FileTypesFilter[1]);
+		std::filesystem::path filepath = FileDialogs::OpenFile(s_SceneFilter);
+
+		if (filepath.empty())
+			return;
+
 		DoAfterHandlingUnsavedChanges([this, filepath]()
 			{
 				OpenSceneFile(filepath);
 			});
 	}
 
-	void EditorLayer::OpenSceneFile(std::filesystem::path filepath)
+	bool EditorLayer::OpenSceneFile(std::filesystem::path filepath)
 	{
-		if (filepath.empty())
-			return;
+		if (filepath.empty() || !std::filesystem::exists(filepath))
+			return false;
 		
 		if (Editor::GetSceneState() != SceneState::Edit)
 			SceneStop();
@@ -1042,7 +1129,7 @@ namespace Zahra
 		if (filepath.extension().string() != ".zsc")
 		{
 			Z_WARN("Couldn't open {0} - scene files must have extension '.zsc'", filepath.filename().string());
-			return;
+			return false;
 		}
 
 		Ref<Scene> newScene = Ref<Scene>::Create();
@@ -1055,50 +1142,68 @@ namespace Zahra
 
 			std::string sceneName = filepath.filename().string();
 			m_EditorScene->SetName(sceneName);
-			m_WorkingSceneFilepath = filepath;
+
+			if (m_HaveActiveProject)
+			{
+				auto relativeFilepath = std::filesystem::relative(filepath, m_WorkingProjectFilepath.parent_path());
+				if (!relativeFilepath.empty())
+					m_WorkingSceneFilepath = relativeFilepath;
+			}
 
 			m_ActiveScene = m_EditorScene;
 			Editor::SetSceneContext(m_ActiveScene);
-		}
 
-		// TODO: report/display success of file open
-	}
+			m_AutosaveEnabled = Editor::GetConfig().AutosaveInterval > 0;
 
-	bool EditorLayer::SaveSceneFile()
-	{
-		if (m_WorkingSceneFilepath.empty())
-			return SaveAsSceneFile();
-		
-		std::string sceneName = m_WorkingSceneFilepath.filename().string();
-		m_EditorScene->SetName(sceneName);
-
-		SceneSerialiser serialiser(m_EditorScene);
-		serialiser.SerialiseYaml(m_WorkingSceneFilepath.string());
-		
-		WriteConfigFile();
-		return true;
-		// TODO: report/display success of file save
-	}
-
-	bool EditorLayer::SaveAsSceneFile()
-	{
-		std::filesystem::path filepath = FileDialogs::SaveFile(m_FileTypesFilter[0], m_FileTypesFilter[1]);
-		if (!filepath.empty())
-		{
-			std::string sceneName = filepath.filename().string();
-			m_EditorScene->SetName(sceneName);
-			m_WorkingSceneFilepath = filepath;
-
-			SceneSerialiser serialiser(m_EditorScene);
-			serialiser.SerialiseYaml(m_WorkingSceneFilepath.string());
-
-			WriteConfigFile();
 			return true;
 		}
 
 		return false;
+	}
 
-		// TODO: report/display success of file save
+	bool EditorLayer::SaveSceneFile()
+	{
+		if (m_HaveActiveProject)
+		{
+			if (m_WorkingSceneFilepath.empty())
+				return SaveSceneFileAs();
+
+			std::string sceneName = m_WorkingSceneFilepath.filename().string();
+			m_EditorScene->SetName(sceneName);
+
+			SceneSerialiser serialiser(m_EditorScene);
+			auto filepath = Project::GetConfig().ProjectDirectory / m_WorkingSceneFilepath;
+			serialiser.SerialiseYaml(filepath.string());
+
+			WriteConfigFile();
+		}
+		
+		return true;
+	}
+
+	bool EditorLayer::SaveSceneFileAs()
+	{
+		if (!m_HaveActiveProject)
+			return true;
+
+		std::filesystem::path filepath = FileDialogs::SaveFile(s_SceneFilter);
+		if (filepath.empty())
+			return false;
+		
+		std::string sceneName = filepath.filename().string();
+		m_EditorScene->SetName(sceneName);
+
+		auto relativeFilepath = std::filesystem::relative(filepath, m_WorkingProjectFilepath.parent_path());
+		if (!relativeFilepath.empty())
+			m_WorkingSceneFilepath = relativeFilepath;
+
+		SceneSerialiser serialiser(m_EditorScene);
+		serialiser.SerialiseYaml(filepath.string());
+
+		WriteConfigFile();
+		m_AutosaveEnabled = Editor::GetConfig().AutosaveInterval > 0;
+
+		return true;
 	}
 
 	void EditorLayer::WriteConfigFile()
@@ -1108,12 +1213,22 @@ namespace Zahra
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		{
-			// TODO: replace with WorkingProjectFilepath!!
-			out << YAML::Key << "WorkingSceneFilepath";
-			out << YAML::Value << m_WorkingSceneFilepath.string();
+			if (m_HaveActiveProject)
+			{
+				out << YAML::Key << "WorkingProjectFilepath";
+				out << YAML::Value << m_WorkingProjectFilepath.string();
+			}
 
-			out << YAML::Key << "SceneCacheInterval";
-			out << YAML::Value << config.SceneCacheInterval;
+			// TODO: replace with scene asset id
+			auto relativePath = std::filesystem::relative(m_WorkingSceneFilepath, Project::GetAssetsDirectory());
+			if (!relativePath.empty())
+			{
+				out << YAML::Key << "WorkingSceneFilepath";
+				out << YAML::Value << relativePath.string();
+			}
+
+			out << YAML::Key << "AutosaveInterval";
+			out << YAML::Value << config.AutosaveInterval;
 
 			out << YAML::Key << "MaxCachedScenes";
 			out << YAML::Value << config.MaxCachedScenes;
@@ -1155,15 +1270,20 @@ namespace Zahra
 			Z_CORE_ERROR("Failed to load editor configuration file '{0}':\n{1}", configFilepath.filename().string(), ex.what());
 		}
 
-		// TODO: replace with WorkingProjectFilepath!!
-		if (auto workingSceneNode = data["WorkingSceneFilepath"])
+		if (auto workingProjectNode = data["WorkingProjectFilepath"])
 		{
-			m_WorkingSceneFilepath = workingSceneNode.as<std::string>();
+			m_WorkingProjectFilepath = workingProjectNode.as<std::string>();
 		}
 
-		if (auto sceneCacheIntervalNode = data["SceneCacheInterval"])
+		// TODO: replace with scene asset id
+		if (auto workingSceneNode = data["WorkingSceneFilepath"])
 		{
-			config.SceneCacheInterval = sceneCacheIntervalNode.as<float>();
+			m_WorkingSceneFilepath = Project::GetAssetsDirectory() / workingSceneNode.as<std::string>();
+		}
+
+		if (auto sceneCacheIntervalNode = data["AutosaveInterval"])
+		{
+			config.AutosaveInterval = sceneCacheIntervalNode.as<float>();
 		}
 
 		if (auto maxCachedScenesNode = data["MaxCachedScenes"])
@@ -1180,21 +1300,6 @@ namespace Zahra
 		{
 			m_FramesPerStep = framesPerStepNode.as<int32_t>();
 		}
-	}
-
-	void EditorLayer::CacheWorkingScene()
-	{
-		// occasionally make a backup save of the working scene, for debugging/recovery
-		std::string cacheFilename = "scene_cache_" + std::to_string(m_SceneCacheIndex) + ".zsc";
-		std::filesystem::path cache = "Cache/Scene";
-		if (!std::filesystem::exists(cache))
-			std::filesystem::create_directories(cache);
-		cache /= cacheFilename;
-
-		SceneSerialiser serialiser(m_EditorScene);
-		serialiser.SerialiseYaml(cache.string());
-
-		m_SceneCacheIndex = (m_SceneCacheIndex + 1) % Editor::GetConfig().MaxCachedScenes;
 	}
 
 	void EditorLayer::ReadHoveredEntity()

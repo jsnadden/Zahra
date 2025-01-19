@@ -8,7 +8,7 @@ namespace Zahra
 	class SceneSerialiser
 	{
 	public:
-		SceneSerialiser(const Ref<Scene>& scene);
+		SceneSerialiser(Ref<Scene> scene);
 
 		void SerialiseYaml(const std::string& filepath);
 		bool DeserialiseYaml(const std::string& filepath);

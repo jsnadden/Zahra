@@ -24,7 +24,11 @@
 //------------IMGUI--------------------
 #include "Zahra/ImGui/ImGuiLayer.h"
 
-//------------RENDERER----------------
+//------------PROJECT------------------
+#include "Zahra/Projects/Project.h"
+#include "Zahra/Projects/ProjectSerialiser.h"
+
+//------------RENDERER-----------------
 #include "Zahra/Renderer/Cameras/Camera.h"
 #include "Zahra/Renderer/Cameras/EditorCamera.h"
 #include "Zahra/Renderer/Cameras/SceneCamera.h"

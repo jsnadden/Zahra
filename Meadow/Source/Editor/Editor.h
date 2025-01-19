@@ -9,7 +9,7 @@ namespace Zahra
 {
 	struct EditorConfig
 	{
-		float SceneCacheInterval = 300.f;
+		float AutosaveInterval = 300.f;
 		uint32_t MaxCachedScenes = 5;
 		bool ShowSavePrompt = true;
 	};

@@ -1,0 +1,6 @@
+Project:
+  Name: Bud
+  AssetDirectory: Assets
+  ScriptAssemblyFilepath: Assets/Scripts/Binaries
+  AutomateScriptEngineReloadAssembly: true
+  StartingSceneFilepath: Assets/Scenes/shades.zsc

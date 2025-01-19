@@ -38,7 +38,7 @@ namespace Zahra
 
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, const std::string& filepath)
+	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, const std::filesystem::path& filepath)
 		: m_Specification(specification)
 	{
 		int width, height, channels;
@@ -46,7 +46,7 @@ namespace Zahra
 		m_Filepath = filepath;
 		bool validfilepath = std::filesystem::exists(filepath);
 
-		stbi_uc* imageData = stbi_load(filepath.c_str(), &width, &height, &channels, 4);
+		stbi_uc* imageData = stbi_load(filepath.string().c_str(), &width, &height, &channels, 4);
 
 		Z_CORE_ASSERT(imageData, "Vulkan texture failed to load image.");
 

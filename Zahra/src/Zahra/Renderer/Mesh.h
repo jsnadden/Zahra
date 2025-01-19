@@ -45,9 +45,9 @@ namespace Zahra
 		virtual Ref<VertexBuffer> GetVertexBuffer() = 0;
 		virtual Ref<IndexBuffer> GetIndexBuffer() = 0;
 
-		static Ref<StaticMesh> Create(MeshSpecification specification);
+		static Ref<StaticMesh> CreateFromFile(MeshSpecification specification, const std::filesystem::path& filepath);
 
-		static const std::string Filepath(const MeshSpecification& specification);
+		//static const std::string Filepath(const MeshSpecification& specification);
 	};
 
 }

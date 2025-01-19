@@ -7,7 +7,7 @@
 namespace Zahra
 {
 
-	Ref<Texture2D> Texture2D::CreateFromFile(const Texture2DSpecification& specification, const std::string& filepath)
+	Ref<Texture2D> Texture2D::CreateFromFile(const Texture2DSpecification& specification, const std::filesystem::path& filepath)
 	{
 		switch (Renderer::GetAPI())
         {

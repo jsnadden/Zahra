@@ -1,5 +1,5 @@
-WorkingSceneFilepath: Assets\Scenes\martini.zsc
-SceneCacheInterval: 300
+WorkingSceneFilepath: Assets\Assets\
+AutosaveInterval: 300
 MaxCachedScenes: 5
 ShowSavePrompt: false
 FramesPerStep: 30

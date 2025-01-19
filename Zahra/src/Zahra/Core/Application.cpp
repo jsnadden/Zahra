@@ -4,6 +4,7 @@
 #include "Zahra/Core/Input.h"
 #include "Zahra/Core/Memory.h"
 #include "Zahra/Core/Timer.h"
+#include "Zahra/Projects/Project.h"
 #include "Zahra/Renderer/Renderer.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 #include "Zahra/Utils/PlatformUtils.h"
@@ -21,6 +22,8 @@ namespace Zahra
 
 		Z_CORE_ASSERT(!s_Instance, "Application already exists");
 		s_Instance = this;
+
+		Project::New();
 
 		Renderer::SetConfig(m_Specification.RendererConfig);
 

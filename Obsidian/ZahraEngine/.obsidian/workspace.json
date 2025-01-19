@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Planning & Learning/Scripting.md",
+                "file": "Conventions/File names.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Scripting"
+              "title": "File names"
             }
           }
         ]
@@ -164,8 +164,9 @@
   },
   "active": "e3f6df8361cc3fd2",
   "lastOpenFiles": [
-    "Planning & Learning/Audio engine.md",
     "Planning & Learning/Scripting.md",
+    "Conventions/File names.md",
+    "Planning & Learning/Audio engine.md",
     "TODO/Resource Management.md",
     "TODO/12th of Jan 2025.md",
     "TODO/Memory Management.md",
@@ -176,7 +177,7 @@
     "Planning & Learning/Rendering pipeline.canvas",
     "TODO/Rethinking the RenderPass interface.md",
     "Planning & Learning/Parallelisation.md",
-    "Untitled",
+    "Conventions",
     "Planning & Learning/Vulkan resource hierarchy.md",
     "Planning & Learning/Hazel initialisation details.canvas",
     "Planning & Learning/VULKAN.md",
