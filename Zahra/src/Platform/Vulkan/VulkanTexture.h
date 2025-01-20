@@ -21,7 +21,7 @@ namespace Zahra
 		virtual const std::filesystem::path& GetFilepath() const override { return m_Filepath; }
 		virtual const Texture2DSpecification& GetSpecification() const override { return m_Specification; }
 
-		// TODO: once we have a asset system in place this should be replaced with asset GUIDs
+		// TODO: once we have a asset system in place this should be replaced with assetIDs
 		virtual uint64_t GetHash() const { return (uint64_t)m_Image.As<VulkanImage2D>()->GetVkSampler(); }
 
 		virtual void Resize(uint32_t width, uint32_t height) override;

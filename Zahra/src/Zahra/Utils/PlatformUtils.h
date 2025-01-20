@@ -14,6 +14,7 @@ namespace Zahra
 	class FileDialogs
 	{
 	public:
+		static std::filesystem::path ChooseDirectory();
 		static std::filesystem::path OpenFile(FileTypeFilter filter);
 		static std::filesystem::path SaveFile(FileTypeFilter filter);
 

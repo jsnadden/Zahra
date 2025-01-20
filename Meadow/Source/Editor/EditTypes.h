@@ -27,7 +27,7 @@ namespace Zahra
 		}
 
 	private:
-		const ZGUID m_entityID;
+		const UUID m_entityID;
 		WeakRef<Scene> m_Scene;
 		SceneHierarchyPanel& m_Panel;
 	};
@@ -35,7 +35,7 @@ namespace Zahra
 	class EntityDuplication : public Edit
 	{
 	public:
-		EntityDuplication(ZGUID originalID, WeakRef<Scene> scene, SceneHierarchyPanel& panel)
+		EntityDuplication(UUID originalID, WeakRef<Scene> scene, SceneHierarchyPanel& panel)
 			: m_OriginalID(originalID), m_Scene(scene), m_Panel(panel) {
 		}
 
@@ -54,7 +54,7 @@ namespace Zahra
 		}
 
 	private:
-		const ZGUID m_OriginalID, m_DuplicateID;
+		const UUID m_OriginalID, m_DuplicateID;
 		WeakRef<Scene> m_Scene;
 		SceneHierarchyPanel& m_Panel;
 	};
@@ -72,12 +72,12 @@ namespace Zahra
 		// TODO: this is going to be a pain:
 			//	Go through every possible component, recording whether the entity has one, and if so, its data.
 			//	The do command is easy enough:
-			//			1) just capture [&, GUID]
+			//			1) just capture [&, UUID]
 			//			2) deselect if entity == selection
-			//			3) destroy entity using its GUID 
+			//			3) destroy entity using its UUID 
 			//	The undo command is going to be more of a pain:
 			//			1) capture the cached component and bool values i.e. [&, cachedT, hasT, ...]
-			//			2) create entity using its previous GUID and Tag values
+			//			2) create entity using its previous UUID and Tag values
 			//			3) for each component type T: if hasT, then add a T and set it equal to cachedT
 
 		virtual void Do() override
@@ -91,7 +91,7 @@ namespace Zahra
 		}
 
 	private:
-		const ZGUID m_EntityID;
+		const UUID m_EntityID;
 
 		// option a) do some variadic template wizardry (using MostComponents) to define a struct
 		// (or buffer?) which caches all component values, plus the corresponding existence bool
@@ -101,7 +101,7 @@ namespace Zahra
 	class ComponentAddition : public Edit
 	{
 	public:
-		ComponentAddition(ZGUID entityID)
+		ComponentAddition(UUID entityID)
 		: m_EntityID(entityID) {}
 
 		virtual void Do() override
@@ -115,7 +115,7 @@ namespace Zahra
 		}
 
 	private:
-		const ZGUID m_EntityID;
+		const UUID m_EntityID;
 
 	};
 
@@ -123,7 +123,7 @@ namespace Zahra
 	class ComponentDeletion : public Edit
 	{
 	public:
-		ComponentDeletion(ZGUID entityID, Component value)
+		ComponentDeletion(UUID entityID, Component value)
 			: m_EntityID(entityID), m_Value(value) {}
 
 		virtual void Do() override
@@ -137,7 +137,7 @@ namespace Zahra
 		}
 
 	private:
-		const ZGUID m_EntityID;
+		const UUID m_EntityID;
 
 		// store value of component prior to deletion
 		const Component m_Value;
@@ -147,7 +147,7 @@ namespace Zahra
 	class ComponentValueEdit : public Edit
 	{
 	public:
-		ComponentValueEdit(ZGUID entityID, Component before, Component after)
+		ComponentValueEdit(UUID entityID, Component before, Component after)
 			: m_EntityID(entityID), m_Before(before), m_After(after) {}
 
 		virtual void Do() override
@@ -161,7 +161,7 @@ namespace Zahra
 		}
 
 	private:
-		const ZGUID m_EntityID;
+		const UUID m_EntityID;
 
 		// store value of component before/after change
 		const Component m_Before, m_After;

@@ -573,7 +573,7 @@ namespace Zahra
 							}
 							case ScriptFieldType::EntityID:
 							{
-								ZGUID value = instance->GetScriptFieldValue<ZGUID>(field);
+								UUID value = instance->GetScriptFieldValue<UUID>(field);
 
 								Entity otherEntity = ScriptEngine::GetEntity(value);
 								std::string otherEntityName;
@@ -660,7 +660,7 @@ namespace Zahra
 							}
 							case ScriptFieldType::EntityID:
 							{
-								ZGUID value = storage.ReadAs<ZGUID>(offset);
+								UUID value = storage.ReadAs<UUID>(offset);
 
 								std::string entityID = std::to_string((uint64_t)value);
 

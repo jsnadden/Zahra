@@ -29,7 +29,7 @@ namespace Zahra
 
 	void ContentBrowserPanel::OnLoadProject()
 	{
-		m_CurrentPath = Project::GetAssetsDirectory();
+		m_ProjectRoot = m_CurrentPath = Project::GetAssetsDirectory();
 
 		if (!m_CurrentPath.empty() && !std::filesystem::exists(m_CurrentPath))
 			std::filesystem::create_directories(m_CurrentPath);
@@ -57,24 +57,28 @@ namespace Zahra
 
 	void ContentBrowserPanel::DisplayNavBar()
 	{
-		float iconSize = 25.f;
-		std::string thumbSizeString = "Thumbnail size";
-		float thumbSizeStringLength = ImGui::CalcTextSize(thumbSizeString.c_str()).x;
+		//ImGui::ShowDemoWindow();
+		float availableWidth = ImGui::GetContentRegionAvail().x;
 
-		if (ImGui::BeginTable("NavBar", 7, ImGuiTableColumnFlags_NoResize))
+		float iconSize = 25.f;
+		float buttonWidth = 1.5f * iconSize;
+		float spacerWidth = 20.f;
+		float sliderWidth = 100.f;
+
+		if (ImGui::BeginTable("NavBar", 6, ImGuiTableColumnFlags_NoResize))
 		{
 			// TABLE SETUP
 			{
-				ImGui::TableSetupColumn("back", ImGuiTableColumnFlags_WidthFixed, 1.5f * iconSize);
-				ImGui::TableSetupColumn("forward", ImGuiTableColumnFlags_WidthFixed, 1.5f * iconSize);
-				ImGui::TableSetupColumn("spacer1", ImGuiTableColumnFlags_WidthFixed, 204.f + thumbSizeStringLength - 3.0f * iconSize); // lolol I should automate this :')
-				ImGui::TableSetupColumn("selectioninfo");
-				ImGui::TableSetupColumn("spacer2", ImGuiTableColumnFlags_WidthFixed, 100.f);
-				ImGui::TableSetupColumn("thumbsizetext", ImGuiTableColumnFlags_WidthFixed, thumbSizeStringLength + 4.f);
-				ImGui::TableSetupColumn("thumbsizeslider", ImGuiTableColumnFlags_WidthFixed, 100.f);
+				ImGui::TableSetupColumn("##BButton",	ImGuiTableColumnFlags_WidthFixed, buttonWidth);
+				ImGui::TableSetupColumn("##FButton",	ImGuiTableColumnFlags_WidthFixed, buttonWidth);
+				ImGui::TableSetupColumn("##spacer1",	ImGuiTableColumnFlags_WidthFixed, spacerWidth);
+				ImGui::TableSetupColumn("##ShowDir");
+				ImGui::TableSetupColumn("##spacer2",	ImGuiTableColumnFlags_WidthFixed, spacerWidth);
+				ImGui::TableSetupColumn("##Slider",		ImGuiTableColumnFlags_WidthFixed, sliderWidth);
 			}
 
 			ImGui::TableNextColumn();
+			ImGui::AlignTextToFramePadding();
 
 			// BACK BUTTON
 			ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
@@ -97,36 +101,32 @@ namespace Zahra
 			ImGui::TableNextColumn();
 
 			// DISPLAY DIRECTORY NAME
-			{
-				std::string currentDirName = m_CurrentPath.filename().string();
+			// NOTE: displaying path relative to PARENT of project directory, to emphasise the project itself
+			std::string currentDirPath = std::filesystem::relative(m_CurrentPath, Project::GetProjectDirectory().parent_path()).string();
 
-				float stringWidth = ImGui::CalcTextSize(currentDirName.c_str()).x;
-				float indentation = .5f * (ImGui::GetColumnWidth() - stringWidth);
-				indentation = std::max(indentation, .0f);
-
-				ImGui::SameLine(indentation);
-
-				ImGuiIO& io = ImGui::GetIO();
+			if (!currentDirPath.empty())
+			{	ImGuiIO& io = ImGui::GetIO();
 				auto boldFont = io.Fonts->Fonts[1];
 
-				ImGui::AlignTextToFramePadding();
 				ImGui::PushFont(boldFont);
-				ImGui::Text(currentDirName.c_str());
+
+				// centre text
+				float textWidth = ImGui::CalcTextSize(currentDirPath.c_str()).x;
+				ImGui::SetCursorPosX(.5f * (ImGui::GetWindowWidth() - textWidth));
+
+				ImGui::Text(currentDirPath.c_str());
+
 				ImGui::PopFont();
 			}
 
 			ImGui::TableNextColumn();
-			ImGui::TableNextColumn();
 			
 			// RESIZE ICONS
-			{
-				ImGui::AlignTextToFramePadding();
-				ImGui::Text(thumbSizeString.c_str());
-				
+			{				
 				ImGui::TableNextColumn();
 				
 				ImGui::PushItemWidth(ImGui::GetColumnWidth());
-				ImGui::SliderInt("##ThumbnailSize", &m_ThumbnailSize, 64, 256, "");
+				ImGui::SliderInt("##ThumbnailSize", &m_ThumbnailSize, 64, 128, "");
 				ImGui::PopItemWidth();
 			}
 			
@@ -161,8 +161,10 @@ namespace Zahra
 				std::string filenameString = path.filename().string();
 
 				ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
+				ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, { .5f, .5f });
 				ImGui::ImageButton(filenameString.c_str(), m_IconHandles["DirectoryThumb"],
 					{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
+				ImGui::PopStyleVar();
 				ImGui::PopStyleColor();
 
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
@@ -325,7 +327,7 @@ namespace Zahra
 		if (m_CurrentPath.empty())
 			return;
 
-		if (m_CurrentPath != Project::GetAssetsDirectory())
+		if (m_CurrentPath != m_ProjectRoot)
 		{
 			m_ForwardStack.push_back(m_CurrentPath);
 			m_CurrentPath = m_CurrentPath.parent_path();

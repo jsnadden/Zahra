@@ -12,7 +12,7 @@ namespace Zahra
 	{
 	public:
 		EditorLayer();
-		~EditorLayer() = default;
+		~EditorLayer();
 
 		void OnAttach() override;
 		void OnDetach() override;
@@ -28,12 +28,6 @@ namespace Zahra
 	private:
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
-
-		bool m_HaveActiveProject = false;
-		std::filesystem::path m_WorkingProjectFilepath;
-		// TODO: instead of the scene filepath, should save the scene's AssetID to config
-		// (anyway for now a path, relative to the project directory)
-		std::filesystem::path m_WorkingSceneFilepath;
 
 		// TODO: replace with a general SceneRenderer class including 2D and 3D rendering
 		Ref<Renderer2D> m_Renderer2D;
@@ -62,30 +56,36 @@ namespace Zahra
 		void UIAboutWindow();
 		bool m_ShowAboutWindow = false;
 
-		void UINewProjectWindow();
-		bool m_ShowNewProjectWindow = false;
-
 		void UISaveChangesPrompt();
 		void DoAfterHandlingUnsavedChanges(std::function<void()> callback);
 		std::function<void()> m_AfterSaveChangesCallback;
 		bool m_ShowSaveChangesPrompt = false;
 
-		void NewProject();
+		void UINewProjectWindow();
+		bool m_ShowNewProjectWindow = false;
+
+		void NewProject(const std::string& projectName, const std::filesystem::path& parentDirectory);
 		void OpenProjectFile();
-		bool SaveProjectFile();
-		bool SaveProjectFileAs();
+		bool OpenProjectFile(const std::filesystem::path& filepath);
+		void SaveProjectFile();
+		//bool SaveProjectFileAs();
+		std::filesystem::path m_WorkingProjectFilepath;
+		bool m_HaveActiveProject = false;
 
 		void NewScene();
 		void OpenSceneFile();
 		bool OpenSceneFile(std::filesystem::path filepath);
 		bool SaveSceneFile();
 		bool SaveSceneFileAs();
+		// TODO: instead of the scene filepath, should save the scene's AssetID to config
+		// (anyway for now a path, relative to the project directory)
+		std::filesystem::path m_WorkingSceneRelativePath;
 
 		bool m_AutosaveEnabled = false;
 		Timer m_AutosaveTimer;
 
-		void WriteConfigFile();
-		void ReadConfigFile();
+		void SaveEditorConfigFile();
+		void LoadConfigFile();
 
 		const float c_FramerateRefreshInterval = .5f;
 		Timer m_FramerateRefreshTimer;
@@ -107,7 +107,7 @@ namespace Zahra
 		// Editor panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
-
+		// TODO: make a general "Panel" class deriving from RefCounted, and replace these with Refs
 	};
 }
 

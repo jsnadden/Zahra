@@ -28,6 +28,65 @@ namespace Zahra
 		return (float)glfwGetTime();
 	}
 
+	std::filesystem::path FileDialogs::ChooseDirectory()
+	{
+		std::filesystem::path path;
+
+		IFileDialog* chooseDirDialog;
+		HRESULT hresult = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
+			IID_IFileDialog, reinterpret_cast<void**>(&chooseDirDialog));
+		Z_CORE_ASSERT(SUCCEEDED(hresult), "Failed to create IFileDialog instance");
+
+		// set default directory to cwd
+		{
+			std::filesystem::path currentDirectory = std::filesystem::current_path();
+
+			IShellItem* currentDirItem;
+			hresult = SHCreateItemFromParsingName(currentDirectory.wstring().c_str(), NULL, IID_PPV_ARGS(&currentDirItem));
+
+			if (!SUCCEEDED(hresult))
+				Z_CORE_WARN("SHCreateItemFromParsingName failed to parse current directory path");
+			else
+				chooseDirDialog->SetDefaultFolder(currentDirItem);
+
+			currentDirItem->Release();
+		}
+
+		// configure dialog to show folders only (no files)
+		{
+			DWORD options;
+			hresult = chooseDirDialog->GetOptions(&options);
+			if (SUCCEEDED(hresult))
+			{
+				chooseDirDialog->SetOptions(options | FOS_PICKFOLDERS);
+			}
+			else
+			{
+				Z_CORE_WARN("Failed to retrieve file dialog option flags");
+			}
+		}
+
+		// Show the dialog box
+		hresult = chooseDirDialog->Show(NULL);
+		if (SUCCEEDED(hresult))
+		{
+			IShellItem* selectedDirectory;
+			chooseDirDialog->GetResult(&selectedDirectory);
+
+			PWSTR directoryPathString;
+			selectedDirectory->GetDisplayName(SIGDN_FILESYSPATH, &directoryPathString);
+
+			// obtain path of chosen directory
+			path = directoryPathString;
+
+			CoTaskMemFree(directoryPathString);
+			selectedDirectory->Release();
+		}
+		chooseDirDialog->Release();
+
+		return path;
+	}
+
 	std::filesystem::path FileDialogs::OpenFile(FileTypeFilter filter)
 	{
 		std::filesystem::path filepath;
@@ -69,7 +128,6 @@ namespace Zahra
 		// Show the Open dialog box.
 		hresult = openDialog->Show(NULL);
 		if (SUCCEEDED(hresult))
-
 		{
 			IShellItem* selectedFileItem;
 			openDialog->GetResult(&selectedFileItem);
@@ -77,6 +135,7 @@ namespace Zahra
 			PWSTR filepathString;
 			selectedFileItem->GetDisplayName(SIGDN_FILESYSPATH, &filepathString);
 
+			// obtain path of chosen file
 			filepath = filepathString;
 
 			CoTaskMemFree(filepathString);
@@ -140,6 +199,7 @@ namespace Zahra
 			PWSTR filepathString;
 			selectedFileItem->GetDisplayName(SIGDN_FILESYSPATH, &filepathString);
 
+			// obtain path of chosen (or new) file
 			filepath = filepathString;
 
 			CoTaskMemFree(filepathString);

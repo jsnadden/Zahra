@@ -19,7 +19,7 @@ namespace Zahra
 		virtual uint32_t GetHeight() const = 0;
 		virtual const std::filesystem::path& GetFilepath() const = 0;
 
-		// TODO: once we have a asset system in place this should be replaced with asset GUID
+		// TODO: once we have a asset system in place this should be replaced with assetID
 		virtual uint64_t GetHash() const = 0;
 
 		//virtual void SetData(void* data, uint32_t size) = 0;

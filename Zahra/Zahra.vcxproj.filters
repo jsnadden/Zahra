@@ -31,6 +31,9 @@
     <Filter Include="src\Zahra\Maths">
       <UniqueIdentifier>{FE6BD793-6AF7-4458-7308-C84CDF12A158}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Zahra\Projects">
+      <UniqueIdentifier>{CBC786A9-B7AB-47FF-200C-42520C0F3281}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Zahra\Renderer">
       <UniqueIdentifier>{F8DD9396-E4C1-54EC-4D22-4F3F39253F6E}</UniqueIdentifier>
     </Filter>
@@ -156,9 +159,6 @@
     <ClInclude Include="src\Zahra\Core\EntryPoint.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Core\GUID.h">
-      <Filter>src\Zahra\Core</Filter>
-    </ClInclude>
     <ClInclude Include="src\Zahra\Core\Input.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
@@ -198,6 +198,9 @@
     <ClInclude Include="src\Zahra\Core\Types.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Core\UUID.h">
+      <Filter>src\Zahra\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Core\Window.h">
       <Filter>src\Zahra\Core</Filter>
     </ClInclude>
@@ -224,6 +227,12 @@
     </ClInclude>
     <ClInclude Include="src\Zahra\Maths\Maths.h">
       <Filter>src\Zahra\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Projects\Project.h">
+      <Filter>src\Zahra\Projects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Projects\ProjectSerialiser.h">
+      <Filter>src\Zahra\Projects</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Cameras\Camera.h">
       <Filter>src\Zahra\Renderer\Cameras</Filter>
@@ -322,6 +331,9 @@
       <Filter>src\Zahra\Utils</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Utils\PlatformUtils.h">
+      <Filter>src\Zahra\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Utils\CustomYAML.h">
       <Filter>src\Zahra\Utils</Filter>
     </ClInclude>
     <ClInclude Include="src\zpch.h">
@@ -1584,8 +1596,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Projects\Project.h" />
-    <ClInclude Include="src\Zahra\Projects\ProjectSerialiser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp">
@@ -1648,9 +1658,6 @@
     <ClCompile Include="src\Zahra\Core\Application.cpp">
       <Filter>src\Zahra\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Core\GUID.cpp">
-      <Filter>src\Zahra\Core</Filter>
-    </ClCompile>
     <ClCompile Include="src\Zahra\Core\Layer.cpp">
       <Filter>src\Zahra\Core</Filter>
     </ClCompile>
@@ -1666,6 +1673,9 @@
     <ClCompile Include="src\Zahra\Core\Thread.cpp">
       <Filter>src\Zahra\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Zahra\Core\UUID.cpp">
+      <Filter>src\Zahra\Core</Filter>
+    </ClCompile>
     <ClCompile Include="src\Zahra\ImGui\ImGuiBuild.cpp">
       <Filter>src\Zahra\ImGui</Filter>
     </ClCompile>
@@ -1674,6 +1684,12 @@
     </ClCompile>
     <ClCompile Include="src\Zahra\Maths\Maths.cpp">
       <Filter>src\Zahra\Maths</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Projects\Project.cpp">
+      <Filter>src\Zahra\Projects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Projects\ProjectSerialiser.cpp">
+      <Filter>src\Zahra\Projects</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Cameras\EditorCamera.cpp">
       <Filter>src\Zahra\Renderer\Cameras</Filter>
@@ -1762,7 +1778,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Projects\Project.cpp" />
-    <ClCompile Include="src\Zahra\Projects\ProjectSerialiser.cpp" />
   </ItemGroup>
 </Project>

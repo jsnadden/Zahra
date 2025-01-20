@@ -174,14 +174,14 @@ namespace Zahra
 		Z_CORE_ASSERT(entity.HasComponents<TagComponent>(), "All entities must have a TagComponent")
 
 		std::string& tag = entity.GetComponents<TagComponent>().Tag;
-		ZGUID entityID = entity.GetGUID();
+		UUID entityID = entity.GetID();
 
 		ImGui::PushID((int)entityID);
 
-		// this necessitates a max tag size of 255 ascii characters (plus null terminator)
+		// TODO: define a global preprocessor constant for maximum entity name length
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
-		strcpy_s(buffer, tag.c_str());
+		strcpy_s(buffer, sizeof(buffer), tag.c_str());
 
 		if (ImGui::BeginTable("ID+Tag+Add", 2))
 		{
@@ -208,7 +208,7 @@ namespace Zahra
 			ImGui::TableNextColumn();
 			{
 				ImGui::AlignTextToFramePadding();
-				ImGui::Text("GUID");
+				ImGui::Text("UUID");
 			}
 
 			ImGui::TableNextColumn();

@@ -60,7 +60,7 @@ namespace Zahra
 			return m_Scene->m_Registry.get<Types...>(m_EntityHandle);
 		}
 
-		ZGUID GetGUID()
+		UUID GetID()
 		{
 			Z_CORE_ASSERT(HasComponents<IDComponent>(), "Entity does not have an IDComponent.");
 

@@ -6,7 +6,7 @@
 #include "Zahra/Core/Application.h"
 #include "Zahra/Core/Assert.h"
 #include "Zahra/Core/Buffer.h"
-#include "Zahra/Core/GUID.h"
+#include "Zahra/Core/UUID.h"
 #include "Zahra/Core/Input.h"
 #include "Zahra/Core/KeyCodes.h"
 #include "Zahra/Core/Layer.h"

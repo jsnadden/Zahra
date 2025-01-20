@@ -144,7 +144,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Zahra\Projects\ProjectSerialiser.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanAllocator.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h" />
@@ -171,7 +170,6 @@
     <ClInclude Include="src\Zahra\Core\Buffer.h" />
     <ClInclude Include="src\Zahra\Core\Defines.h" />
     <ClInclude Include="src\Zahra\Core\EntryPoint.h" />
-    <ClInclude Include="src\Zahra\Core\GUID.h" />
     <ClInclude Include="src\Zahra\Core\Input.h" />
     <ClInclude Include="src\Zahra\Core\KeyCodes.h" />
     <ClInclude Include="src\Zahra\Core\Layer.h" />
@@ -185,6 +183,7 @@
     <ClInclude Include="src\Zahra\Core\Thread.h" />
     <ClInclude Include="src\Zahra\Core\Timer.h" />
     <ClInclude Include="src\Zahra\Core\Types.h" />
+    <ClInclude Include="src\Zahra\Core\UUID.h" />
     <ClInclude Include="src\Zahra\Core\Window.h" />
     <ClInclude Include="src\Zahra\Debug\Profiling.h" />
     <ClInclude Include="src\Zahra\Events\ApplicationEvent.h" />
@@ -195,6 +194,7 @@
     <ClInclude Include="src\Zahra\Maths\GeometricPrimitives.h" />
     <ClInclude Include="src\Zahra\Maths\Maths.h" />
     <ClInclude Include="src\Zahra\Projects\Project.h" />
+    <ClInclude Include="src\Zahra\Projects\ProjectSerialiser.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\Camera.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\EditorCamera.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\SceneCamera.h" />
@@ -228,6 +228,7 @@
     <ClInclude Include="src\Zahra\Scripting\ScriptGlue.h" />
     <ClInclude Include="src\Zahra\Utils\FileIO.h" />
     <ClInclude Include="src\Zahra\Utils\PlatformUtils.h" />
+    <ClInclude Include="src\Zahra\Utils\CustomYAML.h" />
     <ClInclude Include="src\zpch.h" />
     <ClInclude Include="vendor\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="vendor\VMA\vk_mem_alloc.h" />
@@ -650,7 +651,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Zahra\Projects\ProjectSerialiser.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanDevice.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanFramebuffer.cpp" />
@@ -671,16 +671,17 @@
     <ClCompile Include="src\Platform\Windows\WindowsThread.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Zahra\Core\Application.cpp" />
-    <ClCompile Include="src\Zahra\Core\GUID.cpp" />
     <ClCompile Include="src\Zahra\Core\Layer.cpp" />
     <ClCompile Include="src\Zahra\Core\LayerStack.cpp" />
     <ClCompile Include="src\Zahra\Core\Log.cpp" />
     <ClCompile Include="src\Zahra\Core\Memory.cpp" />
     <ClCompile Include="src\Zahra\Core\Thread.cpp" />
+    <ClCompile Include="src\Zahra\Core\UUID.cpp" />
     <ClCompile Include="src\Zahra\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\Zahra\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Zahra\Maths\Maths.cpp" />
     <ClCompile Include="src\Zahra\Projects\Project.cpp" />
+    <ClCompile Include="src\Zahra\Projects\ProjectSerialiser.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Cameras\EditorCamera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Cameras\SceneCamera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp" />

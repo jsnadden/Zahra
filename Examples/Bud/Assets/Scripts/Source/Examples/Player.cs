@@ -7,7 +7,7 @@ namespace Bud.Examples
 	public class Player : Entity
 	{
 		public Player() : base() {}
-		public Player(ulong guid) : base(guid) { }
+		public Player(ulong uuid) : base(uuid) { }
 
 		private TransformComponent transform;
 		private RigidBody2DComponent body;

@@ -103,9 +103,9 @@ namespace Zahra
 		#pragma region ECS
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// ENTITY
-		static bool Entity_HasComponent(ZGUID guid, MonoReflectionType* componentType)
+		static bool Entity_HasComponent(UUID uuid, MonoReflectionType* componentType)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			Z_CORE_ASSERT(entity, "No Entity with this ID exists in the current Scene")
 
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
@@ -125,66 +125,66 @@ namespace Zahra
 			return 0;
 		}
 
-		static MonoString* Entity_GetName(ZGUID guid)
+		static MonoString* Entity_GetName(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return ScriptEngine::StdStringToMonoString(entity.GetComponents<TagComponent>().Tag);
 		}
 
-		static MonoObject* Entity_GetScriptInstance(ZGUID guid)
+		static MonoObject* Entity_GetScriptInstance(UUID uuid)
 		{
-			return ScriptEngine::GetMonoObject(guid);
+			return ScriptEngine::GetMonoObject(uuid);
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// TRANSFORM COMPONENT
-		static void TransformComponent_GetTranslation(ZGUID guid, glm::vec3* translation)
+		static void TransformComponent_GetTranslation(UUID uuid, glm::vec3* translation)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			*translation = entity.GetComponents<TransformComponent>().Translation;
 		}
 
-		static void TransformComponent_SetTranslation(ZGUID guid, glm::vec3* translation)
+		static void TransformComponent_SetTranslation(UUID uuid, glm::vec3* translation)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<TransformComponent>().Translation = *translation;
 		}
 
-		static void TransformComponent_GetEulers(ZGUID guid, glm::vec3* eulers)
+		static void TransformComponent_GetEulers(UUID uuid, glm::vec3* eulers)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			*eulers = entity.GetComponents<TransformComponent>().GetEulers();
 		}
 
-		static void TransformComponent_SetEulers(ZGUID guid, glm::vec3* eulers)
+		static void TransformComponent_SetEulers(UUID uuid, glm::vec3* eulers)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<TransformComponent>().SetRotation(*eulers);
 		}
 
-		static void TransformComponent_GetScale(ZGUID guid, glm::vec3* scale)
+		static void TransformComponent_GetScale(UUID uuid, glm::vec3* scale)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			*scale = entity.GetComponents<TransformComponent>().Scale;
 		}
 
-		static void TransformComponent_SetScale(ZGUID guid, glm::vec3* scale)
+		static void TransformComponent_SetScale(UUID uuid, glm::vec3* scale)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<TransformComponent>().Translation = *scale;
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// SPRITE COMPONENT
-		static void SpriteComponent_GetTint(ZGUID guid, glm::vec4* tint)
+		static void SpriteComponent_GetTint(UUID uuid, glm::vec4* tint)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			*tint = entity.GetComponents<SpriteComponent>().Tint;
 		}
 
-		static void SpriteComponent_SetTint(ZGUID guid, glm::vec4* tint)
+		static void SpriteComponent_SetTint(UUID uuid, glm::vec4* tint)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<SpriteComponent>().Tint = *tint;
 		}
 
@@ -193,60 +193,60 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// CIRCLE COMPONENT
-		static void CircleComponent_GetColour(ZGUID guid, glm::vec4* colour)
+		static void CircleComponent_GetColour(UUID uuid, glm::vec4* colour)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			*colour = entity.GetComponents<CircleComponent>().Colour;
 		}
 
-		static void CircleComponent_SetColour(ZGUID guid, glm::vec4* colour)
+		static void CircleComponent_SetColour(UUID uuid, glm::vec4* colour)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CircleComponent>().Colour = *colour;
 		}
 
-		static float CircleComponent_GetThickness(ZGUID guid)
+		static float CircleComponent_GetThickness(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<CircleComponent>().Thickness;
 		}
 
-		static void CircleComponent_SetThickness(ZGUID guid, float thickness)
+		static void CircleComponent_SetThickness(UUID uuid, float thickness)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CircleComponent>().Thickness = thickness;
 		}
 
-		static float CircleComponent_GetFade(ZGUID guid)
+		static float CircleComponent_GetFade(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<CircleComponent>().Fade;
 		}
 
-		static void CircleComponent_SetFade(ZGUID guid, float fade)
+		static void CircleComponent_SetFade(UUID uuid, float fade)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CircleComponent>().Fade = fade;
 
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// CAMERA COMPONENT
-		static int CameraComponent_GetProjectionType(ZGUID guid)
+		static int CameraComponent_GetProjectionType(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return (int)entity.GetComponents<CameraComponent>().Camera.GetProjectionType();
 		}
 
-		static void CameraComponent_SetProjectionType(ZGUID guid, int type)
+		static void CameraComponent_SetProjectionType(UUID uuid, int type)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CameraComponent>().Camera.SetProjectionType((SceneCamera::ProjectionType)type);
 		}
 
-		static float CameraComponent_GetVerticalFOV(ZGUID guid)
+		static float CameraComponent_GetVerticalFOV(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			SceneCamera& camera = entity.GetComponents<CameraComponent>().Camera;
 
 			switch (camera.GetProjectionType())
@@ -258,9 +258,9 @@ namespace Zahra
 			return 0;
 		}
 
-		static void CameraComponent_SetVerticalFOV(ZGUID guid, float size)
+		static void CameraComponent_SetVerticalFOV(UUID uuid, float size)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			SceneCamera& camera = entity.GetComponents<CameraComponent>().Camera;
 
 			switch (camera.GetProjectionType())
@@ -271,9 +271,9 @@ namespace Zahra
 			Z_CORE_ASSERT(false, "Invalid ProjectionType value");
 		}
 
-		static float CameraComponent_GetNearPlane(ZGUID guid)
+		static float CameraComponent_GetNearPlane(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			SceneCamera& camera = entity.GetComponents<CameraComponent>().Camera;
 
 			switch (camera.GetProjectionType())
@@ -285,9 +285,9 @@ namespace Zahra
 			return 0;
 		}
 
-		static void CameraComponent_SetNearPlane(ZGUID guid, float nearPlane)
+		static void CameraComponent_SetNearPlane(UUID uuid, float nearPlane)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			SceneCamera& camera = entity.GetComponents<CameraComponent>().Camera;
 
 			switch (camera.GetProjectionType())
@@ -298,9 +298,9 @@ namespace Zahra
 			Z_CORE_ASSERT(false, "Invalid ProjectionType value");
 		}
 
-		static float CameraComponent_GetFarPlane(ZGUID guid)
+		static float CameraComponent_GetFarPlane(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			SceneCamera& camera = entity.GetComponents<CameraComponent>().Camera;
 
 			switch (camera.GetProjectionType())
@@ -312,9 +312,9 @@ namespace Zahra
 			return 0;
 		}
 
-		static void CameraComponent_SetFarPlane(ZGUID guid, float farPlane)
+		static void CameraComponent_SetFarPlane(UUID uuid, float farPlane)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			SceneCamera& camera = entity.GetComponents<CameraComponent>().Camera;
 
 			switch (camera.GetProjectionType())
@@ -325,15 +325,15 @@ namespace Zahra
 			Z_CORE_ASSERT(false, "Invalid ProjectionType value");
 		}
 
-		static bool CameraComponent_GetFixedAspectRatio(ZGUID guid)
+		static bool CameraComponent_GetFixedAspectRatio(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<CameraComponent>().FixedAspectRatio;
 		}
 
-		static void CameraComponent_SetFixedAspectRatio(ZGUID guid, bool fixed)
+		static void CameraComponent_SetFixedAspectRatio(UUID uuid, bool fixed)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CameraComponent>().FixedAspectRatio = fixed;
 		}
 
@@ -341,15 +341,15 @@ namespace Zahra
 		// SCRIPT COMPONENT
 		// TODO: implement these properly once we've got scriptIDs (also decide if we
 		// use Z_CORE_ASSERT(entity.HasComponents<ScriptComponent>()), or just return
-		// a reserved ZGUID value (0?) if the component doesn't exist)
-		/*static ZGUID ScriptComponent_GetScriptID(ZGUID entityID)
+		// a reserved UUID value (0?) if the component doesn't exist)
+		/*static UUID ScriptComponent_GetScriptID(UUID entityID)
 		{
 			auto entity = ScriptEngine::GetEntity(entityID);
 			auto scriptComponent = entity.GetComponents<ScriptComponent>();
 			return scriptComponent.ScriptID;
 		}*/
 
-		/*static void ScriptComponent_SetScriptID(ZGUID entityID, ZGUID scriptID)
+		/*static void ScriptComponent_SetScriptID(UUID entityID, UUID scriptID)
 		{
 			auto entity = ScriptEngine::GetEntity(entityID);
 			auto scriptComponent = entity.GetComponents<ScriptComponent>();
@@ -358,9 +358,9 @@ namespace Zahra
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// 2D RIGID BODY COMPONENT
-		static void RigidBody2DComponent_ApplyLinearImpulse(ZGUID guid, glm::vec2* impulse, bool wake)
+		static void RigidBody2DComponent_ApplyLinearImpulse(UUID uuid, glm::vec2* impulse, bool wake)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 
 			// TODO: create a physics engine that can encapsulate b2 calls e.g.
 			auto body = (b2Body*)entity.GetComponents<RigidBody2DComponent>().RuntimeBody;
@@ -368,9 +368,9 @@ namespace Zahra
 			body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
 		}
 
-		static void RigidBody2DComponent_ApplyForce(ZGUID guid, glm::vec2* force, bool wake)
+		static void RigidBody2DComponent_ApplyForce(UUID uuid, glm::vec2* force, bool wake)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 
 			// TODO: create a physics engine that can encapsulate b2 calls e.g.
 			auto body = (b2Body*)entity.GetComponents<RigidBody2DComponent>().RuntimeBody;
@@ -378,9 +378,9 @@ namespace Zahra
 			body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
 		}
 
-		static void RigidBody2DComponent_GetVelocity(ZGUID guid, glm::vec2* velocity)
+		static void RigidBody2DComponent_GetVelocity(UUID uuid, glm::vec2* velocity)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 
 			// TODO: create a physics engine that can encapsulate b2 calls e.g.
 			auto body = (b2Body*)entity.GetComponents<RigidBody2DComponent>().RuntimeBody;
@@ -388,175 +388,175 @@ namespace Zahra
 			*velocity = { body->GetLinearVelocity().x, body->GetLinearVelocity().y };
 		}
 
-		static int RigidBody2DComponent_GetBodyType(ZGUID guid)
+		static int RigidBody2DComponent_GetBodyType(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return (int)entity.GetComponents<RigidBody2DComponent>().Type;
 		}
 
-		static void RigidBody2DComponent_SetBodyType(ZGUID guid, int type)
+		static void RigidBody2DComponent_SetBodyType(UUID uuid, int type)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<RigidBody2DComponent>().Type = (RigidBody2DComponent::BodyType)type;
 		}
 
-		static bool RigidBody2DComponent_GetFixedRotation(ZGUID guid)
+		static bool RigidBody2DComponent_GetFixedRotation(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<RigidBody2DComponent>().FixedRotation;
 		}
 
-		static void RigidBody2DComponent_SetFixedRotation(ZGUID guid, bool fixed)
+		static void RigidBody2DComponent_SetFixedRotation(UUID uuid, bool fixed)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<RigidBody2DComponent>().FixedRotation = fixed;
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// RECTANGULAR COLLIDER COMPONENT
-		static void RectColliderComponent_GetOffset(ZGUID guid, glm::vec2* offset)
+		static void RectColliderComponent_GetOffset(UUID uuid, glm::vec2* offset)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			*offset = entity.GetComponents<RectColliderComponent>().Offset;
 		}
 
-		static void RectColliderComponent_SetOffset(ZGUID guid, glm::vec2* offset)
+		static void RectColliderComponent_SetOffset(UUID uuid, glm::vec2* offset)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<RectColliderComponent>().Offset = *offset;
 		}
 
-		static void RectColliderComponent_GetHalfExtent(ZGUID guid, glm::vec2* halfExtent)
+		static void RectColliderComponent_GetHalfExtent(UUID uuid, glm::vec2* halfExtent)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			*halfExtent = entity.GetComponents<RectColliderComponent>().HalfExtent;
 		}
 
-		static void RectColliderComponent_SetHalfExtent(ZGUID guid, glm::vec2* halfExtent)
+		static void RectColliderComponent_SetHalfExtent(UUID uuid, glm::vec2* halfExtent)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<RectColliderComponent>().HalfExtent = *halfExtent;
 		}
 
-		static float RectColliderComponent_GetDensity(ZGUID guid)
+		static float RectColliderComponent_GetDensity(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<RectColliderComponent>().Density;
 		}
 
-		static void RectColliderComponent_SetDensity(ZGUID guid, float density)
+		static void RectColliderComponent_SetDensity(UUID uuid, float density)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<RectColliderComponent>().Density = density;
 		}
 
-		static float RectColliderComponent_GetFriction(ZGUID guid)
+		static float RectColliderComponent_GetFriction(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<RectColliderComponent>().Friction;
 		}
 
-		static void RectColliderComponent_SetFriction(ZGUID guid, float friction)
+		static void RectColliderComponent_SetFriction(UUID uuid, float friction)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<RectColliderComponent>().Friction = friction;
 		}
 
-		static float RectColliderComponent_GetRestitution(ZGUID guid)
+		static float RectColliderComponent_GetRestitution(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<RectColliderComponent>().Restitution;
 		}
 
-		static void RectColliderComponent_SetRestitution(ZGUID guid, float restitution)
+		static void RectColliderComponent_SetRestitution(UUID uuid, float restitution)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<RectColliderComponent>().Restitution = restitution;
 		}
 
-		static float RectColliderComponent_GetRestitutionThreshold(ZGUID guid)
+		static float RectColliderComponent_GetRestitutionThreshold(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<RectColliderComponent>().RestitutionThreshold;
 		}
 
-		static void RectColliderComponent_SetRestitutionThreshold(ZGUID guid, float threshold)
+		static void RectColliderComponent_SetRestitutionThreshold(UUID uuid, float threshold)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<RectColliderComponent>().RestitutionThreshold = threshold;
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		// CIRCLE COLLIDER COMPONENT
-		static void CircleColliderComponent_GetOffset(ZGUID guid, glm::vec2* offset)
+		static void CircleColliderComponent_GetOffset(UUID uuid, glm::vec2* offset)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			*offset = entity.GetComponents<CircleColliderComponent>().Offset;
 		}
 
-		static void CircleColliderComponent_SetOffset(ZGUID guid, glm::vec2* offset)
+		static void CircleColliderComponent_SetOffset(UUID uuid, glm::vec2* offset)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CircleColliderComponent>().Offset = *offset;
 		}
 
-		static float CircleColliderComponent_GetRadius(ZGUID guid)
+		static float CircleColliderComponent_GetRadius(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<CircleColliderComponent>().Radius;
 		}
 
-		static void CircleColliderComponent_SetRadius(ZGUID guid, float radius)
+		static void CircleColliderComponent_SetRadius(UUID uuid, float radius)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CircleColliderComponent>().Radius = radius;
 		}
 
-		static float CircleColliderComponent_GetDensity(ZGUID guid)
+		static float CircleColliderComponent_GetDensity(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<CircleColliderComponent>().Density;
 		}
 
-		static void CircleColliderComponent_SetDensity(ZGUID guid, float density)
+		static void CircleColliderComponent_SetDensity(UUID uuid, float density)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CircleColliderComponent>().Density = density;
 		}
 
-		static float CircleColliderComponent_GetFriction(ZGUID guid)
+		static float CircleColliderComponent_GetFriction(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<CircleColliderComponent>().Friction;
 		}
 
-		static void CircleColliderComponent_SetFriction(ZGUID guid, float friction)
+		static void CircleColliderComponent_SetFriction(UUID uuid, float friction)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CircleColliderComponent>().Friction = friction;
 		}
 
-		static float CircleColliderComponent_GetRestitution(ZGUID guid)
+		static float CircleColliderComponent_GetRestitution(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<CircleColliderComponent>().Restitution;
 		}
 
-		static void CircleColliderComponent_SetRestitution(ZGUID guid, float restitution)
+		static void CircleColliderComponent_SetRestitution(UUID uuid, float restitution)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CircleColliderComponent>().Restitution = restitution;
 		}
 
-		static float CircleColliderComponent_GetRestitutionThreshold(ZGUID guid)
+		static float CircleColliderComponent_GetRestitutionThreshold(UUID uuid)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			return entity.GetComponents<CircleColliderComponent>().RestitutionThreshold;
 		}
 
-		static void CircleColliderComponent_SetRestitutionThreshold(ZGUID guid, float threshold)
+		static void CircleColliderComponent_SetRestitutionThreshold(UUID uuid, float threshold)
 		{
-			Entity entity = ScriptEngine::GetEntity(guid);
+			Entity entity = ScriptEngine::GetEntity(uuid);
 			entity.GetComponents<CircleColliderComponent>().RestitutionThreshold = threshold;
 		}
 

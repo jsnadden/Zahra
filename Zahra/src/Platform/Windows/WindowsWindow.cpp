@@ -343,6 +343,9 @@ namespace Zahra
 
 	void WindowsWindow::SetFullscreen(bool enabled)
 	{
+		// TODO: getting warning from vulkan validation when this is set
+		// (probably just need to resize swapchain images?)
+
 		if (m_WindowData.Fullscreen == enabled) return;
 
 		if (m_WindowData.Fullscreen)

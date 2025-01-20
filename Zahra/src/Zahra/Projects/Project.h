@@ -1,19 +1,20 @@
 #pragma once
 
+#include <filesystem>
+
 namespace Zahra
 {
 	struct ProjectConfig
 	{
-		std::string ProjectName = "Untitled";
+		std::string ProjectName;
 		std::filesystem::path ProjectDirectory;
-		std::filesystem::path ProjectFilepath = ProjectDirectory / (ProjectName + ".zpj");
+		std::filesystem::path ProjectFilepath;
 
-		std::filesystem::path AssetDirectory = "Assets";
+		std::filesystem::path AssetDirectory;
 
-		std::filesystem::path ScriptAssemblyFilepath = "Assets/Scripts/Binaries";
-		bool AutomateScriptEngineReloadAssembly = false;
-
-		// TODO: probably want an asset id here, rather than a filepath
+		// TODO: when possible, we want asset ids here rather than filepaths
+		// (asset manager should keep track of the source files internally)
+		std::filesystem::path ScriptAssemblyFilepath;
 		std::filesystem::path StartingSceneFilepath;
 	};
 
@@ -23,12 +24,29 @@ namespace Zahra
 		Project() = default;
 		~Project() = default;
 
+		ProjectConfig& GetConfig() { return m_Config; }
+
+		static Ref<Project> GetActive();
+
 		static Ref<Project> New();
 		static Ref<Project> Load(const std::filesystem::path& projectFilepath);
 		static void Save(const std::filesystem::path& projectFilepath);
 
-		static ProjectConfig& GetConfig();
+		static const std::string& GetProjectName();
+		static const std::filesystem::path& GetProjectDirectory();
+		static const std::filesystem::path& GetProjectFilepath();
+
+		// TODO: add a helper method to assetManager which takes a path (relative to asset
+		// directory), and returns the absolute path (use std::filesystem::canonical)
+
 		static std::filesystem::path GetAssetsDirectory();
+		static std::filesystem::path GetFontsDirectory();
+		static std::filesystem::path GetMeshesDirectory();
+		static std::filesystem::path GetScenesDirectory();
+		static std::filesystem::path GetStartingSceneFilepath();
+		static std::filesystem::path GetScriptsDirectory();
+		static std::filesystem::path GetScriptAssemblyFilepath();
+		static std::filesystem::path GetTexturesDirectory();
 
 	private:
 		ProjectConfig m_Config;

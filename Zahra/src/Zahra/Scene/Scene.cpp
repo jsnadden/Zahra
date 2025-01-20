@@ -37,21 +37,21 @@ namespace Zahra
 		m_EntityMap.clear();
 		m_Registry.clear();
 
-		for (auto& [guid, buffer] : m_ScriptFieldStorage)
+		for (auto& [uuid, buffer] : m_ScriptFieldStorage)
 			buffer.Release();
 		m_ScriptFieldStorage.clear();
 	}
 
 	template<typename... ComponentType>
-	static void CopyComponent(entt::registry& srcReg, entt::registry& destReg, const std::unordered_map<ZGUID, entt::entity>& guidToNewHandle)
+	static void CopyComponent(entt::registry& srcReg, entt::registry& destReg, const std::unordered_map<UUID, entt::entity>& uuidToNewHandle)
 	{
 		([&]()
 			{
 				auto componentView = srcReg.view<ComponentType>();
 				for (auto oldHandle : componentView)
 				{
-					ZGUID guid = srcReg.get<IDComponent>(oldHandle).ID;
-					entt::entity newHandle = guidToNewHandle.at(guid);
+					UUID uuid = srcReg.get<IDComponent>(oldHandle).ID;
+					entt::entity newHandle = uuidToNewHandle.at(uuid);
 
 					auto& oldComponent = srcReg.get<ComponentType>(oldHandle);
 					destReg.emplace_or_replace<ComponentType>(newHandle, oldComponent);
@@ -61,9 +61,9 @@ namespace Zahra
 	}
 
 	template<typename... ComponentType>
-	static void CopyComponent(ComponentGroup<ComponentType...>, entt::registry& srcReg, entt::registry& destReg, const std::unordered_map<ZGUID, entt::entity>& guidToNewHandle)
+	static void CopyComponent(ComponentGroup<ComponentType...>, entt::registry& srcReg, entt::registry& destReg, const std::unordered_map<UUID, entt::entity>& uuidToNewHandle)
 	{
-		CopyComponent<ComponentType...>(srcReg, destReg, guidToNewHandle);
+		CopyComponent<ComponentType...>(srcReg, destReg, uuidToNewHandle);
 	}
 
 	template <typename... ComponentType>
@@ -96,28 +96,28 @@ namespace Zahra
 		auto& srcRegistry = srcScene->m_Registry;
 		auto& destRegistry = destScene->m_Registry;
 
-		std::unordered_map<ZGUID, entt::entity> guidToNewHandle;
+		std::unordered_map<UUID, entt::entity> uuidToNewHandle;
 
 		// copy entities, along with their IDComponents and TagComponents
 		srcRegistry.view<entt::entity>().each([&](auto entityHandle)
 			{
 				Entity oldEntity = { entityHandle, srcScene.Raw() };
-				ZGUID guid = oldEntity.GetGUID();
-				Entity newEntity = destScene->CreateEntity(guid, oldEntity.GetComponents<TagComponent>().Tag);
-				guidToNewHandle[guid] = (entt::entity)newEntity;
+				UUID uuid = oldEntity.GetID();
+				Entity newEntity = destScene->CreateEntity(uuid, oldEntity.GetComponents<TagComponent>().Tag);
+				uuidToNewHandle[uuid] = (entt::entity)newEntity;
 			});
 
 		// copy the remaining components
-		CopyComponent(MostComponents{}, srcRegistry, destRegistry, guidToNewHandle);
+		CopyComponent(MostComponents{}, srcRegistry, destRegistry, uuidToNewHandle);
 
 		// set active camera
 		Entity oldCamera = srcScene->GetActiveCamera();
-		if (oldCamera) destScene->SetActiveCamera({ guidToNewHandle[oldCamera.GetGUID()] , destScene.Raw() });
+		if (oldCamera) destScene->SetActiveCamera({ uuidToNewHandle[oldCamera.GetID()] , destScene.Raw() });
 
 		// copy field storage buffer
-		for (auto& [guid, srcBuffer] : srcScene->m_ScriptFieldStorage)
+		for (auto& [uuid, srcBuffer] : srcScene->m_ScriptFieldStorage)
 		{
-			auto& destBuffer = destScene->m_ScriptFieldStorage[guid];
+			auto& destBuffer = destScene->m_ScriptFieldStorage[uuid];
 			destBuffer.Release();
 			destBuffer = Buffer::Copy(srcBuffer);
 		}
@@ -130,37 +130,37 @@ namespace Zahra
 	{
 		Entity entity = { m_Registry.create(), this };
 		entity.GetComponents<TagComponent>().Tag = name;
-		m_EntityMap[entity.GetGUID()] = entity;
+		m_EntityMap[entity.GetID()] = entity;
 		return entity;
 	}
 
-	Entity Scene::CreateEntity(uint64_t guid, const std::string& name)
+	Entity Scene::CreateEntity(uint64_t uuid, const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
 		entity.GetComponents<TagComponent>().Tag = name;
-		entity.GetComponents<IDComponent>().ID = { guid };
-		m_EntityMap[guid] = entity;
+		entity.GetComponents<IDComponent>().ID = { uuid };
+		m_EntityMap[uuid] = entity;
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		m_EntityMap.erase(entity.GetGUID());
+		m_EntityMap.erase(entity.GetID());
 		m_Registry.destroy(entity);
 	}
 
-	void Scene::DestroyEntity(ZGUID guid)
+	void Scene::DestroyEntity(UUID uuid)
 	{
-		auto it = m_EntityMap.find(guid);
+		auto it = m_EntityMap.find(uuid);
 		if (it == m_EntityMap.end())
 			return;
 
 		auto entity = it->second;
-		m_EntityMap.erase(guid);
+		m_EntityMap.erase(uuid);
 		m_Registry.destroy(entity);
 	}
 
-	Entity Scene::DuplicateEntity(Entity extantEntity, ZGUID newID)
+	Entity Scene::DuplicateEntity(Entity extantEntity, UUID newID)
 	{
 		// create new component with its own IDComponent and the copied TagComponent
 		std::string newName = extantEntity.GetName();
@@ -172,9 +172,9 @@ namespace Zahra
 		return newEntity;
 	}
 
-	Entity Scene::GetEntity(ZGUID guid)
+	Entity Scene::GetEntity(UUID uuid)
 	{
-		auto it = m_EntityMap.find(guid);
+		auto it = m_EntityMap.find(uuid);
 		if (it == m_EntityMap.end())
 			return { entt::null, this };
 
@@ -228,7 +228,7 @@ namespace Zahra
 	//	Z_CORE_ASSERT(m_Registry.valid(e), "Entity does not belong to this scene");
 
 	//	Entity entity = { e, this };
-	//	Z_CORE_ASSERT(entity.HasComponents<IDComponent>(), "Freeing field storage requires a guid for buffer lookup");
+	//	Z_CORE_ASSERT(entity.HasComponents<IDComponent>(), "Freeing field storage requires a uuid for buffer lookup");
 
 	//	FreeScriptFieldStorage(entity);
 	//}
@@ -500,7 +500,7 @@ namespace Zahra
 		if (auto scriptClass = ScriptEngine::GetScriptClassIfValid(component.ScriptName))
 		{
 			uint64_t fieldCount = scriptClass->GetPublicFields().size();
-			auto& buffer = m_ScriptFieldStorage[entity.GetGUID()];
+			auto& buffer = m_ScriptFieldStorage[entity.GetID()];
 
 			if (buffer.GetSize() != 16 * fieldCount)
 			{
@@ -512,7 +512,7 @@ namespace Zahra
 
 	Buffer Scene::GetScriptFieldStorage(Entity entity)
 	{
-		auto result = m_ScriptFieldStorage.find(entity.GetGUID());
+		auto result = m_ScriptFieldStorage.find(entity.GetID());
 		Z_CORE_ASSERT(result != m_ScriptFieldStorage.end());
 
 		return result->second;

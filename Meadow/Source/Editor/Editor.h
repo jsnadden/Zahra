@@ -52,7 +52,7 @@ namespace Zahra
 
 		static Entity GetSelectedEntity();
 		static void SelectEntity(Entity entity);
-		static bool IsSelected(ZGUID entityID);
+		static bool IsSelected(UUID entityID);
 
 		static WeakRef<EditorCamera> GetPrimaryEditorCamera();
 		static void SetPrimaryEditorCamera(EditorCamera& camera);

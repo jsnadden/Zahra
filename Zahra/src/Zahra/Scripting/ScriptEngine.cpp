@@ -99,7 +99,7 @@ namespace Zahra
 		// Scene-specific
 		Ref<Scene> SceneContext;
 		bool SceneRuntime = false;
-		std::unordered_map<ZGUID, Ref<ScriptInstance>> ScriptInstances;
+		std::unordered_map<UUID, Ref<ScriptInstance>> ScriptInstances;
 
 		////////////////////
 		// Misc.
@@ -404,8 +404,8 @@ namespace Zahra
 		if (it != s_SEData->ScriptClasses.end())
 		{
 			auto& scriptClass = it->second;
-			Ref<ScriptInstance> instance = Ref<ScriptInstance>::Create(scriptClass, entity.GetGUID());
-			s_SEData->ScriptInstances[entity.GetGUID()] = instance;
+			Ref<ScriptInstance> instance = Ref<ScriptInstance>::Create(scriptClass, entity.GetID());
+			s_SEData->ScriptInstances[entity.GetID()] = instance;
 
 			auto fields = scriptClass->GetPublicFields();
 			auto buffer = s_SEData->SceneContext->GetScriptFieldStorage(entity);
@@ -470,11 +470,11 @@ namespace Zahra
 			instance->InvokeLateUpdate(dt);
 	}
 
-	Entity ScriptEngine::GetEntity(ZGUID guid)
+	Entity ScriptEngine::GetEntity(UUID uuid)
 	{
 		Z_CORE_ASSERT(s_SEData->SceneContext);
 
-		return s_SEData->SceneContext->GetEntity(guid);
+		return s_SEData->SceneContext->GetEntity(uuid);
 	}
 
 	Entity ScriptEngine::GetEntity(MonoString* name)
@@ -488,9 +488,9 @@ namespace Zahra
 		return entity;
 	}
 
-	MonoObject* ScriptEngine::GetMonoObject(ZGUID guid)
+	MonoObject* ScriptEngine::GetMonoObject(UUID uuid)
 	{
-		auto it = s_SEData->ScriptInstances.find(guid);
+		auto it = s_SEData->ScriptInstances.find(uuid);
 		if (it != s_SEData->ScriptInstances.end())
 			return it->second->GetMonoObject();
 
@@ -511,9 +511,9 @@ namespace Zahra
 		if (!ValidScriptClass(component.ScriptName))
 			return nullptr;
 
-		ZGUID entityGUID = entity.GetGUID();
+		UUID entityID = entity.GetID();
 
-		auto it = s_SEData->ScriptInstances.find(entityGUID);
+		auto it = s_SEData->ScriptInstances.find(entityID);
 		if (it != s_SEData->ScriptInstances.end())
 			return it->second;
 
@@ -559,7 +559,7 @@ namespace Zahra
 	}
 
 
-	ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, ZGUID guid)
+	ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, UUID uuid)
 		: m_ScriptClass(scriptClass)
 	{
 		m_MonoObject = m_ScriptClass->Instantiate();
@@ -572,7 +572,7 @@ namespace Zahra
 		Z_CORE_ASSERT(m_Constructor && m_OnCreate && m_OnEarlyUpdate && m_OnLateUpdate,
 			"ScriptClass is missing a required method");
 
-		void* args = &guid;
+		void* args = &uuid;
 		m_ScriptClass->InvokeMethod(m_MonoObject, m_Constructor, &args);
 	}
 

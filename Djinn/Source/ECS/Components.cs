@@ -15,12 +15,12 @@ namespace Djinn
 		{
 			get
 			{
-				Zahra.TransformComponent_GetTranslation(Entity.GUID, out Vector3 translation);
+				Zahra.TransformComponent_GetTranslation(Entity.UUID, out Vector3 translation);
 				return translation;
 			}
 			set
 			{
-				Zahra.TransformComponent_SetTranslation(Entity.GUID, ref value);
+				Zahra.TransformComponent_SetTranslation(Entity.UUID, ref value);
 			}
 		}
 
@@ -28,12 +28,12 @@ namespace Djinn
 		{
 			get
 			{
-				Zahra.TransformComponent_GetEulers(Entity.GUID, out Vector3 eulers);
+				Zahra.TransformComponent_GetEulers(Entity.UUID, out Vector3 eulers);
 				return eulers;
 			}
 			set
 			{
-				Zahra.TransformComponent_SetEulers(Entity.GUID, ref value);
+				Zahra.TransformComponent_SetEulers(Entity.UUID, ref value);
 			}
 		}
 
@@ -41,12 +41,12 @@ namespace Djinn
 		{
 			get
 			{
-				Zahra.TransformComponent_GetScale(Entity.GUID, out Vector3 scale);
+				Zahra.TransformComponent_GetScale(Entity.UUID, out Vector3 scale);
 				return scale;
 			}
 			set
 			{
-				Zahra.TransformComponent_SetScale(Entity.GUID, ref value);
+				Zahra.TransformComponent_SetScale(Entity.UUID, ref value);
 			}
 		}
 	}
@@ -57,12 +57,12 @@ namespace Djinn
 		{
 			get
 			{
-				Zahra.SpriteComponent_GetTint(Entity.GUID, out Vector4 tint);
+				Zahra.SpriteComponent_GetTint(Entity.UUID, out Vector4 tint);
 				return tint;
 			}
 			set
 			{
-				Zahra.SpriteComponent_SetTint(Entity.GUID, ref value);
+				Zahra.SpriteComponent_SetTint(Entity.UUID, ref value);
 			}
 		}
 
@@ -75,12 +75,12 @@ namespace Djinn
 		{
 			get
 			{
-				Zahra.CircleComponent_GetColour(Entity.GUID, out Vector4 colour);
+				Zahra.CircleComponent_GetColour(Entity.UUID, out Vector4 colour);
 				return colour;
 			}
 			set
 			{
-				Zahra.CircleComponent_SetColour(Entity.GUID, ref value);
+				Zahra.CircleComponent_SetColour(Entity.UUID, ref value);
 			}
 		}
 
@@ -88,11 +88,11 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CircleComponent_GetThickness(Entity.GUID);
+				return Zahra.CircleComponent_GetThickness(Entity.UUID);
 			}
 			set
 			{
-				Zahra.CircleComponent_SetThickness(Entity.GUID, value);
+				Zahra.CircleComponent_SetThickness(Entity.UUID, value);
 			}
 		}
 
@@ -100,11 +100,11 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CircleComponent_GetFade(Entity.GUID);
+				return Zahra.CircleComponent_GetFade(Entity.UUID);
 			}
 			set
 			{
-				Zahra.CircleComponent_SetFade(Entity.GUID, value);
+				Zahra.CircleComponent_SetFade(Entity.UUID, value);
 			}
 		}
 	}
@@ -117,11 +117,11 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CameraComponent_GetProjectionType(Entity.GUID);
+				return Zahra.CameraComponent_GetProjectionType(Entity.UUID);
 			}
 			set
 			{
-				Zahra.CameraComponent_SetProjectionType(Entity.GUID, (int)value);
+				Zahra.CameraComponent_SetProjectionType(Entity.UUID, (int)value);
 			}
 		}
 
@@ -129,11 +129,11 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CameraComponent_GetVerticalFOV(Entity.GUID);
+				return Zahra.CameraComponent_GetVerticalFOV(Entity.UUID);
 			}
 			set
 			{
-				Zahra.CameraComponent_SetVerticalFOV(Entity.GUID, value);
+				Zahra.CameraComponent_SetVerticalFOV(Entity.UUID, value);
 			}
 		}
 
@@ -141,11 +141,11 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CameraComponent_GetNearPlane(Entity.GUID);
+				return Zahra.CameraComponent_GetNearPlane(Entity.UUID);
 			}
 			set
 			{
-				Zahra.CameraComponent_SetNearPlane(Entity.GUID, value);
+				Zahra.CameraComponent_SetNearPlane(Entity.UUID, value);
 			}
 		}
 
@@ -153,11 +153,11 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CameraComponent_GetFarPlane(Entity.GUID);
+				return Zahra.CameraComponent_GetFarPlane(Entity.UUID);
 			}
 			set
 			{
-				Zahra.CameraComponent_SetFarPlane(Entity.GUID, value);
+				Zahra.CameraComponent_SetFarPlane(Entity.UUID, value);
 			}
 		}
 
@@ -165,11 +165,11 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CameraComponent_GetFixedAspectRatio(Entity.GUID);
+				return Zahra.CameraComponent_GetFixedAspectRatio(Entity.UUID);
 			}
 			set
 			{
-				Zahra.CameraComponent_SetFixedAspectRatio(Entity.GUID, value);
+				Zahra.CameraComponent_SetFixedAspectRatio(Entity.UUID, value);
 			}
 		}
 	}
@@ -186,17 +186,17 @@ namespace Djinn
 	{
 		public void ApplyLinearImpulse(Vector2 impulse, bool wake)
 		{
-			Zahra.RigidBody2DComponent_ApplyLinearImpulse(Entity.GUID, ref impulse, wake);
+			Zahra.RigidBody2DComponent_ApplyLinearImpulse(Entity.UUID, ref impulse, wake);
 		}
 
 		public void ApplyForce(Vector2 force, bool wake)
 		{
-			Zahra.RigidBody2DComponent_ApplyForce(Entity.GUID, ref force, wake);
+			Zahra.RigidBody2DComponent_ApplyForce(Entity.UUID, ref force, wake);
 		}
 
 		public Vector2 GetVelocity()
 		{
-			Zahra.RigidBody2DComponent_GetVelocity(Entity.GUID, out Vector2 velocity);
+			Zahra.RigidBody2DComponent_GetVelocity(Entity.UUID, out Vector2 velocity);
 			return velocity;
 		}
 
@@ -204,7 +204,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.RigidBody2DComponent_GetBodyType(Entity.GUID);
+				return Zahra.RigidBody2DComponent_GetBodyType(Entity.UUID);
 			}
 			set
 			{
@@ -216,7 +216,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.RigidBody2DComponent_GetFixedRotation(Entity.GUID);
+				return Zahra.RigidBody2DComponent_GetFixedRotation(Entity.UUID);
 			}
 			set
 			{
@@ -233,7 +233,7 @@ namespace Djinn
 		{
 			get
 			{
-				Zahra.RectColliderComponent_GetOffset(Entity.GUID, out Vector2 offset);
+				Zahra.RectColliderComponent_GetOffset(Entity.UUID, out Vector2 offset);
 				return offset;
 			}
 			set
@@ -246,7 +246,7 @@ namespace Djinn
 		{
 			get
 			{
-				Zahra.RectColliderComponent_GetHalfExtent(Entity.GUID, out Vector2 halfExtent);
+				Zahra.RectColliderComponent_GetHalfExtent(Entity.UUID, out Vector2 halfExtent);
 				return halfExtent;
 			}
 			set
@@ -259,7 +259,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.RectColliderComponent_GetDensity(Entity.GUID);
+				return Zahra.RectColliderComponent_GetDensity(Entity.UUID);
 			}
 			set
 			{
@@ -271,7 +271,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.RectColliderComponent_GetFriction(Entity.GUID);
+				return Zahra.RectColliderComponent_GetFriction(Entity.UUID);
 			}
 			set
 			{
@@ -283,7 +283,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.RectColliderComponent_GetRestitution(Entity.GUID);
+				return Zahra.RectColliderComponent_GetRestitution(Entity.UUID);
 			}
 			set
 			{
@@ -295,7 +295,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.RectColliderComponent_GetRestitutionThreshold(Entity.GUID);
+				return Zahra.RectColliderComponent_GetRestitutionThreshold(Entity.UUID);
 			}
 			set
 			{
@@ -310,7 +310,7 @@ namespace Djinn
 		{
 			get
 			{
-				Zahra.CircleColliderComponent_GetOffset(Entity.GUID, out Vector2 offset);
+				Zahra.CircleColliderComponent_GetOffset(Entity.UUID, out Vector2 offset);
 				return offset;
 			}
 			set
@@ -323,7 +323,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CircleColliderComponent_GetRadius(Entity.GUID);
+				return Zahra.CircleColliderComponent_GetRadius(Entity.UUID);
 			}
 			set
 			{
@@ -335,7 +335,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CircleColliderComponent_GetDensity(Entity.GUID);
+				return Zahra.CircleColliderComponent_GetDensity(Entity.UUID);
 			}
 			set
 			{
@@ -347,7 +347,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CircleColliderComponent_GetFriction(Entity.GUID);
+				return Zahra.CircleColliderComponent_GetFriction(Entity.UUID);
 			}
 			set
 			{
@@ -359,7 +359,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CircleColliderComponent_GetRestitution(Entity.GUID);
+				return Zahra.CircleColliderComponent_GetRestitution(Entity.UUID);
 			}
 			set
 			{
@@ -371,7 +371,7 @@ namespace Djinn
 		{
 			get
 			{
-				return Zahra.CircleColliderComponent_GetRestitutionThreshold(Entity.GUID);
+				return Zahra.CircleColliderComponent_GetRestitutionThreshold(Entity.UUID);
 			}
 			set
 			{

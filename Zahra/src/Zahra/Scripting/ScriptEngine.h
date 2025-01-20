@@ -134,7 +134,7 @@ namespace Zahra
 	class ScriptInstance : public RefCounted
 	{
 	public:
-		ScriptInstance(Ref<ScriptClass> scriptClass, ZGUID guid);
+		ScriptInstance(Ref<ScriptClass> scriptClass, UUID uuid);
 
 		Ref<ScriptClass> GetScriptClass() { return m_ScriptClass; }
 
@@ -199,9 +199,9 @@ namespace Zahra
 		static void ScriptInstanceLateUpdate(Entity entity, float dt);
 
 		static Ref<ScriptInstance> GetScriptInstance(Entity entity);
-		static MonoObject* GetMonoObject(ZGUID guid);
+		static MonoObject* GetMonoObject(UUID uuid);
 
-		static Entity GetEntity(ZGUID guid);
+		static Entity GetEntity(UUID uuid);
 		static Entity GetEntity(MonoString* name);		
 
 		static MonoString* StdStringToMonoString(const std::string& string);

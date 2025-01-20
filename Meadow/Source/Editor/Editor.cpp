@@ -132,12 +132,12 @@ namespace Zahra
 		s_EditorData.SelectedEntity = entity;
 	}
 
-	bool Editor::IsSelected(ZGUID entityID)
+	bool Editor::IsSelected(UUID entityID)
 	{
 		if (!s_EditorData.SelectedEntity)
 			return false;
 
-		return s_EditorData.SelectedEntity.GetGUID() == entityID;
+		return s_EditorData.SelectedEntity.GetID() == entityID;
 	}
 
 	WeakRef<EditorCamera> Editor::GetPrimaryEditorCamera()

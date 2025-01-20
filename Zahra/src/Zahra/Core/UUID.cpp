@@ -1,5 +1,5 @@
 #include "zpch.h"
-#include "GUID.h"
+#include "UUID.h"
 
 #include <random>
 
@@ -11,8 +11,8 @@ namespace Zahra
 
 	// TODO: update the implementation when we add multithreading,
 	// in order to maintain uniqueness across threads
-	ZGUID::ZGUID() 
-		: m_GUID(s_UniformDistribution(s_Engine)) {}
+	UUID::UUID() 
+		: m_UUID(s_UniformDistribution(s_Engine)) {}
 
 }
 

@@ -1,6 +1,9 @@
 #include "zpch.h"
 #include "ProjectSerialiser.h"
 
+#ifndef YAML_CPP_STATIC_DEFINE
+#define YAML_CPP_STATIC_DEFINE
+#endif
 #include <yaml-cpp/yaml.h>
 
 #include <fstream>
@@ -22,12 +25,13 @@ namespace Zahra
 				out << YAML::Key << "Name" << YAML::Value << config.ProjectName;
 				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
 				out << YAML::Key << "ScriptAssemblyFilepath" << YAML::Value << config.ScriptAssemblyFilepath.string();
-				out << YAML::Key << "AutomateScriptEngineReloadAssembly" << YAML::Value << config.AutomateScriptEngineReloadAssembly;
 				out << YAML::Key << "StartingSceneFilepath" << YAML::Value << config.StartingSceneFilepath.string();
 			}
 			out << YAML::EndMap;			
 		}
 		out << YAML::EndMap;
+
+		Z_CORE_TRACE("Saving project '{0}' to '{1}'", config.ProjectName, filepath.string());
 
 		std::ofstream fileWrite(filepath);
 		fileWrite << out.c_str();
@@ -38,8 +42,10 @@ namespace Zahra
 
 	bool ProjectSerialiser::Deserialise(const std::filesystem::path& filepath)
 	{
-		if (filepath.empty())
+		if (filepath.empty() || !std::filesystem::exists(filepath))
 			return false;
+
+		Z_CORE_TRACE("Loading project file '{0}'", filepath.string());
 
 		auto& config = m_Project->GetConfig();
 		config.ProjectFilepath = filepath;
@@ -52,13 +58,13 @@ namespace Zahra
 		}
 		catch (const YAML::ParserException& ex)
 		{
-			Z_CORE_ERROR("Failed to deserialize project file '{0}'\n	{1}", filepath.string().c_str(), ex.what());
+			Z_CORE_ERROR("Failed to deserialize project file '{0}'\n	{1}", filepath.string(), ex.what());
 			return false;
 		}
 
 		if (auto& projectNode = data["Project"])
 		{
-			if (auto& name = projectNode["ProjectName"])
+			if (auto& name = projectNode["Name"])
 				config.ProjectName = name.as<std::string>();
 
 			if (auto& assetDir = projectNode["AssetDirectory"])
@@ -66,9 +72,6 @@ namespace Zahra
 
 			if (auto& scriptAssemblyPath = projectNode["ScriptAssemblyFilepath"])
 				config.ScriptAssemblyFilepath = scriptAssemblyPath.as<std::string>();
-
-			if (auto& autoReloadScripts = projectNode["AutomateScriptEngineReloadAssembly"])
-				config.AutomateScriptEngineReloadAssembly = autoReloadScripts.as<bool>();
 
 			if (auto& startingScene = projectNode["StartingSceneFilepath"])
 				config.StartingSceneFilepath = startingScene.as<std::string>();

@@ -66,6 +66,7 @@ namespace Zahra
 		void OnImGuiRender();
 
 	private:
+		std::filesystem::path m_ProjectRoot;
 		std::filesystem::path m_CurrentPath;
 
 		std::vector<DirectoryData> m_Subdirectories;

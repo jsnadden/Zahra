@@ -4,121 +4,12 @@
 #include "Zahra/Projects/Project.h"
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/ScriptEngine.h"
-
-#define YAML_CPP_STATIC_DEFINE
-#include <yaml-cpp/yaml.h>
+#include "Zahra/Utils/CustomYAML.h"
 
 #include <fstream>
 
-
-namespace YAML
-{
-	template<>
-	struct convert<glm::vec2>
-	{
-		static Node encode(const glm::vec2& rhs)
-		{
-			Node node;
-
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.SetStyle(EmitterStyle::Flow);
-
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::vec2& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 2) return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<glm::vec3>
-	{
-		static Node encode(const glm::vec3& rhs)
-		{
-			Node node;
-
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			node.SetStyle(EmitterStyle::Flow);
-
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::vec3& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 3) return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<glm::vec4>
-	{
-		static Node encode(const glm::vec4& rhs)
-		{
-			Node node;
-
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			node.push_back(rhs.w);
-			node.SetStyle(EmitterStyle::Flow);
-
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::vec4& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 4) return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			rhs.w = node[3].as<float>();
-
-			return true;
-		}
-	};
-
-}
-
 namespace Zahra
 {
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& vector)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vector.x << vector.y << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& vector)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vector.x << vector.y << vector.z << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& vector)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vector.x << vector.y << vector.z << vector.w << YAML::EndSeq;
-		return out;
-	}
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SERIALISATION HELPERS
 	static std::string CameraProjectionTypeToString(SceneCamera::ProjectionType type)
@@ -176,12 +67,12 @@ namespace Zahra
 	static void SerialiseEntity(YAML::Emitter& out, Entity entity, Ref<Scene> scene)
 	{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// GUID
+		// UUID
 		Z_CORE_ASSERT(entity.HasComponents<IDComponent>(), "All entities must have an IDComponent");
-		uint64_t entityGUID = (uint64_t)entity.GetComponents<IDComponent>().ID;
+		uint64_t entityID = (uint64_t)entity.GetComponents<IDComponent>().ID;
 
 		out << YAML::BeginMap;
-		out << YAML::Key << "Entity" << YAML::Value << entityGUID;
+		out << YAML::Key << "Entity" << YAML::Value << entityID;
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// TAG (COMPONENT NAME)
@@ -190,7 +81,7 @@ namespace Zahra
 		out << YAML::BeginMap;
 		{
 			auto& tag = entity.GetComponents<TagComponent>().Tag;
-			Z_CORE_TRACE("Serialising entity {0} (GUID = {1})", tag, entityGUID);
+			Z_CORE_TRACE("Serialising entity {0} (UUID = {1})", tag, entityID);
 
 			out << YAML::Key << "Tag" << YAML::Value << tag;
 		}
@@ -220,9 +111,9 @@ namespace Zahra
 				out << YAML::Key << "Tint" << YAML::Value << sprite.Tint;
 				if (sprite.Texture)
 				{
-					// TODO: serialise texture as asset GUID instead
+					// TODO: serialise texture as assetID instead
 					auto texturePath = sprite.Texture->GetFilepath();
-					auto& textureDirectory = Project::GetAssetsDirectory() / "Textures";
+					auto& textureDirectory = Project::GetTexturesDirectory();
 					texturePath = std::filesystem::relative(texturePath, textureDirectory);
 
 					out << YAML::Key << "TexturePath" << YAML::Value << texturePath.string().c_str();
@@ -361,7 +252,7 @@ namespace Zahra
 								}
 								case ScriptFieldType::EntityID:
 								{
-									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<ZGUID>(offset);
+									out << YAML::Key << field.Name << YAML::Value << buffer.ReadAs<UUID>(offset);
 									break;
 								}
 								case ScriptFieldType::Vector2:
@@ -441,7 +332,7 @@ namespace Zahra
 	void SceneSerialiser::SerialiseYaml(const std::string& filepath)
 	{
 		std::string sceneName = m_Scene->GetName();
-		Z_CORE_TRACE("Serialising scene '{0}'", sceneName);
+		Z_CORE_TRACE("Saving scene '{0}' to '{1}'", sceneName, filepath);
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -451,8 +342,8 @@ namespace Zahra
 
 			if (Entity activeCamera = m_Scene->GetActiveCamera())
 			{
-				out << YAML::Key << "ActiveCameraGUID";
-				out << YAML::Value << activeCamera.GetGUID();
+				out << YAML::Key << "ActiveCameraUUID";
+				out << YAML::Value << activeCamera.GetID();
 			}
 
 			out << YAML::Key << "Entities";
@@ -485,7 +376,7 @@ namespace Zahra
 		}
 		catch (const YAML::ParserException& ex)
 		{
-			Z_CORE_ERROR("Failed to deserialize scene '{0}'\n     {1}", filepath, ex.what());
+			Z_CORE_ERROR("Failed to load scene file '{0}'\n     {1}", filepath, ex.what());
 			return false;
 		}
 
@@ -493,33 +384,33 @@ namespace Zahra
 
 		std::string sceneName = data["Scene"].as<std::string>();
 		m_Scene->SetName(sceneName);
-		Z_CORE_TRACE("Deserialising scene '{0}'", sceneName);
+		Z_CORE_TRACE("Loading scene file '{0}'", filepath);
 
-		bool hasActiveCamera = (bool)data["ActiveCameraGUID"];
-		uint64_t cameraGUID;
+		bool hasActiveCamera = (bool)data["ActiveCameraUUID"];
+		uint64_t cameraUUID;
 		if (hasActiveCamera)
-			cameraGUID = data["ActiveCameraGUID"].as<uint64_t>();
+			cameraUUID = data["ActiveCameraUUID"].as<uint64_t>();
 
 		Texture2DSpecification textureSpec{};
 		if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
 			textureSpec.Format = ImageFormat::RGBA_UN;
 
-		auto& textureDirectory = Project::GetAssetsDirectory() / "Textures";
+		auto& textureDirectory = Project::GetTexturesDirectory();
 
 		auto entityNodes = data["Entities"];
 		if (entityNodes)
 		{
 			for (auto entityNode : entityNodes)
 			{
-				uint64_t entityGUID = entityNode["Entity"].as<uint64_t>();
+				uint64_t entityID = entityNode["Entity"].as<uint64_t>();
 
 				std::string tag = "unnamed_entity";
 				auto tagNode = entityNode["TagComponent"];
 				if (tagNode) tag = tagNode["Tag"].as<std::string>();
 
-				Z_CORE_TRACE("Deserialising entity {0} (GUID = {1})", tag, entityGUID);
+				Z_CORE_TRACE("Deserialising entity {0} (UUID = {1})", tag, entityID);
 
-				Entity entity = m_Scene->CreateEntity(entityGUID, tag);
+				Entity entity = m_Scene->CreateEntity(entityID, tag);
 
 				auto transformNode = entityNode["TransformComponent"];
 				if (transformNode)
@@ -580,7 +471,7 @@ namespace Zahra
 
 				if (hasActiveCamera)
 				{
-					if (cameraGUID == entityGUID)
+					if (cameraUUID == entityID)
 						m_Scene->SetActiveCamera(entity);
 				}
 
@@ -682,8 +573,8 @@ namespace Zahra
 								}
 								case ScriptFieldType::EntityID:
 								{
-									ZGUID value = fieldNode.as<uint64_t>();
-									buffer.Write((void*)&value, sizeof(ZGUID), offset);
+									UUID value = fieldNode.as<uint64_t>();
+									buffer.Write((void*)&value, sizeof(UUID), offset);
 									break;
 								}
 								case ScriptFieldType::Vector2:

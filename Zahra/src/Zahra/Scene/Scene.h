@@ -24,11 +24,11 @@ namespace Zahra
 		static Ref<Scene> CopyScene(Ref<Scene> oldScene);
 
 		Entity CreateEntity(const std::string& name = "New Entity");
-		Entity CreateEntity(uint64_t guid, const std::string& name = "New Entity");
+		Entity CreateEntity(uint64_t uuid, const std::string& name = "New Entity");
 		void DestroyEntity(Entity entity);
-		void DestroyEntity(ZGUID guid);
-		Entity DuplicateEntity(Entity extantEntity, ZGUID newID = {});
-		Entity GetEntity(ZGUID guid);
+		void DestroyEntity(UUID uuid);
+		Entity DuplicateEntity(Entity extantEntity, UUID newID = {});
+		Entity GetEntity(UUID uuid);
 		void ForEachEntity(const std::function<void(Entity entity)>& action);
 
 		// avoid this method as much as possible
@@ -82,12 +82,12 @@ namespace Zahra
 		std::string m_SceneName;
 
 		entt::basic_registry<entt::entity> m_Registry;
-		std::unordered_map<ZGUID, entt::entity> m_EntityMap;
+		std::unordered_map<UUID, entt::entity> m_EntityMap;
 
 		entt::entity m_ActiveCamera = entt::null;
 		float m_ViewportWidth = 1.0f, m_ViewportHeight = 1.0f;
 
-		std::map<ZGUID, Buffer> m_ScriptFieldStorage;
+		std::map<UUID, Buffer> m_ScriptFieldStorage;
 
 		std::unique_ptr<b2World>(m_PhysicsWorld);
 		//std::map<entt::entity, b2Body*> m_PhysicsBodies;

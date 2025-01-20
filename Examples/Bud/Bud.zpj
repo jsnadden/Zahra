@@ -1,6 +1,5 @@
 Project:
   Name: Bud
-  AssetDirectory: Assets
-  ScriptAssemblyFilepath: Assets/Scripts/Binaries
-  AutomateScriptEngineReloadAssembly: true
-  StartingSceneFilepath: Assets/Scenes/shades.zsc
+  AssetDirectory: C:\dev\Zahra\Examples\Bud\Assets
+  ScriptAssemblyFilepath: ""
+  StartingSceneFilepath: ""

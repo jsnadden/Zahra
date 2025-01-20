@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zahra/Core/GUID.h"
+#include "Zahra/Core/UUID.h"
 #include "Zahra/Renderer/Cameras/SceneCamera.h"
 #include "Zahra/Renderer/Texture.h"
 
@@ -27,19 +27,19 @@ namespace Zahra
 
 	struct IDComponent
 	{
-		ZGUID ID;
+		UUID ID;
 
 		IDComponent() = default;
 		IDComponent(const IDComponent&) = default;
-		IDComponent(const ZGUID& guid)
-			: ID(guid) {}
+		IDComponent(const UUID& uuid)
+			: ID(uuid) {}
 
 	};
 
 	struct HierarchyComponent
 	{
-		ZGUID Parent;
-		std::vector<ZGUID> Children;
+		UUID Parent;
+		std::vector<UUID> Children;
 
 		HierarchyComponent() = default;
 		HierarchyComponent(const HierarchyComponent&) = default;
@@ -202,7 +202,7 @@ namespace Zahra
 		bool FixedRotation = false;
 
 		// TODO: remove this in favour of being able to retrieve this from the
-		// physics engine, using the entity guid
+		// physics engine, using the entity uuid
 		void* RuntimeBody = nullptr;
 
 		RigidBody2DComponent() = default;
