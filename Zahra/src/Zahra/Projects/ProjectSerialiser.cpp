@@ -24,8 +24,9 @@ namespace Zahra
 			{
 				out << YAML::Key << "Name" << YAML::Value << config.ProjectName;
 				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
-				out << YAML::Key << "ScriptAssemblyFilepath" << YAML::Value << config.ScriptAssemblyFilepath.string();
 				out << YAML::Key << "StartingSceneFilepath" << YAML::Value << config.StartingSceneFilepath.string();
+				out << YAML::Key << "ScriptAssemblyFilepath" << YAML::Value << config.ScriptAssemblyFilepath.string();
+				out << YAML::Key << "AutoReloadScriptAssembly" << YAML::Value << config.AutoReloadScriptAssembly;
 			}
 			out << YAML::EndMap;			
 		}
@@ -70,11 +71,14 @@ namespace Zahra
 			if (auto& assetDir = projectNode["AssetDirectory"])
 				config.AssetDirectory = assetDir.as<std::string>();
 
+			if (auto& startingScene = projectNode["StartingSceneFilepath"])
+				config.StartingSceneFilepath = startingScene.as<std::string>();
+
 			if (auto& scriptAssemblyPath = projectNode["ScriptAssemblyFilepath"])
 				config.ScriptAssemblyFilepath = scriptAssemblyPath.as<std::string>();
 
-			if (auto& startingScene = projectNode["StartingSceneFilepath"])
-				config.StartingSceneFilepath = startingScene.as<std::string>();
+			if (auto& autoReloadScripts = projectNode["AutoReloadScriptAssembly"])
+				config.AutoReloadScriptAssembly = autoReloadScripts.as<bool>();
 
 			return true;
 		}

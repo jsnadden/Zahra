@@ -14,8 +14,10 @@ namespace Zahra
 
 		// TODO: when possible, we want asset ids here rather than filepaths
 		// (asset manager should keep track of the source files internally)
-		std::filesystem::path ScriptAssemblyFilepath;
 		std::filesystem::path StartingSceneFilepath;
+		std::filesystem::path ScriptAssemblyFilepath;
+
+		bool AutoReloadScriptAssembly = true;
 	};
 
 	class Project : public RefCounted

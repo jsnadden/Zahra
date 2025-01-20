@@ -180,9 +180,10 @@ namespace Zahra
 	{
 	public:
 		static void InitCore();
-		static void InitApp(const std::filesystem::path& assemblyFilepath, bool enableAutoReload = false);
+		static bool InitApp(const std::filesystem::path& assemblyFilepath, bool enableAutoReload = false);
 		static void Shutdown();
 
+		static bool AppAssemblyAlreadyLoaded();
 		static void ReloadAssembly();
 		static uint64_t AddReloadCallback(const std::function<void()>& callback);
 		static void RemoveReloadCallback(uint64_t receipt);

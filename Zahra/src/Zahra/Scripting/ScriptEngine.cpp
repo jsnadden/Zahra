@@ -90,6 +90,7 @@ namespace Zahra
 
 		////////////////////
 		// Project-specific
+		bool HaveLoadedAppAssembly = false;
 		std::filesystem::path AppAssemblyFilepath;
 		MonoAssembly* AppAssembly = nullptr;
 		MonoImage* AppAssemblyImage = nullptr;
@@ -147,8 +148,11 @@ namespace Zahra
 		ScriptGlue::RegisterFunctions();
 	}
 
-	void ScriptEngine::InitApp(const std::filesystem::path& assemblyFilepath, bool enableAutoReload)
+	bool ScriptEngine::InitApp(const std::filesystem::path& assemblyFilepath, bool enableAutoReload)
 	{
+		if (s_SEData->HaveLoadedAppAssembly == true)
+			return false;
+
 		s_SEData->AppAssemblyFilepath = assemblyFilepath;
 		
 		if (LoadAppAssembly())
@@ -159,7 +163,10 @@ namespace Zahra
 			RegisterAppEntityScripts();
 
 			Z_CORE_INFO("Script engine has succesfully loaded app assembly '{}'. Auto reloading {}.", assemblyFilepath.string().c_str(), enableAutoReload ? "enabled" : "disabled");
+			s_SEData->HaveLoadedAppAssembly = true;
 		}
+
+		return s_SEData->HaveLoadedAppAssembly;
 	}
 
 	void ScriptEngine::Shutdown()
@@ -169,8 +176,16 @@ namespace Zahra
 		delete s_SEData;
 	}
 
+	bool ScriptEngine::AppAssemblyAlreadyLoaded()
+	{
+		return s_SEData->HaveLoadedAppAssembly;
+	}
+
 	void ScriptEngine::ReloadAssembly()
 	{
+		if (!s_SEData->HaveLoadedAppAssembly)
+			return;
+
 		mono_domain_set(mono_get_root_domain(), false);
 		mono_domain_unload(s_SEData->AppDomain);
 

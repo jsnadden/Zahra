@@ -1,5 +1,6 @@
 Project:
   Name: Bud
   AssetDirectory: C:\dev\Zahra\Examples\Bud\Assets
-  ScriptAssemblyFilepath: ""
   StartingSceneFilepath: ""
+  ScriptAssemblyFilepath: Assets\Scripts\Binaries\Bud.dll
+  AutoReloadScriptAssembly: true

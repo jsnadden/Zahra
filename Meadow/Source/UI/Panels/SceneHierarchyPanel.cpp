@@ -250,6 +250,10 @@ namespace Zahra
 
 		ComponentUI::DrawComponent<ScriptComponent>("Script Component", entity, [&](auto& component)
 			{
+				// TODO: very hacky, and not particularly informative, but it'll do for now
+				if (!ScriptEngine::AppAssemblyAlreadyLoaded())
+					return;
+
 				uint32_t currentIndex = 0;
 
 				// TODO: this lookup spits on the grave of Alan Turing et al.:

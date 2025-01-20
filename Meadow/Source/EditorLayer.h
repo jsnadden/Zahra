@@ -68,9 +68,9 @@ namespace Zahra
 		void OpenProjectFile();
 		bool OpenProjectFile(const std::filesystem::path& filepath);
 		void SaveProjectFile();
-		//bool SaveProjectFileAs();
 		std::filesystem::path m_WorkingProjectFilepath;
 		bool m_HaveActiveProject = false;
+		void TryLoadProjectScriptAssembly(const std::filesystem::path& filepath);
 
 		void NewScene();
 		void OpenSceneFile();

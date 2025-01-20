@@ -15,6 +15,7 @@
 
 namespace Zahra
 {
+	static FileTypeFilter s_DLLFilter = { "Dynamic Link Library", "*.dll" };
 	static FileTypeFilter s_ProjectFilter = { "Zahra Project", "*.zpj" };
 	static FileTypeFilter s_SceneFilter = { "Zahra Scene", "*.zsc" };
 
@@ -54,10 +55,11 @@ namespace Zahra
 
 			m_HaveActiveProject = Project::Load(m_WorkingProjectFilepath);
 			
-			// TODO: simplify this bramble of branches
 			if (m_HaveActiveProject)
 			{
 				m_ContentBrowserPanel.OnLoadProject();
+
+				TryLoadProjectScriptAssembly(Project::GetScriptAssemblyFilepath());
 
 				if (m_WorkingSceneRelativePath.empty())
 				{
@@ -424,8 +426,18 @@ namespace Zahra
 
 			if (ImGui::BeginMenu("Scripts"))
 			{
-				if (ImGui::MenuItem("Reload Assembly", "Ctrl+Shift+R", false, Editor::GetSceneState() == SceneState::Edit))
+				bool canLoadAssembly = Editor::GetSceneState() == SceneState::Edit && m_HaveActiveProject && !ScriptEngine::AppAssemblyAlreadyLoaded();
+				if (ImGui::MenuItem("Load Project Assembly...", "", false, canLoadAssembly))
+				{
+					std::filesystem::path filepath = FileDialogs::OpenFile(s_DLLFilter);
+					TryLoadProjectScriptAssembly(filepath);
+				}
+				
+				bool canReloadAssembly = Editor::GetSceneState() == SceneState::Edit && ScriptEngine::AppAssemblyAlreadyLoaded();
+				if (ImGui::MenuItem("Reload Assembly", "Ctrl+Shift+R", false, canReloadAssembly))
+				{
 					ScriptEngine::ReloadAssembly();
+				}
 
 				ImGui::EndMenu();
 			}
@@ -1161,10 +1173,11 @@ namespace Zahra
 
 		// TODO: create directory tree for runtime C++ source files
 
-		// TODO: create any files we want every project to have (depending on OS, compiler, etc.):
+		// TODO: create any files we want every project to have (may depend on OS, compiler, etc.):
 		//		1) "premake5.lua" files for project C++, script C# library etc.
 		//		2) Shell scripts that actually run premake on those files (then immediately execute these)
 		//		3) Generic assets?
+		//		4) An "imgui.ini" with defaults filled in (for runtime debug, console commands etc.)
 
 		// Create project file
 		config.ProjectFilepath = config.ProjectDirectory / (projectName + ".zpj");
@@ -1173,14 +1186,17 @@ namespace Zahra
 		// Propogate new project to the editor subsystems
 		m_WorkingProjectFilepath = config.ProjectFilepath;
 		m_HaveActiveProject = true;
-		NewScene();
 		m_ContentBrowserPanel.OnLoadProject();
 		SaveEditorConfigFile();
 
+		// Create default starting scene
+		NewScene();
+		config.StartingSceneFilepath = "Assets/Scenes/" + projectName + "_starting_scene.zsc";
+		if (!std::filesystem::exists(Project::GetStartingSceneFilepath()))
+			SaveSceneFile();
+
 		memset(s_NewProjectNameBuffer, 0, sizeof(s_NewProjectNameBuffer));
 		memset(s_NewProjectLocationBuffer, 0, sizeof(s_NewProjectLocationBuffer));
-
-		
 	}
 
 	void EditorLayer::OpenProjectFile()
@@ -1221,6 +1237,35 @@ namespace Zahra
 		Z_CORE_ASSERT(!m_WorkingProjectFilepath.empty());
 
 		Project::Save(m_WorkingProjectFilepath);
+	}
+
+	void EditorLayer::TryLoadProjectScriptAssembly(const std::filesystem::path& filepath)
+	{
+		Z_CORE_ASSERT(m_HaveActiveProject);
+
+		if (filepath.empty())
+			return;
+
+		
+		auto relativePath = std::filesystem::relative(filepath, Project::GetProjectDirectory());
+		if (relativePath.empty())
+			return;
+
+		DoAfterHandlingUnsavedChanges([&, filepath, relativePath]()
+			{
+				auto& config = Project::GetActive()->GetConfig();
+
+				if (ScriptEngine::InitApp(filepath, config.AutoReloadScriptAssembly))
+				{
+					config.ScriptAssemblyFilepath = relativePath;
+
+					if (m_WorkingSceneRelativePath.empty())
+						NewScene();
+					else
+						OpenSceneFile(Project::GetProjectDirectory() / m_WorkingSceneRelativePath);
+				}
+			});
+
 	}
 
 	void EditorLayer::NewScene()

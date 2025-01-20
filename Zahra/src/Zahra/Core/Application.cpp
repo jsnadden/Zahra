@@ -34,8 +34,6 @@ namespace Zahra
 		Renderer::Init();
 
 		ScriptEngine::InitCore();
-		// TODO: get args from project config
-		ScriptEngine::InitApp("../Examples/Bud/Assets/Scripts/Binaries/Bud.dll", true);
 
 		if (m_Specification.ImGuiConfig.Enabled)
 		{
