@@ -5,8 +5,8 @@ namespace Bud.Examples
 {
 	public class Camera : Entity
 	{
-		Camera() : base() { }
-		Camera(ulong uuid) : base(uuid) { }
+		public Camera() : base() { }
+		public Camera(ulong uuid) : base(uuid) { }
 
 		// The [EntityID] attribute signals to Zahra's ScriptEngine that a ulong (64-bit
 		// unsigned integer) should be treated as an entity ID

@@ -1,5 +1,5 @@
 Scene: warrior.zsc
-ActiveCameraGUID: 1779296711962239888
+ActiveCameraUUID: 1779296711962239888
 Entities:
   - Entity: 1779296711962239888
     TagComponent:

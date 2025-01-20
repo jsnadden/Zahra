@@ -58,7 +58,7 @@ namespace Zahra
 
 	std::filesystem::path Project::GetAssetsDirectory()
 	{
-		if (s_ActiveProject)
+		if (s_ActiveProject && !s_ActiveProject->m_Config.AssetDirectory.empty())
 		{
 			return s_ActiveProject->m_Config.ProjectDirectory
 				/ s_ActiveProject->m_Config.AssetDirectory;
@@ -68,7 +68,7 @@ namespace Zahra
 	}
 	std::filesystem::path Project::GetFontsDirectory()
 	{
-		if (s_ActiveProject)
+		if (s_ActiveProject && !s_ActiveProject->m_Config.AssetDirectory.empty())
 		{
 			return s_ActiveProject->m_Config.ProjectDirectory
 				/ s_ActiveProject->m_Config.AssetDirectory
@@ -80,7 +80,7 @@ namespace Zahra
 
 	std::filesystem::path Project::GetMeshesDirectory()
 	{
-		if (s_ActiveProject)
+		if (s_ActiveProject && !s_ActiveProject->m_Config.AssetDirectory.empty())
 		{
 			return s_ActiveProject->m_Config.ProjectDirectory
 				/ s_ActiveProject->m_Config.AssetDirectory
@@ -92,7 +92,7 @@ namespace Zahra
 
 	std::filesystem::path Project::GetScenesDirectory()
 	{
-		if (s_ActiveProject)
+		if (s_ActiveProject && !s_ActiveProject->m_Config.AssetDirectory.empty())
 		{
 			return s_ActiveProject->m_Config.ProjectDirectory
 				/ s_ActiveProject->m_Config.AssetDirectory
@@ -104,7 +104,7 @@ namespace Zahra
 
 	std::filesystem::path Project::GetStartingSceneFilepath()
 	{
-		if (s_ActiveProject)
+		if (s_ActiveProject && !s_ActiveProject->m_Config.StartingSceneFilepath.empty())
 		{
 			return s_ActiveProject->m_Config.ProjectDirectory
 				/ s_ActiveProject->m_Config.StartingSceneFilepath;
@@ -115,7 +115,7 @@ namespace Zahra
 
 	std::filesystem::path Project::GetScriptsDirectory()
 	{
-		if (s_ActiveProject)
+		if (s_ActiveProject && !s_ActiveProject->m_Config.AssetDirectory.empty())
 		{
 			return s_ActiveProject->m_Config.ProjectDirectory
 				/ s_ActiveProject->m_Config.AssetDirectory
@@ -127,7 +127,7 @@ namespace Zahra
 
 	std::filesystem::path Project::GetScriptAssemblyFilepath()
 	{
-		if (s_ActiveProject)
+		if (s_ActiveProject && !s_ActiveProject->m_Config.ScriptAssemblyFilepath.empty())
 		{
 			return s_ActiveProject->m_Config.ProjectDirectory
 				/ s_ActiveProject->m_Config.ScriptAssemblyFilepath;
@@ -138,7 +138,7 @@ namespace Zahra
 
 	std::filesystem::path Project::GetTexturesDirectory()
 	{
-		if (s_ActiveProject)
+		if (s_ActiveProject && !s_ActiveProject->m_Config.AssetDirectory.empty())
 		{
 			return s_ActiveProject->m_Config.ProjectDirectory
 				/ s_ActiveProject->m_Config.AssetDirectory

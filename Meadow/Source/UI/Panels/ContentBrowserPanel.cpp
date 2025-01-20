@@ -159,7 +159,7 @@ namespace Zahra
 
 				const std::filesystem::path& path = dir.Path;
 				std::string filenameString = path.filename().string();
-
+				
 				ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
 				ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, { .5f, .5f });
 				ImGui::ImageButton(filenameString.c_str(), m_IconHandles["DirectoryThumb"],

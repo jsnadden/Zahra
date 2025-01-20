@@ -318,7 +318,7 @@ namespace Zahra
 					ImGui::TableNextColumn();
 
 					bool isActiveCamera = scene->GetActiveCamera() == entity;
-					if (!isActiveCamera)
+					if (isActiveCamera)
 					{
 						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
@@ -327,7 +327,7 @@ namespace Zahra
 					{
 						scene->SetActiveCamera(entity);
 					}
-					if (!isActiveCamera)
+					if (isActiveCamera)
 					{
 						ImGui::PopItemFlag();
 						ImGui::PopStyleVar();

@@ -1,5 +1,5 @@
 Scene: martini.zsc
-ActiveCameraGUID: 16706009162972386994
+ActiveCameraUUID: 16706009162972386994
 Entities:
   - Entity: 9987349120279457104
     TagComponent:

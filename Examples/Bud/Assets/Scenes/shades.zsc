@@ -1,5 +1,5 @@
 Scene: shades.zsc
-ActiveCameraGUID: 11346088561474433269
+ActiveCameraUUID: 11346088561474433269
 Entities:
   - Entity: 11346088561474433269
     TagComponent:
@@ -42,7 +42,6 @@ Entities:
         Drag: 0.5
         IgnoreGravity: false
         WASD: true
-        ColourFrequency: 1
     RigidBody2DComponent:
       Type: Dynamic
       FixedRotation: false
@@ -113,7 +112,6 @@ Entities:
         Drag: 0.5
         IgnoreGravity: false
         WASD: false
-        ColourFrequency: 0
     RigidBody2DComponent:
       Type: Dynamic
       FixedRotation: false

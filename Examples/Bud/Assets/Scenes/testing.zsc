@@ -1,5 +1,5 @@
 Scene: testing.zsc
-ActiveCameraGUID: 5139909329933187455
+ActiveCameraUUID: 5139909329933187455
 Entities:
   - Entity: 12237881735723462603
     TagComponent:

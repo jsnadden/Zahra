@@ -286,8 +286,8 @@ namespace Zahra
 	{
 		m_HoveredEntity = {};
 
-		if (Editor::GetSceneState() == SceneState::Simulate)
-			m_ActiveScene->OnSimulationStop();
+		/*if (Editor::GetSceneState() == SceneState::Simulate)
+			m_ActiveScene->OnSimulationStop();*/
 
 		Editor::SetSceneState(SceneState::Play);
 
@@ -1260,7 +1260,7 @@ namespace Zahra
 	{
 		Z_CORE_ASSERT(m_HaveActiveProject);
 
-		const auto& projectDirectory = Project::GetProjectFilepath();
+		const auto& projectDirectory = Project::GetProjectDirectory();
 		auto relativeFilepath = std::filesystem::relative(filepath, projectDirectory);
 		if (relativeFilepath.empty())
 		{
@@ -1319,7 +1319,7 @@ namespace Zahra
 			return SaveSceneFileAs();
 
 		SceneSerialiser serialiser(m_EditorScene);
-		auto filepath = Project::GetProjectFilepath() / m_WorkingSceneRelativePath;
+		auto filepath = Project::GetProjectDirectory() / m_WorkingSceneRelativePath;
 		serialiser.SerialiseYaml(filepath.string());
 
 		std::string sceneName = m_WorkingSceneRelativePath.filename().string();
@@ -1339,7 +1339,7 @@ namespace Zahra
 		if (filepath.empty())
 			return false;
 
-		const auto& projectDirectory = Project::GetProjectFilepath();
+		const auto& projectDirectory = Project::GetProjectDirectory();
 		auto relativeFilepath = std::filesystem::relative(filepath, projectDirectory);
 		if (relativeFilepath.empty())
 		{
