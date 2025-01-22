@@ -173,7 +173,7 @@ namespace Zahra
 				usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 		}
 
-		device->CreateVulkanImage(m_Specification.Width, m_Specification.Height,
+		device->CreateVulkanImage(m_Specification.Width, m_Specification.Height, m_Specification.MipLevels,
 			VulkanUtils::VulkanFormat(m_Specification.Format), VK_IMAGE_TILING_OPTIMAL,
 			usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_Image, m_Memory);
 	}
@@ -192,7 +192,7 @@ namespace Zahra
 				aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		}
 		
-		m_ImageView = device->CreateVulkanImageView(format, m_Image, aspectMask);
+		m_ImageView = device->CreateVulkanImageView(format, m_Image, aspectMask, m_Specification.MipLevels);
 	}
 
 	void VulkanImage2D::CreateSampler()
@@ -229,46 +229,44 @@ namespace Zahra
 		vkMapMemory(device->GetVkDevice(), m_PixelBufferMemory, 0, pixelSize, 0, &m_PixelBufferMappedAddress);
 	}
 
-	void VulkanImage2D::TransitionLayout(ImageLayout from, ImageLayout to)
-	{
-#if 0
-		if (from == to)
-			return;
+	//void VulkanImage2D::TransitionLayout(ImageLayout from, ImageLayout to)
+	//{
+	//	if (from == to)
+	//		return;
 
-		bool isDepthStencil = (m_Specification.Format == ImageFormat::DepthStencil);
-		VkImageAspectFlags aspectMask = isDepthStencil ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	//	bool isDepthStencil = (m_Specification.Format == ImageFormat::DepthStencil);
+	//	VkImageAspectFlags aspectMask = isDepthStencil ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
-		auto& device = VulkanContext::GetCurrentDevice();
-		VkCommandBuffer commandBuffer = device->GetTemporaryCommandBuffer();
+	//	auto& device = VulkanContext::GetCurrentDevice();
+	//	VkCommandBuffer commandBuffer = device->GetTemporaryCommandBuffer();
 
-		VkAccessFlags srcAccessMask = VulkanUtils::AccessFlagForLayoutTransition(from);
-		VkPipelineStageFlags srcStageMask = VulkanUtils::StageFlagForLayoutTransition(from);
+	//	VkAccessFlags srcAccessMask = VulkanUtils::AccessFlagForLayoutTransition(from);
+	//	VkPipelineStageFlags srcStageMask = VulkanUtils::StageFlagForLayoutTransition(from);
 
-		VkAccessFlags dstAccessMask = VulkanUtils::AccessFlagForLayoutTransition(to);
-		VkPipelineStageFlags dstStageMask = VulkanUtils::StageFlagForLayoutTransition(to);
+	//	VkAccessFlags dstAccessMask = VulkanUtils::AccessFlagForLayoutTransition(to);
+	//	VkPipelineStageFlags dstStageMask = VulkanUtils::StageFlagForLayoutTransition(to);
 
-		VkImageMemoryBarrier barrier{};
-		{
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			barrier.newLayout = VulkanUtils::VulkanImageLayout(m_Specification.InitialLayout);
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = m_Image;
-			barrier.subresourceRange.aspectMask = aspectMask;
-			barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
-			barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.srcAccessMask = srcAccessMask;
-			barrier.dstAccessMask = dstAccessMask;
-		}
+	//	VkImageMemoryBarrier barrier{};
+	//	{
+	//		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	//		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	//		barrier.newLayout = VulkanUtils::VulkanImageLayout(m_Specification.InitialLayout);
+	//		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
+	//		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	//		barrier.image = m_Image;
+	//		barrier.subresourceRange.aspectMask = aspectMask;
+	//		barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
+	//		barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
+	//		barrier.subresourceRange.baseArrayLayer = 0;
+	//		barrier.subresourceRange.layerCount = 1;
+	//		barrier.srcAccessMask = srcAccessMask;
+	//		barrier.dstAccessMask = dstAccessMask;
+	//	}
 
-		vkCmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	//	vkCmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-		device->EndTemporaryCommandBuffer(commandBuffer); //, GPUQueueType::Transfer);
-#endif
-	}
+	//	device->EndTemporaryCommandBuffer(commandBuffer); //, GPUQueueType::Transfer);
+	//}
 
 
 }

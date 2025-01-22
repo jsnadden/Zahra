@@ -79,7 +79,7 @@ namespace Zahra
 		EndTemporaryCommandBuffer(commandBuffer);
 	}
 
-	void VulkanDevice::CreateVulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+	void VulkanDevice::CreateVulkanImage(uint32_t width, uint32_t height, uint32_t mips, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 	{
 		bool mutableFormat = Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures;
 
@@ -90,7 +90,7 @@ namespace Zahra
 		imageInfo.extent.width = width;
 		imageInfo.extent.height = height;
 		imageInfo.extent.depth = 1;
-		imageInfo.mipLevels = 1; // TODO: mipmapping
+		imageInfo.mipLevels = mips;
 		imageInfo.arrayLayers = 1; // TODO: can be used for e.g. shadow map cascades
 		imageInfo.format = format;
 		imageInfo.tiling = tiling;
@@ -117,7 +117,7 @@ namespace Zahra
 
 	}
 
-	VkImageView VulkanDevice::CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags)
+	VkImageView VulkanDevice::CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags, uint32_t mips)
 	{
 		VkImageView imageView;
 
@@ -132,7 +132,7 @@ namespace Zahra
 		viewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 		viewInfo.subresourceRange.aspectMask = aspectFlags;
 		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1; // TODO: mipmapping
+		viewInfo.subresourceRange.levelCount = mips;
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
 
@@ -260,7 +260,7 @@ namespace Zahra
 		EndTemporaryCommandBuffer(commandBuffer);
 	}
 
-	void VulkanDevice::TransitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+	void VulkanDevice::TransitionVulkanImageLayout(VkImage image, VkFormat format, uint32_t mips, VkImageLayout oldLayout, VkImageLayout newLayout)
 	{
 		if (oldLayout == newLayout)
 			return;
@@ -290,8 +290,8 @@ namespace Zahra
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.image = image;
 		barrier.subresourceRange.aspectMask = aspectFlags;
-		barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
-		barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = mips;
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.layerCount = 1;
 

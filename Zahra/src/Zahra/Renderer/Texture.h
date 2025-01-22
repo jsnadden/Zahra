@@ -51,8 +51,7 @@ namespace Zahra
 		ImageFormat Format = ImageFormat::SRGBA;
 
 		bool KeepLocalData = true;
-		
-		// TODO: mipmapping, hdr etc.
+		bool GenerateMips = false;
 	};
 
 	class Texture2D : public Texture
@@ -64,6 +63,7 @@ namespace Zahra
 		// image, and only do so after the image has already been resized
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
+		// TODO: eventually want to remove this CreateFromFile method, and instead have CreateFromAssetID
 		static Ref<Texture2D> CreateFromFile(const Texture2DSpecification& specification, const std::filesystem::path& filepath);
 		static Ref<Texture2D> CreateFromImage2D(Ref<Image2D>& image);
 		static Ref<Texture2D> CreateFlatColourTexture(const Texture2DSpecification& specification, uint32_t colour);

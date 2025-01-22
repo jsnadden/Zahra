@@ -67,13 +67,13 @@ namespace Zahra
 		void CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void CopyVulkanBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset = 0, VkDeviceSize dstOffset = 0);
 		
-		void CreateVulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-		VkImageView CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags);
+		void CreateVulkanImage(uint32_t width, uint32_t height, uint32_t mips, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		VkImageView CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags, uint32_t mips = 1);
 		VkSampler CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode addressMode, VkSamplerMipmapMode mipmapMode);
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void CopyPixelToBuffer(VkImage image, VkBuffer buffer, int32_t x, int32_t y);
 		void CopyVulkanImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
-		void TransitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void TransitionVulkanImageLayout(VkImage image, VkFormat format, uint32_t mips, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 		VkCommandBuffer GetTemporaryCommandBuffer(bool begin = true);
 		void EndTemporaryCommandBuffer(VkCommandBuffer commandBuffer, GPUQueueType queueType = GPUQueueType::Graphics);

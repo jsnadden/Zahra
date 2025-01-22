@@ -124,7 +124,6 @@ namespace Zahra
 	public:
 		VulkanImage2D() = default;
 		VulkanImage2D(Image2DSpecification specification);
-		//VulkanImage2D(VkImage image, VkDeviceMemory memory, Image2DSpecification specification);
 		virtual ~VulkanImage2D() override;
 
 		virtual const Image2DSpecification GetSpecification() const override { return m_Specification; }
@@ -167,8 +166,7 @@ namespace Zahra
 		void CreateSampler();
 		void CreatePixelBuffer();
 
-		// NOT CURRENTLY USED
-		void TransitionLayout(ImageLayout from, ImageLayout to);
-		void TransitionLayout(ImageLayout to) { TransitionLayout(m_CurrentLayout, to); }
+		/*void TransitionLayout(ImageLayout from, ImageLayout to);
+		void TransitionLayout(ImageLayout to) { TransitionLayout(m_CurrentLayout, to); }*/
 	};
 }

@@ -46,7 +46,9 @@ namespace Zahra
 
 		struct Capabilities
 		{
-			uint32_t MaxBoundTextures;
+			uint32_t MaxBoundTextures = INT_MAX;
+			bool DynamicLineWidths = true;
+			bool IndependentBlending = true;
 		};
 		static Capabilities& GetCapabilities();
 

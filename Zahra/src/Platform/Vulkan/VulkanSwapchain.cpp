@@ -197,9 +197,13 @@ namespace Zahra
 			queueInfoList.push_back(queueInfo);
 		}
 
+		const auto& deviceRequirements = Application::Get().GetSpecification().GPURequirements;
+		auto& rendererCapabilities = Renderer::GetCapabilities();
 		VkPhysicalDeviceFeatures enabledFeatures{};
-		enabledFeatures.samplerAnisotropy = VK_TRUE;
-		enabledFeatures.wideLines = VK_TRUE;
+		enabledFeatures.samplerAnisotropy = (deviceRequirements.AnisotropicFiltering) ? VK_TRUE : VK_FALSE;
+		enabledFeatures.wideLines = (rendererCapabilities.DynamicLineWidths) ? VK_TRUE : VK_FALSE;
+		enabledFeatures.independentBlend = (rendererCapabilities.IndependentBlending) ? VK_TRUE : VK_FALSE;
+			
 
 		VkDeviceCreateInfo logicalDeviceInfo{};
 		logicalDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -241,11 +245,12 @@ namespace Zahra
 			VulkanDeviceSwapchainSupport support;
 			pass &= CheckSwapchainSupport(device, support);
 
-			if (!pass) break;
+			if (!pass)
+				continue;
 
 			IdentifyQueueFamilies(device, indices);
 
-			if (indices.Complete())
+			if (indices.Complete()) // found a suitable device!
 			{
 				m_Device->m_PhysicalDevice = device;
 				m_Device->m_QueueFamilyIndices = indices;
@@ -254,8 +259,15 @@ namespace Zahra
 				vkGetPhysicalDeviceFeatures(device, &m_Device->m_Features);
 				vkGetPhysicalDeviceProperties(device, &m_Device->m_Properties);
 				vkGetPhysicalDeviceMemoryProperties(device, &m_Device->m_MemoryProperties);
-			}
 
+				// let the renderer know the chosen device's capabilities
+				auto& rendererCapabilities = Renderer::GetCapabilities();
+				rendererCapabilities.MaxBoundTextures = m_Device->m_Properties.limits.maxDescriptorSetSampledImages;
+				rendererCapabilities.DynamicLineWidths = (m_Device->m_Features.wideLines == VK_TRUE);
+				rendererCapabilities.IndependentBlending = (m_Device->m_Features.independentBlend == VK_TRUE);
+
+				break;
+			}
 		}
 
 		if (m_Device->m_PhysicalDevice == VK_NULL_HANDLE)
@@ -277,8 +289,7 @@ namespace Zahra
 		VkPhysicalDeviceMemoryProperties memory;
 		vkGetPhysicalDeviceMemoryProperties(device, &memory);
 
-		const GPURequirements& requirements = Application::Get().GetSpecification().GPURequirements;
-		auto& rendererCapabilities = Renderer::GetCapabilities();
+		const auto& requirements = Application::Get().GetSpecification().GPURequirements;
 
 		if (requirements.IsDiscreteGPU && properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 			return false;
@@ -288,11 +299,6 @@ namespace Zahra
 
 		if (properties.limits.maxDescriptorSetSampledImages < requirements.MinBoundTextureSlots)
 			return false;
-		else
-			rendererCapabilities.MaxBoundTextures = properties.limits.maxDescriptorSetSampledImages;
-
-		if (features.wideLines == VK_FALSE)
-			return false; // TODO: instead just let the renderer know not to use dynamic line widths
 
 		// TODO: add checks for other requirements
 
