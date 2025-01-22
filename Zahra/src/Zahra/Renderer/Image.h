@@ -48,6 +48,7 @@ namespace Zahra
 	{
 		std::string Name = "anonymous_image"; // for debugging
 		uint32_t Width = 1, Height = 1;
+		uint32_t MipLevels = 1;
 		ImageFormat Format = ImageFormat::Unspecified;
 		ImageLayout InitialLayout = ImageLayout::Unspecified;
 		bool Sampled = false;

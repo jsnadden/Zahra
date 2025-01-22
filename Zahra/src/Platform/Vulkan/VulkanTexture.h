@@ -36,6 +36,7 @@ namespace Zahra
 		Buffer m_LocalImageData;
 		
 		uint32_t m_Width, m_Height;
+		uint32_t m_MipLevels;
 		ImageFormat m_Format = ImageFormat::SRGBA;
 		Texture2DSpecification m_Specification{};
 

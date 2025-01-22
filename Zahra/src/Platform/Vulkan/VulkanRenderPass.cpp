@@ -53,6 +53,14 @@ namespace Zahra
 			Z_CORE_ASSERT(false, "Unrecognised StoreOp");
 			return VK_ATTACHMENT_STORE_OP_MAX_ENUM;
 		}
+
+		static bool ImageFormatHasAlphaChannel(ImageFormat format)
+		{
+			return format == ImageFormat::RGBA_UN
+				|| format == ImageFormat::SRGBA
+				|| format == ImageFormat::RGBA16_F
+				|| format == ImageFormat::RGBA32_F;
+		}
 	}
 
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& specification)
@@ -432,9 +440,9 @@ namespace Zahra
 		{
 			auto& blendState = colourBlendAttachmentStates.emplace_back();
 			blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			blendState.blendEnable = VK_FALSE;
-			blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+			blendState.blendEnable = VK_TRUE;
+			blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			blendState.colorBlendOp = VK_BLEND_OP_ADD;
 			blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 			blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
@@ -446,9 +454,9 @@ namespace Zahra
 			{
 				auto& blendState = colourBlendAttachmentStates.emplace_back();
 				blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-				blendState.blendEnable = VK_FALSE; // TODO: no translucency!!
-				blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-				blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+				blendState.blendEnable = VulkanUtils::ImageFormatHasAlphaChannel(attachmentSpec.Format) ? VK_TRUE : VK_FALSE;
+				blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+				blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 				blendState.colorBlendOp = VK_BLEND_OP_ADD;
 				blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 				blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
@@ -459,13 +467,14 @@ namespace Zahra
 		VkPipelineColorBlendStateCreateInfo colourBlendState{};
 		colourBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colourBlendState.logicOpEnable = VK_FALSE;
-		colourBlendState.logicOp = VK_LOGIC_OP_COPY;
 		colourBlendState.attachmentCount = (uint32_t)colourBlendAttachmentStates.size();
 		colourBlendState.pAttachments = colourBlendAttachmentStates.data();
+		// TODO: bitwise blending (overrides VkPipelineColorBlendAttachmentState):
+		/*colourBlendState.logicOp = VK_LOGIC_OP_COPY;
 		colourBlendState.blendConstants[0] = 0.0f;
 		colourBlendState.blendConstants[1] = 0.0f;
 		colourBlendState.blendConstants[2] = 0.0f;
-		colourBlendState.blendConstants[3] = 0.0f;
+		colourBlendState.blendConstants[3] = 0.0f;*/
 
 		///////////////////////////////////////////////////////////////////////////////////////
 		// Pipeline layout creation (expected shader resources)

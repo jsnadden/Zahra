@@ -55,8 +55,12 @@ namespace Zahra
 		m_Width = width;
 		m_Height = height;
 
-		uint32_t size = width * height * Image::BytesPerPixel(m_Format);
-		SetData((void*)imageData, size);
+		m_MipLevels = 1;
+		if (specification.GenerateMips)
+			m_MipLevels += (uint32_t)glm::floor(glm::log2((float)glm::max(width, height)));
+
+		uint32_t dataSize = width * height * Image::BytesPerPixel(m_Format);
+		SetData((void*)imageData, dataSize);
 
 		stbi_image_free(imageData);
 	}
@@ -74,6 +78,8 @@ namespace Zahra
 		m_Width = image->GetWidth();
 		m_Height = image->GetHeight();
 
+		m_MipLevels = 1;
+
 		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_DescriptorImageInfo.imageView = m_Image->GetVkImageView();
 		m_DescriptorImageInfo.sampler = m_Image->GetVkSampler();
@@ -87,6 +93,8 @@ namespace Zahra
 		m_Format = m_Specification.Format;
 		m_Width = 1;
 		m_Height = 1;
+
+		m_MipLevels = 1;
 
 		uint32_t size = Image::BytesPerPixel(m_Format);
 		SetData((void*)&colour, size);
@@ -109,6 +117,8 @@ namespace Zahra
 
 		m_Width = width;
 		m_Height = height;
+
+		m_MipLevels = 1;
 
 		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		m_DescriptorImageInfo.imageView = m_Image->GetVkImageView();
@@ -147,9 +157,10 @@ namespace Zahra
 		Image2DSpecification spec{};
 		spec.Width = m_Width;
 		spec.Height = m_Height;
+		spec.MipLevels = m_MipLevels;
 		spec.Format = m_Format;
 		spec.Sampled = true;
-		spec.TransferSource = false; // TODO: might want to add to this the spec?
+		spec.TransferSource = false; // TODO: might want to add to this texture spec?
 		spec.TransferDestination = true;
 		m_Image = Ref<VulkanImage2D>::Create(spec);
 		m_Image->SetData(stagingBuffer); // this performs the copy operation, and the desired image layout transitions
