@@ -53,6 +53,7 @@ namespace Zahra
 		int32_t m_FramesPerStep = 10;
 		int32_t m_StepCountdown = 0;
 
+		// TODO: currently using bools to keep track of all these modals. figure out a smarter approach
 		void UIAboutWindow();
 		bool m_ShowAboutWindow = false;
 
@@ -77,6 +78,7 @@ namespace Zahra
 		bool OpenSceneFile(std::filesystem::path filepath);
 		bool SaveSceneFile();
 		bool SaveSceneFileAs();
+		bool SaveSceneFileAs(const std::filesystem::path& filepath);
 		// TODO: instead of the scene filepath, should save the scene's AssetID to config
 		// (anyway for now a path, relative to the project directory)
 		std::filesystem::path m_WorkingSceneRelativePath;

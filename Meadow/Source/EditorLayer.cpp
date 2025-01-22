@@ -1148,9 +1148,9 @@ namespace Zahra
 
 		// TODO: move this to AssetManager creation!!
 		// Create asset subdirectories
-		config.AssetDirectory = config.ProjectDirectory / "Assets";
-		if (!std::filesystem::exists(config.AssetDirectory))
-			std::filesystem::create_directory(config.AssetDirectory);
+		config.AssetDirectory = "Assets";
+		if (!std::filesystem::exists(Project::GetAssetsDirectory()))
+			std::filesystem::create_directory(Project::GetAssetsDirectory());
 		{
 			if (!std::filesystem::exists(Project::GetFontsDirectory()))
 				std::filesystem::create_directory(Project::GetFontsDirectory());
@@ -1187,13 +1187,12 @@ namespace Zahra
 		m_WorkingProjectFilepath = config.ProjectFilepath;
 		m_HaveActiveProject = true;
 		m_ContentBrowserPanel.OnLoadProject();
-		SaveEditorConfigFile();
 
 		// Create default starting scene
 		NewScene();
 		config.StartingSceneFilepath = "Assets/Scenes/" + projectName + "_starting_scene.zsc";
 		if (!std::filesystem::exists(Project::GetStartingSceneFilepath()))
-			SaveSceneFile();
+			SaveSceneFileAs(config.ProjectDirectory / config.StartingSceneFilepath);
 
 		memset(s_NewProjectNameBuffer, 0, sizeof(s_NewProjectNameBuffer));
 		memset(s_NewProjectLocationBuffer, 0, sizeof(s_NewProjectLocationBuffer));
@@ -1384,6 +1383,11 @@ namespace Zahra
 		if (filepath.empty())
 			return false;
 
+		return SaveSceneFileAs(filepath);
+	}
+
+	bool EditorLayer::SaveSceneFileAs(const std::filesystem::path& filepath)
+	{
 		const auto& projectDirectory = Project::GetProjectDirectory();
 		auto relativeFilepath = std::filesystem::relative(filepath, projectDirectory);
 		if (relativeFilepath.empty())
@@ -1392,7 +1396,7 @@ namespace Zahra
 				filepath.string(), projectDirectory.string());
 			return false;
 		}
-		
+
 		std::string sceneName = filepath.filename().string();
 		m_EditorScene->SetName(sceneName);
 
