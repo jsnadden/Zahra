@@ -373,7 +373,8 @@ namespace Zahra
 							SaveEditorConfigFile();
 
 							Application::Get().Exit();
-						});
+						},
+						"Save scene before exiting?", true);
 				}
 
 				ImGui::EndMenu();
@@ -430,7 +431,18 @@ namespace Zahra
 				if (ImGui::MenuItem("Load Project Assembly...", "", false, canLoadAssembly))
 				{
 					std::filesystem::path filepath = FileDialogs::OpenFile(s_DLLFilter);
-					TryLoadProjectScriptAssembly(filepath);
+					if (TryLoadProjectScriptAssembly(filepath))
+					{
+						// TODO: might be necessary if we want to swap out assemblies
+						/*DoAfterHandlingUnsavedChanges([this]()
+							{
+								if (m_WorkingSceneRelativePath.empty())
+									NewScene();
+								else
+									OpenSceneFile(Project::GetProjectDirectory() / m_WorkingSceneRelativePath);
+							},
+							"Need to reload script data.\nSave changes to current scene?", false);*/
+					}
 				}
 				
 				bool canReloadAssembly = Editor::GetSceneState() == SceneState::Edit && ScriptEngine::AppAssemblyAlreadyLoaded();
@@ -685,7 +697,8 @@ namespace Zahra
 								SaveProjectFile();
 
 							OpenSceneFile(filepath);
-						});
+						},
+						"Save current scene?", true);
 				}
 
 				ImGui::EndDragDropTarget();
@@ -1002,7 +1015,8 @@ namespace Zahra
 				SaveEditorConfigFile();
 
 				Application::Get().Exit();
-			});
+			},
+			"Save changes before exiting?", false);
 
 		return true;
 	}
@@ -1018,13 +1032,12 @@ namespace Zahra
 
 		if (ImGui::BeginPopupModal("Save Changes", nullptr, ImGuiWindowFlags_NoResize))
 		{
-			const char* prompt = "Save scene file before closing?";
-			ImGui::SetCursorPosX(.5f * (330 - ImGui::CalcTextSize(prompt).x));
-			ImGui::SetCursorPosY(45);
-			ImGui::Text(prompt);
+			ImGui::SetCursorPosX(.5f * (330 - ImGui::CalcTextSize(m_SaveChangesPromptMessage.c_str()).x));
+			ImGui::SetCursorPosY(.5f * (100 - ImGui::CalcTextSize(m_SaveChangesPromptMessage.c_str()).y));
+			ImGui::Text(m_SaveChangesPromptMessage.c_str());
 
 			ImGui::SetCursorPosY(80);
-			if (ImGui::Button("Save", ImVec2(100, 0)))
+			if (ImGui::Button("Save", ImVec2(m_CanCancelSaveChangesPrompt ? 100 : 150, 0)))
 			{
 				if (SaveSceneFile())
 				{
@@ -1038,7 +1051,7 @@ namespace Zahra
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Don't Save", ImVec2(100, 0)))
+			if (ImGui::Button("Don't Save", ImVec2(m_CanCancelSaveChangesPrompt ? 100 : 150, 0)))
 			{
 				m_ShowSaveChangesPrompt = false;
 				ImGui::CloseCurrentPopup();
@@ -1047,14 +1060,17 @@ namespace Zahra
 				m_AfterSaveChangesCallback = []() {};
 			}
 
-			ImGui::SameLine();
-
-			if (ImGui::Button("Cancel", ImVec2(100, 0)))
+			if (m_CanCancelSaveChangesPrompt)
 			{
-				m_ShowSaveChangesPrompt = false;
-				ImGui::CloseCurrentPopup();
+				ImGui::SameLine();
 
-				m_AfterSaveChangesCallback = []() {};
+				if (ImGui::Button("Cancel", ImVec2(100, 0)))
+				{
+					m_ShowSaveChangesPrompt = false;
+					ImGui::CloseCurrentPopup();
+
+					m_AfterSaveChangesCallback = []() {};
+				}
 			}
 
 			bool hideThis = !Editor::GetConfig().ShowSavePrompt;
@@ -1068,13 +1084,15 @@ namespace Zahra
 		}
 	}
 
-	void EditorLayer::DoAfterHandlingUnsavedChanges(std::function<void()> callback)
+	void EditorLayer::DoAfterHandlingUnsavedChanges(std::function<void()> callback, const std::string& message, bool canCancel)
 	{
 		if (Editor::GetConfig().ShowSavePrompt)
 		{
 			// wait for response
 			m_ShowSaveChangesPrompt = true;
 			m_AfterSaveChangesCallback = callback;
+			m_SaveChangesPromptMessage = message;
+			m_CanCancelSaveChangesPrompt = canCancel;
 		}
 		else
 		{
@@ -1121,7 +1139,8 @@ namespace Zahra
 							SaveEditorConfigFile();
 
 							NewProject(s_NewProjectNameBuffer, s_NewProjectLocationBuffer);
-						});
+						},
+						"Save current scene?", true);
 				}
 				else
 				{
@@ -1207,7 +1226,8 @@ namespace Zahra
 		DoAfterHandlingUnsavedChanges([this, filepath]()
 			{
 				OpenProjectFile(filepath);
-			});
+			},
+			"Save current scene?", true);
 	}
 
 	bool EditorLayer::OpenProjectFile(const std::filesystem::path& filepath)
@@ -1238,33 +1258,27 @@ namespace Zahra
 		Project::Save(m_WorkingProjectFilepath);
 	}
 
-	void EditorLayer::TryLoadProjectScriptAssembly(const std::filesystem::path& filepath)
+	bool EditorLayer::TryLoadProjectScriptAssembly(const std::filesystem::path& filepath)
 	{
 		Z_CORE_ASSERT(m_HaveActiveProject);
 
 		if (filepath.empty())
-			return;
+			return false;
 
 		
 		auto relativePath = std::filesystem::relative(filepath, Project::GetProjectDirectory());
 		if (relativePath.empty())
-			return;
+			return false;
 
-		DoAfterHandlingUnsavedChanges([&, filepath, relativePath]()
-			{
-				auto& config = Project::GetActive()->GetConfig();
+		auto& config = Project::GetActive()->GetConfig();
 
-				if (ScriptEngine::InitApp(filepath, config.AutoReloadScriptAssembly))
-				{
-					config.ScriptAssemblyFilepath = relativePath;
+		if (ScriptEngine::InitApp(filepath, config.AutoReloadScriptAssembly))
+		{
+			config.ScriptAssemblyFilepath = relativePath;
+			return true;
+		}
 
-					if (m_WorkingSceneRelativePath.empty())
-						NewScene();
-					else
-						OpenSceneFile(Project::GetProjectDirectory() / m_WorkingSceneRelativePath);
-				}
-			});
-
+		return false;
 	}
 
 	void EditorLayer::NewScene()
@@ -1297,7 +1311,8 @@ namespace Zahra
 		DoAfterHandlingUnsavedChanges([this, filepath]()
 			{
 				OpenSceneFile(filepath);
-			});
+			},
+			"Save current scene?", true);
 	}
 
 	bool EditorLayer::OpenSceneFile(std::filesystem::path filepath)

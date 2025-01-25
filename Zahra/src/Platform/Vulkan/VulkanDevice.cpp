@@ -76,7 +76,8 @@ namespace Zahra
 		copyRegion.size = size;
 		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-		EndTemporaryCommandBuffer(commandBuffer);
+		// TODO: dedicated transfer queue?
+		SubmitTemporaryCommandBuffer(commandBuffer);
 	}
 
 	void VulkanDevice::CreateVulkanImage(uint32_t width, uint32_t height, uint32_t mips, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
@@ -142,34 +143,6 @@ namespace Zahra
 		return imageView;
 	}
 
-	VkSampler VulkanDevice::CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode addressMode, VkSamplerMipmapMode mipmapMode)
-	{
-		VkSampler sampler;
-
-		VkSamplerCreateInfo samplerInfo{};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = magFilter;
-		samplerInfo.minFilter = minFilter;
-		samplerInfo.mipmapMode = mipmapMode;
-		samplerInfo.addressModeU = addressMode;
-		samplerInfo.addressModeV = addressMode;
-		samplerInfo.addressModeW = addressMode;
-		samplerInfo.anisotropyEnable = VK_TRUE; // TODO: get this from the application's graphics settings
-		samplerInfo.maxAnisotropy = m_Properties.limits.maxSamplerAnisotropy;
-		samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipLodBias = 0.0f;
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = 0.0f; // TODO: mipmapping
-
-		VulkanUtils::ValidateVkResult(vkCreateSampler(m_LogicalDevice, &samplerInfo, nullptr, &sampler),
-			"Vulkan image sampler creation failed");
-
-		return sampler;
-	}
-
 	void VulkanDevice::CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
 		VkCommandBuffer commandBuffer = GetTemporaryCommandBuffer();
@@ -188,7 +161,7 @@ namespace Zahra
 		vkCmdCopyBufferToImage(commandBuffer, buffer, image,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyInfo); // this assumes we've already transitioned the image layout to TRANSFER_DST_OPTIMAL;
 
-		EndTemporaryCommandBuffer(commandBuffer);
+		SubmitTemporaryCommandBuffer(commandBuffer);
 
 	}
 
@@ -227,7 +200,7 @@ namespace Zahra
 
 		vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &copyInfo); // this assumes we've already transitioned the image layout to TRANSFER_DST_OPTIMAL;
 
-		EndTemporaryCommandBuffer(commandBuffer);
+		SubmitTemporaryCommandBuffer(commandBuffer);
 	}
 
 	void VulkanDevice::CopyVulkanImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height)
@@ -257,7 +230,7 @@ namespace Zahra
 			dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			1, &copyRegion);
 
-		EndTemporaryCommandBuffer(commandBuffer);
+		SubmitTemporaryCommandBuffer(commandBuffer);
 	}
 
 	void VulkanDevice::TransitionVulkanImageLayout(VkImage image, VkFormat format, uint32_t mips, VkImageLayout oldLayout, VkImageLayout newLayout)
@@ -342,7 +315,7 @@ namespace Zahra
 			1, &barrier				// image memory barriers
 		);
 
-		EndTemporaryCommandBuffer(commandBuffer);
+		SubmitTemporaryCommandBuffer(commandBuffer);
 	}
 
 	VkCommandBuffer VulkanDevice::GetTemporaryCommandBuffer(bool begin)
@@ -370,7 +343,7 @@ namespace Zahra
 		return commandBuffer;
 	}
 
-	void VulkanDevice::EndTemporaryCommandBuffer(VkCommandBuffer commandBuffer, GPUQueueType queueType)
+	void VulkanDevice::SubmitTemporaryCommandBuffer(VkCommandBuffer commandBuffer, GPUQueueType queueType)
 	{
 		vkEndCommandBuffer(commandBuffer);
 
@@ -379,7 +352,7 @@ namespace Zahra
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		VkQueue queue;
+		VkQueue queue = VK_NULL_HANDLE;
 
 		switch (queueType)
 		{
@@ -405,7 +378,7 @@ namespace Zahra
 			}
 
 			default:
-				break;
+				Z_CORE_ASSERT(false, "Unrecognised queue type");
 		}
 
 		vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
@@ -434,7 +407,7 @@ namespace Zahra
 		return cmdBuffer;
 	}
 
-	VkFormat VulkanDevice::CheckFormatSupport(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+	VkFormat VulkanDevice::GetSupportingFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 	{
 		for (auto& format : candidates)
 		{
@@ -452,6 +425,14 @@ namespace Zahra
 		}
 
 		throw std::runtime_error("Failed to identify a supported image format");
+	}
+
+	bool VulkanDevice::FormatSupportsLinearFiltering(VkFormat format)
+	{
+		VkFormatProperties formatProperties;
+		vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &formatProperties);
+
+		return formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
 	}
 
 	VkCommandPool VulkanDevice::GetOrCreateCommandPool()

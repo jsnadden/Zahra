@@ -63,7 +63,7 @@ namespace Zahra
 	void VulkanImage2D::SetData(const VkBuffer& srcBuffer)
 	{
 		Z_CORE_ASSERT(m_Specification.Sampled, "This method should only be called for texture creation");
-		Z_CORE_ASSERT(m_CurrentLayout == ImageLayout::Unspecified, "This method should only be called before other image layout transitions have taken place");
+		Z_CORE_ASSERT(m_CurrentLayout == ImageLayout::Unspecified, "This method should be called before any other image layout transitions have taken place");
 
 		bool isDepthStencil = (m_Specification.Format == ImageFormat::DepthStencil);
 		VkImageAspectFlags aspectMask = isDepthStencil ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
@@ -71,24 +71,24 @@ namespace Zahra
 		auto& device = VulkanContext::GetCurrentDevice();
 		VkCommandBuffer commandBuffer = device->GetTemporaryCommandBuffer();
 
-		////////////////////////////////////////////////////////////////////////////////////
-		// Transition layout to transfer destination
+		// This method requires a number of layout transitions
 		VkImageMemoryBarrier barrier{};
-		{
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = m_Image;
-			barrier.subresourceRange.aspectMask = aspectMask;
-			barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
-			barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.srcAccessMask = 0;
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		}
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.image = m_Image;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.subresourceRange.aspectMask = aspectMask;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+
+		////////////////////////////////////////////////////////////////////////////////////
+		// Transition all mip levels to transfer destination layout
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = m_Specification.MipLevels;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
 		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -112,24 +112,78 @@ namespace Zahra
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyInfo);
 
 		////////////////////////////////////////////////////////////////////////////////////
-		// Transition to texture layout
+		// Generate mips
+		if (m_Specification.MipLevels > 1)
 		{
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			barrier.newLayout = isDepthStencil ?
-				VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL :
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.image = m_Image;
-			barrier.subresourceRange.aspectMask = aspectMask;
-			barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
-			barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.subresourceRange.levelCount = 1; // only dealing with one level at a time
+
+			// TODO: figure out how to generate mips without linear filtering
+			Z_CORE_ASSERT(device->FormatSupportsLinearFiltering(VulkanUtils::VulkanFormat(m_Specification.Format)),
+				"Currently only supporting mipmapping for texture formats supporting linear filtering")
+
+			int32_t levelWidth = (int32_t)m_Specification.Width;
+			int32_t levelHeight = (int32_t)m_Specification.Height;
+
+			VkImageBlit blit{};
+			blit.srcSubresource.aspectMask = blit.dstSubresource.aspectMask = aspectMask;
+			blit.srcSubresource.baseArrayLayer = blit.dstSubresource.baseArrayLayer = 0;
+			blit.srcSubresource.layerCount = blit.dstSubresource.layerCount = 1;
+			blit.srcOffsets[0] = blit.dstOffsets[0] = { 0, 0, 0 };			
+
+			for (uint32_t level = 1; level < m_Specification.MipLevels; level++)
+			{
+				int32_t nextWidth = levelWidth > 1 ? levelWidth / 2 : 1;
+				int32_t nextHeight = levelHeight > 1 ? levelHeight / 2 : 1;
+
+				////////////////////////////////////////////////////////////////////////////////////
+				// Transition previous mip level to transfer source layout
+				barrier.subresourceRange.baseMipLevel = level-1;
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+				vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+				////////////////////////////////////////////////////////////////////////////////////
+				// Copy and downscale image from previous mip level
+				blit.srcSubresource.mipLevel = level - 1;
+				blit.dstSubresource.mipLevel = level;
+				blit.srcOffsets[1] = { levelWidth, levelHeight, 1 };
+				blit.dstOffsets[1] = { nextWidth, nextHeight, 1 };
+
+				vkCmdBlitImage(commandBuffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+
+				////////////////////////////////////////////////////////////////////////////////////
+				// Transition previous mip level to sampleable layout
+				barrier.subresourceRange.baseMipLevel = level - 1;
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.newLayout = isDepthStencil ?
+					VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL :
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				barrier.dstAccessMask = isDepthStencil ?
+					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT :
+					VK_ACCESS_SHADER_READ_BIT;
+
+				vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, isDepthStencil ?
+					VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+					0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+				levelWidth = nextWidth;
+				levelHeight = nextHeight;
+			}
 		}
+
+		////////////////////////////////////////////////////////////////////////////////////
+		// Transition final mip level to sampleable layout
+		barrier.subresourceRange.baseMipLevel = m_Specification.MipLevels - 1;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = isDepthStencil ?
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL :
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;;
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = isDepthStencil ?
 			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT :
@@ -139,11 +193,11 @@ namespace Zahra
 			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-		device->EndTemporaryCommandBuffer(commandBuffer);
-
 		m_CurrentLayout = isDepthStencil ?
 			ImageLayout::DepthStencilAttachment :
 			ImageLayout::ColourAttachment;
+
+		device->SubmitTemporaryCommandBuffer(commandBuffer);
 	}
 
 	void* VulkanImage2D::ReadPixel(int32_t x, int32_t y)
@@ -178,6 +232,11 @@ namespace Zahra
 			usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_Image, m_Memory);
 	}
 
+	void VulkanImage2D::GenerateMips()
+	{
+
+	}
+
 	void VulkanImage2D::CreateImageView()
 	{
 		auto& device = VulkanContext::GetCurrentDevice();
@@ -198,22 +257,43 @@ namespace Zahra
 	void VulkanImage2D::CreateSampler()
 	{
 		auto& device = VulkanContext::GetCurrentDevice();
+		bool linearFiltering = device->FormatSupportsLinearFiltering(VulkanUtils::VulkanFormat(m_Specification.Format));
 
 		VkFilter filter;
 		VkSamplerMipmapMode mipmapMode;
 
-		if (VulkanUtils::IsIntegerFormat(m_Specification.Format))
-		{
-			filter = VK_FILTER_NEAREST;
-			mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-		}
-		else
+		if (linearFiltering)
 		{
 			filter = VK_FILTER_LINEAR;
 			mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		}
-		// TODO: set "address mode" in image/texture spec
-		m_Sampler = device->CreateVulkanImageSampler(filter, filter, VK_SAMPLER_ADDRESS_MODE_REPEAT, mipmapMode);
+		else
+		{
+			filter = VK_FILTER_NEAREST;
+			mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		}
+
+		// TODO: get other parameters from image spec, renderer configuration OR runtime graphics settings
+		VkSamplerCreateInfo samplerInfo{};
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter = filter;
+		samplerInfo.minFilter = filter;
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.anisotropyEnable = VK_TRUE;
+		samplerInfo.maxAnisotropy = device->GetDeviceProperties().limits.maxSamplerAnisotropy;
+		samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerInfo.compareEnable = VK_FALSE;
+		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+		samplerInfo.mipmapMode = mipmapMode;
+		samplerInfo.minLod = .0f;
+		samplerInfo.maxLod = (float)m_Specification.MipLevels;
+		samplerInfo.mipLodBias = .0f;
+
+		VulkanUtils::ValidateVkResult(vkCreateSampler(device->GetVkDevice(), &samplerInfo, nullptr, &m_Sampler),
+			"Vulkan image sampler creation failed");
 	}
 
 	void VulkanImage2D::CreatePixelBuffer()
@@ -265,7 +345,7 @@ namespace Zahra
 
 	//	vkCmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-	//	device->EndTemporaryCommandBuffer(commandBuffer); //, GPUQueueType::Transfer);
+	//	device->SubmitTemporaryCommandBuffer(commandBuffer); //, GPUQueueType::Transfer);
 	//}
 
 

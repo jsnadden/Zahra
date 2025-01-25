@@ -69,14 +69,13 @@ namespace Zahra
 		
 		void CreateVulkanImage(uint32_t width, uint32_t height, uint32_t mips, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkImageView CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags, uint32_t mips = 1);
-		VkSampler CreateVulkanImageSampler(VkFilter minFilter, VkFilter magFilter, VkSamplerAddressMode addressMode, VkSamplerMipmapMode mipmapMode);
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void CopyPixelToBuffer(VkImage image, VkBuffer buffer, int32_t x, int32_t y);
 		void CopyVulkanImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
 		void TransitionVulkanImageLayout(VkImage image, VkFormat format, uint32_t mips, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 		VkCommandBuffer GetTemporaryCommandBuffer(bool begin = true);
-		void EndTemporaryCommandBuffer(VkCommandBuffer commandBuffer, GPUQueueType queueType = GPUQueueType::Graphics);
+		void SubmitTemporaryCommandBuffer(VkCommandBuffer commandBuffer, GPUQueueType queueType = GPUQueueType::Graphics);
 
 		VkCommandBuffer GetSecondaryCommandBuffer();
 
@@ -84,9 +83,10 @@ namespace Zahra
 		VkDevice& GetVkDevice() { return m_LogicalDevice; }
 		QueueFamilyIndices& GetQueueFamilyIndices() { return m_QueueFamilyIndices; }
 		VkQueue& GetGraphicsQueue() { return m_GraphicsQueue; }
+		const VkPhysicalDeviceProperties& GetDeviceProperties() { return m_Properties; }
 
-		VkFormat CheckFormatSupport(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-
+		VkFormat GetSupportingFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		bool FormatSupportsLinearFiltering(VkFormat format);
 
 	private:
 		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;

@@ -392,6 +392,7 @@ namespace Zahra
 			cameraUUID = data["ActiveCameraUUID"].as<uint64_t>();
 
 		Texture2DSpecification textureSpec{};
+		textureSpec.GenerateMips = true;
 		if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
 			textureSpec.Format = ImageFormat::RGBA_UN;
 

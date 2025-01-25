@@ -11,7 +11,7 @@ namespace Zahra
 	{
 		static VkFormat GetSupportedDepthStencilFormat()
 		{
-			return VulkanContext::GetCurrentDevice()->CheckFormatSupport(
+			return VulkanContext::GetCurrentDevice()->GetSupportingFormat(
 				{
 					VK_FORMAT_D32_SFLOAT_S8_UINT,
 					VK_FORMAT_D32_SFLOAT,
@@ -162,6 +162,7 @@ namespace Zahra
 		void Cleanup();
 
 		void CreateAndAllocateImage();
+		void GenerateMips();
 		void CreateImageView();
 		void CreateSampler();
 		void CreatePixelBuffer();

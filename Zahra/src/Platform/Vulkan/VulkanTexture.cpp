@@ -127,14 +127,14 @@ namespace Zahra
 
 	void VulkanTexture2D::SetData(void* data, uint32_t size)
 	{
+		Ref<VulkanDevice>& device = VulkanContext::GetCurrentDevice();
+		VkDevice& vkDevice = device->GetVkDevice();
+
 		///////////////////////////////////////////////////////////////////////////
 		// Create local buffer
 		m_LocalImageData.Allocate(size);
 		m_LocalImageData.ZeroInitialise();
 		m_LocalImageData.Write(data, size);
-
-		Ref<VulkanDevice>& device = VulkanContext::GetCurrentDevice();
-		VkDevice& vkDevice = device->GetVkDevice();
 
 		///////////////////////////////////////////////////////////////////////////
 		// Create staging buffer on device
@@ -160,7 +160,7 @@ namespace Zahra
 		spec.MipLevels = m_MipLevels;
 		spec.Format = m_Format;
 		spec.Sampled = true;
-		spec.TransferSource = false; // TODO: might want to add to this texture spec?
+		spec.TransferSource = true;
 		spec.TransferDestination = true;
 		m_Image = Ref<VulkanImage2D>::Create(spec);
 		m_Image->SetData(stagingBuffer); // this performs the copy operation, and the desired image layout transitions

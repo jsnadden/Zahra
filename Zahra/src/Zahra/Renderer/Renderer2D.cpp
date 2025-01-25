@@ -36,8 +36,8 @@ namespace Zahra
 		m_CameraUniformBufferSet = UniformBufferSet::Create(sizeof(glm::mat4), framesInFlight);
 
 		Texture2DSpecification textureSpec{};
-		auto newTexture = Texture2D::CreateFlatColourTexture(textureSpec, 0xffffffff);
-		m_TextureSlots.resize(m_Specification.MaxTextureSlots, newTexture);
+		auto flatWhite = Texture2D::CreateFlatColourTexture(textureSpec, 0xffffffff);
+		m_TextureSlots.resize(m_Specification.MaxTextureSlots, flatWhite);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// QUADS

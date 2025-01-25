@@ -58,9 +58,11 @@ namespace Zahra
 		bool m_ShowAboutWindow = false;
 
 		void UISaveChangesPrompt();
-		void DoAfterHandlingUnsavedChanges(std::function<void()> callback);
+		void DoAfterHandlingUnsavedChanges(std::function<void()> callback, const std::string& message, bool canCancel);
 		std::function<void()> m_AfterSaveChangesCallback;
 		bool m_ShowSaveChangesPrompt = false;
+		std::string m_SaveChangesPromptMessage;
+		bool m_CanCancelSaveChangesPrompt = true;
 
 		void UINewProjectWindow();
 		bool m_ShowNewProjectWindow = false;
@@ -71,7 +73,7 @@ namespace Zahra
 		void SaveProjectFile();
 		std::filesystem::path m_WorkingProjectFilepath;
 		bool m_HaveActiveProject = false;
-		void TryLoadProjectScriptAssembly(const std::filesystem::path& filepath);
+		bool TryLoadProjectScriptAssembly(const std::filesystem::path& filepath);
 
 		void NewScene();
 		void OpenSceneFile();

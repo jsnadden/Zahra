@@ -501,6 +501,7 @@ namespace Zahra
 						strcpy_s(filepath, (const char*)payload->Data);
 
 						Texture2DSpecification textureSpec{};
+						textureSpec.GenerateMips = true;
 						if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
 							textureSpec.Format = ImageFormat::RGBA_UN;
 
