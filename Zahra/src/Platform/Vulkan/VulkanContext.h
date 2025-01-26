@@ -21,7 +21,6 @@ namespace Zahra
 		
 		VkInstance& GetVulkanInstance() { return m_VulkanInstance; }
 		Ref<VulkanSwapchain> GetSwapchain() { return m_Swapchain; }
-		VkSurfaceKHR& GetSurface() { return m_Swapchain->GetSurface(); }
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
 		VkPhysicalDevice& GetPhysicalDevice() { return m_Device->m_PhysicalDevice; }
 		VkDevice& GetVkDevice() { return m_Device->m_LogicalDevice; }
@@ -31,10 +30,9 @@ namespace Zahra
 		static VkDevice& GetCurrentVkDevice() { return Get()->GetVkDevice(); }
 
 	private:
+		VkInstance m_VulkanInstance = VK_NULL_HANDLE;
 
 		GLFWwindow* m_WindowHandle;
-
-		VkInstance m_VulkanInstance = VK_NULL_HANDLE;
 		
 		Ref<VulkanSwapchain> m_Swapchain;
 		Ref<VulkanDevice> m_Device;

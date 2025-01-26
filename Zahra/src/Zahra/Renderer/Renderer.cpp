@@ -21,7 +21,7 @@ namespace Zahra
 		RendererConfig					Config;
 		bool							ConfigSet = false;
 
-		Renderer::Capabilities			Capabilities;
+		Renderer::GPUCapabilities		GPUCapabilities;
 		Renderer::Statistics			Statistics;
 
 		Ref<Image2D>					PrimaryRenderTargetImage;
@@ -141,9 +141,9 @@ namespace Zahra
 		s_Data.Config = config;
 	}
 
-	Renderer::Capabilities& Renderer::GetCapabilities()
+	Renderer::GPUCapabilities& Renderer::GetGPUCapabilities()
 	{
-		return s_Data.Capabilities;
+		return s_Data.GPUCapabilities;
 	}
 
 	uint32_t Renderer::GetSwapchainWidth()

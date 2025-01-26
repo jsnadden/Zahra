@@ -44,11 +44,16 @@ namespace Zahra
 		Presentation,
 	};
 
+	// TODO: currently no uses of Image2D are actually setting the multisampling parameter. I am going
+	// to hold off on implementing MSAA until I've figured out the how I want the various render targets
+	// used for Scene/ImGui/Swapchain rendering to fit together, in both the editor and runtime.
+
 	struct Image2DSpecification
 	{
 		std::string Name = "anonymous_image"; // for debugging
 		uint32_t Width = 1, Height = 1;
 		uint32_t MipLevels = 1;
+		uint32_t Multisampling = 1;
 		ImageFormat Format = ImageFormat::Unspecified;
 		ImageLayout InitialLayout = ImageLayout::Unspecified;
 		bool Sampled = false;

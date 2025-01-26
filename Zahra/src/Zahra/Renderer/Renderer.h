@@ -44,13 +44,14 @@ namespace Zahra
 		
 		static void SetLineWidth(float width);
 
-		struct Capabilities
+		struct GPUCapabilities
 		{
 			uint32_t MaxBoundTextures = INT_MAX;
+			uint32_t MaxTextureMultisampling = 1;
 			bool DynamicLineWidths = true;
 			bool IndependentBlending = true;
 		};
-		static Capabilities& GetCapabilities();
+		static GPUCapabilities& GetGPUCapabilities();
 
 		struct Statistics
 		{

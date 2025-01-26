@@ -1,8 +1,14 @@
 #include "zpch.h"
 #include "VulkanDevice.h"
 
+#include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Zahra/Core/Application.h"
+#include "Zahra/Renderer/Renderer.h"
+
+#include <GLFW/glfw3.h>
+
+#include <set>
 
 namespace Zahra
 {
@@ -13,14 +19,152 @@ namespace Zahra
 		{
 			return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 		}
+
+		static uint32_t VkSampleCountFlagBitToSampleCount(VkSampleCountFlagBits bit)
+		{
+			switch (bit)
+			{
+				case VK_SAMPLE_COUNT_1_BIT:
+				{
+					return 1;
+					break;
+				}
+				case VK_SAMPLE_COUNT_2_BIT:
+				{
+					return 2;
+					break;
+				}
+				case VK_SAMPLE_COUNT_4_BIT:
+				{
+					return 4;
+					break;
+				}
+				case VK_SAMPLE_COUNT_8_BIT:
+				{
+					return 8;
+					break;
+				}
+				case VK_SAMPLE_COUNT_16_BIT:
+				{
+					return 16;
+					break;
+				}
+				case VK_SAMPLE_COUNT_32_BIT:
+				{
+					return 32;
+					break;
+				}
+				case VK_SAMPLE_COUNT_64_BIT:
+				{
+					return 64;
+					break;
+				}
+			}
+			Z_CORE_ASSERT(false, "Invalid VkSampleCountFlagBits");
+			return 0;
+		}
+
+		static VkSampleCountFlagBits SampleCountToVkSampleCountFlagBit(uint32_t count)
+		{
+			switch (count)
+			{
+				case 1:
+				{
+					return VK_SAMPLE_COUNT_1_BIT;
+					break;
+				}
+				case 2:
+				{
+					return VK_SAMPLE_COUNT_2_BIT;
+					break;
+				}
+				case 4:
+				{
+					return VK_SAMPLE_COUNT_4_BIT;
+					break;
+				}
+				case 8:
+				{
+					return VK_SAMPLE_COUNT_8_BIT;
+					break;
+				}
+				case 16:
+				{
+					return VK_SAMPLE_COUNT_16_BIT;
+					break;
+				}
+				case 32:
+				{
+					return VK_SAMPLE_COUNT_32_BIT;
+					break;
+				}
+				case 64:
+				{
+					return VK_SAMPLE_COUNT_64_BIT;
+					break;
+				}
+			}
+			Z_CORE_ASSERT(false, "Sample count must be a power of 2, between 1 and 64");
+			return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
+		}
 	}
 
-	VulkanDevice::~VulkanDevice()
+	static const std::vector<const char*> s_DeviceExtensions =
 	{
-		Shutdown();
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
+
+	VulkanDevice::VulkanDevice(VkInstance& instance, GLFWwindow* windowHandle)
+	{
+		Z_CORE_ASSERT(instance);
+
+		VulkanUtils::ValidateVkResult(glfwCreateWindowSurface(instance, windowHandle, nullptr, &m_Surface), "Vulkan surface creation failed");
+		//Z_CORE_TRACE("Vulkan surface creation succeeded");
+
+		TargetPhysicalDevice(instance);
+
+		std::vector<VkDeviceQueueCreateInfo> queueInfoList;
+
+		// using a set rather than a vector here, because assigning separate
+		// queues to the same index will cause device creation to fail
+		std::set<uint32_t> queueIndices =
+		{
+			m_QueueFamilyIndices.GraphicsIndex.value(),
+			m_QueueFamilyIndices.PresentIndex.value()
+		};
+
+		float queuePriority = 1.0f;
+
+		for (uint32_t index : queueIndices)
+		{
+			VkDeviceQueueCreateInfo queueInfo{};
+			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueInfo.queueFamilyIndex = index;
+			queueInfo.queueCount = 1;
+			queueInfo.pQueuePriorities = &queuePriority;
+
+			queueInfoList.push_back(queueInfo);
+		}
+
+		auto desiredFeatures = DesiredFeatures();
+
+		VkDeviceCreateInfo logicalDeviceInfo{};
+		logicalDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		logicalDeviceInfo.queueCreateInfoCount = (uint32_t)queueInfoList.size();
+		logicalDeviceInfo.pQueueCreateInfos = queueInfoList.data();
+		logicalDeviceInfo.pEnabledFeatures = &desiredFeatures;
+		logicalDeviceInfo.enabledExtensionCount = (uint32_t)s_DeviceExtensions.size();
+		logicalDeviceInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
+
+		VulkanUtils::ValidateVkResult(vkCreateDevice(m_PhysicalDevice, &logicalDeviceInfo, nullptr, &m_LogicalDevice), "Vulkan device creation failed");
+		//Z_CORE_TRACE("Vulkan device creation succeeded");
+		Z_CORE_INFO("Target GPU: {0}", m_Properties.deviceName);
+
+		vkGetDeviceQueue(m_LogicalDevice, m_QueueFamilyIndices.GraphicsIndex.value(), 0, &m_GraphicsQueue);
+		vkGetDeviceQueue(m_LogicalDevice, m_QueueFamilyIndices.PresentIndex.value(), 0, &m_PresentationQueue);
 	}
 
-	void VulkanDevice::Shutdown()
+	void VulkanDevice::Shutdown(VkInstance& instance)
 	{
 		for (auto& [threadID, pool] : m_CommandPools)
 			vkDestroyCommandPool(m_LogicalDevice, pool, nullptr);
@@ -28,6 +172,8 @@ namespace Zahra
 
 		if (m_LogicalDevice) vkDestroyDevice(m_LogicalDevice, nullptr);
 		m_LogicalDevice = VK_NULL_HANDLE;
+
+		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
 	}
 
 	void VulkanDevice::CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
@@ -80,7 +226,7 @@ namespace Zahra
 		SubmitTemporaryCommandBuffer(commandBuffer);
 	}
 
-	void VulkanDevice::CreateVulkanImage(uint32_t width, uint32_t height, uint32_t mips, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+	void VulkanDevice::CreateVulkanImage(uint32_t width, uint32_t height, uint32_t mips, uint32_t samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 	{
 		bool mutableFormat = Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures;
 
@@ -98,7 +244,7 @@ namespace Zahra
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = usage;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; // TODO: MSAA
+		imageInfo.samples = VulkanUtils::SampleCountToVkSampleCountFlagBit(samples);
 		
 		VulkanUtils::ValidateVkResult(vkCreateImage(m_LogicalDevice, &imageInfo, nullptr, &image),
 			"Vulkan image creation failed");
@@ -152,7 +298,7 @@ namespace Zahra
 		copyInfo.bufferRowLength = 0;
 		copyInfo.bufferImageHeight = 0;
 		copyInfo.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		copyInfo.imageSubresource.mipLevel = 0; // TODO: mipmapping
+		copyInfo.imageSubresource.mipLevel = 0;
 		copyInfo.imageSubresource.baseArrayLayer = 0;
 		copyInfo.imageSubresource.layerCount = 1;
 		copyInfo.imageOffset = { 0, 0, 0 };
@@ -165,7 +311,7 @@ namespace Zahra
 
 	}
 
-	void VulkanDevice::CopyPixelToBuffer(VkImage image, VkBuffer buffer, int32_t x, int32_t y)
+	void VulkanDevice::CopyPixelToBuffer(VkImage image, VkBuffer buffer, int32_t x, int32_t y, int32_t mipLevel)
 	{
 		VkCommandBuffer commandBuffer = GetTemporaryCommandBuffer();
 
@@ -177,8 +323,8 @@ namespace Zahra
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.image = image;
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
-		barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
+		barrier.subresourceRange.baseMipLevel = mipLevel;
+		barrier.subresourceRange.levelCount = 1;
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.layerCount = 1;
 		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -192,7 +338,7 @@ namespace Zahra
 		copyInfo.bufferRowLength = 0;
 		copyInfo.bufferImageHeight = 0;
 		copyInfo.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		copyInfo.imageSubresource.mipLevel = 0; // TODO: mipmapping
+		copyInfo.imageSubresource.mipLevel = mipLevel;
 		copyInfo.imageSubresource.baseArrayLayer = 0;
 		copyInfo.imageSubresource.layerCount = 1;
 		copyInfo.imageOffset = { x, y, 0 };
@@ -407,7 +553,7 @@ namespace Zahra
 		return cmdBuffer;
 	}
 
-	VkFormat VulkanDevice::GetSupportingFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+	VkFormat VulkanDevice::GetFormatWith(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 	{
 		for (auto& format : candidates)
 		{
@@ -455,6 +601,220 @@ namespace Zahra
 		m_CommandPools[threadID] = newCommandPool;
 
 		return newCommandPool;
+	}
+
+	void VulkanDevice::TargetPhysicalDevice(VkInstance& instance)
+	{
+		uint32_t deviceCount = 0;
+		VulkanUtils::ValidateVkResult(vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr));
+
+		if (deviceCount == 0)
+		{
+			const char* errorMessage = "Failed to identify a GPU with Vulkan support";
+			Z_CORE_CRITICAL(errorMessage);
+			throw std::runtime_error(errorMessage);
+		}
+
+		QueueFamilyIndices indices;
+
+		std::vector<VkPhysicalDevice> allDevices(deviceCount);
+		VulkanUtils::ValidateVkResult(vkEnumeratePhysicalDevices(instance, &deviceCount, allDevices.data()));
+
+		for (const auto& device : allDevices)
+		{
+			bool pass = MeetsMinimimumRequirements(device);
+
+			VulkanDeviceSwapchainSupport support;
+			pass &= CheckSwapchainSupport(device, support);
+
+			if (!pass)
+				continue;
+
+			IdentifyQueueFamilies(device, indices);
+
+			if (indices.Complete()) // found a suitable device!
+			{
+				m_PhysicalDevice = device;
+				m_QueueFamilyIndices = indices;
+
+				vkGetPhysicalDeviceFeatures(device, &m_Features);
+				vkGetPhysicalDeviceProperties(device, &m_Properties);
+				vkGetPhysicalDeviceMemoryProperties(device, &m_MemoryProperties);
+
+				FeedbackToRenderer();
+
+				break;
+			}
+		}
+
+		if (m_PhysicalDevice == VK_NULL_HANDLE)
+		{
+			const char* errorMessage = "Failed to identify a GPU meeting the minimum required specifications";
+			Z_CORE_CRITICAL(errorMessage);
+			throw std::runtime_error(errorMessage);
+		}
+	}
+
+	bool VulkanDevice::MeetsMinimimumRequirements(const VkPhysicalDevice& device)
+	{
+		if (!CheckDeviceExtensionSupport(device, s_DeviceExtensions)) return false;
+
+		VkPhysicalDeviceFeatures features;
+		vkGetPhysicalDeviceFeatures(device, &features);
+		VkPhysicalDeviceProperties properties;
+		vkGetPhysicalDeviceProperties(device, &properties);
+		VkPhysicalDeviceMemoryProperties memory;
+		vkGetPhysicalDeviceMemoryProperties(device, &memory);
+
+		const auto& requirements = Application::Get().GetSpecification().GPURequirements;
+
+		if (requirements.IsDiscreteGPU && properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+			return false;
+
+		if (requirements.AnisotropicFiltering && features.samplerAnisotropy == VK_FALSE)
+			return false;
+
+		if (properties.limits.maxDescriptorSetSampledImages < requirements.MinBoundTextureSlots)
+			return false;
+
+		// TODO: add checks for other requirements
+
+		return true;
+	}
+
+	bool VulkanDevice::CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions)
+	{
+		// Generate list of all supported extensions
+		uint32_t supportedExtensionCount = 0;
+		VulkanUtils::ValidateVkResult(vkEnumerateDeviceExtensionProperties(device, nullptr, &supportedExtensionCount, nullptr));
+
+		std::vector<VkExtensionProperties> supportedExtensions(supportedExtensionCount);
+		VulkanUtils::ValidateVkResult(vkEnumerateDeviceExtensionProperties(device, nullptr, &supportedExtensionCount, supportedExtensions.data()));
+
+		for (auto& ext : extensions)
+		{
+			bool supported = false;
+
+			for (auto& prop : supportedExtensions)
+			{
+				if (strncmp(ext, prop.extensionName, strlen(ext)) == 0)
+				{
+					supported = true;
+					break;
+				}
+			}
+
+			if (!supported) return false;
+
+		}
+
+		return true;
+	}
+
+	void VulkanDevice::IdentifyQueueFamilies(const VkPhysicalDevice& device, QueueFamilyIndices& indices)
+	{
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+		// TODO: take other queues into account, and optimise these choices
+
+		for (uint32_t i = 0; i < queueFamilyCount; i++)
+		{
+			if (indices.Complete()) break;
+
+			VkBool32 presentationSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentationSupport);
+
+			if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) indices.GraphicsIndex = i;
+			if (presentationSupport) indices.PresentIndex = i;
+		}
+	}
+
+	bool VulkanDevice::CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support)
+	{
+		bool adequateSupport = true;
+
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
+
+		if (formatCount)
+		{
+			support.Formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, support.Formats.data());
+		}
+		else
+		{
+			adequateSupport = false;
+		}
+
+		uint32_t modeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &modeCount, nullptr);
+
+		if (modeCount)
+		{
+			support.PresentationModes.resize(modeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &modeCount, support.PresentationModes.data());
+		}
+		else
+		{
+			adequateSupport = false;
+		}
+
+		QuerySurfaceCapabilities(device, support.Capabilities);
+
+		if (!adequateSupport) Z_CORE_CRITICAL("Selected GPU/window do not provide adequate support for Vulkan swap chain creation");
+		return adequateSupport;
+	}
+
+	void VulkanDevice::QuerySurfaceCapabilities(const VkPhysicalDevice& device, VkSurfaceCapabilitiesKHR& capabilities)
+	{
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &capabilities);
+	}
+
+	void VulkanDevice::FeedbackToRenderer()
+	{
+		auto& rendererCapabilities = Renderer::GetGPUCapabilities();
+		rendererCapabilities.MaxBoundTextures = m_Properties.limits.maxDescriptorSetSampledImages;
+		rendererCapabilities.MaxTextureMultisampling = GetMaxSampleCount();
+		rendererCapabilities.DynamicLineWidths = (m_Features.wideLines == VK_TRUE);
+		rendererCapabilities.IndependentBlending = (m_Features.independentBlend == VK_TRUE);
+	}
+
+	uint32_t VulkanDevice::GetMaxSampleCount()
+	{
+		VkSampleCountFlags counts = m_Properties.limits.framebufferColorSampleCounts & m_Properties.limits.framebufferDepthSampleCounts;
+		VkSampleCountFlagBits decreasingBits[] = {
+			VK_SAMPLE_COUNT_64_BIT,
+			VK_SAMPLE_COUNT_32_BIT,
+			VK_SAMPLE_COUNT_16_BIT,
+			VK_SAMPLE_COUNT_8_BIT,
+			VK_SAMPLE_COUNT_4_BIT,
+			VK_SAMPLE_COUNT_2_BIT,
+			VK_SAMPLE_COUNT_1_BIT,
+		};
+
+		for (auto& bit : decreasingBits)
+		{
+			if (counts & bit)
+				return VulkanUtils::VkSampleCountFlagBitToSampleCount(bit);
+		}
+		Z_CORE_ASSERT(false, "Cannot sample at all?");
+	}
+
+	VkPhysicalDeviceFeatures VulkanDevice::DesiredFeatures()
+	{
+		const auto& deviceRequirements = Application::Get().GetSpecification().GPURequirements;
+		auto& rendererCapabilities = Renderer::GetGPUCapabilities();
+
+		VkPhysicalDeviceFeatures enabledFeatures{};
+		enabledFeatures.samplerAnisotropy = (deviceRequirements.AnisotropicFiltering) ? VK_TRUE : VK_FALSE;
+		enabledFeatures.wideLines = (rendererCapabilities.DynamicLineWidths) ? VK_TRUE : VK_FALSE;
+		enabledFeatures.independentBlend = (rendererCapabilities.IndependentBlending) ? VK_TRUE : VK_FALSE;
+
+		return enabledFeatures;
 	}
 
 }

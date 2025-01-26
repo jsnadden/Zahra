@@ -4,8 +4,6 @@
 
 #include <vulkan/vulkan.h>
 
-struct GLFWwindow;
-
 namespace Zahra
 {
 	class VulkanSwapchain : public RefCounted
@@ -24,8 +22,6 @@ namespace Zahra
 		void GetNextImage();
 		void ExecuteDrawCommandBuffer();
 		void PresentImage();
-
-		VkSurfaceKHR& GetSurface() { return m_Surface; }
 
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
 		VkDevice& GetVkDevice() { return m_Device->m_LogicalDevice; }
@@ -49,6 +45,7 @@ namespace Zahra
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 
 		Ref<VulkanDevice> m_Device;
+		VulkanDeviceSwapchainSupport m_SwapchainSupport{};
 
 		bool m_WindowResized = false;
 		bool m_Invalidated = false;
@@ -67,7 +64,6 @@ namespace Zahra
 		VkSurfaceFormatKHR m_SurfaceFormat;
 		VkPresentModeKHR m_PresentationMode;
 		VkExtent2D m_Extent;
-		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 
 		VkCommandPool m_CommandPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer> m_DrawCommandBuffers;
@@ -75,17 +71,6 @@ namespace Zahra
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 		std::vector<VkFence> m_InFlightFences;
-
-		void CreateSurface(VkInstance& instance, GLFWwindow* windowHandle);
-
-		// TODO: move this logic into the VulkanDevice class itself
-		void CreateDevice(VkInstance& instance);
-		void TargetPhysicalDevice(VkInstance& instance);
-		bool MeetsMinimimumRequirements(const VkPhysicalDevice& device);
-		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions);
-		void IdentifyQueueFamilies(const VkPhysicalDevice& device, QueueFamilyIndices& indices);
-		bool CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support);
-		void QuerySurfaceCapabilities(const VkPhysicalDevice& device, VkSurfaceCapabilitiesKHR& capabilities);
 
 		void CreateSwapchain();
 		VkSurfaceFormatKHR ChooseSwapchainFormat();

@@ -15,7 +15,6 @@ namespace Zahra
 	// - allow separate depth/stencil attachments
 	// - support for instanced rendering
 	// - multisampling
-	// - mipmapping
 	// - blending parameters in specification
 	// - push constants
 

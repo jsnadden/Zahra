@@ -40,14 +40,15 @@ namespace Zahra
 
 		uint32_t Width = 0, Height = 0;
 
-		//glm::vec3 ClearColour = { 0.f, 0.f, 0.f };
+		// TODO: implement MSAA (and other AA methods) once I have a clearer
+		// idea of the render target workflow in SceneRenderer
+		//uint32_t Multisampling = 1;
+		
 		std::vector<AttachmentSpecification> ColourAttachmentSpecs;
 
 		bool HasDepthStencil = false;
 		float DepthClearValue = 1.0f;
 		AttachmentSpecification DepthStencilAttachmentSpec;
-
-		// add multisampling options
 	};
 
 	class Framebuffer : public RefCounted

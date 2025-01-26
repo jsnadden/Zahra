@@ -1536,10 +1536,9 @@ namespace Zahra
 		mouse.x -= m_ViewportBounds[0].x;
 		mouse.y -= m_ViewportBounds[0].y;
 
-		int32_t hoveredID = *((int32_t*)m_ColourPickingAttachment->ReadPixel((int)mouse.x, (int)mouse.y));
+		void* pixelAddress = m_ColourPickingAttachment->ReadPixel((int)mouse.x, (int)mouse.y);
+		int32_t hoveredID = pixelAddress ? *((int32_t*)pixelAddress) : -1;
 		m_HoveredEntity = (hoveredID == -1) ? Entity() : Entity((entt::entity)hoveredID, m_ActiveScene.Raw());
-	}
-
-	
+	}	
 }
 

@@ -8,6 +8,8 @@
 #include <map>
 #include <vulkan/vulkan.h>
 
+struct GLFWwindow;
+
 namespace Zahra
 {
 	enum class GPUQueueType
@@ -53,24 +55,24 @@ namespace Zahra
 	{
 		std::vector<VkSurfaceFormatKHR> Formats;
 		std::vector<VkPresentModeKHR> PresentationModes;
-		VkSurfaceCapabilitiesKHR Capabilities;
+		VkSurfaceCapabilitiesKHR Capabilities{};
 	};
 
 	class VulkanDevice : public RefCounted
 	{
 	public:
-		VulkanDevice() = default;
-		~VulkanDevice();
+		VulkanDevice(VkInstance& instance, GLFWwindow* windowHandle);
+		~VulkanDevice() = default;
 
-		void Shutdown();
+		void Shutdown(VkInstance& instance);
 
 		void CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void CopyVulkanBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset = 0, VkDeviceSize dstOffset = 0);
 		
-		void CreateVulkanImage(uint32_t width, uint32_t height, uint32_t mips, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void CreateVulkanImage(uint32_t width, uint32_t height, uint32_t mips, uint32_t samples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkImageView CreateVulkanImageView(VkFormat format, VkImage& image, VkImageAspectFlags aspectFlags, uint32_t mips = 1);
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-		void CopyPixelToBuffer(VkImage image, VkBuffer buffer, int32_t x, int32_t y);
+		void CopyPixelToBuffer(VkImage image, VkBuffer buffer, int32_t x, int32_t y, int32_t mipLevel = 0);
 		void CopyVulkanImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
 		void TransitionVulkanImageLayout(VkImage image, VkFormat format, uint32_t mips, VkImageLayout oldLayout, VkImageLayout newLayout);
 
@@ -85,12 +87,14 @@ namespace Zahra
 		VkQueue& GetGraphicsQueue() { return m_GraphicsQueue; }
 		const VkPhysicalDeviceProperties& GetDeviceProperties() { return m_Properties; }
 
-		VkFormat GetSupportingFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		VkFormat GetFormatWith(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		bool FormatSupportsLinearFiltering(VkFormat format);
 
 	private:
 		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 		VkDevice m_LogicalDevice = VK_NULL_HANDLE;
+
+		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 
 		VkQueue m_GraphicsQueue = VK_NULL_HANDLE;
 		VkQueue m_PresentationQueue = VK_NULL_HANDLE;
@@ -101,13 +105,22 @@ namespace Zahra
 		VkPhysicalDeviceFeatures m_Features{};
 		VkPhysicalDeviceProperties m_Properties{};
 		VkPhysicalDeviceMemoryProperties m_MemoryProperties{};
-		VulkanDeviceSwapchainSupport m_SwapchainSupport{};
 
 		std::map<std::thread::id, VkCommandPool> m_CommandPools;
 
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags flags);
-
 		VkCommandPool GetOrCreateCommandPool();
+
+		void TargetPhysicalDevice(VkInstance& instance);
+		bool MeetsMinimimumRequirements(const VkPhysicalDevice& device);
+		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions);
+		void IdentifyQueueFamilies(const VkPhysicalDevice& device, QueueFamilyIndices& indices);
+		bool CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support);
+		void QuerySurfaceCapabilities(const VkPhysicalDevice& device, VkSurfaceCapabilitiesKHR& capabilities);
+		VkPhysicalDeviceFeatures DesiredFeatures();
+
+		void FeedbackToRenderer();
+		uint32_t GetMaxSampleCount();
 
 		friend class VulkanSwapchain;
 		friend class VulkanContext;

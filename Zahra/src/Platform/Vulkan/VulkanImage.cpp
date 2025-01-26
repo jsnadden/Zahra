@@ -101,7 +101,7 @@ namespace Zahra
 			copyInfo.bufferRowLength = 0;
 			copyInfo.bufferImageHeight = 0;
 			copyInfo.imageSubresource.aspectMask = aspectMask;
-			copyInfo.imageSubresource.mipLevel = 0; // TODO: mipmapping
+			copyInfo.imageSubresource.mipLevel = 0;
 			copyInfo.imageSubresource.baseArrayLayer = 0;
 			copyInfo.imageSubresource.layerCount = 1;
 			copyInfo.imageOffset = { 0, 0, 0 };
@@ -158,19 +158,7 @@ namespace Zahra
 
 				////////////////////////////////////////////////////////////////////////////////////
 				// Transition previous mip level to sampleable layout
-				barrier.subresourceRange.baseMipLevel = level - 1;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				barrier.newLayout = isDepthStencil ?
-					VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL :
-					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-				barrier.dstAccessMask = isDepthStencil ?
-					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT :
-					VK_ACCESS_SHADER_READ_BIT;
-
-				vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, isDepthStencil ?
-					VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-					0, 0, nullptr, 0, nullptr, 1, &barrier);
+				
 
 				levelWidth = nextWidth;
 				levelHeight = nextHeight;
@@ -178,7 +166,26 @@ namespace Zahra
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////
-		// Transition final mip level to sampleable layout
+		// Transition all mip levels to desired sampling layout
+		if (m_Specification.MipLevels > 1)
+		{
+			barrier.subresourceRange.levelCount = m_Specification.MipLevels - 1;
+			barrier.subresourceRange.baseMipLevel = 0;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.newLayout = isDepthStencil ?
+				VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL :
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.dstAccessMask = isDepthStencil ?
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT :
+				VK_ACCESS_SHADER_READ_BIT;
+
+			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, isDepthStencil ?
+				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				0, 0, nullptr, 0, nullptr, 1, &barrier);
+		}
+
+		barrier.subresourceRange.levelCount = 1;
 		barrier.subresourceRange.baseMipLevel = m_Specification.MipLevels - 1;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		barrier.newLayout = isDepthStencil ?
@@ -202,8 +209,15 @@ namespace Zahra
 
 	void* VulkanImage2D::ReadPixel(int32_t x, int32_t y)
 	{
-		VulkanContext::GetCurrentDevice()->CopyPixelToBuffer(m_Image, m_PixelBuffer, x, y);
-		return m_PixelBufferMappedAddress;
+		if (x >= 0 && y >= 0 && x < m_Specification.Width && y < m_Specification.Height)
+		{
+			VulkanContext::GetCurrentDevice()->CopyPixelToBuffer(m_Image, m_PixelBuffer, x, y);
+			return m_PixelBufferMappedAddress;
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 
 	void VulkanImage2D::CreateAndAllocateImage()
@@ -228,13 +242,8 @@ namespace Zahra
 		}
 
 		device->CreateVulkanImage(m_Specification.Width, m_Specification.Height, m_Specification.MipLevels,
-			VulkanUtils::VulkanFormat(m_Specification.Format), VK_IMAGE_TILING_OPTIMAL,
-			usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_Image, m_Memory);
-	}
-
-	void VulkanImage2D::GenerateMips()
-	{
-
+			m_Specification.Multisampling, VulkanUtils::VulkanFormat(m_Specification.Format),
+			VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_Image, m_Memory);
 	}
 
 	void VulkanImage2D::CreateImageView()
@@ -289,7 +298,7 @@ namespace Zahra
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerInfo.mipmapMode = mipmapMode;
 		samplerInfo.minLod = .0f;
-		samplerInfo.maxLod = (float)m_Specification.MipLevels;
+		samplerInfo.maxLod = VK_LOD_CLAMP_NONE; // large enough that driver will never clamp lod
 		samplerInfo.mipLodBias = .0f;
 
 		VulkanUtils::ValidateVkResult(vkCreateSampler(device->GetVkDevice(), &samplerInfo, nullptr, &m_Sampler),
@@ -308,45 +317,6 @@ namespace Zahra
 
 		vkMapMemory(device->GetVkDevice(), m_PixelBufferMemory, 0, pixelSize, 0, &m_PixelBufferMappedAddress);
 	}
-
-	//void VulkanImage2D::TransitionLayout(ImageLayout from, ImageLayout to)
-	//{
-	//	if (from == to)
-	//		return;
-
-	//	bool isDepthStencil = (m_Specification.Format == ImageFormat::DepthStencil);
-	//	VkImageAspectFlags aspectMask = isDepthStencil ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-
-	//	auto& device = VulkanContext::GetCurrentDevice();
-	//	VkCommandBuffer commandBuffer = device->GetTemporaryCommandBuffer();
-
-	//	VkAccessFlags srcAccessMask = VulkanUtils::AccessFlagForLayoutTransition(from);
-	//	VkPipelineStageFlags srcStageMask = VulkanUtils::StageFlagForLayoutTransition(from);
-
-	//	VkAccessFlags dstAccessMask = VulkanUtils::AccessFlagForLayoutTransition(to);
-	//	VkPipelineStageFlags dstStageMask = VulkanUtils::StageFlagForLayoutTransition(to);
-
-	//	VkImageMemoryBarrier barrier{};
-	//	{
-	//		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	//		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	//		barrier.newLayout = VulkanUtils::VulkanImageLayout(m_Specification.InitialLayout);
-	//		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; // not transferring ownership
-	//		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	//		barrier.image = m_Image;
-	//		barrier.subresourceRange.aspectMask = aspectMask;
-	//		barrier.subresourceRange.baseMipLevel = 0; // TODO: configure mipmapping
-	//		barrier.subresourceRange.levelCount = 1; // TODO: configure mipmapping
-	//		barrier.subresourceRange.baseArrayLayer = 0;
-	//		barrier.subresourceRange.layerCount = 1;
-	//		barrier.srcAccessMask = srcAccessMask;
-	//		barrier.dstAccessMask = dstAccessMask;
-	//	}
-
-	//	vkCmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-	//	device->SubmitTemporaryCommandBuffer(commandBuffer); //, GPUQueueType::Transfer);
-	//}
 
 
 }

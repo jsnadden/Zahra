@@ -1,30 +1,26 @@
 #include "zpch.h"
 #include "VulkanSwapchain.h"
 
+#include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanUtils.h"
 #include "Zahra/Core/Application.h"
 #include "Zahra/Renderer/Renderer.h"
 
 #include <GLFW/glfw3.h>
-#include <set>
 
 namespace Zahra
 {
-	
-
-	static const std::vector<const char*> s_DeviceExtensions =
-	{
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME
-	};
-
 	void VulkanSwapchain::Init(VkInstance& instance, GLFWwindow* windowHandle)
 	{
-		CreateSurface(instance, windowHandle);
-		CreateDevice(instance);
+		m_Device = Ref<VulkanDevice>::Create(instance, windowHandle);
+		m_Device->CheckSwapchainSupport(m_Device->m_PhysicalDevice, m_SwapchainSupport);
+
 		CreateSwapchain();
 		GetSwapchainImagesAndCreateImageViews();
+
 		CreateCommandPool();
 		AllocateCommandBuffer();
+
 		CreateSyncObjects();
 
 		m_Initialised = true;
@@ -55,10 +51,8 @@ namespace Zahra
 
 		vkDestroyCommandPool(m_Device->m_LogicalDevice, m_CommandPool, nullptr);
 
-		m_Device->Shutdown();
-
-		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
-		m_Surface = VK_NULL_HANDLE;
+		m_Device->Shutdown(instance);
+		m_Device.Reset();
 	}
 
 	void VulkanSwapchain::Cleanup()
@@ -162,256 +156,21 @@ namespace Zahra
 		return m_DrawCommandBuffers[index];
 	}
 
-	void VulkanSwapchain::CreateSurface(VkInstance& instance, GLFWwindow* windowHandle)
-	{
-		VulkanUtils::ValidateVkResult(glfwCreateWindowSurface(instance, windowHandle, nullptr, &m_Surface), "Vulkan surface creation failed");
-		//Z_CORE_TRACE("Vulkan surface creation succeeded");
-	}
-
-	void VulkanSwapchain::CreateDevice(VkInstance& instance)
-	{
-		m_Device = Ref<VulkanDevice>::Create();
-
-		TargetPhysicalDevice(instance);
-
-		std::vector<VkDeviceQueueCreateInfo> queueInfoList;
-
-		// using a set rather than a vector here, because assigning separate
-		// queues to the same index will cause device creation to fail
-		std::set<uint32_t> queueIndices =
-		{
-			m_Device->m_QueueFamilyIndices.GraphicsIndex.value(),
-			m_Device->m_QueueFamilyIndices.PresentIndex.value()
-		};
-
-		float queuePriority = 1.0f;
-
-		for (uint32_t index : queueIndices)
-		{
-			VkDeviceQueueCreateInfo queueInfo{};
-			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queueInfo.queueFamilyIndex = index;
-			queueInfo.queueCount = 1;
-			queueInfo.pQueuePriorities = &queuePriority;
-
-			queueInfoList.push_back(queueInfo);
-		}
-
-		const auto& deviceRequirements = Application::Get().GetSpecification().GPURequirements;
-		auto& rendererCapabilities = Renderer::GetCapabilities();
-		VkPhysicalDeviceFeatures enabledFeatures{};
-		enabledFeatures.samplerAnisotropy = (deviceRequirements.AnisotropicFiltering) ? VK_TRUE : VK_FALSE;
-		enabledFeatures.wideLines = (rendererCapabilities.DynamicLineWidths) ? VK_TRUE : VK_FALSE;
-		enabledFeatures.independentBlend = (rendererCapabilities.IndependentBlending) ? VK_TRUE : VK_FALSE;
-			
-
-		VkDeviceCreateInfo logicalDeviceInfo{};
-		logicalDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		logicalDeviceInfo.queueCreateInfoCount = (uint32_t)queueInfoList.size();
-		logicalDeviceInfo.pQueueCreateInfos = queueInfoList.data();
-		logicalDeviceInfo.pEnabledFeatures = &enabledFeatures;
-		logicalDeviceInfo.enabledExtensionCount = (uint32_t)s_DeviceExtensions.size();
-		logicalDeviceInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
-
-		VulkanUtils::ValidateVkResult(vkCreateDevice(m_Device->m_PhysicalDevice, &logicalDeviceInfo, nullptr, &m_Device->m_LogicalDevice), "Vulkan device creation failed");
-		//Z_CORE_TRACE("Vulkan device creation succeeded");
-		Z_CORE_INFO("Target GPU: {0}", m_Device->m_Properties.deviceName);
-
-		vkGetDeviceQueue(m_Device->m_LogicalDevice, m_Device->m_QueueFamilyIndices.GraphicsIndex.value(), 0, &m_Device->m_GraphicsQueue);
-		vkGetDeviceQueue(m_Device->m_LogicalDevice, m_Device->m_QueueFamilyIndices.PresentIndex.value(), 0, &m_Device->m_PresentationQueue);
-	}
-
-	void VulkanSwapchain::TargetPhysicalDevice(VkInstance& instance)
-	{
-		uint32_t deviceCount = 0;
-		VulkanUtils::ValidateVkResult(vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr));
-
-		if (deviceCount == 0)
-		{
-			const char* errorMessage = "Failed to identify a GPU with Vulkan support";
-			Z_CORE_CRITICAL(errorMessage);
-			throw std::runtime_error(errorMessage);
-		}
-
-		QueueFamilyIndices indices;
-
-		std::vector<VkPhysicalDevice> allDevices(deviceCount);
-		VulkanUtils::ValidateVkResult(vkEnumeratePhysicalDevices(instance, &deviceCount, allDevices.data()));
-
-		for (const auto& device : allDevices)
-		{
-			bool pass = MeetsMinimimumRequirements(device);
-
-			VulkanDeviceSwapchainSupport support;
-			pass &= CheckSwapchainSupport(device, support);
-
-			if (!pass)
-				continue;
-
-			IdentifyQueueFamilies(device, indices);
-
-			if (indices.Complete()) // found a suitable device!
-			{
-				m_Device->m_PhysicalDevice = device;
-				m_Device->m_QueueFamilyIndices = indices;
-				m_Device->m_SwapchainSupport = support;
-
-				vkGetPhysicalDeviceFeatures(device, &m_Device->m_Features);
-				vkGetPhysicalDeviceProperties(device, &m_Device->m_Properties);
-				vkGetPhysicalDeviceMemoryProperties(device, &m_Device->m_MemoryProperties);
-
-				// let the renderer know the chosen device's capabilities
-				auto& rendererCapabilities = Renderer::GetCapabilities();
-				rendererCapabilities.MaxBoundTextures = m_Device->m_Properties.limits.maxDescriptorSetSampledImages;
-				rendererCapabilities.DynamicLineWidths = (m_Device->m_Features.wideLines == VK_TRUE);
-				rendererCapabilities.IndependentBlending = (m_Device->m_Features.independentBlend == VK_TRUE);
-
-				break;
-			}
-		}
-
-		if (m_Device->m_PhysicalDevice == VK_NULL_HANDLE)
-		{
-			const char* errorMessage = "Failed to identify a GPU meeting the minimum required specifications";
-			Z_CORE_CRITICAL(errorMessage);
-			throw std::runtime_error(errorMessage);
-		}
-	}
-
-	bool VulkanSwapchain::MeetsMinimimumRequirements(const VkPhysicalDevice& device)
-	{
-		if (!CheckDeviceExtensionSupport(device, s_DeviceExtensions)) return false;
-
-		VkPhysicalDeviceFeatures features;
-		vkGetPhysicalDeviceFeatures(device, &features);
-		VkPhysicalDeviceProperties properties;
-		vkGetPhysicalDeviceProperties(device, &properties);
-		VkPhysicalDeviceMemoryProperties memory;
-		vkGetPhysicalDeviceMemoryProperties(device, &memory);
-
-		const auto& requirements = Application::Get().GetSpecification().GPURequirements;
-
-		if (requirements.IsDiscreteGPU && properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-			return false;
-
-		if (requirements.AnisotropicFiltering && features.samplerAnisotropy == VK_FALSE)
-			return false;
-
-		if (properties.limits.maxDescriptorSetSampledImages < requirements.MinBoundTextureSlots)
-			return false;
-
-		// TODO: add checks for other requirements
-
-		return true;
-	}
-
-	bool VulkanSwapchain::CheckDeviceExtensionSupport(const VkPhysicalDevice& device, const std::vector<const char*>& extensions)
-	{
-		// Generate list of all supported extensions
-		uint32_t supportedExtensionCount = 0;
-		VulkanUtils::ValidateVkResult(vkEnumerateDeviceExtensionProperties(device, nullptr, &supportedExtensionCount, nullptr));
-
-		std::vector<VkExtensionProperties> supportedExtensions(supportedExtensionCount);
-		VulkanUtils::ValidateVkResult(vkEnumerateDeviceExtensionProperties(device, nullptr, &supportedExtensionCount, supportedExtensions.data()));
-
-		for (auto& ext : extensions)
-		{
-			bool supported = false;
-
-			for (auto& prop : supportedExtensions)
-			{
-				if (strncmp(ext, prop.extensionName, strlen(ext)) == 0)
-				{
-					supported = true;
-					break;
-				}
-			}
-
-			if (!supported) return false;
-
-		}
-
-		return true;
-	}
-
-	void VulkanSwapchain::IdentifyQueueFamilies(const VkPhysicalDevice& device, QueueFamilyIndices& indices)
-	{
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-		// TODO: take other queues into account, and optimise these choices
-
-		for (uint32_t i = 0; i < queueFamilyCount; i++)
-		{
-			if (indices.Complete()) break;
-
-			VkBool32 presentationSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentationSupport);
-
-			if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) indices.GraphicsIndex = i;
-			if (presentationSupport) indices.PresentIndex = i;
-		}
-	}
-
-	bool VulkanSwapchain::CheckSwapchainSupport(const VkPhysicalDevice& device, VulkanDeviceSwapchainSupport& support)
-	{
-		bool adequateSupport = true;
-
-		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
-
-		if (formatCount)
-		{
-			support.Formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, support.Formats.data());
-		}
-		else
-		{
-			adequateSupport = false;
-		}
-
-		uint32_t modeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &modeCount, nullptr);
-
-		if (modeCount)
-		{
-			support.PresentationModes.resize(modeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &modeCount, support.PresentationModes.data());
-		}
-		else
-		{
-			adequateSupport = false;
-		}
-
-		QuerySurfaceCapabilities(device, support.Capabilities);
-
-		if (!adequateSupport) Z_CORE_CRITICAL("Selected GPU/window do not provide adequate support for Vulkan swap chain creation");
-		return adequateSupport;
-	}
-
-	void VulkanSwapchain::QuerySurfaceCapabilities(const VkPhysicalDevice& device, VkSurfaceCapabilitiesKHR& capabilities)
-	{
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &capabilities);
-	}
-
 	void VulkanSwapchain::CreateSwapchain()
 	{
-		QuerySurfaceCapabilities(m_Device->m_PhysicalDevice, m_Device->m_SwapchainSupport.Capabilities);
+		m_Device->QuerySurfaceCapabilities(m_Device->m_PhysicalDevice, m_SwapchainSupport.Capabilities);
 
 		m_SurfaceFormat = ChooseSwapchainFormat();
 		m_PresentationMode = ChooseSwapchainPresentationMode();
 		m_Extent = ChooseSwapchainExtent();
 
-		m_ImageCount = m_Device->m_SwapchainSupport.Capabilities.minImageCount + 1;
-		uint32_t maxImageCount = m_Device->m_SwapchainSupport.Capabilities.maxImageCount;
+		m_ImageCount = m_SwapchainSupport.Capabilities.minImageCount + 1;
+		uint32_t maxImageCount = m_SwapchainSupport.Capabilities.maxImageCount;
 		if (maxImageCount > 0 && m_ImageCount > maxImageCount) m_ImageCount = maxImageCount;
 		
 		VkSwapchainCreateInfoKHR swapchainInfo{};
 		swapchainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		swapchainInfo.surface = m_Surface;
+		swapchainInfo.surface = m_Device->m_Surface;
 		swapchainInfo.minImageCount = m_ImageCount;
 		swapchainInfo.imageFormat = m_SurfaceFormat.format;
 		swapchainInfo.imageColorSpace = m_SurfaceFormat.colorSpace;
@@ -449,7 +208,7 @@ namespace Zahra
 			swapchainInfo.pQueueFamilyIndices = queueFamilyIndices;
 		}
 
-		swapchainInfo.preTransform = m_Device->m_SwapchainSupport.Capabilities.currentTransform; // no overall screen rotation/flip
+		swapchainInfo.preTransform = m_SwapchainSupport.Capabilities.currentTransform; // no overall screen rotation/flip
 		swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // no alpha blending with other windows
 		swapchainInfo.clipped = VK_TRUE; // ignore pixels obscured by other windows
 
@@ -457,7 +216,7 @@ namespace Zahra
 		// or unoptimized while your application is running, for example
 		// because the window was resized. In that case the swap chain
 		// actually needs to be recreated from scratch and a reference to
-		// the old one must be specified in this field.
+		// the old one can be specified in this field.
 		swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
 
 		VulkanUtils::ValidateVkResult(vkCreateSwapchainKHR(m_Device->m_LogicalDevice, &swapchainInfo, nullptr, &m_Swapchain),
@@ -466,7 +225,7 @@ namespace Zahra
 
 	VkSurfaceFormatKHR VulkanSwapchain::ChooseSwapchainFormat()
 	{
-		for (const auto& format : m_Device->m_SwapchainSupport.Formats)
+		for (const auto& format : m_SwapchainSupport.Formats)
 		{
 			if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			{
@@ -475,12 +234,12 @@ namespace Zahra
 		}
 
 		// TODO: rank formats and return best. For now just...
-		return m_Device->m_SwapchainSupport.Formats[0];
+		return m_SwapchainSupport.Formats[0];
 	}
 
 	VkPresentModeKHR VulkanSwapchain::ChooseSwapchainPresentationMode()
 	{
-		for (const auto& mode : m_Device->m_SwapchainSupport.PresentationModes)
+		for (const auto& mode : m_SwapchainSupport.PresentationModes)
 		{
 			// triple+ buffering
 			if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
@@ -497,7 +256,7 @@ namespace Zahra
 
 	VkExtent2D VulkanSwapchain::ChooseSwapchainExtent()
 	{
-		const auto& capabilities = m_Device->m_SwapchainSupport.Capabilities;
+		const auto& capabilities = m_SwapchainSupport.Capabilities;
 
 		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 		{
