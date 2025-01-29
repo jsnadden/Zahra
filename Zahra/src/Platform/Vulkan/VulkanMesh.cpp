@@ -62,11 +62,18 @@ namespace Zahra
 					attributes.vertices[3 * index.vertex_index + 2]
 				};
 
+				vertex.Normal =
+				{
+					attributes.normals[3 * index.normal_index + 0],
+					attributes.normals[3 * index.normal_index + 1],
+					attributes.normals[3 * index.normal_index + 2]
+				};
+
 				if (!attributes.texcoords.empty())
 				{
 					vertex.TextureCoordinates =
 					{
-						attributes.texcoords[2 * index.texcoord_index + 0],
+						0.0f + attributes.texcoords[2 * index.texcoord_index + 0],
 						1.0f - attributes.texcoords[2 * index.texcoord_index + 1]
 					};
 				}

@@ -1,4 +1,3 @@
-
 | Extension | File type  |
 | --------- | ---------- |
 | .zsc      | Scene      |

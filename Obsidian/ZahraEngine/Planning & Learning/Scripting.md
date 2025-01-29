@@ -9,5 +9,5 @@ Planning:
  
 NOTES TO FUTURE SELF:
  - The engine is only able to read/write public fields with the custom `[ExposedField]` attribute
- - The `[EntityID]` attribute signals that a `ulong` should be interpreted as referring to an Entity, rather than just an abstract value (assigned a different type in reflection!)
- - To debug a C# script while `Zahra::ScriptEngine` is running, open the C# solution in VS, select **Debug > Attach Unity Debugger"** and input the localhost IP `127.0.0.1` at port `55555`.
+ - The `[EntityID]` attribute signals that a `ulong` should be interpreted as referring to an Entity, rather than just an abstract value (in reflection it is assigned `FieldType::Entity`)
+ - To debug a C# script while `Zahra::ScriptEngine` is running, open the C# solution in VS, select **Debug > Attach Unity Debugger"** and input the (localhost) IP `127.0.0.1` at port `55555`.

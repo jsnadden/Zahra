@@ -14,6 +14,8 @@ layout(location = 1) out int o_EntityID;
 void main()
 {
     o_Colour = v_Tint * texture(u_Sampler[v_TextureIndex], v_TextureCoordinates * v_TilingFactor);
+    if (o_Colour.a == 0)
+		discard;
 
     o_EntityID = v_EntityID;
 }

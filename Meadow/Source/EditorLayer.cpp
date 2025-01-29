@@ -41,10 +41,15 @@ namespace Zahra
 
 	void EditorLayer::OnAttach()
 	{
-		auto imguiLayer = ImGuiLayer::GetOrCreate();		
+		// TODO: a bunch of miscellaneous stuff always concerns me... should these things be elsewhere
+		auto imguiLayer = ImGuiLayer::GetOrCreate();
+
 		LoadConfigFile();
+
 		Editor::SetPrimaryEditorCamera(m_EditorCamera);
+
 		m_SceneHierarchyPanel.CacheScriptClassNames();
+
 		m_AutosaveEnabled = false;
 
 		// Open project/scene

@@ -33,7 +33,7 @@ namespace Zahra
 		shaderSpec.Name = "circle";
 		m_ShaderLibrary.Add(Shader::Create(shaderSpec));
 
-		m_CameraUniformBufferSet = UniformBufferSet::Create(sizeof(glm::mat4), framesInFlight);
+		m_CameraUniformBuffers = UniformBufferPerFrame::Create(sizeof(glm::mat4), framesInFlight);
 
 		Texture2DSpecification textureSpec{};
 		auto flatWhite = Texture2D::CreateFlatColourTexture(textureSpec, 0xffffffff);
@@ -61,9 +61,8 @@ namespace Zahra
 			resourceManagerSpec.LastSet = 0;
 			m_QuadResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
-			m_QuadResourceManager->ProvideResource("Camera", m_CameraUniformBufferSet);
-			m_QuadResourceManager->ProvideResource("u_Sampler", m_TextureSlots);
-			m_QuadResourceManager->Update();
+			m_QuadResourceManager->Set("Camera", m_CameraUniformBuffers);
+			m_QuadResourceManager->ProcessChanges();
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "quad_pass";
@@ -109,8 +108,8 @@ namespace Zahra
 			resourceManagerSpec.LastSet = 0;
 			m_CircleResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
-			m_CircleResourceManager->ProvideResource("Camera", m_CameraUniformBufferSet);
-			m_CircleResourceManager->Update();
+			m_CircleResourceManager->Set("Camera", m_CameraUniformBuffers);
+			m_CircleResourceManager->ProcessChanges();
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "circle_pass";
@@ -139,8 +138,8 @@ namespace Zahra
 			resourceManagerSpec.LastSet = 0;
 			m_LineResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
 
-			m_LineResourceManager->ProvideResource("Camera", m_CameraUniformBufferSet);
-			m_LineResourceManager->Update();
+			m_LineResourceManager->Set("Camera", m_CameraUniformBuffers);
+			m_LineResourceManager->ProcessChanges();
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "line_pass";
@@ -248,14 +247,14 @@ namespace Zahra
 		}
 		m_TextureSlots.clear();
 
-		m_CameraUniformBufferSet.Reset();
+		m_CameraUniformBuffers.Reset();
 	}
 
 	void Renderer2D::BeginScene(const glm::mat4& cameraView, const glm::mat4& cameraProjection)
 	{
 		glm::mat4 cameraPV = cameraProjection * cameraView;
 
-		m_CameraUniformBufferSet->SetData(Renderer::GetCurrentFrameIndex(), &cameraPV, sizeof(glm::mat4));
+		m_CameraUniformBuffers->SetData(Renderer::GetCurrentFrameIndex(), &cameraPV, sizeof(glm::mat4));
 
 		m_TextureSlotsInUse = 1;
 		for (uint32_t i = 1; i < m_TextureSlots.size(); i++)
@@ -298,7 +297,8 @@ namespace Zahra
 
 					m_QuadVertexBuffers[batch][frame]->SetData(m_QuadBatchStarts[batch], dataSize);
 
-					m_QuadResourceManager->ProvideResource("u_Sampler", m_TextureSlots);
+					m_QuadResourceManager->Update("u_Sampler", m_TextureSlots);
+					m_QuadResourceManager->ProcessChanges();
 
 					Renderer::DrawIndexed(m_QuadRenderPass, m_QuadResourceManager, m_QuadVertexBuffers[batch][frame], m_QuadIndexBuffer, batchSize);
 

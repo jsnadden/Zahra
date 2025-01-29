@@ -61,11 +61,8 @@ namespace Zahra
 
 	bool VulkanShader::ReadShaderSource(ShaderStage stage)
 	{
-		std::filesystem::path sourceFilepath = Application::Get().GetSpecification().RendererConfig.ShaderSourceDirectory;
-		if (!m_Specification.SourceSubdirectory.empty())
-			sourceFilepath /= m_Specification.SourceSubdirectory;
+		std::filesystem::path sourceFilepath = Application::Get().GetSpecification().ShaderSourceDirectory;
 		sourceFilepath /= GetSourceFilename(stage);
-
 		if (!std::filesystem::exists(sourceFilepath))
 		{
 			std::string errorMessage = "Shader source file '" + sourceFilepath.string() + "' does not exist";
@@ -110,14 +107,10 @@ namespace Zahra
 			if (debug) spirvFilename += "_debug";
  			spirvFilename += ".spv";
 
-			std::filesystem::path cacheDirectory = Renderer::GetConfig().ShaderCacheDirectory;
-			if (!m_Specification.SourceSubdirectory.empty())
-				cacheDirectory /= m_Specification.SourceSubdirectory;
-
+			std::filesystem::path cacheDirectory = Application::Get().GetSpecification().ShaderCacheDirectory;
 			std::filesystem::path spirvFilepath = cacheDirectory / spirvFilename;
 
 			std::ifstream filestream(spirvFilepath, std::ios::in | std::ios::binary | std::ios::ate);
-
 			if (filestream.is_open() && !forceCompile)
 			{
 				auto size = filestream.tellg();

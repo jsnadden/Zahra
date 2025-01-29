@@ -51,7 +51,7 @@ namespace Zahra
 		m_BufferInfo.range = size;
 	}
 
-	VulkanUniformBufferSet::VulkanUniformBufferSet(uint32_t bufferSize, uint32_t framesInFlight)
+	VulkanUniformBufferPerFrame::VulkanUniformBufferPerFrame(uint32_t bufferSize, uint32_t framesInFlight)
 	{
 		if (framesInFlight == 0)
 			m_FramesInFlight = Renderer::GetFramesInFlight();
@@ -63,13 +63,13 @@ namespace Zahra
 
 	}
 
-	Ref<UniformBuffer> VulkanUniformBufferSet::Get()
+	Ref<UniformBuffer> VulkanUniformBufferPerFrame::Get()
 	{
 		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
 		return Get(frameIndex);
 	}
 
-	void VulkanUniformBufferSet::SetData(uint32_t frame, const void* data, uint32_t size, uint32_t offset)
+	void VulkanUniformBufferPerFrame::SetData(uint32_t frame, const void* data, uint32_t size, uint32_t offset)
 	{
 		m_UniformBuffers[frame]->SetData(data, size, offset);
 	}

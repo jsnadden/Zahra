@@ -30,11 +30,11 @@ namespace Zahra
 
 	};
 
-	class VulkanUniformBufferSet : public UniformBufferSet
+	class VulkanUniformBufferPerFrame : public UniformBufferPerFrame
 	{
 	public:
-		VulkanUniformBufferSet(uint32_t bufferSize, uint32_t framesInFlight);
-		~VulkanUniformBufferSet() { m_UniformBuffers.clear(); }
+		VulkanUniformBufferPerFrame(uint32_t bufferSize, uint32_t framesInFlight);
+		~VulkanUniformBufferPerFrame() { m_UniformBuffers.clear(); }
 
 		virtual Ref<UniformBuffer> Get();
 		virtual Ref<UniformBuffer> Get(uint32_t frame) override { return m_UniformBuffers[frame].As<UniformBuffer>(); }

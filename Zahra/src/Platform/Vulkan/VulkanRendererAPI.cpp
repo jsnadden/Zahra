@@ -85,8 +85,8 @@ namespace Zahra
 
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
 		std::vector<VkClearValue> clearValues = vulkanRenderPass->GetClearValues();
-		VkExtent2D renderArea;
 
+		VkExtent2D renderArea;
 		if (vulkanRenderPass->TargetSwapchain())
 		{
 			if (m_Swapchain->Invalidated())
@@ -151,7 +151,7 @@ namespace Zahra
 
 	void VulkanRendererAPI::Present()
 	{
-		m_Swapchain->PresentImage();			
+		m_Swapchain->PresentImage();
 	}
 
 	void VulkanRendererAPI::Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)
@@ -163,7 +163,6 @@ namespace Zahra
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vulkanVertexBufferArray, offsets);
 
-		resourceManager->Update();
 		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
 		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
@@ -185,12 +184,11 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = indexBuffer.As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		resourceManager->Update();
-		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
-			vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+			auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
+			auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
+			uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
+				vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 
 		if (indexCount == 0)
 			indexCount = indexBuffer->GetCount() - startingIndex;
@@ -210,12 +208,11 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = mesh->GetIndexBuffer().As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		resourceManager->Update();
-		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
-			vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+			auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
+			auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
+			uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
+				vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh->GetIndexBuffer()->GetCount(), 1, 0, 0, 0);
 	}
@@ -225,7 +222,6 @@ namespace Zahra
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
 
-		resourceManager->Update();
 		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
 		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
 		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;

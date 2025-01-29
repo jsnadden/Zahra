@@ -1,0 +1,4 @@
+ - A serialised database (ideally with an import tool, or automatic directory scanning) of all available assets (including file-paths, names and GUIDs)
+ - A runtime hash table of currently loaded assets, to avoid duplicates
+ - A  scheme to handle scene transitions. These transitions would ideally be [[Parallelisation|on a separate thread]]. Also it would be nice if a new scene can be (partially) loaded when the player "approaches" a scene transition, cutting down on load-screen time.
+ - 

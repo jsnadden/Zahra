@@ -12,7 +12,7 @@ namespace Zahra
 
 		std::filesystem::path AssetDirectory;
 
-		// TODO: when possible, we want asset ids here rather than filepaths
+		// TODO: ideally we would store asset ids here rather than filepaths
 		// (asset manager should keep track of the source files internally)
 		std::filesystem::path StartingSceneFilepath;
 		std::filesystem::path ScriptAssemblyFilepath;

@@ -41,9 +41,9 @@ namespace Zahra
 		static RendererAPI* Create();
 		
 		// TODO: Break up resource bindings according to the following scheme:
-		//		1) BeginRenderPass binds resources updated per-frame/per-pass
+		//		1) BeginRenderPass binds resources in sets 0 & 1
 		//			(cameras, lights, shadow maps etc.)
-		//		3) DrawXXX binds resources updated per-draw-call/per-instance
+		//		2) Each DrawXXX binds resources in sets 2 & 3
 		//			(materials, textures, transforms)
 		// Give RenderPass a ShaderResourceManager!
 

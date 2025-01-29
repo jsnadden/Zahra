@@ -109,8 +109,7 @@ namespace Zahra
 		ShaderLibrary m_ShaderLibrary;
 
 		glm::mat4 m_ProjectionView = glm::mat4(1.0f);
-		// TODO: make this a push constant, not a UB
-		Ref<UniformBufferSet> m_CameraUniformBufferSet;
+		Ref<UniformBufferPerFrame> m_CameraUniformBuffers;
 
 		std::vector<Ref<Texture2D>> m_TextureSlots;
 		uint32_t m_TextureSlotsInUse = 1; // start at 1, because slot 0 will be our default 1x1 white texture

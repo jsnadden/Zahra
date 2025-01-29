@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Conventions/File names.md",
+                "file": "Conventions/Shader resource bindings.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "File names"
+              "title": "Shader resource bindings"
             }
           }
         ]
@@ -164,19 +164,25 @@
   },
   "active": "e3f6df8361cc3fd2",
   "lastOpenFiles": [
-    "Planning & Learning/Scripting.md",
+    "TODO/Shader compilation.md",
+    "Conventions/Shader resource bindings.md",
+    "plan.md",
+    "Planning & Learning/Renderer architecture.md",
+    "Planning & Learning/Rendering pipeline.canvas",
+    "TODO/The road to PBR.md",
+    "Conventions/Shader bindings.md",
+    "Planning & Learning/Game loop.md",
+    "Planning & Learning/Parallelisation.md",
+    "TODO/Asset Management.md",
+    "Planning & Learning/Vulkan resource creation.canvas",
+    "TODO/Audio engine.md",
     "Conventions/File names.md",
-    "Planning & Learning/Audio engine.md",
-    "TODO/Resource Management.md",
-    "TODO/12th of Jan 2025.md",
+    "Planning & Learning/Scripting.md",
     "TODO/Memory Management.md",
+    "TODO/12th of Jan 2025.md",
     "Planning & Learning/Editor capabilities.md",
     "Planning & Learning/Undo & Redo stacks.md",
-    "Planning & Learning/Renderer architecture.md",
-    "Planning & Learning/Vulkan resources.canvas",
-    "Planning & Learning/Rendering pipeline.canvas",
     "TODO/Rethinking the RenderPass interface.md",
-    "Planning & Learning/Parallelisation.md",
     "Conventions",
     "Planning & Learning/Vulkan resource hierarchy.md",
     "Planning & Learning/Hazel initialisation details.canvas",

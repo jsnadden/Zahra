@@ -2,6 +2,7 @@
 #include "Renderer.h"
 
 #include "Zahra/Core/Types.h"
+#include "Zahra/Projects/Project.h"
 #include "Zahra/Renderer/IndexBuffer.h"
 #include "Zahra/Renderer/Mesh.h"
 #include "Zahra/Renderer/RenderPass.h"
@@ -45,10 +46,6 @@ namespace Zahra
 	{
 		s_RendererAPI = RendererAPI::Create();
 		s_RendererAPI->Init();
-
-		std::filesystem::path cache = s_Data.Config.ShaderCacheDirectory;
-		if (!std::filesystem::exists(cache))
-			std::filesystem::create_directories(cache);
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// PRIMARY RENDER TARGET
@@ -104,8 +101,8 @@ namespace Zahra
 			renderPassSpec.ClearColourAttachments = true;
 			s_Data.FullscreenTriangleRenderPass = RenderPass::Create(renderPassSpec);
 
-			s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.PrimaryRenderTargetTexture);
-			s_Data.FullscreenTriangleResourceManager->Update();
+			s_Data.FullscreenTriangleResourceManager->Set("u_Sampler", s_Data.PrimaryRenderTargetTexture);
+			s_Data.FullscreenTriangleResourceManager->ProcessChanges();
 		}
 
 		//Z_CORE_INFO("Rendering engine has initialised");
@@ -224,8 +221,8 @@ namespace Zahra
 		s_Data.PrimaryFramebuffer->Resize(width, height);
 		s_Data.ClearRenderPass->OnResize();
 
-		s_Data.FullscreenTriangleResourceManager->ProvideResource("u_Sampler", s_Data.PrimaryRenderTargetTexture);
-		s_Data.FullscreenTriangleResourceManager->Update();
+		s_Data.FullscreenTriangleResourceManager->Set("u_Sampler", s_Data.PrimaryRenderTargetTexture);
+		s_Data.FullscreenTriangleResourceManager->ProcessChanges();
 		s_Data.FullscreenTriangleRenderPass->OnResize();
 	}
 

@@ -1,4 +1,4 @@
  - A thread that processes the render queue while setting up the next frame
  - A thread for saving while continuing to play
- - A thread for (un)loading resources
+ - A thread for (un)loading assets. In particular, should be able to (partially) preload a scene while another is playing, to cut down on loading times (same goes for nearby world chunks)
  - Fork/join patterns for AI updates?

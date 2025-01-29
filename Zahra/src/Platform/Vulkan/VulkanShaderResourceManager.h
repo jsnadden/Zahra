@@ -12,12 +12,12 @@ namespace Zahra
 	
 	struct VulkanShaderResource
 	{
-		std::vector<Ref<RefCounted>> Data; // vector to account for array-type resources, size=1 otherwise
+		//std::vector<Ref<RefCounted>> Data; // is a vector in case of resource arrays, size = 1 otherwise
 		VulkanShaderResourceMetadata Metadata;
 		std::vector<VkDescriptorImageInfo> ImageInfos;
 		std::vector<VkDescriptorBufferInfo> BufferInfos;
 		std::vector<VkBufferView> TexelBufferViews;
-		bool Provided = false;
+		bool Valid = false;
 	};	
 
 	class VulkanShaderResourceManager : public ShaderResourceManager
@@ -26,12 +26,16 @@ namespace Zahra
 		VulkanShaderResourceManager(const ShaderResourceManagerSpecification& specification);
 		~VulkanShaderResourceManager();
 
-		virtual void ProvideResource(const std::string& name, Ref<UniformBufferSet> uniformBufferSet) override;
-		virtual void ProvideResource(const std::string& name, Ref<Texture2D> texture) override;
-		virtual void ProvideResource(const std::string& name, const std::vector<Ref<Texture2D>>& textureArray) override;
+		virtual void Set(const std::string& name, Ref<UniformBufferPerFrame> uniformBufferPerFrame) override;
+		virtual void Set(const std::string& name, Ref<Texture2D> texture) override;
+		virtual void Set(const std::string& name, const std::vector<Ref<Texture2D>>& textureArray) override;
 
-		virtual bool CheckIfComplete() override;
-		virtual void Update() override;
+		virtual void Update(const std::string& name, Ref<UniformBuffer> uniformBuffer) override;
+		virtual void Update(const std::string& name, Ref<Texture2D> texture) override;
+		virtual void Update(const std::string& name, const std::vector<Ref<Texture2D>>& textureArray) override;
+
+		//virtual bool AllResourcesValid() override;
+		virtual void ProcessChanges() override;
 
 		std::vector<VkDescriptorSet>& GetDescriptorSets();
 		std::vector<VkDescriptorSet>& GetDescriptorSets(uint32_t frame) { return m_DescriptorSets[frame]; }
@@ -55,7 +59,6 @@ namespace Zahra
 		void Init();
 		void CreateDescriptorPool();
 		void AllocateDescriptorSets();
-		//void PopulateWriteStructs();
 	};
 
 }

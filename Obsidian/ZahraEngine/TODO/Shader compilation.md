@@ -1,0 +1,1 @@
+- Add `#include` directive capabilities. For the Vulkan SDK `shaderc` library, some approaches are layed out in https://computergraphics.stackexchange.com/questions/8907/shaderc-compile-through-api-with-include. 
