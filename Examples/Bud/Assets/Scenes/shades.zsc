@@ -60,7 +60,7 @@ Entities:
       EulerAngles: [0, -0, -0.52359879]
       Scale: [4.80000067, 0.349999994, 1]
     SpriteComponent:
-      Tint: [1, 1, 1, 0]
+      Tint: [0.188235298, 0.188235298, 0.188235298, 1]
       TextureTiling: 1
       Animated: false
     RigidBody2DComponent:
@@ -81,7 +81,7 @@ Entities:
       EulerAngles: [0, -0, 0.52359879]
       Scale: [4.80000067, 0.349999994, 1]
     SpriteComponent:
-      Tint: [1, 1, 1, 0]
+      Tint: [0.188235298, 0.188235298, 0.188235298, 1]
       TextureTiling: 1
       Animated: false
     RigidBody2DComponent:

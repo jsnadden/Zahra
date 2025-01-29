@@ -49,7 +49,7 @@ namespace Zahra
 				}
 			}
 
-			newShaderResource.Valid = false;
+			newShaderResource.HasBeenSet = false;
 		}
 
 		CreateDescriptorPool();
@@ -146,7 +146,7 @@ namespace Zahra
 			write.pTexelBufferView = nullptr;
 		}
 
-		resource.Valid = true;
+		resource.HasBeenSet = true;
 	}
 
 	void VulkanShaderResourceManager::Set(const std::string& name, Ref<Texture2D> texture)
@@ -175,7 +175,7 @@ namespace Zahra
 			write.pTexelBufferView = nullptr;
 		}
 
-		resource.Valid = true;
+		resource.HasBeenSet = true;
 	}
 
 	void VulkanShaderResourceManager::Set(const std::string& name, const std::vector<Ref<Texture2D>>& textureArray)
@@ -207,7 +207,7 @@ namespace Zahra
 			write.pTexelBufferView = nullptr;
 		}
 
-		resource.Valid = true;
+		resource.HasBeenSet = true;
 	}
 
 	void VulkanShaderResourceManager::Update(const std::string& name, Ref<UniformBuffer> uniformBuffer)
@@ -232,7 +232,7 @@ namespace Zahra
 		write.pBufferInfo = &uniformBuffer.As<VulkanUniformBuffer>()->GetVkDescriptorBufferInfo();
 		write.pTexelBufferView = nullptr;
 
-		resource.Valid = true;
+		resource.HasBeenSet = true;
 	}
 
 	void VulkanShaderResourceManager::Update(const std::string& name, Ref<Texture2D> texture)
@@ -257,6 +257,8 @@ namespace Zahra
 		write.pImageInfo = &texture.As<VulkanTexture2D>()->GetVkDescriptorImageInfo();
 		write.pBufferInfo = nullptr;
 		write.pTexelBufferView = nullptr;
+
+		resource.HasBeenSet = true;
 	}
 
 	void VulkanShaderResourceManager::Update(const std::string& name, const std::vector<Ref<Texture2D>>& textureArray)
@@ -286,22 +288,24 @@ namespace Zahra
 		write.pImageInfo = resource.ImageInfos.data();
 		write.pBufferInfo = nullptr;
 		write.pTexelBufferView = nullptr;
+
+		resource.HasBeenSet = true;
 	}
 
-	/*bool VulkanShaderResourceManager::AllResourcesValid()
+	bool VulkanShaderResourceManager::ReadyToRender()
 	{
 		for (auto [name, resource] : m_Resources)
 		{
-			if (!resource.Valid)
+			if (!resource.HasBeenSet)
 				return false;
 		}
 
 		return true;
-	}*/
+	}
 
 	void VulkanShaderResourceManager::ProcessChanges()
 	{
-		//Z_CORE_ASSERT(Validate())
+		Z_CORE_ASSERT(ReadyToRender())
 
 		vkUpdateDescriptorSets(VulkanContext::GetCurrentVkDevice(), (uint32_t)m_UpdateQueue.size(), m_UpdateQueue.data(), 0, nullptr);
 		m_UpdateQueue.clear();

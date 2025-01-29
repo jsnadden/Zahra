@@ -33,7 +33,7 @@ namespace Zahra
 		virtual void Update(const std::string& name, Ref<Texture2D> texture) = 0;
 		virtual void Update(const std::string& name, const std::vector<Ref<Texture2D>>& textureArray) = 0;
 
-		//virtual bool AllResourcesValid() = 0;
+		virtual bool ReadyToRender() = 0;
 		virtual void ProcessChanges() = 0;
 
 		static Ref<ShaderResourceManager> Create(const ShaderResourceManagerSpecification& specification);

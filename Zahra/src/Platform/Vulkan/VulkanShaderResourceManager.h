@@ -17,7 +17,7 @@ namespace Zahra
 		std::vector<VkDescriptorImageInfo> ImageInfos;
 		std::vector<VkDescriptorBufferInfo> BufferInfos;
 		std::vector<VkBufferView> TexelBufferViews;
-		bool Valid = false;
+		bool HasBeenSet = false;
 	};	
 
 	class VulkanShaderResourceManager : public ShaderResourceManager
@@ -34,7 +34,7 @@ namespace Zahra
 		virtual void Update(const std::string& name, Ref<Texture2D> texture) override;
 		virtual void Update(const std::string& name, const std::vector<Ref<Texture2D>>& textureArray) override;
 
-		//virtual bool AllResourcesValid() override;
+		virtual bool ReadyToRender() override;
 		virtual void ProcessChanges() override;
 
 		std::vector<VkDescriptorSet>& GetDescriptorSets();

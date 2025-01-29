@@ -4,9 +4,9 @@ Moreover, from the same section of the spec: *"When binding a pipeline, the pipe
 
 Ultimately I'd like to use the following scheme for 3D scene rendering (subject to change and variation e.g. for instanced rendering):
 
-| Set | Update Frequency  |                          Usage                           |  Managed by  |           Bound in            |
-| :-: | :---------------: | :------------------------------------------------------: | :----------: | :---------------------------: |
-|  0  |     Per frame     |   Scene environment (lights, skybox etc.) & camera(s)    | `RenderPass` | First call to BeginRenderPass |
-|  1  |  Per render pass  | Pre/post-processing intermediate data (shadow maps etc.) | `RenderPass` |        BeginRenderPass        |
-|  2  |   Per material    |                   Material data... duh                   |  `Material`  |          Draw calls           |
-|  3  | Per mesh/instance |                   Skeletal positioning                   |     ???      |              ???              |
+| Set |    Update Frequency    |                          Usage                           |  Managed by  |           Bound in            |
+| :-: | :--------------------: | :------------------------------------------------------: | :----------: | :---------------------------: |
+|  0  | At most once per frame |   Scene environment (lights, skybox etc.) & camera(s)    | `RenderPass` | First call to BeginRenderPass |
+|  1  |    Per render pass     | Pre/post-processing intermediate data (shadow maps etc.) | `RenderPass` |        BeginRenderPass        |
+|  2  |      Per material      |                   Material data... duh                   |  `Material`  |          Draw calls           |
+|  3  |   Per mesh/instance    |                   Skeletal positioning                   |     ???      |              ???              |

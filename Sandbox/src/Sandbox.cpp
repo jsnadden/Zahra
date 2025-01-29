@@ -21,7 +21,7 @@ void SandboxLayer::OnAttach()
 	{
 		Zahra::Image2DSpecification imageSpec{};
 		imageSpec.Name = "Sandbox_ViewportImage";
-		imageSpec.Format = Zahra::ImageFormat::SRGBA;
+		imageSpec.Format = Zahra::ImageFormat::RGBA_UN;
 		imageSpec.Width = m_ViewportWidth;
 		imageSpec.Height = m_ViewportHeight;
 		imageSpec.Sampled = true;
@@ -37,7 +37,7 @@ void SandboxLayer::OnAttach()
 		{
 			auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
 			attachment.InheritFrom = m_ViewportRenderTarget;
-			attachment.Format = Zahra::ImageFormat::SRGBA;
+			attachment.Format = Zahra::ImageFormat::RGBA_UN;
 		}
 		framebufferSpec.HasDepthStencil = true;
 		framebufferSpec.DepthClearValue = 1.0f;
