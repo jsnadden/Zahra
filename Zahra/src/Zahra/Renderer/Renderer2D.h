@@ -120,7 +120,7 @@ namespace Zahra
 		glm::vec2 m_TextureTemplate[4]{};
 
 		//Ref<Shader> m_QuadShader;
-		Ref<ShaderResourceManager> m_QuadResourceManager;
+		//Ref<ShaderResourceManager> m_QuadResourceManager;
 		Ref<RenderPass> m_QuadRenderPass;
 
 		std::vector<std::vector<Ref<VertexBuffer>>>	m_QuadVertexBuffers; // indexed by (batch, frame)
@@ -135,7 +135,7 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CIRCLES
 		//Ref<Shader>	m_CircleShader;
-		Ref<ShaderResourceManager> m_CircleResourceManager;
+		//Ref<ShaderResourceManager> m_CircleResourceManager;
 		Ref<RenderPass> m_CircleRenderPass;
 
 		std::vector<std::vector<Ref<VertexBuffer>>>	m_CircleVertexBuffers; // indexed by (batch, frame)
@@ -148,7 +148,7 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// LINES
 		//Ref<Shader> m_LineShader;
-		Ref<ShaderResourceManager> m_LineResourceManager;
+		//Ref<ShaderResourceManager> m_LineResourceManager;
 		Ref<RenderPass> m_LineRenderPass;
 
 		std::vector<std::vector<Ref<VertexBuffer>>> m_LineVertexBuffers;

@@ -66,7 +66,7 @@ namespace Zahra
 	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& specification)
 		: m_Specification(specification)
 	{
-		ValidateSpecification();
+		Z_CORE_ASSERT(SpecificationValid());
 
 		m_Swapchain = VulkanContext::Get()->GetSwapchain();
 		m_TargetSwapchain = !m_Specification.RenderTarget;
@@ -74,14 +74,16 @@ namespace Zahra
 		CreateRenderPass();
 		CreatePipeline();
 		CreateFramebuffers();
-
 		CreateClearData();
+		CreateResourceManager();
 	}
 
 	VulkanRenderPass::~VulkanRenderPass()
 	{
 		VkDevice& device = m_Swapchain->GetVkDevice();
 		vkDeviceWaitIdle(device);
+
+		m_ResourceManager.Reset();
 
 		DestroyFramebuffers();
 		
@@ -91,7 +93,7 @@ namespace Zahra
 		vkDestroyRenderPass(device, m_RenderPass, nullptr);
 	}
 
-	const Ref<Framebuffer> VulkanRenderPass::GetRenderTarget() const
+	Ref<Framebuffer> VulkanRenderPass::GetRenderTarget()
 	{
 		Z_CORE_ASSERT(!m_TargetSwapchain, "Do not call this method for swapchain-targetting render passes");
 
@@ -134,6 +136,17 @@ namespace Zahra
 			rect.rect.extent.width = m_TargetSwapchain ? m_Swapchain->GetWidth() : m_Specification.RenderTarget->GetWidth();
 			rect.rect.extent.height = m_TargetSwapchain ? m_Swapchain->GetHeight() : m_Specification.RenderTarget->GetHeight();
 		}
+	}
+
+	void VulkanRenderPass::BindManagedResources(VkCommandBuffer& commandBuffer)
+	{
+		if (!m_Specification.ManagesResources)
+			return;
+
+		auto& descriptorSets = m_ResourceManager->GetDescriptorSets();
+		uint32_t setCount = m_Specification.LastSet - m_Specification.FirstSet + 1;
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout,
+			m_ResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
 	}
 
 	void VulkanRenderPass::CreateRenderPass()
@@ -615,13 +628,27 @@ namespace Zahra
 		}
 	}
 
-	void VulkanRenderPass::ValidateSpecification()
+	void VulkanRenderPass::CreateResourceManager()
+	{
+		if (!m_Specification.ManagesResources)
+			return;
+
+		ShaderResourceManagerSpecification managerSpec{};
+		managerSpec.Shader = m_Specification.Shader;
+		managerSpec.FirstSet = m_Specification.FirstSet;
+		managerSpec.LastSet = m_Specification.LastSet;
+		m_ResourceManager = ShaderResourceManager::Create(managerSpec).As<VulkanShaderResourceManager>();
+	}
+
+	bool VulkanRenderPass::SpecificationValid()
 	{
 		// TODO: check that the framebuffer attachments make sense:
 		// - Compare shader reflection data (fragment stage outputs) with the target framebuffer,
 		// - Check that we have the right number/type of attachments
 		// - Images should all be of the correct size
 		// - Images should have been created with valid usage flags/formats, and transitioned to compatible layouts
+
+		return true;
 	}
 
 }

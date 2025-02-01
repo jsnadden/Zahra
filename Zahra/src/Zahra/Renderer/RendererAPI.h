@@ -50,10 +50,10 @@ namespace Zahra
 		virtual void BeginRenderPass(Ref<RenderPass>& renderPass, bool bindPipeline = true, bool clearAttachments = false) = 0;
 		virtual void EndRenderPass() = 0;
 
-		virtual void Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount) = 0;
-		virtual void DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0) = 0;
-		virtual void DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh) = 0;
-		virtual void DrawFullscreenTriangle(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager) = 0;
+		virtual void Draw(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount) = 0;
+		virtual void DrawIndexed(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0) = 0;
+		virtual void DrawMesh(Ref<RenderPass>& renderPass, Ref<StaticMesh>& mesh) = 0;
+		virtual void DrawFullscreenTriangle(Ref<RenderPass>& renderPass) = 0;
 
 		virtual void SetLineWidth(float width) = 0;
 

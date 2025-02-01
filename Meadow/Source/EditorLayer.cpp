@@ -132,6 +132,7 @@ namespace Zahra
 			renderPassSpec.RenderTarget = m_ViewportFramebuffer;
 			renderPassSpec.ClearColourAttachments = true;
 			renderPassSpec.ClearDepthAttachment = true;
+			renderPassSpec.ManagesResources = false;
 			m_ClearPass = Zahra::RenderPass::Create(renderPassSpec);
 
 			Renderer2DSpecification renderer2DSpec{};

@@ -4,6 +4,7 @@
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanFramebuffer.h"
 #include "Platform/Vulkan/VulkanImage.h"
+#include "Platform/Vulkan/VulkanShaderResourceManager.h"
 #include "Platform/Vulkan/VulkanTexture.h"
 #include "Zahra/Renderer/RenderPass.h"
 
@@ -62,7 +63,8 @@ namespace Zahra
 		~VulkanRenderPass();
 
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
-		virtual const Ref<Framebuffer> GetRenderTarget() const override;
+		virtual Ref<Framebuffer> GetRenderTarget() override;
+		virtual Ref<ShaderResourceManager> GetResourceManager() { return m_ResourceManager; }
 
 		virtual bool TargetSwapchain() override;
 
@@ -76,6 +78,8 @@ namespace Zahra
 		const std::vector<VkClearRect>& GetClearRects() const { return m_ClearRects; }
 
 		virtual void OnResize() override;
+
+		void BindManagedResources(VkCommandBuffer& commandBuffer);
 
 	private:
 		RenderPassSpecification m_Specification;
@@ -93,14 +97,16 @@ namespace Zahra
 		std::vector<VkClearAttachment> m_ClearAttachments;
 		std::vector<VkClearRect> m_ClearRects;
 
+		Ref<VulkanShaderResourceManager> m_ResourceManager;
+
 		void CreateRenderPass();
 		void CreatePipeline();
 		void CreateFramebuffers();
 		void DestroyFramebuffers();
-
 		void CreateClearData();
+		void CreateResourceManager();
 
-		void ValidateSpecification();
+		bool SpecificationValid();
 
 	};
 }

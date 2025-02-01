@@ -47,6 +47,8 @@ namespace Zahra
 		// It doesn't break anything right now, but it is cause for concern.
 		// There is also the issue that these external windows don't communicate with my
 		// engine's event system, so non-ImGui-specific user input is ignored.
+		// Finally, since ImGui renders its windows in linear RGB, whereas Zahra uses SRGB,
+		// these pop-outs will need to be colour-corrected somehow.
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		io.ConfigWindowsMoveFromTitleBarOnly = true;
 

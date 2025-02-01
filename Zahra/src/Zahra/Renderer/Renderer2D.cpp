@@ -52,23 +52,21 @@ namespace Zahra
 			m_TextureTemplate[2] = { 1.0f, 0.0f };
 			m_TextureTemplate[3] = { 0.0f, 0.0f };
 
-			// TODO: put a resource manager in renderpass, specifically for
-			// camera and light resources (give these a specific set range)
-			// For other resources, the manager should belong to a material
-			ShaderResourceManagerSpecification resourceManagerSpec{};
+			/*ShaderResourceManagerSpecification resourceManagerSpec{};
 			resourceManagerSpec.Shader = m_ShaderLibrary.Get("flat_texture");
 			resourceManagerSpec.FirstSet = 0;
 			resourceManagerSpec.LastSet = 0;
-			m_QuadResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
-
-			m_QuadResourceManager->Set("Camera", m_CameraUniformBuffers);
-			m_QuadResourceManager->ProcessChanges();
+			m_QuadResourceManager = ShaderResourceManager::Create(resourceManagerSpec);*/
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "quad_pass";
 			renderPassSpec.Shader = m_ShaderLibrary.Get("flat_texture");
 			renderPassSpec.RenderTarget = m_Specification.RenderTarget;
 			m_QuadRenderPass = RenderPass::Create(renderPassSpec);
+
+			auto quadResourceManager = m_QuadRenderPass->GetResourceManager();
+			quadResourceManager->Set("Camera", m_CameraUniformBuffers);
+			quadResourceManager->ProcessChanges();
 
 			m_QuadVertexBuffers.resize(1);
 			m_QuadVertexBuffers[0].resize(framesInFlight);
@@ -102,20 +100,21 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CIRCLES
 		{
-			ShaderResourceManagerSpecification resourceManagerSpec{};
+			/*ShaderResourceManagerSpecification resourceManagerSpec{};
 			resourceManagerSpec.Shader = m_ShaderLibrary.Get("circle");
 			resourceManagerSpec.FirstSet = 0;
 			resourceManagerSpec.LastSet = 0;
-			m_CircleResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
-
-			m_CircleResourceManager->Set("Camera", m_CameraUniformBuffers);
-			m_CircleResourceManager->ProcessChanges();
+			m_CircleResourceManager = ShaderResourceManager::Create(resourceManagerSpec);*/
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "circle_pass";
 			renderPassSpec.Shader = m_ShaderLibrary.Get("circle");
 			renderPassSpec.RenderTarget = m_QuadRenderPass->GetRenderTarget();
 			m_CircleRenderPass = RenderPass::Create(renderPassSpec);
+
+			auto circleResourceManager = m_CircleRenderPass->GetResourceManager();
+			circleResourceManager->Set("Camera", m_CameraUniformBuffers);
+			circleResourceManager->ProcessChanges();
 
 			m_CircleVertexBuffers.resize(1);
 			m_CircleVertexBuffers[0].resize(framesInFlight);
@@ -132,14 +131,11 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// LINES
 		{
-			ShaderResourceManagerSpecification resourceManagerSpec{};
+			/*ShaderResourceManagerSpecification resourceManagerSpec{};
 			resourceManagerSpec.Shader = m_ShaderLibrary.Get("flat_colour");
 			resourceManagerSpec.FirstSet = 0;
 			resourceManagerSpec.LastSet = 0;
-			m_LineResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
-
-			m_LineResourceManager->Set("Camera", m_CameraUniformBuffers);
-			m_LineResourceManager->ProcessChanges();
+			m_LineResourceManager = ShaderResourceManager::Create(resourceManagerSpec);*/
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "line_pass";
@@ -148,6 +144,10 @@ namespace Zahra
 			renderPassSpec.DynamicLineWidths = true;
 			renderPassSpec.RenderTarget = m_CircleRenderPass->GetRenderTarget();
 			m_LineRenderPass = RenderPass::Create(renderPassSpec);
+
+			auto lineResourceManager = m_LineRenderPass->GetResourceManager();
+			lineResourceManager->Set("Camera", m_CameraUniformBuffers);
+			lineResourceManager->ProcessChanges();
 
 			m_LineVertexBuffers.resize(1);
 			m_LineVertexBuffers[0].resize(framesInFlight);
@@ -186,7 +186,7 @@ namespace Zahra
 			m_LineVertexBuffers.clear();
 
 			m_LineRenderPass.Reset();
-			m_LineResourceManager.Reset();
+			//m_LineResourceManager.Reset();
 		}
 		
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -211,7 +211,7 @@ namespace Zahra
 			m_CircleVertexBuffers.clear();
 
 			m_CircleRenderPass.Reset();
-			m_CircleResourceManager.Reset();
+			//m_CircleResourceManager.Reset();
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -238,7 +238,7 @@ namespace Zahra
 			m_QuadVertexBuffers.clear();
 
 			m_QuadRenderPass.Reset();
-			m_QuadResourceManager.Reset();
+			//m_QuadResourceManager.Reset();
 		}
 
 		for (auto& texture : m_TextureSlots)
@@ -297,11 +297,12 @@ namespace Zahra
 
 					m_QuadVertexBuffers[batch][frame]->SetData(m_QuadBatchStarts[batch], dataSize);
 
-					m_QuadResourceManager->Update("u_Sampler", m_TextureSlots);
-					Z_CORE_ASSERT(m_QuadResourceManager->ReadyToRender());
-					m_QuadResourceManager->ProcessChanges();
+					auto quadResourceManager = m_QuadRenderPass->GetResourceManager();
+					quadResourceManager->Update("u_Sampler", m_TextureSlots);
+					Z_CORE_ASSERT(quadResourceManager->ReadyToRender());
+					quadResourceManager->ProcessChanges();
 
-					Renderer::DrawIndexed(m_QuadRenderPass, m_QuadResourceManager, m_QuadVertexBuffers[batch][frame], m_QuadIndexBuffer, batchSize);
+					Renderer::DrawIndexed(m_QuadRenderPass, m_QuadVertexBuffers[batch][frame], m_QuadIndexBuffer, batchSize);
 
 					m_Stats.QuadBatchCount++;
 					m_Stats.DrawCalls++;
@@ -325,9 +326,9 @@ namespace Zahra
 
 					m_CircleVertexBuffers[batch][frame]->SetData(m_CircleBatchStarts[batch], dataSize);
 
-					Z_CORE_ASSERT(m_CircleResourceManager->ReadyToRender());
+					Z_CORE_ASSERT(m_CircleRenderPass->GetResourceManager()->ReadyToRender());
 
-					Renderer::DrawIndexed(m_CircleRenderPass, m_CircleResourceManager, m_CircleVertexBuffers[batch][frame], m_QuadIndexBuffer, batchSize);
+					Renderer::DrawIndexed(m_CircleRenderPass, m_CircleVertexBuffers[batch][frame], m_QuadIndexBuffer, batchSize);
 
 					m_Stats.CircleBatchCount++;
 					m_Stats.DrawCalls++;
@@ -353,9 +354,9 @@ namespace Zahra
 
 					m_LineVertexBuffers[batch][frame]->SetData(m_LineBatchStarts[batch], dataSize);
 
-					Z_CORE_ASSERT(m_LineResourceManager->ReadyToRender());
+					Z_CORE_ASSERT(m_LineRenderPass->GetResourceManager()->ReadyToRender());
 
-					Renderer::Draw(m_LineRenderPass, m_LineResourceManager, m_LineVertexBuffers[batch][frame], batchSize);
+					Renderer::Draw(m_LineRenderPass, m_LineVertexBuffers[batch][frame], batchSize);
 
 					m_Stats.LineBatchCount++;
 					m_Stats.DrawCalls++;

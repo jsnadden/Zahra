@@ -31,7 +31,7 @@ namespace Zahra
 		Ref<RenderPass>					ClearRenderPass;
 
 		Ref<Shader>						FullscreenTriangleShader;
-		Ref<ShaderResourceManager>		FullscreenTriangleResourceManager;
+		//Ref<ShaderResourceManager>		FullscreenTriangleResourceManager;
 		Ref<RenderPass>					FullscreenTriangleRenderPass;
 	};
 
@@ -79,6 +79,7 @@ namespace Zahra
 			renderPassSpec.RenderTarget = s_Data.PrimaryFramebuffer;
 			renderPassSpec.ClearColourAttachments = true;
 			renderPassSpec.ClearDepthAttachment = true;
+			renderPassSpec.ManagesResources = false;
 			s_Data.ClearRenderPass = RenderPass::Create(renderPassSpec);
 		}
 
@@ -89,11 +90,11 @@ namespace Zahra
 			shaderSpec.Name = "fullscreen_triangle";
 			s_Data.FullscreenTriangleShader = Shader::Create(shaderSpec);
 
-			ShaderResourceManagerSpecification resourceManagerSpec{};
+			/*ShaderResourceManagerSpecification resourceManagerSpec{};
 			resourceManagerSpec.Shader = s_Data.FullscreenTriangleShader;
 			resourceManagerSpec.FirstSet = 0;
 			resourceManagerSpec.LastSet = 0;
-			s_Data.FullscreenTriangleResourceManager = ShaderResourceManager::Create(resourceManagerSpec);
+			s_Data.FullscreenTriangleResourceManager = ShaderResourceManager::Create(resourceManagerSpec);*/
 
 			RenderPassSpecification renderPassSpec{};
 			renderPassSpec.Name = "Renderer_FullscreenTriangleRenderPass";
@@ -101,8 +102,9 @@ namespace Zahra
 			renderPassSpec.ClearColourAttachments = true;
 			s_Data.FullscreenTriangleRenderPass = RenderPass::Create(renderPassSpec);
 
-			s_Data.FullscreenTriangleResourceManager->Set("u_Sampler", s_Data.PrimaryRenderTargetTexture);
-			s_Data.FullscreenTriangleResourceManager->ProcessChanges();
+			auto resourceManager = s_Data.FullscreenTriangleRenderPass->GetResourceManager();
+			resourceManager->Set("u_Sampler", s_Data.PrimaryRenderTargetTexture);
+			resourceManager->ProcessChanges();
 		}
 
 		//Z_CORE_INFO("Rendering engine has initialised");
@@ -111,7 +113,7 @@ namespace Zahra
 	void Renderer::Shutdown()
 	{
 		s_Data.FullscreenTriangleRenderPass.Reset();
-		s_Data.FullscreenTriangleResourceManager.Reset();
+		//s_Data.FullscreenTriangleResourceManager.Reset();
 		s_Data.FullscreenTriangleShader.Reset();
 
 		s_Data.ClearRenderPass.Reset();
@@ -191,7 +193,7 @@ namespace Zahra
 	void Renderer::EndFrame()
 	{
 		s_RendererAPI->BeginRenderPass(s_Data.FullscreenTriangleRenderPass);
-		s_RendererAPI->DrawFullscreenTriangle(s_Data.FullscreenTriangleRenderPass, s_Data.FullscreenTriangleResourceManager);
+		s_RendererAPI->DrawFullscreenTriangle(s_Data.FullscreenTriangleRenderPass);
 		s_RendererAPI->EndRenderPass();
 
 		s_RendererAPI->EndFrame();
@@ -221,29 +223,30 @@ namespace Zahra
 		s_Data.PrimaryFramebuffer->Resize(width, height);
 		s_Data.ClearRenderPass->OnResize();
 
-		s_Data.FullscreenTriangleResourceManager->Set("u_Sampler", s_Data.PrimaryRenderTargetTexture);
-		Z_CORE_ASSERT(s_Data.FullscreenTriangleResourceManager->ReadyToRender());
-;		s_Data.FullscreenTriangleResourceManager->ProcessChanges();
+		auto resourceManager = s_Data.FullscreenTriangleRenderPass->GetResourceManager();
+		resourceManager->Set("u_Sampler", s_Data.PrimaryRenderTargetTexture);
+		Z_CORE_ASSERT(resourceManager->ReadyToRender());
+;		resourceManager->ProcessChanges();
 		s_Data.FullscreenTriangleRenderPass->OnResize();
 	}
 
-	void Renderer::Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)
+	void Renderer::Draw(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)
 	{
-		s_RendererAPI->Draw(renderPass, resourceManager, vertexBuffer, vertexCount);
+		s_RendererAPI->Draw(renderPass, vertexBuffer, vertexCount);
 
 		s_Data.Statistics.DrawCallCount++;
 	}
 
-	void Renderer::DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount, uint32_t startingIndex)
+	void Renderer::DrawIndexed(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount, uint32_t startingIndex)
 	{
-		s_RendererAPI->DrawIndexed(renderPass, resourceManager, vertexBuffer, indexBuffer, indexCount, startingIndex);
+		s_RendererAPI->DrawIndexed(renderPass, vertexBuffer, indexBuffer, indexCount, startingIndex);
 
 		s_Data.Statistics.DrawCallCount++;
 	}
 
-	void Renderer::DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh)
+	void Renderer::DrawMesh(Ref<RenderPass>& renderPass, Ref<StaticMesh>& mesh)
 	{
-		s_RendererAPI->DrawMesh(renderPass, resourceManager, mesh);
+		s_RendererAPI->DrawMesh(renderPass, mesh);
 
 		s_Data.Statistics.DrawCallCount++;
 

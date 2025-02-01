@@ -154,7 +154,7 @@ namespace Zahra
 		m_Swapchain->PresentImage();
 	}
 
-	void VulkanRendererAPI::Draw(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)
+	void VulkanRendererAPI::Draw(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
@@ -163,16 +163,12 @@ namespace Zahra
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vulkanVertexBufferArray, offsets);
 
-		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
-			vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+		vulkanRenderPass->BindManagedResources(commandBuffer);
 
 		vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
 	}
 
-	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount, uint32_t startingIndex)
+	void VulkanRendererAPI::DrawIndexed(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount, uint32_t startingIndex)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
@@ -184,11 +180,7 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = indexBuffer.As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-			auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-			auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-			uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
-				vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+		vulkanRenderPass->BindManagedResources(commandBuffer);
 
 		if (indexCount == 0)
 			indexCount = indexBuffer->GetCount() - startingIndex;
@@ -196,7 +188,7 @@ namespace Zahra
 		vkCmdDrawIndexed(commandBuffer, indexCount, 1, startingIndex, 0, 0);
 	}
 
-	void VulkanRendererAPI::DrawMesh(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager, Ref<StaticMesh>& mesh)
+	void VulkanRendererAPI::DrawMesh(Ref<RenderPass>& renderPass, Ref<StaticMesh>& mesh)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
@@ -208,25 +200,17 @@ namespace Zahra
 		VkBuffer vulkanIndexBuffer = mesh->GetIndexBuffer().As<VulkanIndexBuffer>()->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-			auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-			auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-			uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
-				vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+		vulkanRenderPass->BindManagedResources(commandBuffer);
 
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh->GetIndexBuffer()->GetCount(), 1, 0, 0, 0);
 	}
 
-	void VulkanRendererAPI::DrawFullscreenTriangle(Ref<RenderPass>& renderPass, Ref<ShaderResourceManager>& resourceManager)
+	void VulkanRendererAPI::DrawFullscreenTriangle(Ref<RenderPass>& renderPass)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();
 
-		auto vulkanResourceManager = resourceManager.As<VulkanShaderResourceManager>();
-		auto& descriptorSets = vulkanResourceManager->GetDescriptorSets();
-		uint32_t setCount = vulkanResourceManager->GetLastSet() - vulkanResourceManager->GetFirstSet() + 1;
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetVkPipelineLayout(),
-			vulkanResourceManager->GetFirstSet(), setCount, descriptorSets.data(), 0, nullptr);
+		vulkanRenderPass->BindManagedResources(commandBuffer);
 
 		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 	}

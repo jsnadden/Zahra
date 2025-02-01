@@ -43,7 +43,7 @@ namespace Zahra
 		void CreateColourAttachment(uint32_t index);
 		void CreateDepthStencilAttachment();
 
-		bool ValidateSpecification();
+		bool SpecificationValid();
 
 	};
 

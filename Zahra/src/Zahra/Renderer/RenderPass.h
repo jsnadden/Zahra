@@ -4,6 +4,7 @@
 #include "Zahra/Renderer/Image.h"
 #include "Zahra/Renderer/RendererTypes.h"
 #include "Zahra/Renderer/Shader.h"
+#include "Zahra/Renderer/ShaderResourceManager.h"
 #include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/VertexBuffer.h"
 
@@ -29,9 +30,13 @@ namespace Zahra
 		bool DynamicLineWidths = false;
 
 		// render target
-		Ref<Framebuffer> RenderTarget; // if not set, will target swapchain instead
+		Ref<Framebuffer> RenderTarget; // if nullptr, will target swapchain instead
 		bool ClearColourAttachments = false;
 		bool ClearDepthAttachment = false;
+
+		// shader resources
+		bool ManagesResources = true;
+		uint32_t FirstSet = 0, LastSet = 0;
 	};
 
 	class RenderPass : public RefCounted
@@ -40,7 +45,8 @@ namespace Zahra
 		virtual ~RenderPass() = default;
 
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
-		virtual const Ref<Framebuffer> GetRenderTarget() const = 0;
+		virtual Ref<Framebuffer> GetRenderTarget() = 0;
+		virtual Ref<ShaderResourceManager> GetResourceManager() = 0;
 
 		virtual bool TargetSwapchain() = 0;
 

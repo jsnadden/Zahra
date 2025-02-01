@@ -6,7 +6,7 @@ namespace Zahra
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification& specification)
 		: m_Specification(specification)
 	{
-		Z_CORE_ASSERT(ValidateSpecification());
+		Z_CORE_ASSERT(SpecificationValid());
 
 		if (m_Specification.Width == 0)
 			m_Specification.Width = Renderer::GetSwapchainWidth();
@@ -181,7 +181,7 @@ namespace Zahra
 		m_DepthStencilAttachment = Ref<VulkanImage2D>::Create(imageSpec);
 	}
 
-	bool VulkanFramebuffer::ValidateSpecification()
+	bool VulkanFramebuffer::SpecificationValid()
 	{
 		// TODO: check whether attachment specs are sensible
 		return true;
