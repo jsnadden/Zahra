@@ -42,7 +42,6 @@ namespace Zahra
 		spec.GPURequirements.MinBoundTextureSlots = 32;
 
 		spec.ImGuiConfig.Enabled = true;
-		spec.ImGuiConfig.ColourCorrectSceneTextures = true;
 
 		return new Meadow(spec);
 	}

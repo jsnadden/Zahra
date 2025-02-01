@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor/TypeDefs.h"
+#include "Editor/EditorEnums.h"
 
 #include <Zahra.h>
 

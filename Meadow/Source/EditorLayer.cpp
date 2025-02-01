@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include "Editor/Editor.h"
+
 #include "Zahra/Maths/Maths.h"
 #include "Zahra/Projects/Project.h"
 #include "Zahra/Scene/SceneSerialiser.h"
@@ -107,7 +108,7 @@ namespace Zahra
 			framebufferSpec.Height = 1;
 			{
 				auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
-				attachment.Format = ImageFormat::SRGBA;
+				attachment.Format = ImageFormat::RGBA_UN;
 			}
 			{
 				auto& attachment = framebufferSpec.ColourAttachmentSpecs.emplace_back();
@@ -720,13 +721,14 @@ namespace Zahra
 		if (!selection || m_GizmoType == TransformationType::None || m_EditorCamera.Controlled())
 			return;
 		
-		// Configure ImGuizmo
-		{
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
-			ImGuizmo::SetGizmoSizeClipSpace(.15f);
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+		ImGuizmo::SetGizmoSizeClipSpace(.15f);
 
+		static bool imGuizmoStyleSet = false;
+		if (!imGuizmoStyleSet)
+		{
 			ImGuizmo::Style* style = &ImGuizmo::GetStyle();
 			style->TranslationLineThickness = 6.0f;
 			style->TranslationLineArrowSize = 12.0f;
@@ -737,36 +739,33 @@ namespace Zahra
 			style->CenterCircleSize = 8.0f;
 
 			ImVec4* colors = style->Colors;
-			colors[ImGuizmo::DIRECTION_X]			= ImVec4(.80f, .10f, .15f, .80f);
-			colors[ImGuizmo::DIRECTION_Y]			= ImVec4(.20f, .70f, .20f, .80f);
-			colors[ImGuizmo::DIRECTION_Z]			= ImVec4(.10f, .25f, .80f, .80f);
-			colors[ImGuizmo::PLANE_X]				= ImVec4(.80f, .10f, .15f, .80f);
-			colors[ImGuizmo::PLANE_Y]				= ImVec4(.20f, .70f, .20f, .80f);
-			colors[ImGuizmo::PLANE_Z]				= ImVec4(.10f, .25f, .80f, .80f);
-			colors[ImGuizmo::SELECTION]				= ImVec4(.97f, .77f, .22f, .80f);
-			colors[ImGuizmo::ROTATION_USING_BORDER]	= ImVec4(.97f, .77f, .22f, .80f);
-			colors[ImGuizmo::ROTATION_USING_FILL]	= ImVec4(.97f, .77f, .22f, .80f);
-			colors[ImGuizmo::TEXT]					= ImVec4(.98f, .95f, .89f, .99f);
-			colors[ImGuizmo::TEXT_SHADOW]			= ImVec4(.10f, .10f, .10f, .99f);
-			colors[ImGuizmo::HATCHED_AXIS_LINES]	= ImVec4(.00f, .00f, .00f, .00f);
+			colors[ImGuizmo::DIRECTION_X]			= ImVec4(MEADOW_RED_1,		0.80f);
+			colors[ImGuizmo::DIRECTION_Y]			= ImVec4(MEADOW_BLUE_1,		0.80f);
+			colors[ImGuizmo::DIRECTION_Z]			= ImVec4(MEADOW_GREEN_1,	0.80f);
+			colors[ImGuizmo::PLANE_X]				= ImVec4(MEADOW_RED_1,		0.80f);
+			colors[ImGuizmo::PLANE_Y]				= ImVec4(MEADOW_BLUE_1,		0.80f);
+			colors[ImGuizmo::PLANE_Z]				= ImVec4(MEADOW_GREEN_1,	0.80f);
+			colors[ImGuizmo::SELECTION]				= ImVec4(MEADOW_YELLOW_2,	0.80f);
+			colors[ImGuizmo::ROTATION_USING_BORDER]	= ImVec4(MEADOW_YELLOW_2,	0.80f);
+			colors[ImGuizmo::ROTATION_USING_FILL]	= ImVec4(MEADOW_YELLOW_2,	0.80f);
+			colors[ImGuizmo::TEXT]					= ImVec4(MEADOW_WHITE_1,	0.99f);
+			colors[ImGuizmo::TEXT_SHADOW]			= ImVec4(MEADOW_GREY_1,		0.99f);
+			colors[ImGuizmo::HATCHED_AXIS_LINES]	= ImVec4(.00f, .00f, .00f,	0.00f);
+
+			imGuizmoStyleSet = true;
 		}
 
-
-		// Gather camera details
 		glm::mat4 cameraProjection = m_EditorCamera.GetProjection();
 		cameraProjection[1][1] *= -1.f;
 		glm::mat4 cameraView = m_EditorCamera.GetView();
 
-		// Get current transform values
 		auto& transformComponent = selection.GetComponents<TransformComponent>();
 		glm::mat4 transform = transformComponent.GetTransform();
 
-		// Configure snapping
 		bool snap = Input::IsKeyPressed(Key::LeftControl);
 		float snapValue = (m_GizmoType == TransformationType::Rotation) ? 45.0f : 0.5f;
 		float snapVector[3] = { snapValue, snapValue, snapValue };
 
-		// Gizmo type conversion
 		ImGuizmo::OPERATION op;
 		switch (m_GizmoType)
 		{
@@ -775,7 +774,6 @@ namespace Zahra
 			case TransformationType::Scale:			op = ImGuizmo::SCALE;		break;
 		}
 
-		// Pass data to ImGuizmo
 		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), op,
 			ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapVector : nullptr);
 

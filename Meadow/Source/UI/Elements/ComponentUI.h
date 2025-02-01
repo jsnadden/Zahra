@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Editor/Editor.h"
+#include "UI/Elements/ColourDefs.h"
+
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 
@@ -10,7 +12,6 @@
 
 namespace Zahra
 {
-
 	namespace ComponentUI
 	{
 		template <typename T, typename UIFunction>
@@ -147,9 +148,9 @@ namespace Zahra
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2);
 			ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.8f, .1f, .15f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.9f, .2f, .20f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.8f, .1f, .15f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_Button,			ImVec4(MEADOW_RED_1, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered,	ImVec4(MEADOW_RED_2, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive,	ImVec4(MEADOW_RED_1, 1.0f));
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("X", buttonSize))
 				{
@@ -168,9 +169,9 @@ namespace Zahra
 			}
 			ImGui::SameLine();
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.2f, .7f, .2f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.3f, .8f, .3f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.2f, .7f, .2f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_Button,			ImVec4(MEADOW_GREEN_1, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered,	ImVec4(MEADOW_GREEN_2, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive,	ImVec4(MEADOW_GREEN_1, 1.0f));
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("Y", buttonSize))
 				{
@@ -224,9 +225,9 @@ namespace Zahra
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2);
 			ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.8f, .1f, .15f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.9f, .2f, .20f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.8f, .1f, .15f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_Button,			ImVec4(MEADOW_RED_1, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered,	ImVec4(MEADOW_RED_2, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive,	ImVec4(MEADOW_RED_1, 1.0f));
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("X", buttonSize))
 				{
@@ -245,9 +246,9 @@ namespace Zahra
 			}
 			ImGui::SameLine();
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.2f, .7f, .2f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.3f, .8f, .3f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.2f, .7f, .2f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_Button,			ImVec4(MEADOW_GREEN_1, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered,	ImVec4(MEADOW_GREEN_2, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive,	ImVec4(MEADOW_GREEN_1, 1.0f));
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("Y", buttonSize))
 				{
@@ -266,9 +267,9 @@ namespace Zahra
 			}
 			ImGui::SameLine();
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.1f, .25f, .8f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.2f, .35f, .9f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.1f, .25f, .8f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_Button,			ImVec4(MEADOW_BLUE_1, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered,	ImVec4(MEADOW_BLUE_2, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive,	ImVec4(MEADOW_BLUE_1, 1.0f));
 				ImGui::PushFont(boldFont);
 				if (ImGui::Button("Z", buttonSize))
 				{
@@ -314,9 +315,9 @@ namespace Zahra
 
 			glm::vec3 eulers = transform.GetEulers();
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.8f, .1f, .15f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.9f, .2f, .20f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.8f, .1f, .15f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_Button,			ImVec4(MEADOW_RED_1, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered,	ImVec4(MEADOW_RED_2, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive,	ImVec4(MEADOW_RED_1, 1.0f));
 				ImGui::PushFont(boldFont);
 				{
 					if (ImGui::Button("X", buttonSize))
@@ -332,9 +333,9 @@ namespace Zahra
 			}
 			ImGui::SameLine();
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.2f, .7f, .2f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.3f, .8f, .3f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.2f, .7f, .2f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_Button,			ImVec4(MEADOW_GREEN_1, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered,	ImVec4(MEADOW_GREEN_2, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive,	ImVec4(MEADOW_GREEN_1, 1.0f));
 				ImGui::PushFont(boldFont);
 				{
 					if (ImGui::Button("Y", buttonSize))
@@ -351,9 +352,9 @@ namespace Zahra
 			ImGui::SameLine();
 			{
 				{
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.1f, .25f, .8f, 1.0f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.2f, .35f, .9f, 1.0f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.1f, .25f, .8f, 1.0f));
+					ImGui::PushStyleColor(ImGuiCol_Button,			ImVec4(MEADOW_BLUE_1, 1.0f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered,	ImVec4(MEADOW_BLUE_2, 1.0f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive,	ImVec4(MEADOW_BLUE_1, 1.0f));
 					ImGui::PushFont(boldFont);					
 					{
 						if (ImGui::Button("Z", buttonSize))
@@ -502,8 +503,8 @@ namespace Zahra
 
 						Texture2DSpecification textureSpec{};
 						textureSpec.GenerateMips = true;
-						if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
-							textureSpec.Format = ImageFormat::RGBA_UN;
+						/*if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
+							textureSpec.Format = ImageFormat::RGBA_UN;*/
 
 						texture = Texture2D::CreateFromFile(textureSpec, filepath);
 					}

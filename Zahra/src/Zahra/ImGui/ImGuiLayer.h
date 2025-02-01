@@ -12,7 +12,6 @@ namespace Zahra
 	struct ImGuiLayerConfig
 	{
 		bool Enabled = true;
-		bool ColourCorrectSceneTextures = false;
 
 		// colour scheme stuff?
 	};

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Editor/Editor.h"
-#include "Utils/TypeDefs.h"
+#include "Utils/EditorEnums.h"
 #include "Panels/SceneHierarchyPanel.h"
 
 namespace Zahra

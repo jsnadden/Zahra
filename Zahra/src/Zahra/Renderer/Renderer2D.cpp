@@ -298,6 +298,7 @@ namespace Zahra
 					m_QuadVertexBuffers[batch][frame]->SetData(m_QuadBatchStarts[batch], dataSize);
 
 					m_QuadResourceManager->Update("u_Sampler", m_TextureSlots);
+					Z_CORE_ASSERT(m_QuadResourceManager->ReadyToRender());
 					m_QuadResourceManager->ProcessChanges();
 
 					Renderer::DrawIndexed(m_QuadRenderPass, m_QuadResourceManager, m_QuadVertexBuffers[batch][frame], m_QuadIndexBuffer, batchSize);
@@ -324,6 +325,8 @@ namespace Zahra
 
 					m_CircleVertexBuffers[batch][frame]->SetData(m_CircleBatchStarts[batch], dataSize);
 
+					Z_CORE_ASSERT(m_CircleResourceManager->ReadyToRender());
+
 					Renderer::DrawIndexed(m_CircleRenderPass, m_CircleResourceManager, m_CircleVertexBuffers[batch][frame], m_QuadIndexBuffer, batchSize);
 
 					m_Stats.CircleBatchCount++;
@@ -349,6 +352,8 @@ namespace Zahra
 						c_MaxLineVerticesPerBatch;
 
 					m_LineVertexBuffers[batch][frame]->SetData(m_LineBatchStarts[batch], dataSize);
+
+					Z_CORE_ASSERT(m_LineResourceManager->ReadyToRender());
 
 					Renderer::Draw(m_LineRenderPass, m_LineResourceManager, m_LineVertexBuffers[batch][frame], batchSize);
 

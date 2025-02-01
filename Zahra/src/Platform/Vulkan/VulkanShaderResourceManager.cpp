@@ -305,8 +305,6 @@ namespace Zahra
 
 	void VulkanShaderResourceManager::ProcessChanges()
 	{
-		Z_CORE_ASSERT(ReadyToRender())
-
 		vkUpdateDescriptorSets(VulkanContext::GetCurrentVkDevice(), (uint32_t)m_UpdateQueue.size(), m_UpdateQueue.data(), 0, nullptr);
 		m_UpdateQueue.clear();
 	}

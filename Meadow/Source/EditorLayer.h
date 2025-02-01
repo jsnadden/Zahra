@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Editor/TypeDefs.h"
+#include "Editor/EditorEnums.h"
+#include "UI/Elements/ColourDefs.h"
 #include "UI/Panels/ContentBrowserPanel.h"
 #include "UI/Panels/SceneHierarchyPanel.h"
 
@@ -104,7 +105,7 @@ namespace Zahra
 		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
 		glm::vec2 m_ViewportBounds[2] = { {}, {} };
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
-		glm::vec4 m_HighlightSelectionColour = { 0.92f, 0.72f, 0.18f, 1.00f };
+		glm::vec4 m_HighlightSelectionColour = { MEADOW_YELLOW_1, 1.00f };
 
 		void ReadHoveredEntity();
 

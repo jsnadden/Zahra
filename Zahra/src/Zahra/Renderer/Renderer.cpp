@@ -52,7 +52,7 @@ namespace Zahra
 		{
 			Image2DSpecification imageSpec{};
 			imageSpec.Name = "Renderer_PrimaryRenderTarget";
-			imageSpec.Format = ImageFormat::SRGBA;
+			imageSpec.Format = ImageFormat::RGBA_UN;
 			imageSpec.Width = s_RendererAPI->GetSwapchainWidth();
 			imageSpec.Height = s_RendererAPI->GetSwapchainHeight();
 			imageSpec.Sampled = true;
@@ -222,7 +222,8 @@ namespace Zahra
 		s_Data.ClearRenderPass->OnResize();
 
 		s_Data.FullscreenTriangleResourceManager->Set("u_Sampler", s_Data.PrimaryRenderTargetTexture);
-		s_Data.FullscreenTriangleResourceManager->ProcessChanges();
+		Z_CORE_ASSERT(s_Data.FullscreenTriangleResourceManager->ReadyToRender());
+;		s_Data.FullscreenTriangleResourceManager->ProcessChanges();
 		s_Data.FullscreenTriangleRenderPass->OnResize();
 	}
 

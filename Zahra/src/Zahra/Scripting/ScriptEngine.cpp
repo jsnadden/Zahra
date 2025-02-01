@@ -164,6 +164,9 @@ namespace Zahra
 
 			Z_CORE_INFO("Script engine has succesfully loaded app assembly '{}'. Auto reloading {}.", assemblyFilepath.string().c_str(), enableAutoReload ? "enabled" : "disabled");
 			s_SEData->HaveLoadedAppAssembly = true;
+
+			for (auto& [i, fn] : s_SEData->ReloadCallbacks)
+				fn();
 		}
 
 		return s_SEData->HaveLoadedAppAssembly;
