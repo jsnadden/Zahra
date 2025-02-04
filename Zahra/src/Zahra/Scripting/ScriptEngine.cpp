@@ -577,7 +577,7 @@ namespace Zahra
 	}
 
 
-	ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, UUID uuid)
+	ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, UUID entityID)
 		: m_ScriptClass(scriptClass)
 	{
 		m_MonoObject = m_ScriptClass->Instantiate();
@@ -590,7 +590,7 @@ namespace Zahra
 		Z_CORE_ASSERT(m_Constructor && m_OnCreate && m_OnEarlyUpdate && m_OnLateUpdate,
 			"ScriptClass is missing a required method");
 
-		void* args = &uuid;
+		void* args = &entityID;
 		m_ScriptClass->InvokeMethod(m_MonoObject, m_Constructor, &args);
 	}
 

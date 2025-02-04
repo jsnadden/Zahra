@@ -244,7 +244,7 @@ namespace Zahra
 		s_Data.Statistics.DrawCallCount++;
 	}
 
-	void Renderer::DrawMesh(Ref<RenderPass>& renderPass, Ref<StaticMesh>& mesh)
+	void Renderer::DrawMesh(Ref<RenderPass>& renderPass, Ref<Mesh>& mesh)
 	{
 		s_RendererAPI->DrawMesh(renderPass, mesh);
 

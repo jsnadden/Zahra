@@ -33,7 +33,7 @@ namespace Zahra
 
 		virtual void Draw(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount) override;
 		virtual void DrawIndexed(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0) override;
-		virtual void DrawMesh(Ref<RenderPass>& renderPass, Ref<StaticMesh>& mesh) override;
+		virtual void DrawMesh(Ref<RenderPass>& renderPass, Ref<Mesh>& mesh) override;
 		virtual void DrawFullscreenTriangle(Ref<RenderPass>& renderPass) override;
 
 		virtual void SetLineWidth(float width) override;

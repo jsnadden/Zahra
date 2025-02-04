@@ -1,11 +1,26 @@
 #include "zpch.h"
 #include "Project.h"
 
-#include "ProjectSerialiser.h"
+#include "Zahra/Core/Application.h"
+#include "Zahra/Projects/ProjectSerialiser.h"
 
 namespace Zahra
 {
 	static Ref<Project> s_ActiveProject;
+
+	Ref<EditorAssetManager> Project::GetEditorAssetManager()
+	{
+		Z_CORE_ASSERT(Application::Get().GetSpecification().IsEditor);
+
+		return m_AssetManager.As<EditorAssetManager>();
+	}
+
+	Ref<RuntimeAssetManager> Project::GetRuntimeAssetManager()
+	{
+		Z_CORE_ASSERT(!Application::Get().GetSpecification().IsEditor);
+
+		return m_AssetManager.As<RuntimeAssetManager>();
+	}
 
 	Ref<Project> Project::GetActive()
 	{

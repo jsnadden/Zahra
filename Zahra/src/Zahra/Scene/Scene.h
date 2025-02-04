@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Zahra/Assets/Asset.h"
 #include "Zahra/Core/Buffer.h"
 #include "Zahra/Renderer/Cameras/EditorCamera.h"
 #include "Zahra/Renderer/Renderer2D.h"
@@ -15,7 +16,7 @@ namespace Zahra
 {
 	class Entity;
 
-	class Scene : public RefCounted
+	class Scene : public Asset
 	{
 	public:
 		Scene(const std::string& sceneName = "Untitled");
@@ -77,6 +78,9 @@ namespace Zahra
 		};
 
 		static DebugRenderSettings& GetDebugRenderSettings();
+
+		static AssetType GetAssetTypeStatic() { return AssetType::Scene; }
+		virtual AssetType GetAssetType() const override { return GetAssetTypeStatic(); }
 
 	private:
 		std::string m_SceneName;

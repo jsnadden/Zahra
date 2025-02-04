@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Zahra/Assets/Asset.h"
 #include "Zahra/Core/Buffer.h"
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/MonoExterns.h"
@@ -111,7 +112,13 @@ namespace Zahra
 		const std::string& GetName() { return m_FullClassName; }
 		const std::vector<ScriptField>& GetPublicFields() const { return m_PublicFields; }
 
-	protected:
+	private:
+		MonoClass* m_MonoClass = nullptr;
+
+		std::string m_FullClassName;
+
+		std::vector<ScriptField> m_PublicFields;
+
 		ScriptClass(MonoImage* image, const std::string& classNamespace, const std::string& className);
 
 		MonoClass* GetMonoClass() { return m_MonoClass; }
@@ -120,21 +127,14 @@ namespace Zahra
 		MonoObject* Instantiate();
 		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** args);
 
-	private:
-		MonoClass* m_MonoClass = nullptr;
-
-		std::string m_FullClassName;
-
-		std::vector<ScriptField> m_PublicFields;
-
 		friend class ScriptInstance;
 		friend class ScriptEngine;
 	};
 
-	class ScriptInstance : public RefCounted
+	class ScriptInstance : public Asset
 	{
 	public:
-		ScriptInstance(Ref<ScriptClass> scriptClass, UUID uuid);
+		ScriptInstance(Ref<ScriptClass> scriptClass, UUID entityID);
 
 		Ref<ScriptClass> GetScriptClass() { return m_ScriptClass; }
 
@@ -154,12 +154,8 @@ namespace Zahra
 			SetScriptFieldValue(m_MonoObject, field.MonoField, (void*)&value);
 		}
 
-	protected:
-		void InvokeOnCreate();
-		void InvokeEarlyUpdate(float dt);
-		void InvokeLateUpdate(float dt);
-
-		MonoObject* GetMonoObject() const { return m_MonoObject; }
+		static AssetType GetAssetTypeStatic() { return AssetType::Script; }
+		virtual AssetType GetAssetType() const override { return GetAssetTypeStatic(); }
 
 	private:
 		Ref<ScriptClass> m_ScriptClass;
@@ -169,6 +165,12 @@ namespace Zahra
 		MonoMethod* m_OnCreate = nullptr;
 		MonoMethod* m_OnEarlyUpdate = nullptr; // pre-physics
 		MonoMethod* m_OnLateUpdate = nullptr; // post-physics
+
+		void InvokeOnCreate();
+		void InvokeEarlyUpdate(float dt);
+		void InvokeLateUpdate(float dt);
+
+		MonoObject* GetMonoObject() const { return m_MonoObject; }
 
 		void GetScriptFieldValue(MonoObject* object, MonoClassField* field, void* destination);
 		void SetScriptFieldValue(MonoObject* object, MonoClassField* field, void* source);

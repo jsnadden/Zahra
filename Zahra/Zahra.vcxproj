@@ -144,6 +144,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Zahra\Assets\Asset.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanAllocator.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h" />
@@ -165,6 +166,14 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanVertexBuffer.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Zahra.h" />
+    <ClInclude Include="src\Zahra\Assets\AssetLoader.h" />
+    <ClInclude Include="src\Zahra\Assets\AssetManager.cpp" />
+    <ClInclude Include="src\Zahra\Assets\AssetManagerBase.cpp" />
+    <ClInclude Include="src\Zahra\Assets\AssetManager.h" />
+    <ClInclude Include="src\Zahra\Assets\AssetManagerBase.h" />
+    <ClInclude Include="src\Zahra\Assets\AssetType.h" />
+    <ClInclude Include="src\Zahra\Assets\EditorAssetManager.h" />
+    <ClInclude Include="src\Zahra\Assets\RuntimeAssetManager.h" />
     <ClInclude Include="src\Zahra\Core\Application.h" />
     <ClInclude Include="src\Zahra\Core\Assert.h" />
     <ClInclude Include="src\Zahra\Core\Buffer.h" />
@@ -186,6 +195,7 @@
     <ClInclude Include="src\Zahra\Core\UUID.h" />
     <ClInclude Include="src\Zahra\Core\Window.h" />
     <ClInclude Include="src\Zahra\Debug\Profiling.h" />
+    <ClInclude Include="src\Zahra\Assets\EditorAssetManager.cpp" />
     <ClInclude Include="src\Zahra\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Zahra\Events\Event.h" />
     <ClInclude Include="src\Zahra\Events\KeyEvent.h" />
@@ -218,6 +228,7 @@
     <ClInclude Include="src\Zahra\Renderer\Texture.h" />
     <ClInclude Include="src\Zahra\Renderer\UniformBuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\VertexBuffer.h" />
+    <ClInclude Include="src\Zahra\Assets\RuntimeAssetManager.cpp" />
     <ClInclude Include="src\Zahra\Scene\Components.h" />
     <ClInclude Include="src\Zahra\Scene\Entity.h" />
     <ClInclude Include="src\Zahra\Scene\Scene.h" />
@@ -657,6 +668,7 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanImGuiLayer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanImage.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanIndexBuffer.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanMaterial.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanMesh.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRenderPass.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererAPI.cpp" />
@@ -670,6 +682,7 @@
     <ClCompile Include="src\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsThread.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
+    <ClCompile Include="src\Zahra\Assets\AssetLoader.cpp" />
     <ClCompile Include="src\Zahra\Core\Application.cpp" />
     <ClCompile Include="src\Zahra\Core\Layer.cpp" />
     <ClCompile Include="src\Zahra\Core\LayerStack.cpp" />

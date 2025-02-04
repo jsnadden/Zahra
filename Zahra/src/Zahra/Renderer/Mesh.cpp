@@ -6,7 +6,7 @@
 
 namespace Zahra
 {
-	Ref<StaticMesh> StaticMesh::CreateFromFile(MeshSpecification specification, const std::filesystem::path& filepath)
+	Ref<Mesh> Mesh::CreateFromFile(MeshSpecification specification, const std::filesystem::path& filepath)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -20,7 +20,7 @@ namespace Zahra
 		return nullptr;
 	}
 
-	//const std::string StaticMesh::Filepath(const MeshSpecification& specification)
+	//const std::string Mesh::Filepath(const MeshSpecification& specification)
 	//{
 	//	// TODO: get from asset manager (via project?)
 	//	std::string filepath = "Resources/Models";

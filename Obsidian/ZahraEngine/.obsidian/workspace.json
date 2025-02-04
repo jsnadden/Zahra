@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Conventions/Shader resource bindings.md",
+                "file": "TODO/The road to PBR.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Shader resource bindings"
+              "title": "The road to PBR"
             }
           }
         ]
@@ -164,8 +164,8 @@
   },
   "active": "e3f6df8361cc3fd2",
   "lastOpenFiles": [
-    "TODO/Shader compilation.md",
     "Conventions/Shader resource bindings.md",
+    "TODO/Shader compilation.md",
     "plan.md",
     "Planning & Learning/Renderer architecture.md",
     "Planning & Learning/Rendering pipeline.canvas",

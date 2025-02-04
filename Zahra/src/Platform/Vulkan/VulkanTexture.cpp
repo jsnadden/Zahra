@@ -4,65 +4,19 @@
 #include "Platform/Vulkan/VulkanContext.h"
 #include "Platform/Vulkan/VulkanImGuiLayer.h"
 
-#include <stb_image.h>
-
 namespace Zahra
 {
-	namespace VulkanUtils
-	{
-		VkFilter VulkanFilterMode(TextureFilterMode mode)
-		{
-			switch (mode)
-			{
-				case TextureFilterMode::Nearest:	return VK_FILTER_NEAREST;
-				case TextureFilterMode::Linear:		return VK_FILTER_LINEAR;
-			}
-
-			Z_CORE_ASSERT(false, "Unrecognised texture filtering mode");
-			return VK_FILTER_MAX_ENUM;
-		}
-
-		VkSamplerAddressMode VulkanAddressMode(TextureWrapMode mode)
-		{
-			switch (mode)
-			{
-				case TextureWrapMode::Repeat:			return VK_SAMPLER_ADDRESS_MODE_REPEAT;
-				case TextureWrapMode::MirroredRepeat:	return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-				case TextureWrapMode::ClampToEdge:		return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-				case TextureWrapMode::ClampToBorder:	return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-			}
-
-			Z_CORE_ASSERT(false, "Unrecognised texture tiling mode");
-			return VK_SAMPLER_ADDRESS_MODE_MAX_ENUM;
-		}
-
-	}
-
-	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, const std::filesystem::path& filepath)
+	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, Buffer imageData)
 		: m_Specification(specification)
 	{
-		int width, height, channels;
-
-		m_Filepath = filepath;
-		bool validfilepath = std::filesystem::exists(filepath);
-
-		stbi_uc* imageData = stbi_load(filepath.string().c_str(), &width, &height, &channels, 4);
-
-		Z_CORE_ASSERT(imageData, "Vulkan texture failed to load image.");
-
-		// TODO: to allow for hdr textures etc., stbi can query the image file to decide on a correct colour format
-		m_Format = m_Specification.Format;
-		m_Width = width;
-		m_Height = height;
+		Z_CORE_ASSERT(imageData, "Empty buffer");
 
 		m_MipLevels = 1;
 		if (specification.GenerateMips)
-			m_MipLevels += (uint32_t)glm::floor(glm::log2((float)glm::max(width, height)));
+			m_MipLevels += (uint32_t)glm::floor(glm::log2((float)glm::max(m_Specification.Width, m_Specification.Height)));
 
-		uint32_t dataSize = width * height * Image::BytesPerPixel(m_Format);
-		SetData((void*)imageData, dataSize);
-
-		stbi_image_free(imageData);
+		m_LocalImageData.Copy(imageData);
+		CreateImageAndDescriptorInfo();
 	}
 
 	VulkanTexture2D::VulkanTexture2D(Ref<VulkanImage2D>& image)
@@ -70,13 +24,11 @@ namespace Zahra
 	{
 		Z_CORE_ASSERT(image->GetSpecification().Sampled);
 
-		m_Filepath = "";
-
 		m_CreatedFromExistingImage = true;
 
-		m_Format = image->GetSpecification().Format;
-		m_Width = image->GetWidth();
-		m_Height = image->GetHeight();
+		m_Specification.Format = image->GetSpecification().Format;
+		m_Specification.Width = image->GetWidth();
+		m_Specification.Height = image->GetHeight();
 
 		m_MipLevels = 1;
 
@@ -88,26 +40,30 @@ namespace Zahra
 	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, uint32_t colour)
 		: m_Specification(specification)
 	{
-		m_Filepath = "";
-
-		m_Format = m_Specification.Format;
-		m_Width = 1;
-		m_Height = 1;
-
+		Z_CORE_ASSERT(!m_Specification.GenerateMips, "Generating mips for a solid colour texture is very silly");
 		m_MipLevels = 1;
 
-		uint32_t size = Image::BytesPerPixel(m_Format);
-		SetData((void*)&colour, size);
+		// TODO: extend to allow other formats. The buffer filling logic below will be more complex
+		Z_CORE_ASSERT(!m_Specification.Format == ImageFormat::SRGBA);
+		{
+			uint64_t pixelCount = m_Specification.Width * m_Specification.Height;
+			uint64_t pixelBytes = 4; // assuming srgba
+			m_LocalImageData.Allocate(pixelCount * pixelBytes);
+			for (uint64_t offset = 0; offset < pixelCount * pixelBytes; offset += pixelBytes)
+			{
+				m_LocalImageData.Write(&colour, pixelBytes, offset);
+			}
+		}
+
+		CreateImageAndDescriptorInfo();
 	}
 
 	VulkanTexture2D::~VulkanTexture2D()
 	{
 		VkDevice device = VulkanContext::GetCurrentVkDevice();
-
 		vkDeviceWaitIdle(device);
 
 		m_Image.Reset();
-
 		m_LocalImageData.Release();
 	}
 
@@ -115,8 +71,8 @@ namespace Zahra
 	{
 		Z_CORE_ASSERT(m_CreatedFromExistingImage, "Only call this method for a texture created from an existing image");
 
-		m_Width = width;
-		m_Height = height;
+		m_Specification.Width = width;
+		m_Specification.Height = height;
 
 		m_MipLevels = 1;
 
@@ -125,21 +81,16 @@ namespace Zahra
 		m_DescriptorImageInfo.sampler = m_Image->GetVkSampler();
 	}
 
-	void VulkanTexture2D::SetData(void* data, uint32_t size)
+	void VulkanTexture2D::CreateImageAndDescriptorInfo()
 	{
 		Ref<VulkanDevice>& device = VulkanContext::GetCurrentDevice();
 		VkDevice& vkDevice = device->GetVkDevice();
 
 		///////////////////////////////////////////////////////////////////////////
-		// Create local buffer
-		m_LocalImageData.Allocate(size);
-		m_LocalImageData.ZeroInitialise();
-		m_LocalImageData.Write(data, size);
-
-		///////////////////////////////////////////////////////////////////////////
 		// Create staging buffer on device
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
+		VkDeviceSize size = m_LocalImageData.GetSize();
 
 		device->CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -155,10 +106,10 @@ namespace Zahra
 		///////////////////////////////////////////////////////////////////////////
 		// Create sampled image
 		Image2DSpecification spec{};
-		spec.Width = m_Width;
-		spec.Height = m_Height;
+		spec.Width = m_Specification.Width;
+		spec.Height = m_Specification.Height;
 		spec.MipLevels = m_MipLevels;
-		spec.Format = m_Format;
+		spec.Format = m_Specification.Format;
 		spec.Sampled = true;
 		spec.TransferSource = true;
 		spec.TransferDestination = true;

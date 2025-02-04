@@ -1,5 +1,10 @@
 #pragma once
 
+#include "Zahra/Assets/AssetManager.h"
+#include "Zahra/Assets/AssetManagerBase.h"
+#include "Zahra/Assets/EditorAssetManager.h"
+#include "Zahra/Assets/RuntimeAssetManager.h"
+
 #include <filesystem>
 
 namespace Zahra
@@ -27,6 +32,9 @@ namespace Zahra
 		~Project() = default;
 
 		ProjectConfig& GetConfig() { return m_Config; }
+		Ref<AssetManagerBase> GetAssetManager() { return m_AssetManager; }
+		Ref<EditorAssetManager> GetEditorAssetManager();
+		Ref<RuntimeAssetManager> GetRuntimeAssetManager();
 
 		static Ref<Project> GetActive();
 
@@ -49,9 +57,11 @@ namespace Zahra
 		static std::filesystem::path GetScriptsDirectory();
 		static std::filesystem::path GetScriptAssemblyFilepath();
 		static std::filesystem::path GetTexturesDirectory();
-
+		
 	private:
 		ProjectConfig m_Config;
+
+		Ref<AssetManagerBase> m_AssetManager;
 
 		// TODO: add an AssetManager here (the project should "own" its associated assets, in
 		// the sense that unloading a project should clear them from memory)

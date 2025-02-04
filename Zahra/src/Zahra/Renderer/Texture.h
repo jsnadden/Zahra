@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Zahra/Assets/Asset.h"
 #include "Zahra/Core/Defines.h"
 #include "Zahra/Renderer/Image.h"
 
@@ -10,7 +11,7 @@ namespace Zahra
 {
 	typedef void* ImGuiTextureHandle;
 
-	class Texture : public RefCounted
+	class Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
@@ -19,37 +20,14 @@ namespace Zahra
 		virtual uint32_t GetHeight() const = 0;
 		virtual const std::filesystem::path& GetFilepath() const = 0;
 
-		// TODO: once we have a asset system in place this should be replaced with assetID
-		virtual uint64_t GetHash() const = 0;
-
-		//virtual void SetData(void* data, uint32_t size) = 0;
-		//virtual void SetData(Ref<Image2D> srcImage) = 0;
-	};
-
-	enum class TextureFilterMode
-	{
-		Nearest,
-		Linear
-	};
-
-	enum class TextureWrapMode
-	{
-		Repeat,
-		MirroredRepeat,
-		ClampToEdge,
-		ClampToBorder
+		static AssetType GetAssetTypeStatic() { return AssetType::Texture2D; }
+		virtual AssetType GetAssetType() const override { return GetAssetTypeStatic(); }
 	};
 
 	struct Texture2DSpecification
 	{
-		// TODO: not currently using these, as default values are set by VulkanImage
-		// If we actually want to use them, they should be moved to Image.h anyway
-		/*TextureFilterMode MinificationFilterMode = TextureFilterMode::Linear;
-		TextureFilterMode MagnificationFilterMode = TextureFilterMode::Linear;
-		TextureWrapMode WrapMode = TextureWrapMode::Repeat;*/
-
 		ImageFormat Format = ImageFormat::SRGBA;
-
+		uint32_t Width = 1, Height = 1;
 		bool KeepLocalData = true;
 		bool GenerateMips = false;
 	};
@@ -59,16 +37,16 @@ namespace Zahra
 	public:
 		virtual const Texture2DSpecification& GetSpecification() const = 0;
 
+		// TODO: find a way to avoid having to call this (callback queue in Image?)
 		// NOTE: only use this method if the texture was created from an existing
 		// image, and only do so after the image has already been resized
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-		// TODO: eventually want to remove this CreateFromFile method, and instead have CreateFromAssetID
-		static Ref<Texture2D> CreateFromFile(const Texture2DSpecification& specification, const std::filesystem::path& filepath);
 		static Ref<Texture2D> CreateFromImage2D(Ref<Image2D>& image);
 		static Ref<Texture2D> CreateFlatColourTexture(const Texture2DSpecification& specification, uint32_t colour);
-	};
 
+		static Ref<Texture2D> LoadTexture2DFromSource(const AssetHandle& handle, const AssetMetadata& metadata);
+	};
 
 }
 

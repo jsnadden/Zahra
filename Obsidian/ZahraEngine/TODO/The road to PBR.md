@@ -1,7 +1,7 @@
 1) Clean up current state of affairs:
-		- Move `ShaderResourceManager` into `RenderPass`
-		- Add push constant capabilities, and use them for camera data (instead of uniforms)
-2) Implement a generic `Material` class (basically just a generic wrapper for a bunch of uniforms, push constants, textures, etc.). This should include (de)serialisation
+		~~- Move `ShaderResourceManager` into `RenderPass`~~
+		- Add push constant capabilities to `ShaderResourceManager`
+2) Implement a generic `Material` class (basically just wrapper for a `ShaderResourceManager`), extending this with (de)serialisation, and interfaces for the editor AND asset systems
 4) Implement an `AssetManager`!!! Assets include:
 		- Textures
 		- Meshes

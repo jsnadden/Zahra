@@ -52,6 +52,8 @@ namespace Zahra
 		std::filesystem::path WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
 
+		bool IsEditor = false;
+
 		// TODO: find these a home
 		std::filesystem::path ShaderSourceDirectory;
 		std::filesystem::path ShaderCacheDirectory;

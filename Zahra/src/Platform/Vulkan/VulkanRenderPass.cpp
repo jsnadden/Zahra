@@ -143,6 +143,8 @@ namespace Zahra
 		if (!m_Specification.ManagesResources)
 			return;
 
+		// TODO: push constants?
+
 		auto& descriptorSets = m_ResourceManager->GetDescriptorSets();
 		uint32_t setCount = m_Specification.LastSet - m_Specification.FirstSet + 1;
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout,

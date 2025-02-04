@@ -31,6 +31,8 @@ namespace Zahra
 		spec.Version = ApplicationVersion(0, 1, 0);
 		spec.WorkingDirectory = ".";
 		spec.CommandLineArgs = args;
+		spec.IsEditor = true;
+
 		spec.ShaderSourceDirectory = "./Resources/Shaders";
 		spec.ShaderCacheDirectory = "./Cache/Shaders";
 

@@ -6,7 +6,7 @@
 
 namespace Zahra
 {
-	class VulkanStaticMesh : public StaticMesh
+	class VulkanStaticMesh : public Mesh
 	{
 	public:
 		VulkanStaticMesh(MeshSpecification specification, const std::filesystem::path& filepath);

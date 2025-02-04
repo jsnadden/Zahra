@@ -188,7 +188,7 @@ namespace Zahra
 		vkCmdDrawIndexed(commandBuffer, indexCount, 1, startingIndex, 0, 0);
 	}
 
-	void VulkanRendererAPI::DrawMesh(Ref<RenderPass>& renderPass, Ref<StaticMesh>& mesh)
+	void VulkanRendererAPI::DrawMesh(Ref<RenderPass>& renderPass, Ref<Mesh>& mesh)
 	{
 		VkCommandBuffer& commandBuffer = m_Swapchain->GetCurrentDrawCommandBuffer();
 		Ref<VulkanRenderPass> vulkanRenderPass = renderPass.As<VulkanRenderPass>();

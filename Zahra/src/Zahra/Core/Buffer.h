@@ -54,7 +54,8 @@ namespace Zahra
 
 		void ZeroInitialise()
 		{
-			if (Data) memset(Data, 0, Size);
+			if (Data)
+				memset(Data, 0, Size);
 		}
 
 		template <typename T>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Zahra/Assets/Asset.h"
 #include "Zahra/Renderer/IndexBuffer.h"
 #include "Zahra/Renderer/VertexBuffer.h"
 
@@ -39,17 +40,18 @@ namespace Zahra
 		MeshFileFormat SourceType = MeshFileFormat::None;
 	};
 
-	class StaticMesh : public RefCounted
+	class Mesh : public Asset
 	{
 	public:
-		virtual ~StaticMesh() {};
+		virtual ~Mesh() {};
 
 		virtual Ref<VertexBuffer> GetVertexBuffer() = 0;
 		virtual Ref<IndexBuffer> GetIndexBuffer() = 0;
 
-		static Ref<StaticMesh> CreateFromFile(MeshSpecification specification, const std::filesystem::path& filepath);
+		static Ref<Mesh> CreateFromFile(MeshSpecification specification, const std::filesystem::path& filepath);
 
-		//static const std::string Filepath(const MeshSpecification& specification);
+		static AssetType GetAssetTypeStatic() { return AssetType::Mesh; }
+		virtual AssetType GetAssetType() const override { return GetAssetTypeStatic(); }
 	};
 
 }

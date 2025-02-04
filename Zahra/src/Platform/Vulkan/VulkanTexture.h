@@ -11,15 +11,14 @@ namespace Zahra
 	class VulkanTexture2D : public Texture2D
 	{
 	public:
-		VulkanTexture2D(const Texture2DSpecification& specification, const std::filesystem::path& filepath);
+		VulkanTexture2D(const Texture2DSpecification& specification, Buffer imageData);
 		VulkanTexture2D(Ref<VulkanImage2D>& image);
 		VulkanTexture2D(const Texture2DSpecification& specification, uint32_t colour);
 		virtual ~VulkanTexture2D() override;
 
-		virtual uint32_t GetWidth() const override { return m_Width; }
-		virtual uint32_t GetHeight() const override { return m_Height; }
-		virtual const std::filesystem::path& GetFilepath() const override { return m_Filepath; }
 		virtual const Texture2DSpecification& GetSpecification() const override { return m_Specification; }
+		virtual uint32_t GetWidth() const override { return m_Specification.Width; }
+		virtual uint32_t GetHeight() const override { return m_Specification.Height; }
 
 		// TODO: once we have a asset system in place this should be replaced with assetIDs
 		virtual uint64_t GetHash() const { return (uint64_t)m_Image.As<VulkanImage2D>()->GetVkSampler(); }
@@ -32,12 +31,9 @@ namespace Zahra
 		VkDescriptorImageInfo& GetVkDescriptorImageInfo() { return m_DescriptorImageInfo; }
 
 	private:
-		std::filesystem::path m_Filepath;
 		Buffer m_LocalImageData;
 		
-		uint32_t m_Width, m_Height;
 		uint32_t m_MipLevels;
-		ImageFormat m_Format = ImageFormat::SRGBA;
 		Texture2DSpecification m_Specification{};
 
 		Ref<VulkanImage2D> m_Image;
@@ -45,7 +41,7 @@ namespace Zahra
 
 		VkDescriptorImageInfo m_DescriptorImageInfo{};
 
-		void SetData(void* data, uint32_t size);
+		void CreateImageAndDescriptorInfo();
 
 	};
 }

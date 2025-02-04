@@ -40,7 +40,7 @@ namespace Zahra
 
 		static void Draw(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, uint32_t vertexCount);
 		static void DrawIndexed(Ref<RenderPass>& renderPass, Ref<VertexBuffer>& vertexBuffer, Ref<IndexBuffer>& indexBuffer, uint32_t indexCount = 0, uint32_t startingIndex = 0);
-		static void DrawMesh(Ref<RenderPass>& renderPass, Ref<StaticMesh>& mesh);
+		static void DrawMesh(Ref<RenderPass>& renderPass, Ref<Mesh>& mesh);
 		
 		static void SetLineWidth(float width);
 
