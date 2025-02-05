@@ -17,6 +17,9 @@ namespace Zahra
 		virtual bool IsAssetHandleValid(AssetHandle handle) const override { return handle != 0 && m_AssetRegistry.find(handle) != m_AssetRegistry.end(); }
 		virtual bool IsAssetLoaded(AssetHandle handle) const override { return m_LoadedAssets.find(handle) != m_LoadedAssets.end(); }
 
+		bool SerialiseAssetRegistry();
+		bool DeserialiseAssetRegistry();
+
 	private:
 		AssetMap m_LoadedAssets;
 		AssetRegistry m_AssetRegistry;

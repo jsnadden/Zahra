@@ -50,6 +50,7 @@ namespace Zahra
 		// directory), and returns the absolute path (use std::filesystem::canonical)
 
 		static std::filesystem::path GetAssetsDirectory();
+		static std::filesystem::path GetAssetRegistryFilepath();
 		static std::filesystem::path GetFontsDirectory();
 		static std::filesystem::path GetMeshesDirectory();
 		static std::filesystem::path GetScenesDirectory();

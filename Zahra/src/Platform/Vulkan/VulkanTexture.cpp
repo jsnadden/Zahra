@@ -6,7 +6,7 @@
 
 namespace Zahra
 {
-	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, Buffer imageData)
+	VulkanTexture2D::VulkanTexture2D(const TextureSpecification& specification, Buffer imageData)
 		: m_Specification(specification)
 	{
 		Z_CORE_ASSERT(imageData, "Empty buffer");
@@ -37,14 +37,14 @@ namespace Zahra
 		m_DescriptorImageInfo.sampler = m_Image->GetVkSampler();
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const Texture2DSpecification& specification, uint32_t colour)
+	VulkanTexture2D::VulkanTexture2D(const TextureSpecification& specification, uint32_t colour)
 		: m_Specification(specification)
 	{
 		Z_CORE_ASSERT(!m_Specification.GenerateMips, "Generating mips for a solid colour texture is very silly");
 		m_MipLevels = 1;
 
 		// TODO: extend to allow other formats. The buffer filling logic below will be more complex
-		Z_CORE_ASSERT(!m_Specification.Format == ImageFormat::SRGBA);
+		Z_CORE_ASSERT(m_Specification.Format == ImageFormat::SRGBA);
 		{
 			uint64_t pixelCount = m_Specification.Width * m_Specification.Height;
 			uint64_t pixelBytes = 4; // assuming srgba

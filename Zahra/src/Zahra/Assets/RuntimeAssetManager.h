@@ -8,7 +8,7 @@ namespace Zahra
 	{
 	public:
 		virtual Ref<Asset> GetAsset(AssetHandle handle) const override;
-		virtual const AssetMetadata& GetMetadata(AssetHandle handle) const override;
+		//virtual const AssetMetadata& GetMetadata(AssetHandle handle) const override;
 
 		virtual bool IsAssetHandleValid(AssetHandle handle) const override;
 		virtual bool IsAssetLoaded(AssetHandle handle) const override;

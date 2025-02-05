@@ -491,27 +491,28 @@ namespace Zahra
 
 			ImGui::TableNextColumn();
 
-			{
-				ImGui::Button("drop texture here"); // TODO: redesign this once we have a texture manager. Ideally would display texture name!
+			// TODO: make this a combo box of all possible texture assets
+			//{
+			//	ImGui::Button("drop texture here");
 
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_IMAGE"))
-					{
-						char filepath[256];
-						strcpy_s(filepath, (const char*)payload->Data);
+			//	if (ImGui::BeginDragDropTarget())
+			//	{
+			//		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_IMAGE"))
+			//		{
+			//			char filepath[256];
+			//			strcpy_s(filepath, (const char*)payload->Data);
 
-						Texture2DSpecification textureSpec{};
-						textureSpec.GenerateMips = true;
-						/*if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
-							textureSpec.Format = ImageFormat::RGBA_UN;*/
+			//			TextureSpecification textureSpec{};
+			//			textureSpec.GenerateMips = true;
+			//			/*if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
+			//				textureSpec.Format = ImageFormat::RGBA_UN;*/
 
-						texture = Texture2D::CreateFromFile(textureSpec, filepath);
-					}
+			//			texture = Texture2D::CreateFromFile(textureSpec, filepath);
+			//		}
 
-					ImGui::EndDragDropTarget();
-				}
-			}
+			//		ImGui::EndDragDropTarget();
+			//	}
+			//}
 
 			ImGui::PopID();
 		}

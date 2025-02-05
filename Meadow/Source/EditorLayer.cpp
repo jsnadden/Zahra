@@ -42,16 +42,13 @@ namespace Zahra
 
 	void EditorLayer::OnAttach()
 	{
-		// TODO: a bunch of miscellaneous stuff always concerns me... should these things be elsewhere
-		auto imguiLayer = ImGuiLayer::GetOrCreate();
-
 		LoadConfigFile();
-
 		Editor::SetPrimaryEditorCamera(m_EditorCamera);
+		m_AutosaveEnabled = false;
+
+		EditorIcons::Init();
 
 		m_SceneHierarchyPanel.CacheScriptClassNames();
-
-		m_AutosaveEnabled = false;
 
 		// Open project/scene
 		{
@@ -122,7 +119,7 @@ namespace Zahra
 			m_ViewportFramebuffer = Framebuffer::Create(framebufferSpec);
 
 			m_ViewportTexture = Texture2D::CreateFromImage2D(m_ViewportFramebuffer->GetColourAttachment(0));
-			m_ViewportTextureHandle = imguiLayer->RegisterTexture(m_ViewportTexture);
+			m_ViewportTextureHandle = ImGuiLayer::GetOrCreate()->RegisterTexture(m_ViewportTexture);
 		}
 
 		// TODO: this stuff should really be in SceneRenderer
@@ -140,23 +137,6 @@ namespace Zahra
 			m_Renderer2D = Ref<Renderer2D>::Create(renderer2DSpec);
 			m_Renderer2D->SetLineWidth(3.f);
 		}
-
-		// Load UI resources
-		{
-			Texture2DSpecification textureSpec{};
-			m_ControlIcons["Play"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/play.png");
-			m_ControlIcons["Step"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/step.png");
-			m_ControlIcons["Reset"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/reset.png");
-			m_ControlIcons["Stop"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/stop.png");
-			m_ControlIcons["Pause"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/pause.png");
-			m_ControlIcons["PhysicsOn"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/physics_on.png");
-			m_ControlIcons["PhysicsOff"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Controls/physics_off.png");
-
-			for (auto& [name, texture] : m_ControlIcons)
-			{
-				m_IconHandles[name] = imguiLayer->RegisterTexture(texture);
-			}
-		}
 	}
 
 	void EditorLayer::OnDetach()
@@ -171,6 +151,8 @@ namespace Zahra
 		m_ViewportTextureHandle = nullptr;
 		m_ViewportTexture.Reset();
 		m_ViewportFramebuffer.Reset();
+
+		EditorIcons::Shutdown();
 	}
 
 	void EditorLayer::OnUpdate(float dt)
@@ -281,7 +263,7 @@ namespace Zahra
 		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_NoWindowMenuButton);
 
 		UIViewport();
-		UIControls();
+		UISceneControls();
 		UIStatsWindow();
 
 		m_SceneHierarchyPanel.OnImGuiRender();
@@ -494,7 +476,7 @@ namespace Zahra
 		}
 	}
 
-	void EditorLayer::UIControls()
+	void EditorLayer::UISceneControls()
 	{
 		auto sceneState = Editor::GetSceneState();
 		bool edit = sceneState == SceneState::Edit;
@@ -509,7 +491,7 @@ namespace Zahra
 		// Play/Pause buttons
 		if (edit || m_Paused)
 		{
-			if (ImGui::ImageButton(m_IconHandles["Play"], { iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
+			if (ImGui::ImageButton(EditorIcons::GetIconHandle("SceneControls/Play"), { iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				if (edit)
 					ScenePlay();
@@ -529,7 +511,7 @@ namespace Zahra
 		}
 		else
 		{
-			if (ImGui::ImageButton(m_IconHandles["Pause"],
+			if (ImGui::ImageButton(EditorIcons::GetIconHandle("SceneControls/Pause"),
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				m_Paused = true;
@@ -548,7 +530,7 @@ namespace Zahra
 		// PhysicsOn/Off and Stop buttons
 		if (edit)
 		{
-			if (ImGui::ImageButton(m_IconHandles["PhysicsOn"],
+			if (ImGui::ImageButton(EditorIcons::GetIconHandle("SceneControls/PhysicsOn"),
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				SceneSimulate();
@@ -563,7 +545,7 @@ namespace Zahra
 		}
 		else if (simulate)
 		{
-			if (ImGui::ImageButton(m_IconHandles["PhysicsOff"],
+			if (ImGui::ImageButton(EditorIcons::GetIconHandle("SceneControls/PhysicsOff"),
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				m_Paused = false;
@@ -579,7 +561,7 @@ namespace Zahra
 		}
 		else
 		{
-			if (ImGui::ImageButton(m_IconHandles["Stop"],
+			if (ImGui::ImageButton(EditorIcons::GetIconHandle("SceneControls/Stop"),
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				m_Paused = false;
@@ -599,7 +581,7 @@ namespace Zahra
 		{
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton(m_IconHandles["Reset"],
+			if (ImGui::ImageButton(EditorIcons::GetIconHandle("SceneControls/Reset"),
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				if (play)
@@ -627,7 +609,7 @@ namespace Zahra
 		{
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton(m_IconHandles["Step"],
+			if (ImGui::ImageButton(EditorIcons::GetIconHandle("SceneControls/Step"),
 				{ iconSize, iconSize }, { 0, 0 }, { 1, 1 }, 0))
 			{
 				m_StepCountdown = m_FramesPerStep;

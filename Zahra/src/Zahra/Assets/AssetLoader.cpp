@@ -9,7 +9,7 @@ namespace Zahra
 	static std::map<AssetType, AssetLoadingFunction> s_AssetLoadingFunctions = 
 	{
 		//{AssetType::Scene, },
-		{ AssetType::Texture2D, Texture2D::LoadTexture2DFromSource }
+		{ AssetType::Texture2D, TextureImporter::LoadTexture2DAsset },
 		//{AssetType::Mesh, },
 		//{AssetType::Material, },
 		//{AssetType::Script, }
@@ -20,7 +20,7 @@ namespace Zahra
 		auto& search = s_AssetLoadingFunctions.find(metadata.Type);
 		if (search == s_AssetLoadingFunctions.end())
 		{
-			Z_CORE_ERROR("Unable to load assets of type {}: no loader was found", Utils::AssetTypeToString(metadata.Type));
+			Z_CORE_ERROR("Unable to load assets of type {}: no loading function was found", Utils::AssetTypeName(metadata.Type));
 			return nullptr;
 		}
 

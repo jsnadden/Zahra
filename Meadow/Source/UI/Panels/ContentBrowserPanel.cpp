@@ -13,18 +13,6 @@ namespace Zahra
 	ContentBrowserPanel::ContentBrowserPanel()
 	{
 		m_RefreshTimer.Reset();
-
-		Texture2DSpecification textureSpec{};
-		m_Icons["DirectoryThumb"]	= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/folder.png");
-		m_Icons["DefaultFileThumb"] = Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/blank_file.png");
-		m_Icons["BrokenImage"]		= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/broken_image.png");
-		m_Icons["Back"]				= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/back_arrow.png");
-		m_Icons["Forward"]			= Texture2D::CreateFromFile(textureSpec, "Resources/Icons/Browser/forward_arrow.png");
-
-		for (auto& [name, texture] : m_Icons)
-		{
-			m_IconHandles[name] = ImGuiLayer::GetOrCreate()->RegisterTexture(texture);
-		}
 	}
 
 	void ContentBrowserPanel::OnLoadProject()
@@ -82,7 +70,7 @@ namespace Zahra
 
 			// BACK BUTTON
 			ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-			if (ImGui::ImageButton(m_IconHandles["Back"], { iconSize, iconSize }, { 0,0 }, { 1,1 }))
+			if (ImGui::ImageButton(EditorIcons::GetIconHandle("ContentBrowser/Back"), { iconSize, iconSize }, { 0,0 }, { 1,1 }))
 			{
 				GoBack();
 			}
@@ -90,7 +78,7 @@ namespace Zahra
 			ImGui::TableNextColumn();
 
 			// FORWARD BUTTON
-			if (ImGui::ImageButton(m_IconHandles["Forward"],
+			if (ImGui::ImageButton(EditorIcons::GetIconHandle("ContentBrowser/Forward"),
 				{ iconSize, iconSize }, { 0,0 }, { 1,1 }))
 			{
 				GoForward();
@@ -162,7 +150,7 @@ namespace Zahra
 				
 				ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
 				ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, { .5f, .5f });
-				ImGui::ImageButton(filenameString.c_str(), m_IconHandles["DirectoryThumb"],
+				ImGui::ImageButton(filenameString.c_str(), EditorIcons::GetIconHandle("ContentBrowser/DirectoryThumb"),
 					{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 				ImGui::PopStyleVar();
 				ImGui::PopStyleColor();
@@ -200,13 +188,13 @@ namespace Zahra
 					case FileData::ContentType::Image:
 					{
 						// TODO: get a thumbnail from file metadata!!
-						ImGui::ImageButton(m_IconHandles["BrokenImage"],
+						ImGui::ImageButton(EditorIcons::GetIconHandle("ContentBrowser/BrokenImage"),
 							{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 						break;
 					}
 					default:
 					{
-						ImGui::ImageButton(m_IconHandles["DefaultFileThumb"],
+						ImGui::ImageButton(EditorIcons::GetIconHandle("ContentBrowser/DefaultFileThumb"),
 							{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 						break;
 					}
@@ -302,13 +290,13 @@ namespace Zahra
 					Z_ASSERT(filepath.length() < 256, "Currently only support filenames up to 256 characters (including extension + null terminator)");
 					ImGui::SetDragDropPayload("BROWSER_FILE_IMAGE", (void*)filepath.c_str(), sizeof(char) * (filepath.length() + 1), ImGuiCond_Always);
 					// TODO: get thumbnail from metadata
-					ImGui::Image(m_IconHandles["BrokenImage"],
+					ImGui::Image(EditorIcons::GetIconHandle("Generic/BrokenImage"),
 						{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 					break;
 				}
 				default:
 				{
-					ImGui::Image(m_IconHandles["DefaultFileThumb"],
+					ImGui::Image(EditorIcons::GetIconHandle("ContentBrowser/DefaultFileThumb"),
 						{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });
 					break;
 				}

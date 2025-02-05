@@ -47,9 +47,9 @@ namespace Zahra
 		void UIGizmo();
 		TransformationType m_GizmoType = TransformationType::None;
 
-		void UIControls();
-		std::map<std::string, Ref<Texture2D>> m_ControlIcons;
-		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
+		void UISceneControls();
+		//std::map<std::string, Ref<Texture2D>> m_ControlIcons;
+		//std::map<std::string, ImGuiTextureHandle> m_IconHandles;
 		bool m_Paused = false;
 		int32_t m_FramesPerStep = 10;
 		int32_t m_StepCountdown = 0;

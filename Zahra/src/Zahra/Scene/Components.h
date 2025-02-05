@@ -117,7 +117,7 @@ namespace Zahra
 	struct SpriteComponent
 	{
 		glm::vec4 Tint{ 1.0f, 1.0f, 1.0f, 1.0f };
-		Ref<Texture2D> Texture = nullptr; // TODO: replace with a material?
+		AssetHandle TextureHandle = 0;
 		float TextureTiling = 1.0f;
 		bool Animated = false;
 

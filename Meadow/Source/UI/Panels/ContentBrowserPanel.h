@@ -1,5 +1,6 @@
 #pragma once
 
+#include "UI/Elements/EditorIcons.h"
 #include "Zahra/Core/Timer.h"
 #include "Zahra/Events/Event.h"
 #include "Zahra/Events/MouseEvent.h"
@@ -82,9 +83,6 @@ namespace Zahra
 			bool ShowHidden = false;
 		}
 		m_BrowserOptions;
-
-		std::map<std::string, Ref<Texture2D>> m_Icons;
-		std::map<std::string, ImGuiTextureHandle> m_IconHandles;
 
 		int32_t m_ThumbnailSize = 64;
 

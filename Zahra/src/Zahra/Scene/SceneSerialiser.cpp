@@ -109,15 +109,7 @@ namespace Zahra
 			{
 				auto& sprite = entity.GetComponents<SpriteComponent>();
 				out << YAML::Key << "Tint" << YAML::Value << sprite.Tint;
-				if (sprite.Texture)
-				{
-					// TODO: serialise texture as assetID instead
-					auto texturePath = sprite.Texture->GetFilepath();
-					auto& textureDirectory = Project::GetTexturesDirectory();
-					texturePath = std::filesystem::relative(texturePath, textureDirectory);
-
-					out << YAML::Key << "TexturePath" << YAML::Value << texturePath.string().c_str();
-				}
+				out << YAML::Key << "TextureHandle" << YAML::Value << sprite.TextureHandle;
 				out << YAML::Key << "TextureTiling" << YAML::Value << sprite.TextureTiling;
 				out << YAML::Key << "Animated" << YAML::Value << sprite.Animated;
 			}
@@ -391,7 +383,7 @@ namespace Zahra
 		if (hasActiveCamera)
 			cameraUUID = data["ActiveCameraUUID"].as<uint64_t>();
 
-		Texture2DSpecification textureSpec{};
+		TextureSpecification textureSpec{};
 		textureSpec.GenerateMips = true;
 		/*if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
 			textureSpec.Format = ImageFormat::RGBA_UN;*/
@@ -430,8 +422,10 @@ namespace Zahra
 					auto& sprite = entity.AddComponent<SpriteComponent>();
 
 					sprite.Tint = spriteNode["Tint"].as<glm::vec4>();
-					if (spriteNode["TexturePath"])
-						sprite.Texture = Texture2D::CreateFromFile(textureSpec, textureDirectory / spriteNode["TexturePath"].as<std::string>());
+
+					if (auto textureHandleNode = spriteNode["TextureHandle"])
+						sprite.TextureHandle = textureHandleNode.as<uint64_t>();
+
 					sprite.TextureTiling = spriteNode["TextureTiling"].as<float>();
 					sprite.Animated = spriteNode["Animated"].as<bool>();
 				}

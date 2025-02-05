@@ -11,7 +11,7 @@ namespace Zahra
 		template <typename T>
 		static Ref<T> GetAsset(AssetHandle handle)
 		{
-			Project::GetActive()->GetAssetManager()->GetAsset(handle).As<T>();
+			return Project::GetActive()->GetAssetManager()->GetAsset(handle).As<T>();
 		}
 	};
 }

@@ -36,13 +36,13 @@ namespace Zahra
 
 		void Allocate(uint64_t size)
 		{
-			delete[] (byte*)Data;
-			Data = nullptr;
+			Release();
 
-			Size = size;
-			if (size == 0) return;
+			if (size == 0)
+				return;
 
 			Data = znew byte[size];
+			Size = size;
 		}
 
 		void Release()

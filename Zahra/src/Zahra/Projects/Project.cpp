@@ -81,6 +81,17 @@ namespace Zahra
 		
 		return std::filesystem::path();
 	}
+	std::filesystem::path Project::GetAssetRegistryFilepath()
+	{
+		if (s_ActiveProject && !s_ActiveProject->m_Config.AssetDirectory.empty())
+		{
+			return s_ActiveProject->m_Config.ProjectDirectory
+				/ s_ActiveProject->m_Config.AssetDirectory
+				/ "asset_registry.yml";
+		}
+
+		return std::filesystem::path();
+	}
 	std::filesystem::path Project::GetFontsDirectory()
 	{
 		if (s_ActiveProject && !s_ActiveProject->m_Config.AssetDirectory.empty())

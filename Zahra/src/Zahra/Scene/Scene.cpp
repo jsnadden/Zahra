@@ -1,6 +1,7 @@
 #include "zpch.h"
 #include "Scene.h"
 
+#include "Zahra/Assets/AssetManager.h"
 #include "Zahra/Renderer/Renderer.h"
 #include "Zahra/Scene/Components.h"
 #include "Zahra/Scene/Entity.h"
@@ -530,10 +531,15 @@ namespace Zahra
 		{
 			auto [transform, sprite] = spriteEntities.get<TransformComponent, SpriteComponent>(entity);
 
-			if (sprite.Texture)
-				renderer->DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Tint, sprite.TextureTiling, (int)entity);
+			if (sprite.TextureHandle)
+			{
+				Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(sprite.TextureHandle);
+				renderer->DrawQuad(transform.GetTransform(), texture, sprite.Tint, sprite.TextureTiling, (int)entity);
+			}
 			else
+			{
 				renderer->DrawQuad(transform.GetTransform(), sprite.Tint, (int)entity);
+			}
 		}
 
 		auto circleEntities = m_Registry.view<TransformComponent, CircleComponent>();
