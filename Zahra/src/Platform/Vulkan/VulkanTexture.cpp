@@ -15,7 +15,7 @@ namespace Zahra
 		if (specification.GenerateMips)
 			m_MipLevels += (uint32_t)glm::floor(glm::log2((float)glm::max(m_Specification.Width, m_Specification.Height)));
 
-		m_LocalImageData.Copy(imageData);
+		m_LocalImageData = Buffer::Copy(imageData);
 		CreateImageAndDescriptorInfo();
 	}
 

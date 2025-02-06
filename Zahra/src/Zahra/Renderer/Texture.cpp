@@ -75,10 +75,10 @@ namespace Zahra
 	{
 		int width = 0, height = 0, channels = 4;
 		bool validfilepath = std::filesystem::exists(sourceFilepath);
-		const char* filepathString = sourceFilepath.string().c_str();
+		std::string filepathString = sourceFilepath.string();
 		stbi_uc* imageData = nullptr;
 
-		if (stbi_is_hdr(filepathString))
+		if (stbi_is_hdr(filepathString.c_str()))
 		{
 			// TODO: add this capability
 			Z_CORE_ASSERT(false, "Not currently supporting HDR texture formats")
@@ -87,7 +87,7 @@ namespace Zahra
 		}
 		else
 		{
-			imageData = stbi_load(filepathString, &width, &height, &channels, channels);
+			imageData = stbi_load(filepathString.c_str(), &width, &height, &channels, channels);
 
 			if (!imageData)
 				return nullptr;

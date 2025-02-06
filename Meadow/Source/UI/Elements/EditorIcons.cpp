@@ -22,7 +22,7 @@ namespace Zahra
 
 		// Content browser panel
 		s_Icons["ContentBrowser/DirectoryThumb"]	= TextureImporter::LoadEditorIcon("Resources/Icons/ContentBrowser/folder.png");
-		s_Icons["ContentBrowser/DefaultFileThumb"]	= TextureImporter::LoadEditorIcon("Resources/Icons/ContentBrowser/blank_file.png");
+		s_Icons["ContentBrowser/DefaultFileThumb"]	= TextureImporter::LoadEditorIcon("Resources/Icons/ContentBrowser/default_file.png");
 		s_Icons["ContentBrowser/Back"]				= TextureImporter::LoadEditorIcon("Resources/Icons/ContentBrowser/back_arrow.png");
 		s_Icons["ContentBrowser/Forward"]			= TextureImporter::LoadEditorIcon("Resources/Icons/ContentBrowser/forward_arrow.png");
 

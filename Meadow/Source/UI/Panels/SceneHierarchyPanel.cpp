@@ -238,7 +238,7 @@ namespace Zahra
 		ComponentUI::DrawComponent<SpriteComponent>("Sprite Component", entity, [](auto& component)
 			{
 				ComponentUI::DrawRGBAControl("Tint Colour", component.Tint);
-				ComponentUI::DrawTextureDrop("Sprite Sheet", component.Texture);
+				ComponentUI::DrawTexturePreview("Texture");
 				ComponentUI::DrawFloatControl("Tiling Factor", component.TextureTiling, .01f, false, .0f, 100.f);
 			});
 

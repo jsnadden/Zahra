@@ -2,6 +2,7 @@
 
 #include "Editor/Editor.h"
 #include "UI/Elements/ColourDefs.h"
+#include "UI/Elements/EditorIcons.h"
 
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/ScriptEngine.h"
@@ -478,7 +479,7 @@ namespace Zahra
 			return valueChanged;
 		}
 
-		void DrawTextureDrop(const std::string& label, Ref<Texture2D>& texture)
+		void DrawTexturePreview(const std::string& label)
 		{
 			ImGui::PushID(label.c_str());
 
@@ -491,7 +492,13 @@ namespace Zahra
 
 			ImGui::TableNextColumn();
 
-			// TODO: make this a combo box of all possible texture assets
+			ImGui::ImageButton(EditorIcons::GetIconHandle("Generic/BrokenImage"), { 32, 32 }, { 0,0 }, { 1,1 });
+
+			// TODO: implement the following:
+			//  - If a texture is present, display a thumbnail (editor asset manager should cache these when an asset is registered)
+			//  - If no texture, instead have a button that opens a modal window with a list of all registered texture assets
+			//  - Either way, should still be able to drag+drop a texture from the assets panel (create this!!)
+
 			//{
 			//	ImGui::Button("drop texture here");
 

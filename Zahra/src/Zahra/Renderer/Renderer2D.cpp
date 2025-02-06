@@ -455,7 +455,7 @@ namespace Zahra
 			// check if texture is already in our array
 			for (uint32_t i = 1; i < m_TextureSlotsInUse; i++)
 			{
-				if (m_TextureSlots[i]->GetHash() == texture->GetHash())
+				if (m_TextureSlots[i]->GetAssetHandle() == texture->GetAssetHandle())
 				{
 					textureIndex = i;
 					break;
