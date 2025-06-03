@@ -8,22 +8,16 @@
 
 #include <filesystem>
 
-
 namespace Zahra
 {
-
 	struct DirectoryData
 	{
 		std::filesystem::path Path;
-
-		// add various metadata
 
 		DirectoryData(std::filesystem::path path)
 			: Path(path) {}
 	};
 
-	
-	// TODO: rename and move to AssetManager class, when that exists
 	struct FileData
 	{
 		enum class ContentType
@@ -38,8 +32,6 @@ namespace Zahra
 		std::filesystem::path Path;
 		ContentType Type;
 		uintmax_t Size;
-
-		// add various metadata (thumbnails etc.)
 
 		FileData(std::filesystem::path path, uint32_t size)
 			: Path(path), Size(size)
@@ -75,6 +67,8 @@ namespace Zahra
 
 		std::vector<std::filesystem::path> m_ForwardStack;
 
+		bool m_ShowAllFiles = true;
+
 		Timer m_RefreshTimer;
 		float m_RefreshPeriod = 500.0f; // in milliseconds
 
@@ -90,12 +84,13 @@ namespace Zahra
 		bool m_ChildHovered = false, m_ChildFocused = false;
 
 		void DisplayNavBar();
-		void DisplayCurrentDirectory();
+		void DisplayCurrentDirectory_Filesystem();
+		void DisplayCurrentDirectory_AssetManager();
 
 		void GoBack();
 		void GoForward();
 
-		// TODO: these functions should be run on a separate thread
+		// TODO: run this stuff on a dedicated thread
 		void ValidateCurrentDirectory();
 		void ScanCurrentDirectory();
 		void Refresh();

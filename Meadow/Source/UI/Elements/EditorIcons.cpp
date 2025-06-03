@@ -9,22 +9,22 @@ namespace Zahra
 	void EditorIcons::Init()
 	{
 		// Generic
-		s_Icons["Generic/BrokenImage"]				= TextureImporter::LoadEditorIcon("Resources/Icons/Generic/broken_image.png");
+		s_Icons["Generic/BrokenImage"]				= TextureLoader::LoadTexture2DFromSource("Resources/Icons/Generic/broken_image.png");
 		
 		// Scene control panel
-		s_Icons["SceneControls/Play"]				= TextureImporter::LoadEditorIcon("Resources/Icons/SceneControls/play.png");
-		s_Icons["SceneControls/Step"]				= TextureImporter::LoadEditorIcon("Resources/Icons/SceneControls/step.png");
-		s_Icons["SceneControls/Reset"]				= TextureImporter::LoadEditorIcon("Resources/Icons/SceneControls/reset.png");
-		s_Icons["SceneControls/Stop"]				= TextureImporter::LoadEditorIcon("Resources/Icons/SceneControls/stop.png");
-		s_Icons["SceneControls/Pause"]				= TextureImporter::LoadEditorIcon("Resources/Icons/SceneControls/pause.png");
-		s_Icons["SceneControls/PhysicsOn"]			= TextureImporter::LoadEditorIcon("Resources/Icons/SceneControls/physics_on.png");
-		s_Icons["SceneControls/PhysicsOff"]			= TextureImporter::LoadEditorIcon("Resources/Icons/SceneControls/physics_off.png");
+		s_Icons["SceneControls/Play"]				= TextureLoader::LoadTexture2DFromSource("Resources/Icons/SceneControls/play.png");
+		s_Icons["SceneControls/Step"]				= TextureLoader::LoadTexture2DFromSource("Resources/Icons/SceneControls/step.png");
+		s_Icons["SceneControls/Reset"]				= TextureLoader::LoadTexture2DFromSource("Resources/Icons/SceneControls/reset.png");
+		s_Icons["SceneControls/Stop"]				= TextureLoader::LoadTexture2DFromSource("Resources/Icons/SceneControls/stop.png");
+		s_Icons["SceneControls/Pause"]				= TextureLoader::LoadTexture2DFromSource("Resources/Icons/SceneControls/pause.png");
+		s_Icons["SceneControls/PhysicsOn"]			= TextureLoader::LoadTexture2DFromSource("Resources/Icons/SceneControls/physics_on.png");
+		s_Icons["SceneControls/PhysicsOff"]			= TextureLoader::LoadTexture2DFromSource("Resources/Icons/SceneControls/physics_off.png");
 
 		// Content browser panel
-		s_Icons["ContentBrowser/DirectoryThumb"]	= TextureImporter::LoadEditorIcon("Resources/Icons/ContentBrowser/folder.png");
-		s_Icons["ContentBrowser/DefaultFileThumb"]	= TextureImporter::LoadEditorIcon("Resources/Icons/ContentBrowser/default_file.png");
-		s_Icons["ContentBrowser/Back"]				= TextureImporter::LoadEditorIcon("Resources/Icons/ContentBrowser/back_arrow.png");
-		s_Icons["ContentBrowser/Forward"]			= TextureImporter::LoadEditorIcon("Resources/Icons/ContentBrowser/forward_arrow.png");
+		s_Icons["ContentBrowser/DirectoryThumb"]	= TextureLoader::LoadTexture2DFromSource("Resources/Icons/ContentBrowser/folder.png");
+		s_Icons["ContentBrowser/DefaultFileThumb"]	= TextureLoader::LoadTexture2DFromSource("Resources/Icons/ContentBrowser/default_file.png");
+		s_Icons["ContentBrowser/Back"]				= TextureLoader::LoadTexture2DFromSource("Resources/Icons/ContentBrowser/back_arrow.png");
+		s_Icons["ContentBrowser/Forward"]			= TextureLoader::LoadTexture2DFromSource("Resources/Icons/ContentBrowser/forward_arrow.png");
 
 		auto imguiLayer = ImGuiLayer::GetOrCreate();
 

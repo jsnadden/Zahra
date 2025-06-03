@@ -10,8 +10,6 @@
 
 namespace Zahra
 {
-	typedef void* ImGuiTextureHandle;
-
 	enum class TextureShape
 	{
 		Rectangular,
@@ -52,14 +50,16 @@ namespace Zahra
 
 		static Ref<Texture2D> CreateFromBuffer(const TextureSpecification& specification, Buffer imageData);
 		static Ref<Texture2D> CreateFromImage2D(Ref<Image2D>& image);
-		static Ref<Texture2D> CreateFlatColourTexture(const TextureSpecification& specification, uint32_t colour);		
+		static Ref<Texture2D> CreateFlatColourTexture(const TextureSpecification& specification, uint32_t colour);
 	};
 
-	class TextureImporter
+	class TextureLoader
 	{
 	public:
 		static Ref<Texture2D> LoadTexture2DAsset(const AssetHandle& handle, const AssetMetadata& metadata);
-		static Ref<Texture2D> LoadEditorIcon(const std::filesystem::path& sourceFilepath);
+		static Ref<Texture2D> LoadTexture2DFromSource(const std::filesystem::path& sourceFilepath, bool generateMips = false);
+
+	private:
 		static Buffer LoadImageData(const std::filesystem::path& sourceFilepath, uint32_t& widthOut, uint32_t& heightOut, ImageFormat& formatOut);
 	};
 

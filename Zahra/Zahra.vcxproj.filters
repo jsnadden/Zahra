@@ -16,6 +16,9 @@
     <Filter Include="src\Zahra">
       <UniqueIdentifier>{12A64FB4-7E10-042B-C74E-B5D033F8E17F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Zahra\Assets">
+      <UniqueIdentifier>{B4240CF4-A01D-2B46-C94F-10CBB5A70A52}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Zahra\Core">
       <UniqueIdentifier>{AA657D23-9633-7129-7FC7-E14F6B344D8E}</UniqueIdentifier>
     </Filter>
@@ -143,6 +146,27 @@
     </ClInclude>
     <ClInclude Include="src\Zahra.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Assets\Asset.h">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Assets\AssetLoader.h">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Assets\AssetManager.h">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Assets\AssetManagerBase.h">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Assets\AssetType.h">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Assets\EditorAssetManager.h">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Zahra\Assets\RuntimeAssetManager.h">
+      <Filter>src\Zahra\Assets</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Core\Application.h">
       <Filter>src\Zahra\Core</Filter>
@@ -327,13 +351,13 @@
     <ClInclude Include="src\Zahra\Scripting\ScriptGlue.h">
       <Filter>src\Zahra\Scripting</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Utils\CustomYAML.h">
+      <Filter>src\Zahra\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="src\Zahra\Utils\FileIO.h">
       <Filter>src\Zahra\Utils</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Utils\PlatformUtils.h">
-      <Filter>src\Zahra\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Zahra\Utils\CustomYAML.h">
       <Filter>src\Zahra\Utils</Filter>
     </ClInclude>
     <ClInclude Include="src\zpch.h">
@@ -1596,17 +1620,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Assets\AssetManager.h" />
-    <ClInclude Include="src\Zahra\Assets\AssetManagerBase.h" />
-    <ClInclude Include="src\Zahra\Assets\RuntimeAssetManager.h" />
-    <ClInclude Include="src\Zahra\Assets\EditorAssetManager.h" />
-    <ClInclude Include="src\Zahra\Assets\Asset.h" />
-    <ClInclude Include="src\Zahra\Assets\AssetLoader.h" />
-    <ClInclude Include="src\Zahra\Assets\AssetManager.cpp" />
-    <ClInclude Include="src\Zahra\Assets\AssetManagerBase.cpp" />
-    <ClInclude Include="src\Zahra\Assets\EditorAssetManager.cpp" />
-    <ClInclude Include="src\Zahra\Assets\RuntimeAssetManager.cpp" />
-    <ClInclude Include="src\Zahra\Assets\AssetType.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp">
@@ -1625,6 +1638,9 @@
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanIndexBuffer.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanMaterial.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanMesh.cpp">
@@ -1665,6 +1681,21 @@
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>src\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Assets\AssetLoader.cpp">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Assets\AssetManager.cpp">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Assets\AssetManagerBase.cpp">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Assets\EditorAssetManager.cpp">
+      <Filter>src\Zahra\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Zahra\Assets\RuntimeAssetManager.cpp">
+      <Filter>src\Zahra\Assets</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Core\Application.cpp">
       <Filter>src\Zahra\Core</Filter>
@@ -1789,7 +1820,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\VulkanMaterial.cpp" />
-    <ClCompile Include="src\Zahra\Assets\AssetLoader.cpp" />
   </ItemGroup>
 </Project>

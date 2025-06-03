@@ -41,6 +41,12 @@ namespace Zahra
 		if (serialiser.Deserialise(projectFilepath))
 		{
 			s_ActiveProject = project;
+
+			s_ActiveProject->m_AssetManager = Application::Get().GetSpecification().IsEditor ?
+				Ref<EditorAssetManager>::Create() :
+				nullptr;// Ref<RuntimeAssetManager>::Create(); // TODO: add this when RuntimeAssetManager is properly implemented
+			Z_CORE_ASSERT(s_ActiveProject->m_AssetManager);
+
 			return s_ActiveProject;
 		}
 				

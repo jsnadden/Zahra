@@ -1136,6 +1136,16 @@ namespace Zahra
 				m_ShowNewProjectWindow = false;
 			}
 
+			if (m_HaveActiveProject)
+			{
+				//ImGui::SameLine();
+
+				if (ImGui::Button("Cancel"))
+				{
+					m_ShowNewProjectWindow = false;
+				}
+			}
+
 			ImGui::EndPopup();
 		}
 	}
@@ -1180,7 +1190,7 @@ namespace Zahra
 
 		// TODO: create any files we want every project to have (may depend on OS, compiler, etc.):
 		//		1) "premake5.lua" files for project C++, script C# library etc.
-		//		2) Shell scripts that actually run premake on those files (then immediately execute these)
+		//		2) Shell scripts that actually run premake on those files (create then immediately execute these)
 		//		3) Generic assets?
 		//		4) An "imgui.ini" with defaults filled in (for runtime debug, console commands etc.)
 

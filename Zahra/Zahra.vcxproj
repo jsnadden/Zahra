@@ -144,7 +144,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Zahra\Assets\Asset.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanAllocator.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanContext.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanDevice.h" />
@@ -166,9 +165,8 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanVertexBuffer.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Zahra.h" />
+    <ClInclude Include="src\Zahra\Assets\Asset.h" />
     <ClInclude Include="src\Zahra\Assets\AssetLoader.h" />
-    <ClInclude Include="src\Zahra\Assets\AssetManager.cpp" />
-    <ClInclude Include="src\Zahra\Assets\AssetManagerBase.cpp" />
     <ClInclude Include="src\Zahra\Assets\AssetManager.h" />
     <ClInclude Include="src\Zahra\Assets\AssetManagerBase.h" />
     <ClInclude Include="src\Zahra\Assets\AssetType.h" />
@@ -195,7 +193,6 @@
     <ClInclude Include="src\Zahra\Core\UUID.h" />
     <ClInclude Include="src\Zahra\Core\Window.h" />
     <ClInclude Include="src\Zahra\Debug\Profiling.h" />
-    <ClInclude Include="src\Zahra\Assets\EditorAssetManager.cpp" />
     <ClInclude Include="src\Zahra\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Zahra\Events\Event.h" />
     <ClInclude Include="src\Zahra\Events\KeyEvent.h" />
@@ -228,7 +225,6 @@
     <ClInclude Include="src\Zahra\Renderer\Texture.h" />
     <ClInclude Include="src\Zahra\Renderer\UniformBuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\VertexBuffer.h" />
-    <ClInclude Include="src\Zahra\Assets\RuntimeAssetManager.cpp" />
     <ClInclude Include="src\Zahra\Scene\Components.h" />
     <ClInclude Include="src\Zahra\Scene\Entity.h" />
     <ClInclude Include="src\Zahra\Scene\Scene.h" />
@@ -237,9 +233,9 @@
     <ClInclude Include="src\Zahra\Scripting\MonoExterns.h" />
     <ClInclude Include="src\Zahra\Scripting\ScriptEngine.h" />
     <ClInclude Include="src\Zahra\Scripting\ScriptGlue.h" />
+    <ClInclude Include="src\Zahra\Utils\CustomYAML.h" />
     <ClInclude Include="src\Zahra\Utils\FileIO.h" />
     <ClInclude Include="src\Zahra\Utils\PlatformUtils.h" />
-    <ClInclude Include="src\Zahra\Utils\CustomYAML.h" />
     <ClInclude Include="src\zpch.h" />
     <ClInclude Include="vendor\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="vendor\VMA\vk_mem_alloc.h" />
@@ -683,6 +679,10 @@
     <ClCompile Include="src\Platform\Windows\WindowsThread.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Zahra\Assets\AssetLoader.cpp" />
+    <ClCompile Include="src\Zahra\Assets\AssetManager.cpp" />
+    <ClCompile Include="src\Zahra\Assets\AssetManagerBase.cpp" />
+    <ClCompile Include="src\Zahra\Assets\EditorAssetManager.cpp" />
+    <ClCompile Include="src\Zahra\Assets\RuntimeAssetManager.cpp" />
     <ClCompile Include="src\Zahra\Core\Application.cpp" />
     <ClCompile Include="src\Zahra\Core\Layer.cpp" />
     <ClCompile Include="src\Zahra\Core\LayerStack.cpp" />

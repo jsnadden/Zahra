@@ -4,6 +4,7 @@
 #include "UI/Elements/ColourDefs.h"
 #include "UI/Elements/EditorIcons.h"
 
+#include "Zahra/Projects/Project.h"
 #include "Zahra/Scene/Entity.h"
 #include "Zahra/Scripting/ScriptEngine.h"
 
@@ -479,7 +480,7 @@ namespace Zahra
 			return valueChanged;
 		}
 
-		void DrawTexturePreview(const std::string& label)
+		void DrawTexturePreview(const std::string& label, AssetHandle textureHandle)
 		{
 			ImGui::PushID(label.c_str());
 
@@ -492,34 +493,32 @@ namespace Zahra
 
 			ImGui::TableNextColumn();
 
-			ImGui::ImageButton(EditorIcons::GetIconHandle("Generic/BrokenImage"), { 32, 32 }, { 0,0 }, { 1,1 });
+			// display texture thumbnail, or default icon
+			/*auto editorAssetManager = Project::GetActive()->GetEditorAssetManager();
+			ImGuiTextureHandle thumbnail = nullptr;
+			if (textureHandle)
+				editorAssetManager->GetThumbnailHandle(textureHandle);
+			if (!thumbnail)
+				thumbnail = EditorIcons::GetIconHandle("Generic/BrokenImage");*/
 
-			// TODO: implement the following:
-			//  - If a texture is present, display a thumbnail (editor asset manager should cache these when an asset is registered)
-			//  - If no texture, instead have a button that opens a modal window with a list of all registered texture assets
-			//  - Either way, should still be able to drag+drop a texture from the assets panel (create this!!)
+			ImGui::ImageButton(EditorIcons::GetIconHandle("Generic/BrokenImage"), { 32, 32 }, { 0, 0 }, { 1, 1 });
 
-			//{
-			//	ImGui::Button("drop texture here");
+			// TODO: add the following:
+			//  - Button should open a modal window with a list of all registered texture assets
+			//  - Once I have an asset manager panel, allow for drag+drop from there as well
 
-			//	if (ImGui::BeginDragDropTarget())
-			//	{
-			//		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("BROWSER_FILE_IMAGE"))
-			//		{
-			//			char filepath[256];
-			//			strcpy_s(filepath, (const char*)payload->Data);
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_IMAGE_FILE"))
+				{
+					char filepath[256];
+					strcpy_s(filepath, (const char*)payload->Data);
 
-			//			TextureSpecification textureSpec{};
-			//			textureSpec.GenerateMips = true;
-			//			/*if (Application::Get().GetSpecification().ImGuiConfig.ColourCorrectSceneTextures)
-			//				textureSpec.Format = ImageFormat::RGBA_UN;*/
+					
+				}
 
-			//			texture = Texture2D::CreateFromFile(textureSpec, filepath);
-			//		}
-
-			//		ImGui::EndDragDropTarget();
-			//	}
-			//}
+				ImGui::EndDragDropTarget();
+			}
 
 			ImGui::PopID();
 		}

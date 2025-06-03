@@ -22,8 +22,6 @@ namespace Zahra
 		if (m_Specification.Sampled)
 			CreateSampler();
 
-		//TransitionLayout(ImageLayout::Unspecified, m_Specification.InitialLayout);
-
 		if (m_Specification.CreatePixelBuffer)
 			CreatePixelBuffer();
 	}
@@ -71,7 +69,7 @@ namespace Zahra
 		auto& device = VulkanContext::GetCurrentDevice();
 		VkCommandBuffer commandBuffer = device->GetTemporaryCommandBuffer();
 
-		// This method requires a number of layout transitions
+		// This method requires a number of layout transitions, so we'll reuse this barrier
 		VkImageMemoryBarrier barrier{};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.image = m_Image;
@@ -128,7 +126,7 @@ namespace Zahra
 			blit.srcSubresource.aspectMask = blit.dstSubresource.aspectMask = aspectMask;
 			blit.srcSubresource.baseArrayLayer = blit.dstSubresource.baseArrayLayer = 0;
 			blit.srcSubresource.layerCount = blit.dstSubresource.layerCount = 1;
-			blit.srcOffsets[0] = blit.dstOffsets[0] = { 0, 0, 0 };			
+			blit.srcOffsets[0] = blit.dstOffsets[0] = { 0, 0, 0 };
 
 			for (uint32_t level = 1; level < m_Specification.MipLevels; level++)
 			{

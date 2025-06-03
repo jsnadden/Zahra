@@ -38,7 +38,12 @@ namespace Zahra
 			DisplayNavBar();
 
 			if (!m_CurrentPath.empty())
-				DisplayCurrentDirectory();
+			{
+				if (m_ShowAllFiles)
+					DisplayCurrentDirectory_Filesystem();
+				else
+					DisplayCurrentDirectory_AssetManager();
+			}
 		}
 		ImGui::End();
 	}
@@ -51,7 +56,7 @@ namespace Zahra
 		float iconSize = 25.f;
 		float buttonWidth = 1.5f * iconSize;
 		float spacerWidth = 20.f;
-		float sliderWidth = 100.f;
+		float toggleWidth = 100.f;
 
 		if (ImGui::BeginTable("NavBar", 6, ImGuiTableColumnFlags_NoResize))
 		{
@@ -62,7 +67,7 @@ namespace Zahra
 				ImGui::TableSetupColumn("##spacer1",	ImGuiTableColumnFlags_WidthFixed, spacerWidth);
 				ImGui::TableSetupColumn("##ShowDir");
 				ImGui::TableSetupColumn("##spacer2",	ImGuiTableColumnFlags_WidthFixed, spacerWidth);
-				ImGui::TableSetupColumn("##Slider",		ImGuiTableColumnFlags_WidthFixed, sliderWidth);
+				ImGui::TableSetupColumn("##Slider",		ImGuiTableColumnFlags_WidthFixed, toggleWidth);
 			}
 
 			ImGui::TableNextColumn();
@@ -109,13 +114,24 @@ namespace Zahra
 
 			ImGui::TableNextColumn();
 			
-			// RESIZE ICONS
+			// toggle mode
 			{				
 				ImGui::TableNextColumn();
-				
-				ImGui::PushItemWidth(ImGui::GetColumnWidth());
-				ImGui::SliderInt("##ThumbnailSize", &m_ThumbnailSize, 64, 128, "");
-				ImGui::PopItemWidth();
+
+				if (ImGui::Button(m_ShowAllFiles ? "Disk" : "Assets", ImVec2(toggleWidth, 0)))
+					m_ShowAllFiles = !m_ShowAllFiles;
+			}
+
+			// right clicking opens an options menu
+			if (ImGui::BeginPopupContextWindow("##BrowserNavBarOptions", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+			{
+				if (ImGui::MenuItem("Small Icons"))
+					m_ThumbnailSize = 64;
+
+				if (ImGui::MenuItem("Large Icons"))
+					m_ThumbnailSize = 128;
+
+				ImGui::EndPopup();
 			}
 			
 			ImGui::EndTable();
@@ -124,7 +140,7 @@ namespace Zahra
 		ImGui::Separator();
 	}
 
-	void ContentBrowserPanel::DisplayCurrentDirectory()
+	void ContentBrowserPanel::DisplayCurrentDirectory_Filesystem()
 	{
 		ImGui::BeginChild("DisplayDirContents");
 
@@ -221,6 +237,10 @@ namespace Zahra
 		ImGui::EndChild();
 	}
 
+	void ContentBrowserPanel::DisplayCurrentDirectory_AssetManager()
+	{
+	}
+
 	void ContentBrowserPanel::ValidateCurrentDirectory()
 	{
 		while (!std::filesystem::exists(m_CurrentPath))
@@ -288,7 +308,7 @@ namespace Zahra
 				case (FileData::ContentType::Image):
 				{
 					Z_ASSERT(filepath.length() < 256, "Currently only support filenames up to 256 characters (including extension + null terminator)");
-					ImGui::SetDragDropPayload("BROWSER_FILE_IMAGE", (void*)filepath.c_str(), sizeof(char) * (filepath.length() + 1), ImGuiCond_Always);
+					ImGui::SetDragDropPayload("CONTENT_BROWSER_IMAGE_FILE", (void*)filepath.c_str(), sizeof(char) * (filepath.length() + 1), ImGuiCond_Always);
 					// TODO: get thumbnail from metadata
 					ImGui::Image(EditorIcons::GetIconHandle("Generic/BrokenImage"),
 						{ (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 0 }, { 1, 1 });

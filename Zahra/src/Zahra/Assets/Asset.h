@@ -6,6 +6,7 @@
 namespace Zahra
 {
 	using AssetHandle = UUID;
+	using ImGuiTextureHandle = void*;
 
 	struct AssetMetadata
 	{

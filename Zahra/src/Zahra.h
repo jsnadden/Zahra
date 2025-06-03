@@ -18,6 +18,15 @@
 #include "Zahra/Core/Thread.h"
 #include "Zahra/Core/Timer.h"
 
+//------------ASSET--------------------
+#include "Zahra/Assets/Asset.h"
+#include "Zahra/Assets/AssetLoader.h"
+#include "Zahra/Assets/AssetManager.h"
+#include "Zahra/Assets/AssetManagerBase.h"
+#include "Zahra/Assets/AssetType.h"
+#include "Zahra/Assets/EditorAssetManager.h"
+#include "Zahra/Assets/RuntimeAssetManager.h"
+
 //------------DEBUG--------------------
 #include "Zahra/Debug/Profiling.h"
 

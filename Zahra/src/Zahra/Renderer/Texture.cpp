@@ -47,23 +47,16 @@ namespace Zahra
         return nullptr;
     }
 
-	Ref<Texture2D> TextureImporter::LoadTexture2DAsset(const AssetHandle& handle, const AssetMetadata& metadata)
+	Ref<Texture2D> TextureLoader::LoadTexture2DAsset(const AssetHandle& handle, const AssetMetadata& metadata)
 	{
-		TextureSpecification spec{};
-		Buffer imageData = LoadImageData(metadata.Filepath, spec.Width, spec.Height, spec.Format);
-		spec.GenerateMips = true;
-
-		Ref<Texture2D> newTexture = Texture2D::CreateFromBuffer(spec, imageData);
-
-		stbi_image_free(imageData.Data);
-		return newTexture;
+		return LoadTexture2DFromSource(metadata.Filepath, true);
 	}
 
-	Ref<Texture2D> TextureImporter::LoadEditorIcon(const std::filesystem::path& sourceFilepath)
+	Ref<Texture2D> TextureLoader::LoadTexture2DFromSource(const std::filesystem::path& sourceFilepath, bool generateMips)
 	{
 		TextureSpecification spec{};
 		Buffer imageData = LoadImageData(sourceFilepath, spec.Width, spec.Height, spec.Format);
-		spec.GenerateMips = false;
+		spec.GenerateMips = generateMips;
 
 		Ref<Texture2D> newTexture = Texture2D::CreateFromBuffer(spec, imageData);
 
@@ -71,7 +64,7 @@ namespace Zahra
 		return newTexture;
 	}
 
-	Buffer TextureImporter::LoadImageData(const std::filesystem::path& sourceFilepath, uint32_t& widthOut, uint32_t& heightOut, ImageFormat& formatOut)
+	Buffer TextureLoader::LoadImageData(const std::filesystem::path& sourceFilepath, uint32_t& widthOut, uint32_t& heightOut, ImageFormat& formatOut)
 	{
 		int width = 0, height = 0, channels = 4;
 		bool validfilepath = std::filesystem::exists(sourceFilepath);

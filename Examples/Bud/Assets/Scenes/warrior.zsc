@@ -27,7 +27,7 @@ Entities:
       Scale: [1.49999964, 2, 0.999999881]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: yajirobe.png
+      TextureHandle: 0
       TextureTiling: 1
       Animated: false
     ScriptComponent:
@@ -43,7 +43,7 @@ Entities:
       Scale: [3.99999952, 3, 0.999999881]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: brickwall.png
+      TextureHandle: 0
       TextureTiling: 3
       Animated: false
   - Entity: 9534158750695785926
@@ -55,7 +55,7 @@ Entities:
       Scale: [5.5, 3, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: brickwall.png
+      TextureHandle: 0
       TextureTiling: 3
       Animated: false
   - Entity: 6774678113904311529
@@ -67,7 +67,7 @@ Entities:
       Scale: [36.5999985, 35.6477585, 0.999964952]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: grass.png
+      TextureHandle: 0
       TextureTiling: 9.92000008
       Animated: false
   - Entity: 12498955789320122893
@@ -79,7 +79,7 @@ Entities:
       Scale: [3.99999952, 3, 0.999999881]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: brickwall.png
+      TextureHandle: 0
       TextureTiling: 3
       Animated: false
   - Entity: 7263492892292694915
@@ -91,7 +91,7 @@ Entities:
       Scale: [5.5, 3, 1]
     SpriteComponent:
       Tint: [1, 1, 1, 1]
-      TexturePath: brickwall.png
+      TextureHandle: 0
       TextureTiling: 3
       Animated: false
   - Entity: 170503321964230537
@@ -103,6 +103,6 @@ Entities:
       Scale: [5.5, 4, 0.999985218]
     SpriteComponent:
       Tint: [0.305019319, 0.305019319, 0.305019319, 1]
-      TexturePath: checkerboard.png
+      TextureHandle: 0
       TextureTiling: 3
       Animated: false

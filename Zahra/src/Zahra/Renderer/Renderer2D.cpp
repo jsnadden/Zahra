@@ -441,6 +441,8 @@ namespace Zahra
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec4& tint, float tiling, int entityID)
 	{
+		Z_CORE_VERIFY(texture);
+
 		m_LastQuadBatch = m_QuadIndexCount / c_MaxQuadIndicesPerBatch;
 
 		if (m_LastQuadBatch >= m_QuadBatchStarts.size())

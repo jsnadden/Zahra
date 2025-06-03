@@ -22,3 +22,6 @@
 [submodule "Zahra/vendor/box2d"]
 	path = Zahra/vendor/box2d
 	url = https://github.com/thecherno/box2d
+[submodule "Zahra/vendor/msdf-atlas-gen"]
+	path = Zahra/vendor/msdf-atlas-gen
+	url = https://github.com/TheCherno/msdf-atlas-gen.git

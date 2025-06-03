@@ -1,6 +1,7 @@
 ﻿# engine output
 profiling/
 *.log
+/Meadow/Config/editor_config.yml
 
 # binaries
 **/bin-int/
@@ -23,4 +24,4 @@ Zahra/vendor/VulkanSDK
 Meadow/Cache/
 scripts/__pycache__
 .Rproj.user
-/Meadow/Config/editor_config.yml
+doxy/

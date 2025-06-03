@@ -9,7 +9,7 @@ namespace Zahra
 	static std::map<AssetType, AssetLoadingFunction> s_AssetLoadingFunctions = 
 	{
 		//{AssetType::Scene, },
-		{ AssetType::Texture2D, TextureImporter::LoadTexture2DAsset },
+		{ AssetType::Texture2D, TextureLoader::LoadTexture2DAsset },
 		//{AssetType::Mesh, },
 		//{AssetType::Material, },
 		//{AssetType::Script, }

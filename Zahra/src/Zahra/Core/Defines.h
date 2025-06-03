@@ -19,19 +19,21 @@
 //	#define GLM_FORCE_LEFT_HANDED
 //#endif
 
-#ifdef Z_DEBUG
-	#ifdef Z_PLATFORM_WINDOWS
-		#define Z_DEBUGBREAK() __debugbreak()
-	#elif defined(Z_PLATFORM_LINUX)
-		#include <signal.h>
-		#define Z_DEBUGBREAK() raise(SIGTRAP)
-	#else
-		#error "Platform doesn't support debugbreak yet!"
-	#endif
-
-	#define Z_ENABLE_ASSERTS
+#ifdef Z_PLATFORM_WINDOWS
+	#define Z_DEBUGBREAK() __debugbreak()
+#elif defined(Z_PLATFORM_LINUX)
+	#include <signal.h>
+	#define Z_DEBUGBREAK() raise(SIGTRAP)
 #else
-	#define Z_DEBUGBREAK()
+	#error "Platform doesn't support debugbreak (yet)"
+#endif
+
+#ifdef Z_DEBUG
+	#define Z_ENABLE_ASSERTS
+#endif
+
+#ifndef Z_DIST
+	#define Z_ENABLE_VERIFY
 #endif
 
 

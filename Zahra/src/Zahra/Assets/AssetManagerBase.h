@@ -9,7 +9,7 @@ namespace Zahra
 	class AssetManagerBase : public RefCounted
 	{
 	public:
-		virtual Ref<Asset> GetAsset(AssetHandle handle) const = 0;
+		virtual Ref<Asset> GetAsset(AssetHandle handle) = 0;
 		//virtual const AssetMetadata& GetMetadata(AssetHandle handle) const = 0;
 
 		//virtual AssetHandle AddAsset(AssetType type) = 0;
