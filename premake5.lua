@@ -26,7 +26,8 @@ group "Dependencies"
 	include "Zahra/vendor/ImGui"
 	include "Zahra/vendor/yaml-cpp"
 	include "Zahra/vendor/Box2D"
-
+	include "Zahra/vendor/msdf-atlas-gen"
+	
 group "Tools"
 	include "Meadow"
 
