@@ -48,7 +48,9 @@ project "Zahra"
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.VMA}",
 		"%{IncludeDir.mono}",
-		"%{IncludeDir.tinyobjloader}"
+		"%{IncludeDir.tinyobjloader}",
+		"%{IncludeDir.msdf_atlas_gen}",
+		"%{IncludeDir.msdfgen}"
 	}
 
 	links
@@ -58,6 +60,7 @@ project "Zahra"
 		"Box2D",
 		"Glad",
 		"ImGui",
+		"msdf-atlas-gen",
 		"yaml-cpp",
 		"opengl32.lib",
 		"%{Library.mono}",

@@ -18,6 +18,8 @@ IncludeDir["SPIRV_Cross"] = "%{wks.location}/Zahra/vendor/SPIRV-Cross"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["VMA"] = "%{wks.location}/Zahra/vendor/VMA"
 IncludeDir["tinyobjloader"] = "%{wks.location}/Zahra/vendor/tinyobjloader"
+IncludeDir["msdf_atlas_gen"] = "%{wks.location}/Zahra/vendor/msdf-atlas-gen/msdf-atlas-gen"
+IncludeDir["msdfgen"] = "%{wks.location}/Zahra/vendor/msdf-atlas-gen/msdfgen"
 
 LibraryDir = {}
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
