@@ -14,7 +14,7 @@ This project began as a personal exploration of game engine architecture and low
   Built on [EnTT](https://github.com/skypjack/entt), supporting a variety of component types with full serialization/deserialization.
 
 - **2D Physics Integration**  
-  Basic physics and collision detection using Box2D, with room for future expansion.
+  Basic physics and collision detection using [Box2D](https://box2d.org/), with room for future expansion.
 
 - **C# Scripting Integration**  
   Embedded [Mono](https://www.mono-project.com/) runtime ("Djinn") for scripting, fully integrated with the ECS and engine events.
