@@ -1,13 +1,41 @@
-This project was spawned from my desire to learn general game engine design, and especially low-level graphics programming. My aim now is for this to demonstrate a knowledge of, and proficiency with, a wide range of software engineering concepts. Current features include:
- - A from-scratch renderer using the Vulkan API (replacing and improving on my previous OpenGL implementation).
- - A highly structured engine architecture, with robust platform abstractions, and a great deal of modularity.
- - An ECS-based scene system (with ENTT under the hood), with a growing number of component types, and full (de)serialisation capabilities.
- - 2D physics and collision detection, using Box2D. Fairly simple for now, though I intend to extend this at some stage.
- - An embedded Mono C# scripting engine (Djinn), fully integrated with the scene system.
- - A level editor app (Meadow) written using the engine's API, especially the built-in ImGui overlay.
- - Instrumentation tools for e.g. tracking engine memory usage and performance profiling.
+# Custom Game Engine – In Progress
 
-Additionally, I've begun work on the following:
-- A project system in Meadow, including both on-disk and in-memory asset management.
-- Dedicated threads for e.g. buffering draw calls, or automatic updating asset file changes. 
-- Modular, multi-pass, physically-based, 3D scene rendering (very early stages)
+This project began as a personal exploration of game engine architecture and low-level graphics programming. It has since evolved into a comprehensive showcase of my software engineering skills, covering system design, real-time 3D graphics, UX design, tooling, and performance instrumentation.
+
+## Key Features
+
+- **Custom Vulkan Renderer**  
+  Written from scratch, replacing an earlier OpenGL implementation. Provides fine-grained control over GPU resources and rendering pipelines.
+
+- **Modular Engine Architecture**  
+  Highly structured design with clear platform abstraction layers and strong modularity for extensibility and maintenance.
+
+- **ECS-Based Scene System**  
+  Built on [EnTT](https://github.com/skypjack/entt), supporting a variety of component types with full serialization/deserialization.
+
+- **2D Physics Integration**  
+  Basic physics and collision detection using [Box2D](https://box2d.org/), with room for future expansion.
+
+- **C# Scripting Integration**  
+  Embedded [Mono](https://www.mono-project.com/) runtime ("Djinn") for scripting, fully integrated with the ECS and engine events.
+
+- **Level Editor Tool – Meadow**  
+  Built using the engine itself, featuring a GUI powered by ImGui for live editing and engine interaction.
+
+- **Instrumentation and Profiling Tools**  
+  Includes memory usage tracking, frame timing, and customizable profiling overlays.
+
+## In Development
+
+- **Asset and Project System**  
+  In-memory and on-disk project/asset management integrated into Meadow.
+
+- **Multi-threaded Systems**  
+  For tasks like draw call buffering and live asset reloading.
+
+- **3D Rendering Pipeline**  
+  Multi-pass, physically-based rendering pipeline currently in early development.
+
+---
+
+Feel free to explore the codebase and reach out with any feedback or questions.
