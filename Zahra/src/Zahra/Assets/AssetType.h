@@ -10,6 +10,7 @@ namespace Zahra
 		Mesh,
 		Material,
 		Script,
+		Font
 	};
 
 	namespace Utils
@@ -23,6 +24,7 @@ namespace Zahra
 				case AssetType::Mesh:		return "Mesh";
 				case AssetType::Material:	return "Material";
 				case AssetType::Script:		return "Script";
+				case AssetType::Font:		return "Font";
 			}
 
 			Z_CORE_ASSERT(false, "Invalid AssetType value");
@@ -36,6 +38,7 @@ namespace Zahra
 			if (typeName == "Mesh")			return AssetType::Mesh;
 			if (typeName == "Material")		return AssetType::Material;
 			if (typeName == "Script")		return AssetType::Script;
+			if (typeName == "Font")			return AssetType::Font;
 
 			Z_CORE_ASSERT(false, "Unrecognised or invalid asset type name");
 			return AssetType::None;

@@ -205,7 +205,7 @@
     <ClInclude Include="src\Zahra\Renderer\Cameras\Camera.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\EditorCamera.h" />
     <ClInclude Include="src\Zahra\Renderer\Cameras\SceneCamera.h" />
-    <ClInclude Include="src\Zahra\Renderer\Font.h" />
+    <ClInclude Include="src\Zahra\Renderer\Text\Font.h" />
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\Image.h" />
     <ClInclude Include="src\Zahra\Renderer\IndexBuffer.h" />
@@ -224,6 +224,7 @@
     <ClInclude Include="src\Zahra\Renderer\ShaderResourceManager.h" />
     <ClInclude Include="src\Zahra\Renderer\ShaderTypes.h" />
     <ClInclude Include="src\Zahra\Renderer\Texture.h" />
+    <ClInclude Include="src\Zahra\Renderer\Text\UnicodeRanges.h" />
     <ClInclude Include="src\Zahra\Renderer\UniformBuffer.h" />
     <ClInclude Include="src\Zahra\Renderer\VertexBuffer.h" />
     <ClInclude Include="src\Zahra\Scene\Components.h" />
@@ -698,7 +699,7 @@
     <ClCompile Include="src\Zahra\Projects\ProjectSerialiser.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Cameras\EditorCamera.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Cameras\SceneCamera.cpp" />
-    <ClCompile Include="src\Zahra\Renderer\Font.cpp" />
+    <ClCompile Include="src\Zahra\Renderer\Text\Font.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp" />
     <ClCompile Include="src\Zahra\Renderer\Image.cpp" />
     <ClCompile Include="src\Zahra\Renderer\IndexBuffer.cpp" />

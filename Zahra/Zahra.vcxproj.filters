@@ -267,7 +267,7 @@
     <ClInclude Include="src\Zahra\Renderer\Cameras\SceneCamera.h">
       <Filter>src\Zahra\Renderer\Cameras</Filter>
     </ClInclude>
-    <ClInclude Include="src\Zahra\Renderer\Font.h">
+    <ClInclude Include="src\Zahra\Renderer\Text\Font.h">
       <Filter>src\Zahra\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Zahra\Renderer\Framebuffer.h">
@@ -1623,6 +1623,7 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
+    <ClInclude Include="src\Zahra\Renderer\Text\UnicodeRanges.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\VulkanContext.cpp">
@@ -1742,7 +1743,7 @@
     <ClCompile Include="src\Zahra\Renderer\Cameras\SceneCamera.cpp">
       <Filter>src\Zahra\Renderer\Cameras</Filter>
     </ClCompile>
-    <ClCompile Include="src\Zahra\Renderer\Font.cpp">
+    <ClCompile Include="src\Zahra\Renderer\Text\Font.cpp">
       <Filter>src\Zahra\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Zahra\Renderer\Framebuffer.cpp">

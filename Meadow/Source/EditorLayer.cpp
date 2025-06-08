@@ -7,6 +7,8 @@
 #include "Zahra/Scene/SceneSerialiser.h"
 #include "Zahra/Utils/PlatformUtils.h"
 
+#include "Zahra/Renderer/Text/Font.h"
+
 #include <glm/gtc/type_ptr.hpp>
 #include <ImGui/imgui_internal.h>
 #include <ImGui/imgui.h>
@@ -30,6 +32,8 @@ namespace Zahra
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer")
 	{
+		Font font("./Resources/Fonts/Inter/Inter-Regular.ttf");
+
 		memset(s_NewProjectNameBuffer, 0, s_NewProjectNameBufferLength);
 		memset(s_NewProjectLocationBuffer, 0, s_NewProjectLocationBufferLength);
 	}
