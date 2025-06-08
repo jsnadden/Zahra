@@ -37,5 +37,3 @@ This project began as a personal exploration of game engine architecture and low
   Multi-pass, physically-based rendering pipeline currently in early development.
 
 ---
-
-Feel free to explore the codebase and reach out with any feedback or questions.
