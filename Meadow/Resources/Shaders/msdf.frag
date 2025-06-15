@@ -21,9 +21,15 @@ float Median(float x, float y, float z)
 void main()
 {
     vec3 msdf = texture(u_MSDFSampler, v_TextureCoordinates).rgb;
-    float pseudo = Median(msdf.r, msdf.g, msdf.b);
+    float df = Median(msdf.r, msdf.g, msdf.b);
 
-    o_Colour = ;
+    float fill = smoothstep(v_LineWidth, v_AAWidth + v_LineWidth, df);
+    float line = smoothstep(-(v_AAWidth + v_LineWidth), -v_LineWidth, df)
+      * smoothstep(-(v_AAWidth + v_LineWidth), -v_LineWidth, -df);
+    float bg = smoothstep(v_LineWidth, v_AAWidth + v_LineWidth, -df);
+    
+    o_Colour = line * v_OutlineColour;
+
     if (o_Colour.a == 0)
 		discard;
 

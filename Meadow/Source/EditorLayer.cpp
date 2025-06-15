@@ -7,8 +7,6 @@
 #include "Zahra/Scene/SceneSerialiser.h"
 #include "Zahra/Utils/PlatformUtils.h"
 
-//#include "Zahra/Renderer/Text/Font.h"
-
 #include <glm/gtc/type_ptr.hpp>
 #include <ImGui/imgui_internal.h>
 #include <ImGui/imgui.h>
@@ -29,17 +27,9 @@ namespace Zahra
 	static char* s_NewProjectNameBuffer = znew char[s_NewProjectNameBufferLength];
 	static char* s_NewProjectLocationBuffer = znew char[s_NewProjectLocationBufferLength];
 
-	// TEMP
-	//Ref<Font> s_FontTest;
-	//ImGuiTextureHandle s_Atlas;
-
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer")
 	{
-		//s_FontTest = Ref<Font>::Create("C:/Windows/Fonts/BAUHS93.TTF");
-		//s_FontTest = Ref<Font>::Create("./Resources/Fonts/Inter/Inter-Regular.ttf");
-		//s_Atlas = ImGuiLayer::GetOrCreate()->RegisterTexture(s_FontTest->GetAtlasTexture());
-
 		memset(s_NewProjectNameBuffer, 0, s_NewProjectNameBufferLength);
 		memset(s_NewProjectLocationBuffer, 0, s_NewProjectLocationBufferLength);
 	}

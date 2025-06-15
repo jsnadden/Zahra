@@ -93,7 +93,7 @@ namespace Zahra
 		void DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID = -1);
 		void DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID = -1);
 		void DrawQuadBoundingBox(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1, glm::vec3 rescale = {1.0f, 1.0f, 1.0f});
-		void DrawString(const glm::mat4 transform, const std::string& string, TextRenderingSpecification& spec);
+		void DrawString(const glm::mat4 transform, const std::string& string, TextRenderingSpecification& spec, int entityID = -1);
 
 		void SetLineWidth(float width) { m_LineWidth = width; }
 		float GetLineWidth() { return m_LineWidth; }

@@ -196,6 +196,12 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// TEXT
 		{
+			for (auto& atlas : m_FontAtlases)
+			{
+				atlas.Reset();
+			}
+			m_FontAtlases.clear();
+
 			m_TextBatchEnds.clear();
 			for (auto batch : m_TextBatchStarts)
 			{
@@ -293,12 +299,6 @@ namespace Zahra
 			m_QuadRenderPass.Reset();
 			//m_QuadResourceManager.Reset();
 		}
-
-		for (auto& atlas : m_FontAtlases)
-		{
-			atlas.Reset();
-		}
-		m_FontAtlases.clear();
 
 		for (auto& texture : m_TextureSlots)
 		{
@@ -445,7 +445,7 @@ namespace Zahra
 					m_TextVertexBuffers[batch][frame]->SetData(m_TextBatchStarts[batch], dataSize);
 
 					auto textResourceManager = m_TextRenderPass->GetResourceManager();
-					textResourceManager->Update("u_MSDFSampler", m_FontAtlas);
+					textResourceManager->Update("u_MSDFSampler", m_FontAtlases[batch]);
 					Z_CORE_ASSERT(textResourceManager->ReadyToRender());
 					textResourceManager->ProcessChanges();
 
@@ -664,12 +664,18 @@ namespace Zahra
 			DrawLine(transform * rescaleTransform * m_QuadTemplate[i], transform * rescaleTransform * m_QuadTemplate[(i + 1) % 4], colour, entityID);
 	}
 
-	void Renderer2D::DrawString(const glm::mat4 transform, const std::string& string, TextRenderingSpecification& spec)
+	void Renderer2D::DrawString(const glm::mat4 transform, const std::string& string, TextRenderingSpecification& spec, int entityID)
 	{
 		auto fontGeometry = spec.Font->GetMSDFData()->FontGeometry;
 		auto fontMetrics = fontGeometry.getMetrics();
 
 		Ref<Texture2D> atlasTexture = spec.Font->GetAtlasTexture();
+		
+		/////////////////////////////////////
+		// TEMPORARY:
+		m_FontAtlases.push_back(atlasTexture);
+		// //////////////////////////////////
+		
 		// TODO: search through the textures in m_FontAtlases in reverse, comparing their AssetID against
 		// this one, hence looking for the most recent batch using the requested font, if one exists. If no
 		// such batch exists (i.e. this font hasn't been used yet this frame), create a new batch and append
@@ -678,7 +684,7 @@ namespace Zahra
 
 		glm::vec2 texelSize = { 1.0f / atlasTexture->GetWidth(), 1.0f / atlasTexture->GetHeight() };
 
-		glm::vec2 cursor(.0f);
+		glm::vec4 cursor(.0f);
 		float fontScale = 1.0f / (fontMetrics.ascenderY - fontMetrics.descenderY);
 
 		// single character test
@@ -693,22 +699,52 @@ namespace Zahra
 					return;
 			}
 
-			// compute uv bounds of character in atlas texture
-			double atlasLeft, atlasBottom, atlasRight, atlasTop;
-			glyph->getQuadAtlasBounds(atlasLeft, atlasBottom, atlasRight, atlasTop);
-			glm::vec2 atlasMin((float)atlasLeft, (float)atlasBottom);
-			glm::vec2 atlasMax((float)atlasRight, (float)atlasTop);
-			atlasMin *= texelSize;	atlasMax *= texelSize;
+			// compute uv bounds of character in atlas texture (u right, v down)
+			double uMin, uMax, vMin, vMax;
+			glyph->getQuadAtlasBounds(uMin, vMax, uMax, vMin);
+			glm::vec2 atlasCoords[4] =
+			{ 
+				{ (float)uMin, (float)vMax },
+				{ (float)uMax, (float)vMax },
+				{ (float)uMax, (float)vMin },
+				{ (float)uMin, (float)vMin }
+			};
+			for (int i = 0; i < 4; i++)
+				atlasCoords[i] *= texelSize;
 
-			// compute quad bounds in local coordinate plane
-			double planeLeft, planeBottom, planeRight, planeTop;
-			glyph->getQuadPlaneBounds(planeLeft, planeBottom, planeRight, planeTop);
-			glm::vec2 planeMin((float)planeLeft, (float)planeBottom);
-			glm::vec2 planeMax((float)planeRight, (float)planeTop);
-			planeMin *= fontScale;	planeMax *= fontScale;
-			planeMin += cursor;		planeMax += cursor;
+			// compute quad bounds in local coordinate plane (x right, y up)
+			double xMin, xMax, yMin, yMax;
+			glyph->getQuadPlaneBounds(xMin, yMin, xMax, yMax);
+			glm::vec4 quadVertices[4] =
+			{
+				{ (float)xMin, (float)yMin, 0.f, 1.f },
+				{ (float)xMax, (float)yMin, 0.f, 1.f },
+				{ (float)xMax, (float)yMax, 0.f, 1.f },
+				{ (float)xMin, (float)yMax, 0.f, 1.f }
+			};
+			for (int i = 0; i < 4; i++)
+			{
+				quadVertices[i] *= fontScale;
+				quadVertices[i] += cursor;
+			}
 
-			// render this character to its quad
+			auto& newVertex = m_TextBatchEnds[m_LastTextBatch];
+			for (int i = 0; i < 4; i++)
+			{
+				newVertex->Position = transform * quadVertices[i];
+				newVertex->TextureCoord = atlasCoords[i];
+				newVertex->EntityID = entityID;
+				newVertex->FillColour = spec.FillColour;
+				newVertex->OutlineColour = spec.OutlineColour;
+				newVertex->BackgroundColour = spec.BackgroundColour;
+				//newVertex->GlowColour;
+				newVertex->LineWidth = spec.LineWidth;
+				newVertex->AAWidth = spec.AAWidth;
+
+				newVertex++;
+			}
+
+			// render this character to a quad
 			// move "cursor" to set up for next character (accounting for advance,
 			// kerning, custom offsets, newline characters, word wrapping etc.)
 		}
