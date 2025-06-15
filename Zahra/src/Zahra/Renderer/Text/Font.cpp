@@ -131,7 +131,7 @@ namespace Zahra
 			packer.getDimensions(atlasSpec.Width, atlasSpec.Height);
 		}
 
-#pragma region Set up edge colouring (copied from msdf_atlas_gen main.cpp)
+		#pragma region Set up edge colouring (copied from msdf_atlas_gen main.cpp)
 		#define MSDF_DEFAULT_ANGLE_THRESHOLD 3.0
 		#define MSDF_LCG_MULTIPLIER 6364136223846793005ull
 		#define MSDF_LCG_INCREMENT 1442695040888963407ull
@@ -155,7 +155,7 @@ namespace Zahra
 				glyph.edgeColoring(msdfgen::edgeColoringInkTrap, MSDF_DEFAULT_ANGLE_THRESHOLD, glyphSeed);
 			}
 		}
-#pragma endregion
+		#pragma endregion
 
 		m_AtlasTexture = CreateAndCacheAtlas<byte, float, 4, msdf_atlas::mtsdfGenerator>(m_Data->GlyphGeometries, m_Data->FontGeometry, atlasSpec);
 

@@ -271,11 +271,6 @@ namespace Zahra
 
 		UINewProjectWindow();
 		UISaveChangesPrompt();
-
-		// TEMP
-		//ImGui::Begin("fontatlas");
-		//ImGui::Image(s_Atlas, { (float)s_FontTest->GetAtlasTexture()->GetWidth(), (float)s_FontTest->GetAtlasTexture()->GetHeight() }, { 0,1 }, { 1,0 }, { 1,1,1,1 }, { 1,1,1,1 });
-		//ImGui::End();
 	}
 
 	void EditorLayer::ScenePlay()

@@ -689,7 +689,7 @@ namespace Zahra
 
 		// single character test
 		{
-			char character = '&';
+			char character = 'B';
 			auto glyph = fontGeometry.getGlyph(character);
 			if (!glyph) // font doesn't support this glyph
 			{
@@ -735,11 +735,7 @@ namespace Zahra
 				newVertex->TextureCoord = atlasCoords[i];
 				newVertex->EntityID = entityID;
 				newVertex->FillColour = spec.FillColour;
-				newVertex->OutlineColour = spec.OutlineColour;
 				newVertex->BackgroundColour = spec.BackgroundColour;
-				//newVertex->GlowColour;
-				newVertex->LineWidth = spec.LineWidth;
-				newVertex->AAWidth = spec.AAWidth;
 
 				newVertex++;
 			}

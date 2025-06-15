@@ -50,22 +50,18 @@ namespace Zahra
 		glm::vec2 TextureCoord;
 		int EntityID = -1;
 		glm::vec4 FillColour;
-		glm::vec4 OutlineColour;
 		glm::vec4 BackgroundColour;
+		//glm::vec4 OutlineColour;
 		//glm::vec4 GlowColour;
-		float LineWidth;
-		float AAWidth;
+		//float LineWidth;
+		//float AAWidth;
 	};
 
 	struct TextRenderingSpecification
 	{
 		Ref<Font> Font;
 		glm::vec4 FillColour;
-		glm::vec4 OutlineColour;
 		glm::vec4 BackgroundColour;
-		//glm::vec4 GlowColour;
-		float LineWidth;
-		float AAWidth;
 	};
 
 	struct Renderer2DSpecification

@@ -1,0 +1,14 @@
+Scene: lavenderBG.zsc
+Entities:
+  - Entity: 9634006538016531241
+    TagComponent:
+      Tag: New Entity
+    TransformComponent:
+      Translation: [0, 0, -0.100000001]
+      EulerAngles: [0, 0, 0]
+      Scale: [7.05000019, 6.4000001, 1]
+    SpriteComponent:
+      Tint: [0.572675288, 0.243735194, 0.579150558, 1]
+      TextureHandle: 0
+      TextureTiling: 1
+      Animated: false
