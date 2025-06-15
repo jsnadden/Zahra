@@ -7,7 +7,7 @@
 #include "Zahra/Scene/SceneSerialiser.h"
 #include "Zahra/Utils/PlatformUtils.h"
 
-#include "Zahra/Renderer/Text/Font.h"
+//#include "Zahra/Renderer/Text/Font.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <ImGui/imgui_internal.h>
@@ -30,15 +30,15 @@ namespace Zahra
 	static char* s_NewProjectLocationBuffer = znew char[s_NewProjectLocationBufferLength];
 
 	// TEMP
-	Ref<Font> s_FontTest;
-	ImGuiTextureHandle s_Atlas;
+	//Ref<Font> s_FontTest;
+	//ImGuiTextureHandle s_Atlas;
 
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer")
 	{
 		//s_FontTest = Ref<Font>::Create("C:/Windows/Fonts/BAUHS93.TTF");
-		s_FontTest = Ref<Font>::Create("./Resources/Fonts/Inter/Inter-Regular.ttf");
-		s_Atlas = ImGuiLayer::GetOrCreate()->RegisterTexture(s_FontTest->GetAtlasTexture());
+		//s_FontTest = Ref<Font>::Create("./Resources/Fonts/Inter/Inter-Regular.ttf");
+		//s_Atlas = ImGuiLayer::GetOrCreate()->RegisterTexture(s_FontTest->GetAtlasTexture());
 
 		memset(s_NewProjectNameBuffer, 0, s_NewProjectNameBufferLength);
 		memset(s_NewProjectLocationBuffer, 0, s_NewProjectLocationBufferLength);
@@ -283,9 +283,9 @@ namespace Zahra
 		UISaveChangesPrompt();
 
 		// TEMP
-		ImGui::Begin("fontatlas");
-		ImGui::Image(s_Atlas, { (float)s_FontTest->GetAtlasTexture()->GetWidth(), (float)s_FontTest->GetAtlasTexture()->GetHeight() }, { 0,1 }, { 1,0 }, { 1,1,1,1 }, { 1,1,1,1 });
-		ImGui::End();
+		//ImGui::Begin("fontatlas");
+		//ImGui::Image(s_Atlas, { (float)s_FontTest->GetAtlasTexture()->GetWidth(), (float)s_FontTest->GetAtlasTexture()->GetHeight() }, { 0,1 }, { 1,0 }, { 1,1,1,1 }, { 1,1,1,1 });
+		//ImGui::End();
 	}
 
 	void EditorLayer::ScenePlay()

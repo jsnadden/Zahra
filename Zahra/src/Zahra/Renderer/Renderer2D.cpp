@@ -1,6 +1,8 @@
 #include "zpch.h"
 #include "Renderer2D.h"
 
+#include "Zahra/Renderer/Text/MSDF.h"
+
 namespace Zahra
 {
 	Renderer2D::Renderer2D(Renderer2DSpecification specification)
@@ -31,6 +33,8 @@ namespace Zahra
 		shaderSpec.Name = "flat_texture";
 		m_ShaderLibrary.Add(Shader::Create(shaderSpec));
 		shaderSpec.Name = "circle";
+		m_ShaderLibrary.Add(Shader::Create(shaderSpec));
+		shaderSpec.Name = "msdf";
 		m_ShaderLibrary.Add(Shader::Create(shaderSpec));
 
 		m_CameraUniformBuffers = UniformBufferPerFrame::Create(sizeof(glm::mat4), framesInFlight);
@@ -160,10 +164,59 @@ namespace Zahra
 			m_LineBatchEnds.resize(1);
 			m_LineBatchStarts[0] = znew LineVertex[c_MaxLineVerticesPerBatch];
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// TEXT
+		{
+			RenderPassSpecification renderPassSpec{};
+			renderPassSpec.Name = "text_pass";
+			renderPassSpec.Shader = m_ShaderLibrary.Get("msdf");
+			renderPassSpec.RenderTarget = m_Specification.RenderTarget;
+			m_TextRenderPass = RenderPass::Create(renderPassSpec);
+
+			auto textResourceManager = m_TextRenderPass->GetResourceManager();
+			textResourceManager->Set("Camera", m_CameraUniformBuffers);
+			textResourceManager->ProcessChanges();
+
+			m_TextVertexBuffers.resize(1);
+			m_TextVertexBuffers[0].resize(framesInFlight);
+			for (uint32_t frame = 0; frame < framesInFlight; frame++)
+			{
+				m_TextVertexBuffers[0][frame] = VertexBuffer::Create(c_MaxQuadVerticesPerBatch * sizeof(TextVertex));
+			}
+
+			m_TextBatchStarts.resize(1);
+			m_TextBatchEnds.resize(1);
+			m_TextBatchStarts[0] = znew TextVertex[c_MaxQuadVerticesPerBatch];
+		}
 	}
 
 	void Renderer2D::Shutdown()
 	{
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// TEXT
+		{
+			m_TextBatchEnds.clear();
+			for (auto batch : m_TextBatchStarts)
+			{
+				zdelete[] batch;
+			}
+			m_TextBatchStarts.clear();
+
+			uint32_t framesInFlight = Renderer::GetFramesInFlight();
+			for (auto& batch : m_TextVertexBuffers)
+			{
+				for (uint32_t frame = 0; frame < framesInFlight; frame++)
+				{
+					batch[frame].Reset();
+				}
+				batch.clear();
+			}
+			m_TextVertexBuffers.clear();
+
+			m_TextRenderPass.Reset();
+		}
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// LINES
 		{
@@ -241,6 +294,12 @@ namespace Zahra
 			//m_QuadResourceManager.Reset();
 		}
 
+		for (auto& atlas : m_FontAtlases)
+		{
+			atlas.Reset();
+		}
+		m_FontAtlases.clear();
+
 		for (auto& texture : m_TextureSlots)
 		{
 			texture.Reset();
@@ -271,6 +330,10 @@ namespace Zahra
 		m_LineVertexCount = 0;
 		for (uint32_t batch = 0; batch < m_LineBatchEnds.size(); batch++)
 			m_LineBatchEnds[batch] = m_LineBatchStarts[batch];
+
+		m_TextVertexCount = 0;
+		for (uint32_t batch = 0; batch < m_TextBatchEnds.size(); batch++)
+			m_TextBatchEnds[batch] = m_TextBatchStarts[batch];
 	}
 
 	void Renderer2D::BeginScene(const EditorCamera& camera)
@@ -364,6 +427,36 @@ namespace Zahra
 			}
 		}
 		Renderer::EndRenderPass();
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// TEXT PASS
+		Renderer::BeginRenderPass(m_TextRenderPass);
+		{
+			for (uint32_t batch = 0; batch <= m_LastTextBatch; batch++)
+			{
+				uint32_t dataSize = (uint32_t)((byte*)m_TextBatchEnds[batch] - (byte*)m_TextBatchStarts[batch]);
+				if (dataSize)
+				{
+					// TODO: revise this for font-based batching
+					uint32_t batchSize = (batch == m_LastTextBatch) ?
+						m_QuadIndexCount - batch * c_MaxQuadIndicesPerBatch :
+						c_MaxQuadIndicesPerBatch;
+
+					m_TextVertexBuffers[batch][frame]->SetData(m_TextBatchStarts[batch], dataSize);
+
+					auto textResourceManager = m_TextRenderPass->GetResourceManager();
+					textResourceManager->Update("u_MSDFSampler", m_FontAtlas);
+					Z_CORE_ASSERT(textResourceManager->ReadyToRender());
+					textResourceManager->ProcessChanges();
+
+					Renderer::DrawIndexed(m_TextRenderPass, m_TextVertexBuffers[batch][frame], m_QuadIndexBuffer, batchSize);
+
+					m_Stats.TextBatchCount++;
+					m_Stats.DrawCalls++;
+				}
+			}
+		}
+		Renderer::EndRenderPass();
 	}
 
 	void Renderer2D::AddNewQuadBatch()
@@ -409,6 +502,21 @@ namespace Zahra
 
 		auto& newBatch = m_LineBatchStarts.emplace_back();
 		newBatch = znew LineVertex[c_MaxLineVerticesPerBatch];
+	}
+
+	void Renderer2D::AddNewTextBatch()
+	{
+		uint32_t framesInFlight = Renderer::GetFramesInFlight();
+
+		auto& newVertexBufferPerFrame = m_TextVertexBuffers.emplace_back();
+		newVertexBufferPerFrame.resize(framesInFlight);
+		for (uint32_t frame = 0; frame < framesInFlight; frame++)
+		{
+			newVertexBufferPerFrame[frame] = VertexBuffer::Create(c_MaxQuadVerticesPerBatch * sizeof(TextVertex));
+		}
+
+		auto& newBatch = m_TextBatchStarts.emplace_back();
+		newBatch = znew TextVertex[c_MaxQuadVerticesPerBatch];
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID)
@@ -556,10 +664,66 @@ namespace Zahra
 			DrawLine(transform * rescaleTransform * m_QuadTemplate[i], transform * rescaleTransform * m_QuadTemplate[(i + 1) % 4], colour, entityID);
 	}
 
+	void Renderer2D::DrawString(const glm::mat4 transform, const std::string& string, TextRenderingSpecification& spec)
+	{
+		auto fontGeometry = spec.Font->GetMSDFData()->FontGeometry;
+		auto fontMetrics = fontGeometry.getMetrics();
+
+		Ref<Texture2D> atlasTexture = spec.Font->GetAtlasTexture();
+		// TODO: search through the textures in m_FontAtlases in reverse, comparing their AssetID against
+		// this one, hence looking for the most recent batch using the requested font, if one exists. If no
+		// such batch exists (i.e. this font hasn't been used yet this frame), create a new batch and append
+		// this texture to m_FontAtlases. If we do find one, hang on to it for now, as we'll need to check
+		// it for overflow as we loop over the characters in the string.
+
+		glm::vec2 texelSize = { 1.0f / atlasTexture->GetWidth(), 1.0f / atlasTexture->GetHeight() };
+
+		glm::vec2 cursor(.0f);
+		float fontScale = 1.0f / (fontMetrics.ascenderY - fontMetrics.descenderY);
+
+		// single character test
+		{
+			char character = '&';
+			auto glyph = fontGeometry.getGlyph(character);
+			if (!glyph) // font doesn't support this glyph
+			{
+				glyph = fontGeometry.getGlyph('?');
+
+				if (!glyph) // font doesn't even support question marks?!
+					return;
+			}
+
+			// compute uv bounds of character in atlas texture
+			double atlasLeft, atlasBottom, atlasRight, atlasTop;
+			glyph->getQuadAtlasBounds(atlasLeft, atlasBottom, atlasRight, atlasTop);
+			glm::vec2 atlasMin((float)atlasLeft, (float)atlasBottom);
+			glm::vec2 atlasMax((float)atlasRight, (float)atlasTop);
+			atlasMin *= texelSize;	atlasMax *= texelSize;
+
+			// compute quad bounds in local coordinate plane
+			double planeLeft, planeBottom, planeRight, planeTop;
+			glyph->getQuadPlaneBounds(planeLeft, planeBottom, planeRight, planeTop);
+			glm::vec2 planeMin((float)planeLeft, (float)planeBottom);
+			glm::vec2 planeMax((float)planeRight, (float)planeTop);
+			planeMin *= fontScale;	planeMax *= fontScale;
+			planeMin += cursor;		planeMax += cursor;
+
+			// render this character to its quad
+			// move "cursor" to set up for next character (accounting for advance,
+			// kerning, custom offsets, newline characters, word wrapping etc.)
+		}
+
+		// TODO: loop over characters in string (avoid the null terminator) and perform the above logic
+		// to add each to the draw list. At the start of each loop check if our batch is full, and if so, starting
+		// a new one and appending to m_FontAtlases.
+
+	}
+
 	void Renderer2D::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		m_QuadRenderPass->OnResize();
 		m_CircleRenderPass->OnResize();
 		m_LineRenderPass->OnResize();
+		m_TextRenderPass->OnResize();
 	}
 }

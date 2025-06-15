@@ -10,6 +10,7 @@
 #include "Zahra/Renderer/Renderer.h"
 #include "Zahra/Renderer/Shader.h"
 #include "Zahra/Renderer/ShaderResourceManager.h"
+#include "Zahra/Renderer/Text/Font.h"
 #include "Zahra/Renderer/Texture.h"
 #include "Zahra/Renderer/UniformBuffer.h"
 #include "Zahra/Renderer/VertexBuffer.h"
@@ -43,6 +44,30 @@ namespace Zahra
 		int EntityID = -1;
 	};
 
+	struct TextVertex
+	{
+		glm::vec3 Position;
+		glm::vec2 TextureCoord;
+		int EntityID = -1;
+		glm::vec4 FillColour;
+		glm::vec4 OutlineColour;
+		glm::vec4 BackgroundColour;
+		//glm::vec4 GlowColour;
+		float LineWidth;
+		float AAWidth;
+	};
+
+	struct TextRenderingSpecification
+	{
+		Ref<Font> Font;
+		glm::vec4 FillColour;
+		glm::vec4 OutlineColour;
+		glm::vec4 BackgroundColour;
+		//glm::vec4 GlowColour;
+		float LineWidth;
+		float AAWidth;
+	};
+
 	struct Renderer2DSpecification
 	{
 		Ref<Framebuffer> RenderTarget;
@@ -68,6 +93,7 @@ namespace Zahra
 		void DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID = -1);
 		void DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID = -1);
 		void DrawQuadBoundingBox(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1, glm::vec3 rescale = {1.0f, 1.0f, 1.0f});
+		void DrawString(const glm::mat4 transform, const std::string& string, TextRenderingSpecification& spec);
 
 		void SetLineWidth(float width) { m_LineWidth = width; }
 		float GetLineWidth() { return m_LineWidth; }
@@ -84,6 +110,10 @@ namespace Zahra
 
 			uint32_t LineBatchCount = 0;
 			uint32_t LineCount = 0;
+
+			uint32_t TextBatchCount = 0;
+			uint32_t StringCount = 0;
+			uint32_t CharCount = 0;
 
 			uint32_t DrawCalls = 0;
 
@@ -113,6 +143,8 @@ namespace Zahra
 
 		std::vector<Ref<Texture2D>> m_TextureSlots;
 		uint32_t m_TextureSlotsInUse = 1; // start at 1, because slot 0 will be our default 1x1 white texture
+		
+		std::vector<Ref<Texture2D>> m_FontAtlases;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// QUADS
@@ -158,11 +190,23 @@ namespace Zahra
 		uint32_t m_LastLineBatch = 0;
 		uint32_t m_LineVertexCount = 0;
 
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// TEXT
+		Ref<RenderPass> m_TextRenderPass;
+
+		std::vector<std::vector<Ref<VertexBuffer>>> m_TextVertexBuffers;
+		std::vector<TextVertex*> m_TextBatchStarts;
+		std::vector<TextVertex*> m_TextBatchEnds;
+
+		uint32_t m_LastTextBatch = 0;
+		uint32_t m_TextVertexCount = 0;
+
 		void Init();
 		void Shutdown();
 
 		void AddNewQuadBatch();
 		void AddNewCircleBatch();
 		void AddNewLineBatch();
+		void AddNewTextBatch();
 	};
 }

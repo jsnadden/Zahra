@@ -21,19 +21,20 @@ namespace Zahra
 	class Font : public Asset
 	{
 	public:
-		enum class WritingSystem
+		enum class CharacterSet
 		{
 			Latin,
 			Chinese,
 			// TODO: add others to support localisation, making sure to add corresponding unicode ranges in Font.cpp
 		};
 
-		Font(const std::filesystem::path& filepath, WritingSystem writingSystem = WritingSystem::Latin);
+		Font(const std::filesystem::path& filepath, CharacterSet characterSet = CharacterSet::Latin);
 		// TODO: another constructor to load from binary font data buffer
 		// (using msdfgen::loadFontData instead of loadFont)
 
 		~Font();
 
+		const MSDFData* GetMSDFData() { return m_Data; }
 		Ref<Texture2D> GetAtlasTexture() { return m_AtlasTexture; }
 
 		static AssetType GetAssetTypeStatic() { return AssetType::Font; }
@@ -43,7 +44,7 @@ namespace Zahra
 		Ref<Texture2D> m_AtlasTexture;
 
 		MSDFData* m_Data;
-		WritingSystem m_WritingSystem = WritingSystem::Latin;
+		CharacterSet m_CharacterSet = CharacterSet::Latin;
 	};
 }
 

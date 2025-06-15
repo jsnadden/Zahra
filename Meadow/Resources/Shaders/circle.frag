@@ -13,7 +13,6 @@ void main()
 {
     o_Colour = v_Colour;
 
-    // Apply a C1 cutoff function to the alpha channel, discarding pixels away from a smoothed annulus
     float x = 1.0 - length(v_LocalPosition);
     o_Colour.a *= smoothstep(0.0, v_Fade, x);
     o_Colour.a *= smoothstep(v_Thickness + v_Fade, v_Thickness, x);

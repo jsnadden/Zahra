@@ -1,21 +1,15 @@
 #include "zpch.h"
 #include "Font.h"
 
+#include "Zahra/Renderer/Text/MSDF.h"
 #include "Zahra/Renderer/Text/UnicodeRanges.h"
 #include "Zahra/Renderer/Texture.h"
 
-#undef INFINITE // avoid clash with unnecessary windows definition
-#include "msdf-atlas-gen.h"
-#include "msdfgen.h"
-#include "FontGeometry.h"
-#include "GlyphGeometry.h"
-
 namespace Zahra
 {
-	struct MSDFData
+	struct UnicodeRange
 	{
-		std::vector<msdf_atlas::GlyphGeometry> GlyphGeometries;
-		msdf_atlas::FontGeometry FontGeometry;
+		uint32_t Start, End;
 	};
 
 	struct AtlasSpecification
@@ -25,23 +19,18 @@ namespace Zahra
 		int Width, Height;
 	};
 
-	struct UnicodeRange
-	{
-		uint32_t Start, End;
-	};
-
-	static const std::map<Font::WritingSystem, std::vector<UnicodeRange>> s_UnicodeRanges =
+	static const std::map<Font::CharacterSet, std::vector<UnicodeRange>> s_UnicodeRanges =
 	{
 		// (partially) obtained from imgui_draw.cpp
 		{
-			Font::WritingSystem::Latin,
+			Font::CharacterSet::Latin,
 			{
 				Z_UNICODE_RANGE_Latin,
 				Z_UNICODE_RANGE_LatinSupp,
 			}
 		},
 		{
-			Font::WritingSystem::Chinese,
+			Font::CharacterSet::Chinese,
 			{
 				Z_UNICODE_RANGE_Latin,
 				Z_UNICODE_RANGE_LatinSupp,
@@ -72,6 +61,7 @@ namespace Zahra
 		generator.generate(glyphs.data(), glyphs.size());
 
 		msdfgen::BitmapConstRef<T, N> bitmap =(msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
+		//msdfgen::savePng(bitmap, "atlas.png");
 
 		TextureSpecification spec{};
 		{
@@ -85,14 +75,14 @@ namespace Zahra
 		return Texture2D::CreateFromBuffer(spec, pixelBuffer);
 	}
 
-	Font::Font(const std::filesystem::path& fontFilepath, WritingSystem writingSystem)
-		: m_Data(new MSDFData()), m_WritingSystem(writingSystem)
+	Font::Font(const std::filesystem::path& fontFilepath, CharacterSet characterSet)
+		: m_Data(new MSDFData()), m_CharacterSet(characterSet)
 	{
 		msdfgen::FreetypeHandle* freetype = msdfgen::initializeFreetype();
 		Z_CORE_VERIFY(freetype, "Failed to initialise FreeType library");
 
 		/////////////////////////////////////////////////////////////////////////////////////
-		// LOAD FONT FILE
+		// LOAD FONT
 		std::string fontFileString = fontFilepath.string();
 		msdfgen::FontHandle* font = msdfgen::loadFont(freetype, fontFileString.c_str());
 
@@ -102,25 +92,25 @@ namespace Zahra
 			return;
 		}
 
-		Z_CORE_INFO("Loaded font from '{0}'", fontFileString.c_str());
+		Z_CORE_INFO("Font '{0}' was successfully loaded", fontFileString.c_str());
 
 		/////////////////////////////////////////////////////////////////////////////////////
-		// GENERATE CHARACTER SET
-		msdf_atlas::Charset characterSet;
+		// LOAD GLYPHS
+		msdf_atlas::Charset charSet;
 
-		Z_CORE_ASSERT(s_UnicodeRanges.find(m_WritingSystem) != s_UnicodeRanges.end(),
+		Z_CORE_ASSERT(s_UnicodeRanges.find(m_CharacterSet) != s_UnicodeRanges.end(),
 			"This writing system/script is not currently supported");
 
-		for (UnicodeRange range : s_UnicodeRanges.at(m_WritingSystem))
+		for (UnicodeRange range : s_UnicodeRanges.at(m_CharacterSet))
 		{
 			for (uint32_t character = range.Start; character <= range.End; character++)
-				characterSet.add(character);
+				charSet.add(character);
 		}		
 
 		double fontScale = 1.0;
 		m_Data->FontGeometry = msdf_atlas::FontGeometry(&m_Data->GlyphGeometries);
-		int glyphsLoaded = m_Data->FontGeometry.loadCharset(font, fontScale, characterSet);
-		Z_CORE_INFO("Successfully loaded glyphs for {0} out of {1} characters", glyphsLoaded, characterSet.size());
+		int glyphsLoaded = m_Data->FontGeometry.loadCharset(font, fontScale, charSet);
+		Z_CORE_INFO("{0} out of {1} glyphs were successfully loaded", glyphsLoaded, charSet.size());
 
 		/////////////////////////////////////////////////////////////////////////////////////
 		// GENERATE ATLAS
@@ -136,7 +126,7 @@ namespace Zahra
 
 		AtlasSpecification atlasSpec{};
 		{
-			atlasSpec.Name = "test";
+			atlasSpec.Name = "TEMPORARY_ATLAS_NAME";
 			atlasSpec.EmSize = packer.getScale();
 			packer.getDimensions(atlasSpec.Width, atlasSpec.Height);
 		}
