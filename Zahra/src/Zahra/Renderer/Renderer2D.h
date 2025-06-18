@@ -108,6 +108,7 @@ namespace Zahra
 			uint32_t LineCount = 0;
 
 			uint32_t TextBatchCount = 0;
+			uint32_t FontCount = 0;
 			uint32_t StringCount = 0;
 			uint32_t CharCount = 0;
 
@@ -139,8 +140,6 @@ namespace Zahra
 
 		std::vector<Ref<Texture2D>> m_TextureSlots;
 		uint32_t m_TextureSlotsInUse = 1; // start at 1, because slot 0 will be our default 1x1 white texture
-		
-		std::vector<Ref<Texture2D>> m_FontAtlases;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// QUADS
@@ -194,8 +193,9 @@ namespace Zahra
 		std::vector<TextVertex*> m_TextBatchStarts;
 		std::vector<TextVertex*> m_TextBatchEnds;
 
-		uint32_t m_LastTextBatch = 0;
 		uint32_t m_TextVertexCount = 0;
+
+		std::vector<Ref<Font>> m_Fonts;
 
 		void Init();
 		void Shutdown();
@@ -203,6 +203,6 @@ namespace Zahra
 		void AddNewQuadBatch();
 		void AddNewCircleBatch();
 		void AddNewLineBatch();
-		void AddNewTextBatch();
+		void MaybeAddNewTextBatch();
 	};
 }

@@ -196,11 +196,11 @@ namespace Zahra
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// TEXT
 		{
-			for (auto& atlas : m_FontAtlases)
+			for (auto& font : m_Fonts)
 			{
-				atlas.Reset();
+				font.Reset();
 			}
-			m_FontAtlases.clear();
+			m_Fonts.clear();
 
 			m_TextBatchEnds.clear();
 			for (auto batch : m_TextBatchStarts)
@@ -331,6 +331,7 @@ namespace Zahra
 		for (uint32_t batch = 0; batch < m_LineBatchEnds.size(); batch++)
 			m_LineBatchEnds[batch] = m_LineBatchStarts[batch];
 
+		m_Fonts.clear();
 		m_TextVertexCount = 0;
 		for (uint32_t batch = 0; batch < m_TextBatchEnds.size(); batch++)
 			m_TextBatchEnds[batch] = m_TextBatchStarts[batch];
@@ -432,20 +433,17 @@ namespace Zahra
 		// TEXT PASS
 		Renderer::BeginRenderPass(m_TextRenderPass);
 		{
-			for (uint32_t batch = 0; batch <= m_LastTextBatch; batch++)
+			for (uint32_t batch = 0; batch < m_Fonts.size(); batch++)
 			{
 				uint32_t dataSize = (uint32_t)((byte*)m_TextBatchEnds[batch] - (byte*)m_TextBatchStarts[batch]);
 				if (dataSize)
 				{
-					// TODO: revise this for font-based batching
-					uint32_t batchSize = (batch == m_LastTextBatch) ?
-						m_QuadIndexCount - batch * c_MaxQuadIndicesPerBatch :
-						c_MaxQuadIndicesPerBatch;
+					uint32_t batchSize = 6 * ((dataSize / sizeof(TextVertex)) / 4);
 
 					m_TextVertexBuffers[batch][frame]->SetData(m_TextBatchStarts[batch], dataSize);
 
 					auto textResourceManager = m_TextRenderPass->GetResourceManager();
-					textResourceManager->Update("u_MSDFSampler", m_FontAtlases[batch]);
+					textResourceManager->Update("u_MSDFSampler", m_Fonts[batch]->GetAtlasTexture());
 					Z_CORE_ASSERT(textResourceManager->ReadyToRender());
 					textResourceManager->ProcessChanges();
 
@@ -504,8 +502,11 @@ namespace Zahra
 		newBatch = znew LineVertex[c_MaxLineVerticesPerBatch];
 	}
 
-	void Renderer2D::AddNewTextBatch()
+	void Renderer2D::MaybeAddNewTextBatch()
 	{
+		if (m_TextBatchStarts.size() >= m_Fonts.size())
+			return;
+
 		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
 		auto& newVertexBufferPerFrame = m_TextVertexBuffers.emplace_back();
@@ -517,6 +518,7 @@ namespace Zahra
 
 		auto& newBatch = m_TextBatchStarts.emplace_back();
 		newBatch = znew TextVertex[c_MaxQuadVerticesPerBatch];
+		m_TextBatchEnds.emplace_back(newBatch);
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& colour, int entityID)
@@ -598,7 +600,6 @@ namespace Zahra
 
 		m_QuadIndexCount += 6;
 		m_Stats.QuadCount++;
-
 	}
 
 	void Renderer2D::DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID)
@@ -666,38 +667,49 @@ namespace Zahra
 
 	void Renderer2D::DrawString(const glm::mat4 transform, const std::string& string, TextRenderingSpecification& spec, int entityID)
 	{
-		auto fontGeometry = spec.Font->GetMSDFData()->FontGeometry;
+		auto font = spec.Font;
+		Z_CORE_VERIFY(font);
+		
+		auto fontGeometry = font->GetMSDFData()->FontGeometry;
 		auto fontMetrics = fontGeometry.getMetrics();
+		auto fontAssetHandle = font->GetAssetHandle();
+		auto atlasTexture = font->GetAtlasTexture();
 
-		Ref<Texture2D> atlasTexture = spec.Font->GetAtlasTexture();
+		uint32_t batch;
 		
-		/////////////////////////////////////
-		// TEMPORARY:
-		m_FontAtlases.push_back(atlasTexture);
-		// //////////////////////////////////
-		
-		// TODO: search through the textures in m_FontAtlases in reverse, comparing their AssetID against
-		// this one, hence looking for the most recent batch using the requested font, if one exists. If no
-		// such batch exists (i.e. this font hasn't been used yet this frame), create a new batch and append
-		// this texture to m_FontAtlases. If we do find one, hang on to it for now, as we'll need to check
-		// it for overflow as we loop over the characters in the string.
+		// organising batches by font
+		auto it = std::find_if(m_Fonts.rbegin(), m_Fonts.rend(), [fontAssetHandle](Ref<Font> f){ return f->GetAssetHandle() == fontAssetHandle; });
+		if (it == m_Fonts.rend())
+		{
+			m_Fonts.emplace_back(font);
+			MaybeAddNewTextBatch();
+			batch = m_Fonts.size() - 1;
+		}
+		else
+		{
+			batch = std::distance(std::begin(m_Fonts), it.base()) - 1;
+		}
 
 		glm::vec2 texelSize = { 1.0f / atlasTexture->GetWidth(), 1.0f / atlasTexture->GetHeight() };
+		float fsScale = 1.0f / (fontMetrics.ascenderY - fontMetrics.descenderY);
 
-		glm::vec4 cursor(.0f);
-		float fontScale = 1.0f / (fontMetrics.ascenderY - fontMetrics.descenderY);
+		glm::vec4 cursor(.0f); // TODO: offset?
 
-		// single character test
+		for (uint32_t i = 0; i < string.length(); i++)
 		{
-			char character = 'B';
-			auto glyph = fontGeometry.getGlyph(character);
-			if (!glyph) // font doesn't support this glyph
+			// check for batch overflow
+			if (m_TextBatchEnds[batch] - m_TextBatchStarts[batch] >= c_MaxQuadVerticesPerBatch)
 			{
-				glyph = fontGeometry.getGlyph('?');
-
-				if (!glyph) // font doesn't even support question marks?!
-					return;
+				m_Fonts.emplace_back(font);
+				MaybeAddNewTextBatch();
+				batch = m_Fonts.size() - 1;
 			}
+
+			char character = string[i];
+			
+			auto glyph = fontGeometry.getGlyph(character);
+			if (!glyph)
+				return; // TODO: find a way of requesting a truetype "glyph missing" glyph instead
 
 			// compute uv bounds of character in atlas texture (u right, v down)
 			double uMin, uMax, vMin, vMax;
@@ -724,11 +736,12 @@ namespace Zahra
 			};
 			for (int i = 0; i < 4; i++)
 			{
-				quadVertices[i] *= fontScale;
+				quadVertices[i] *= fsScale;
 				quadVertices[i] += cursor;
 			}
 
-			auto& newVertex = m_TextBatchEnds[m_LastTextBatch];
+			// add character to batch
+			auto& newVertex = m_TextBatchEnds[batch];
 			for (int i = 0; i < 4; i++)
 			{
 				newVertex->Position = transform * quadVertices[i];
@@ -740,14 +753,10 @@ namespace Zahra
 				newVertex++;
 			}
 
-			// render this character to a quad
-			// move "cursor" to set up for next character (accounting for advance,
+			cursor += glm::vec4(.5f, 0.f, 0.f, 0.f);
+			// TODO: move "cursor" to set up for next character (accounting for advance,
 			// kerning, custom offsets, newline characters, word wrapping etc.)
 		}
-
-		// TODO: loop over characters in string (avoid the null terminator) and perform the above logic
-		// to add each to the draw list. At the start of each loop check if our batch is full, and if so, starting
-		// a new one and appending to m_FontAtlases.
 
 	}
 

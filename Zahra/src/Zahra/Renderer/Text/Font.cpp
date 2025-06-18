@@ -75,7 +75,7 @@ namespace Zahra
 		return Texture2D::CreateFromBuffer(spec, pixelBuffer);
 	}
 
-	Font::Font(const std::filesystem::path& fontFilepath, CharacterSet characterSet)
+	Font::Font(const std::filesystem::path& filepath, CharacterSet characterSet)
 		: m_Data(new MSDFData()), m_CharacterSet(characterSet)
 	{
 		msdfgen::FreetypeHandle* freetype = msdfgen::initializeFreetype();
@@ -83,7 +83,7 @@ namespace Zahra
 
 		/////////////////////////////////////////////////////////////////////////////////////
 		// LOAD FONT
-		std::string fontFileString = fontFilepath.string();
+		std::string fontFileString = filepath.string();
 		msdfgen::FontHandle* font = msdfgen::loadFont(freetype, fontFileString.c_str());
 
 		if (!font)
@@ -114,19 +114,24 @@ namespace Zahra
 
 		/////////////////////////////////////////////////////////////////////////////////////
 		// GENERATE ATLAS
-		int emSize = 40.0; // TODO: play around with this (though 40.0 was recommended)
+
+		int emSize = 40.0;// font scale to render glyphs in atlas
+		// TODO: play around with this (though 40.0 was recommended)
 
 		msdf_atlas::TightAtlasPacker packer;
-		packer.setPixelRange(2.0);
-		packer.setMiterLimit(1.0);
-		packer.setPadding(0.0);
-		packer.setScale(emSize);
-		int leftover = packer.pack(m_Data->GlyphGeometries.data(), (int)m_Data->GlyphGeometries.size());
-		Z_CORE_ASSERT(leftover <= 0);
+		{
+			packer.setPixelRange(2.0);
+			packer.setMiterLimit(1.0);
+			packer.setPadding(0.0);
+			packer.setScale(emSize);
+
+			int leftover = packer.pack(m_Data->GlyphGeometries.data(), (int)m_Data->GlyphGeometries.size());
+			Z_CORE_ASSERT(leftover <= 0);
+		}
 
 		AtlasSpecification atlasSpec{};
 		{
-			atlasSpec.Name = "TEMPORARY_ATLAS_NAME";
+			atlasSpec.Name = filepath.filename().string();
 			atlasSpec.EmSize = packer.getScale();
 			packer.getDimensions(atlasSpec.Width, atlasSpec.Height);
 		}
