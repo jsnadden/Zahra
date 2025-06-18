@@ -109,6 +109,11 @@ namespace Djinn
 		}
 	}
 
+	public class TextComponent : Component
+	{
+		// TODO: hook this up
+	}
+
 	public enum ProjectionType { Orthographic = 0, Perspective = 1 };
 
 	public class CameraComponent : Component

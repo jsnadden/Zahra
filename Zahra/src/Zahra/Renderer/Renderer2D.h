@@ -51,17 +51,27 @@ namespace Zahra
 		int EntityID = -1;
 		glm::vec4 FillColour;
 		glm::vec4 BackgroundColour;
+
+		// TODO: extend shader to include these:
 		//glm::vec4 OutlineColour;
 		//glm::vec4 GlowColour;
 		//float LineWidth;
 		//float AAWidth;
 	};
 
-	struct TextRenderingSpecification
+	// Note: since text rendering will likely continue to be extended with all sorts of parameters, it makes sense
+	// to package them all together. This way they don't need to be individually added to the draw method etc.
+	struct StringSpecification
 	{
 		Ref<Font> Font;
 		glm::vec4 FillColour;
 		glm::vec4 BackgroundColour;
+
+		// TODO:	- indentation
+		//			- alignment
+		//			- wrapping
+		//			- bold, italic etc.
+		//			- shading effects (outline, glow, drop shadow etc.)
 	};
 
 	struct Renderer2DSpecification
@@ -89,7 +99,7 @@ namespace Zahra
 		void DrawCircle(const glm::mat4& transform, const glm::vec4& colour, float thickness, float fade, int entityID = -1);
 		void DrawLine(const glm::vec3& end0, const glm::vec3& end1, const glm::vec4& colour, int entityID = -1);
 		void DrawQuadBoundingBox(const glm::mat4& transform, const glm::vec4& colour, int entityID = -1, glm::vec3 rescale = {1.0f, 1.0f, 1.0f});
-		void DrawString(const glm::mat4 transform, const std::string& string, TextRenderingSpecification& spec, int entityID = -1);
+		void DrawString(const glm::mat4 transform, const std::string& string, StringSpecification& spec, int entityID = -1);
 
 		void SetLineWidth(float width) { m_LineWidth = width; }
 		float GetLineWidth() { return m_LineWidth; }
@@ -114,8 +124,7 @@ namespace Zahra
 
 			uint32_t DrawCalls = 0;
 
-			//uint32_t GetTotalVertexCount() { return 4 * QuadCount + 4 * CircleCount + ??? * LineCount; }
-			//uint32_t GetTotalIndexCount() { return 6 * QuadCount + 6 * CircleCount + ??? * LineCount; }
+			// Note: due to the way this gets reset each frame, all default values should be zero
 		};
 
 		const Statistics& GetStats() { return m_Stats; }
@@ -192,8 +201,6 @@ namespace Zahra
 		std::vector<std::vector<Ref<VertexBuffer>>> m_TextVertexBuffers;
 		std::vector<TextVertex*> m_TextBatchStarts;
 		std::vector<TextVertex*> m_TextBatchEnds;
-
-		uint32_t m_TextVertexCount = 0;
 
 		std::vector<Ref<Font>> m_Fonts;
 

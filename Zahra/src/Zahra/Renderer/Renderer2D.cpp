@@ -332,7 +332,6 @@ namespace Zahra
 			m_LineBatchEnds[batch] = m_LineBatchStarts[batch];
 
 		m_Fonts.clear();
-		m_TextVertexCount = 0;
 		for (uint32_t batch = 0; batch < m_TextBatchEnds.size(); batch++)
 			m_TextBatchEnds[batch] = m_TextBatchStarts[batch];
 	}
@@ -665,7 +664,7 @@ namespace Zahra
 			DrawLine(transform * rescaleTransform * m_QuadTemplate[i], transform * rescaleTransform * m_QuadTemplate[(i + 1) % 4], colour, entityID);
 	}
 
-	void Renderer2D::DrawString(const glm::mat4 transform, const std::string& string, TextRenderingSpecification& spec, int entityID)
+	void Renderer2D::DrawString(const glm::mat4 transform, const std::string& string, StringSpecification& spec, int entityID)
 	{
 		auto font = spec.Font;
 		Z_CORE_VERIFY(font);
@@ -682,8 +681,10 @@ namespace Zahra
 		if (it == m_Fonts.rend())
 		{
 			m_Fonts.emplace_back(font);
+			m_Stats.FontCount++;
 			MaybeAddNewTextBatch();
 			batch = m_Fonts.size() - 1;
+			m_Stats.TextBatchCount++;
 		}
 		else
 		{
@@ -693,24 +694,28 @@ namespace Zahra
 		glm::vec2 texelSize = { 1.0f / atlasTexture->GetWidth(), 1.0f / atlasTexture->GetHeight() };
 		float fsScale = 1.0f / (fontMetrics.ascenderY - fontMetrics.descenderY);
 
-		glm::vec4 cursor(.0f); // TODO: offset?
+		glm::vec4 cursor(.0f);
 
 		for (uint32_t i = 0; i < string.length(); i++)
 		{
+			char character = string[i];
+
+			auto glyph = fontGeometry.getGlyph(character);
+			if (!glyph)
+			{
+				// TODO: check for control characters (mainly \n, \r, \t) and handle them (move cursor)
+				continue;
+			}
+
 			// check for batch overflow
 			if (m_TextBatchEnds[batch] - m_TextBatchStarts[batch] >= c_MaxQuadVerticesPerBatch)
 			{
 				m_Fonts.emplace_back(font);
 				MaybeAddNewTextBatch();
 				batch = m_Fonts.size() - 1;
+				m_Stats.TextBatchCount++;
 			}
-
-			char character = string[i];
 			
-			auto glyph = fontGeometry.getGlyph(character);
-			if (!glyph)
-				return; // TODO: find a way of requesting a truetype "glyph missing" glyph instead
-
 			// compute uv bounds of character in atlas texture (u right, v down)
 			double uMin, uMax, vMin, vMax;
 			glyph->getQuadAtlasBounds(uMin, vMax, uMax, vMin);
@@ -753,11 +758,21 @@ namespace Zahra
 				newVertex++;
 			}
 
-			cursor += glm::vec4(.5f, 0.f, 0.f, 0.f);
-			// TODO: move "cursor" to set up for next character (accounting for advance,
-			// kerning, custom offsets, newline characters, word wrapping etc.)
+			// compute position of next character
+			if (i < string.size() - 1)
+			{
+				double advance = glyph->getAdvance();
+				char nextCharacter = string[i + 1];
+				fontGeometry.getAdvance(advance, character, nextCharacter);
+
+				// TODO: add support for kerning, custom offsets, multiple lines, word wrapping etc.
+				cursor += glm::vec4(fsScale * advance, .0f, .0f, .0f);
+			}
+
+			m_Stats.CharCount++;
 		}
 
+		m_Stats.StringCount++;
 	}
 
 	void Renderer2D::OnViewportResize(uint32_t width, uint32_t height)

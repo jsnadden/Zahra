@@ -18,18 +18,8 @@ namespace Zahra
 {
 	static Scene::DebugRenderSettings s_DebugRenderSettings;
 
-	//!!!!!!!!!!!!!!!!!!!!!!!
-	// TEMP
-	static Ref<Font> s_TestFont;
-	//!!!!!!!!!!!!!!!!!!!!!!!
-
 	Scene::Scene(const std::string& sceneName)
 	{
-		//!!!!!!!!!!!!!!!!!!!!!!!
-		// TEMP
-		s_TestFont = Ref<Font>::Create("C:/Windows/Fonts/BAUHS93.TTF");
-		//!!!!!!!!!!!!!!!!!!!!!!!
-
 		m_SceneName = sceneName;
 
 		// connect entt callback signals
@@ -337,15 +327,6 @@ namespace Zahra
 
 		renderer->BeginScene(camera);
 		{
-			//!!!!!!!!!!!!!!!!!!!!!!!
-			// TEMP
-			TextRenderingSpecification textSpec{};
-			textSpec.Font = s_TestFont;
-			textSpec.FillColour = { 1.f, 1.f, 1.f, 1.f };
-			textSpec.BackgroundColour = { 0.f, 0.f, 0.f, 0.f };
-			renderer->DrawString(glm::translate(glm::mat4(1.0f), { -.5f, -.5f, 0.f }), "Zahra", textSpec, -1);
-			//!!!!!!!!!!!!!!!!!!!!!!!
-
 			RenderEntities(renderer);
 			RenderDebug(renderer, selection, highlightColour);
 		}

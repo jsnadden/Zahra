@@ -3,6 +3,7 @@
 #include "Zahra/Core/UUID.h"
 #include "Zahra/Renderer/Cameras/SceneCamera.h"
 #include "Zahra/Renderer/Texture.h"
+#include "Zahra/Renderer/Text/Font.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -143,6 +144,18 @@ namespace Zahra
 
 	};
 
+	struct TextComponent
+	{
+		std::string String;
+		Ref<Font> Font; // TODO: replace with asset handle
+		glm::vec4 FillColour;
+		glm::vec4 BackgroundColour;
+
+		TextComponent() = default;
+		TextComponent(const TextComponent&) = default;
+		// TODO: add constructor from string + font asset handle
+	};
+
 	struct CameraComponent
 	{
 		SceneCamera Camera;
@@ -254,7 +267,7 @@ namespace Zahra
 
 	using MostComponents = ComponentGroup<
 		TransformComponent,
-		SpriteComponent, CircleComponent,
+		SpriteComponent, CircleComponent, TextComponent,
 		CameraComponent,
 		ScriptComponent,
 		RigidBody2DComponent, RectColliderComponent, CircleColliderComponent

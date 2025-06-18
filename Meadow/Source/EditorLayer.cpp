@@ -783,9 +783,13 @@ namespace Zahra
 
 			ImGui::SeparatorText("Renderer 2D");
 			{
+				// TODO: refactor as table (like memory section below)
 				ImGui::Text("Quads: %u", renderer2DStats.QuadCount);
 				ImGui::Text("Circles: %u", renderer2DStats.CircleCount);
 				ImGui::Text("Lines: %u", renderer2DStats.LineCount);
+				ImGui::Text("Strings: %u", renderer2DStats.StringCount);
+				ImGui::Text("Characters: %u", renderer2DStats.CharCount);
+				ImGui::Text("Fonts: %u", renderer2DStats.FontCount);
 				ImGui::Text("Draw calls: %u", renderer2DStats.DrawCalls);
 				ImGui::TextWrapped("Hovered entity: %s", m_HoveredEntity.HasComponents<TagComponent>() ?
 					m_HoveredEntity.GetComponents<TagComponent>().Tag.c_str() : "none");

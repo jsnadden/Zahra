@@ -249,6 +249,14 @@ namespace Zahra
 				ComponentUI::DrawFloatControl("Fade", component.Fade, .001f, true, .001f, 10.f, "%.3f");
 			});
 
+		ComponentUI::DrawComponent<TextComponent>("Text Component", entity, [](auto& component)
+			{
+				// TODO: ComponentUI::DrawTextEdit("String")
+				// TODO: Combo box for fonts registered in asset system
+				ComponentUI::DrawRGBAControl("Fill Colour", component.FillColour);
+				ComponentUI::DrawRGBAControl("Background Colour", component.BackgroundColour);
+			});
+
 		ComponentUI::DrawComponent<ScriptComponent>("Script Component", entity, [&](auto& component)
 			{
 				// TODO: very hacky, and not particularly informative, but it'll do for now
