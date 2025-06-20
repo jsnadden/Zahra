@@ -37,6 +37,7 @@ namespace Zahra
 
 		// entt signal callbacks
 		void InitCameraComponentViewportSize(entt::basic_registry<entt::entity>& registry, entt::entity e);
+		void DeactivateCamera(entt::basic_registry<entt::entity>& registry, entt::entity e);
 		void AllocateScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e);
 		/*void FreeScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e);
 		void DestroyScriptComponentBeforeIDComponent(entt::basic_registry<entt::entity>& registry, entt::entity e);*/

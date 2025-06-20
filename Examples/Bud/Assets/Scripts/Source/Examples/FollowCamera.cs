@@ -3,10 +3,10 @@ using Djinn.CustomAttributes;
 
 namespace Bud.Examples
 {
-	public class Camera : Entity
+	public class FollowCamera : Entity
 	{
-		public Camera() : base() { }
-		public Camera(ulong uuid) : base(uuid) { }
+		public FollowCamera() : base() { }
+		public FollowCamera(ulong uuid) : base(uuid) { }
 
 		// The [EntityID] attribute signals to Zahra's ScriptEngine that a ulong (64-bit
 		// unsigned integer) should be treated as an entity ID
@@ -16,7 +16,7 @@ namespace Bud.Examples
 
 		private TransformComponent transform;
 		private CameraComponent camera;
-		private Player target;
+		private Moveable target;
 
 
 		public void OnCreate()
@@ -36,7 +36,7 @@ namespace Bud.Examples
 
 				if (targetID != 0)
 				{
-					target = targetEntity.As<Player>();
+					target = targetEntity.As<Moveable>();
 				}
 			}
 

@@ -28,6 +28,7 @@ namespace Zahra
 		m_Registry.on_construct<entt::entity>().connect<&entt::registry::emplace_or_replace<TransformComponent>>();
 
 		m_Registry.on_construct<CameraComponent>().connect<&Scene::InitCameraComponentViewportSize>(this);
+		m_Registry.on_destroy<CameraComponent>().connect<&Scene::DeactivateCamera>(this);
 
 		m_Registry.on_construct<ScriptComponent>().connect<&Scene::AllocateScriptComponentFieldStorage>(this);
 		m_Registry.on_update<ScriptComponent>().connect<&Scene::AllocateScriptComponentFieldStorage>(this);
@@ -146,6 +147,9 @@ namespace Zahra
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+		if ((entt::entity)entity == m_ActiveCamera)
+			m_ActiveCamera = entt::null;
+
 		m_EntityMap.erase(entity.GetID());
 		m_Registry.destroy(entity);
 	}
@@ -215,6 +219,14 @@ namespace Zahra
 
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
 			m_Registry.get<CameraComponent>(e).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	}
+
+	void Scene::DeactivateCamera(entt::basic_registry<entt::entity>& registry, entt::entity e)
+	{
+		Z_CORE_ASSERT(m_Registry.valid(e), "Entity does not belong to this scene");
+
+		if (m_ActiveCamera == e)
+			m_ActiveCamera == entt::null;
 	}
 
 	void Scene::AllocateScriptComponentFieldStorage(entt::basic_registry<entt::entity>& registry, entt::entity e)
@@ -491,7 +503,16 @@ namespace Zahra
 
 	Entity Scene::GetActiveCamera()
 	{
-		return { m_ActiveCamera, this };
+		Entity camera =  { m_ActiveCamera, this };
+		if (camera.HasComponents<CameraComponent>())
+		{
+			return camera;
+		}
+		else
+		{
+			m_ActiveCamera = entt::null;
+			return { entt::null, this };
+		}
 	}
 
 	void Scene::AllocateScriptFieldStorage(Entity entity)

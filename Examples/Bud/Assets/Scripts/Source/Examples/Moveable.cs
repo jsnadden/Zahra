@@ -4,10 +4,10 @@ using System;
 
 namespace Bud.Examples
 {
-	public class Player : Entity
+	public class Moveable : Entity
 	{
-		public Player() : base() {}
-		public Player(ulong uuid) : base(uuid) { }
+		public Moveable() : base() {}
+		public Moveable(ulong uuid) : base(uuid) { }
 
 		private TransformComponent transform;
 		private RigidBody2DComponent body;

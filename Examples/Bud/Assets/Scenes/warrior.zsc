@@ -1,12 +1,64 @@
 Scene: warrior.zsc
-ActiveCameraUUID: 1779296711962239888
+ActiveCameraUUID: 9659017712655211954
 Entities:
-  - Entity: 1779296711962239888
+  - Entity: 6774678113904311529
+    TagComponent:
+      Tag: grass
+    TransformComponent:
+      Translation: [0, 0, 2.98023224e-08]
+      EulerAngles: [0, 0, 0]
+      Scale: [20, 20, 0.999964952]
+    SpriteComponent:
+      Tint: [0.234592244, 0.579150558, 0.223610267, 1]
+      TextureHandle: 0
+      TextureTiling: 9.92000008
+      Animated: false
+  - Entity: 170503321964230537
+    TagComponent:
+      Tag: roof
+    TransformComponent:
+      Translation: [0, 0, 2]
+      EulerAngles: [0, -0, 0]
+      Scale: [4, 3, 0.999985218]
+    SpriteComponent:
+      Tint: [0.243243217, 0.243243217, 0.243243217, 1]
+      TextureHandle: 0
+      TextureTiling: 3
+      Animated: false
+  - Entity: 13583177656767555873
+    TagComponent:
+      Tag: circle
+    TransformComponent:
+      Translation: [0.0156498402, -5, 0.300000012]
+      EulerAngles: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleComponent:
+      Colour: [0.199639216, 0.339776397, 0.718146682, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    ScriptComponent:
+      ScriptName: Bud.Examples.Player
+      FieldValues:
+        InputStrength: 500
+        Drag: 20
+        IgnoreGravity: true
+        WASD: true
+    RigidBody2DComponent:
+      Type: Dynamic
+      FixedRotation: true
+    RectColliderComponent:
+      Offset: [0, 0]
+      HalfExtent: [0.5, 0.5]
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 9659017712655211954
     TagComponent:
       Tag: camera
     TransformComponent:
-      Translation: [4.5, 0.550000012, 4]
-      EulerAngles: [-0.139626339, 0.907571197, 0]
+      Translation: [0, -3.70000005, 10]
+      EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
@@ -18,91 +70,74 @@ Entities:
         PerspectiveNearClip: 0.00999999978
         PerspectiveFarClip: 1000
       FixedAspectRatio: false
-  - Entity: 10815946266352694818
+    ScriptComponent:
+      ScriptName: Bud.Examples.Camera
+      FieldValues:
+        targetID: 0
+        followLag: 0.100000001
+        zoomSpeed: 1
+  - Entity: 4420734887549287321
     TagComponent:
-      Tag: warrior
+      Tag: collider
     TransformComponent:
-      Translation: [0, 0, 2.5]
-      EulerAngles: [0, 0.785398245, 0]
-      Scale: [1.49999964, 2, 0.999999881]
+      Translation: [0, 0, 0]
+      EulerAngles: [0, -0, 0]
+      Scale: [4.19999981, 3.20000005, 0.999985218]
+    RigidBody2DComponent:
+      Type: Static
+      FixedRotation: false
+    RectColliderComponent:
+      Offset: [0, 0]
+      HalfExtent: [0.5, 0.5]
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 2452430193291562175
+    TagComponent:
+      Tag: wallE
+    TransformComponent:
+      Translation: [2, 0, 1]
+      EulerAngles: [1.57079995, 0, 1.57000005]
+      Scale: [3, 2, 1]
     SpriteComponent:
-      Tint: [1, 1, 1, 1]
+      Tint: [0.451737463, 0.279065639, 0.279065639, 1]
       TextureHandle: 0
       TextureTiling: 1
       Animated: false
-    ScriptComponent:
-      ScriptName: Sandbox.Player
-      FieldValues:
-        {}
-  - Entity: 13462953152817718162
+  - Entity: 5901095036043041347
     TagComponent:
-      Tag: wall2
+      Tag: wallS
     TransformComponent:
-      Translation: [2.9987576, 0.5, -1.99999976]
-      EulerAngles: [3.14159274, 1.5701983, 3.14159274]
-      Scale: [3.99999952, 3, 0.999999881]
+      Translation: [0, -1.5, 1]
+      EulerAngles: [1.57079995, 0, 0]
+      Scale: [4, 2, 1]
     SpriteComponent:
-      Tint: [1, 1, 1, 1]
+      Tint: [0.776061773, 0.386532724, 0.386532724, 1]
       TextureHandle: 0
-      TextureTiling: 3
+      TextureTiling: 1
       Animated: false
-  - Entity: 9534158750695785926
+  - Entity: 13894913825686300239
     TagComponent:
-      Tag: wall1
+      Tag: wallW
     TransformComponent:
-      Translation: [0.25, 0.5, 0]
-      EulerAngles: [0, -0, 0]
-      Scale: [5.5, 3, 1]
+      Translation: [-2, 0, 1]
+      EulerAngles: [1.57079995, 0, 1.57000005]
+      Scale: [3, 2, 1]
     SpriteComponent:
-      Tint: [1, 1, 1, 1]
+      Tint: [0.787644804, 0.237205774, 0.237205774, 1]
       TextureHandle: 0
-      TextureTiling: 3
+      TextureTiling: 1
       Animated: false
-  - Entity: 6774678113904311529
+  - Entity: 3254288025139720742
     TagComponent:
-      Tag: grass
+      Tag: wallN
     TransformComponent:
-      Translation: [0, -1, 2.98023224e-08]
-      EulerAngles: [1.57079637, -0, 0]
-      Scale: [36.5999985, 35.6477585, 0.999964952]
+      Translation: [0, 1.5, 1]
+      EulerAngles: [1.57079995, 0, 0]
+      Scale: [4, 2, 1]
     SpriteComponent:
-      Tint: [1, 1, 1, 1]
+      Tint: [0.301158309, 0.0825569183, 0.0825569183, 1]
       TextureHandle: 0
-      TextureTiling: 9.92000008
-      Animated: false
-  - Entity: 12498955789320122893
-    TagComponent:
-      Tag: wall3
-    TransformComponent:
-      Translation: [-2.50124145, 0.5, -1.9967103]
-      EulerAngles: [-3.14159274, 1.5701983, -3.14159274]
-      Scale: [3.99999952, 3, 0.999999881]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureHandle: 0
-      TextureTiling: 3
-      Animated: false
-  - Entity: 7263492892292694915
-    TagComponent:
-      Tag: wall4
-    TransformComponent:
-      Translation: [0.25, 0.5, -4]
-      EulerAngles: [0, -0, 0]
-      Scale: [5.5, 3, 1]
-    SpriteComponent:
-      Tint: [1, 1, 1, 1]
-      TextureHandle: 0
-      TextureTiling: 3
-      Animated: false
-  - Entity: 170503321964230537
-    TagComponent:
-      Tag: roof
-    TransformComponent:
-      Translation: [0.25, 2.00000024, -1.99999988]
-      EulerAngles: [-1.57079637, -0, 0]
-      Scale: [5.5, 4, 0.999985218]
-    SpriteComponent:
-      Tint: [0.305019319, 0.305019319, 0.305019319, 1]
-      TextureHandle: 0
-      TextureTiling: 3
+      TextureTiling: 1
       Animated: false
