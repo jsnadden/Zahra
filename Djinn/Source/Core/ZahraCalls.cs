@@ -160,7 +160,13 @@ namespace Djinn
 		internal extern static void RigidBody2DComponent_ApplyForce(ulong uuid, ref Vector2 force, bool wake);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_ApplyTorque(ulong uuid, float torque, bool wake);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody2DComponent_GetVelocity(ulong uuid, out Vector2 velocity);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBody2DComponent_GetAngularVelocity(ulong uuid);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static BodyType RigidBody2DComponent_GetBodyType(ulong uuid);

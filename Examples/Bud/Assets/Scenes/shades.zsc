@@ -19,7 +19,7 @@ Entities:
         PerspectiveFarClip: 1000
       FixedAspectRatio: false
     ScriptComponent:
-      ScriptName: Bud.Examples.Camera
+      ScriptName: Bud.Examples.FollowCamera
       FieldValues:
         targetID: 0
         followLag: 0.100000001
@@ -36,11 +36,11 @@ Entities:
       Thickness: 1
       Fade: 0.0309999995
     ScriptComponent:
-      ScriptName: Bud.Examples.Player
+      ScriptName: Bud.Examples.Moveable
       FieldValues:
         InputStrength: 25
         Drag: 0.5
-        IgnoreGravity: false
+        AffectedByGravity: true
         WASD: true
     RigidBody2DComponent:
       Type: Dynamic
@@ -61,6 +61,7 @@ Entities:
       Scale: [4.80000067, 0.349999994, 1]
     SpriteComponent:
       Tint: [0.188235298, 0.188235298, 0.188235298, 1]
+      TextureHandle: 0
       TextureTiling: 1
       Animated: false
     RigidBody2DComponent:
@@ -82,6 +83,7 @@ Entities:
       Scale: [4.80000067, 0.349999994, 1]
     SpriteComponent:
       Tint: [0.188235298, 0.188235298, 0.188235298, 1]
+      TextureHandle: 0
       TextureTiling: 1
       Animated: false
     RigidBody2DComponent:
@@ -103,14 +105,15 @@ Entities:
       Scale: [0.5, 0.5, 1]
     SpriteComponent:
       Tint: [0.559845567, 0.559845567, 0.559845567, 1]
+      TextureHandle: 0
       TextureTiling: 1
       Animated: false
     ScriptComponent:
-      ScriptName: Bud.Examples.Player
+      ScriptName: Bud.Examples.Moveable
       FieldValues:
         InputStrength: 25
         Drag: 0.5
-        IgnoreGravity: false
+        AffectedByGravity: true
         WASD: false
     RigidBody2DComponent:
       Type: Dynamic

@@ -378,6 +378,16 @@ namespace Zahra
 			body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
 		}
 
+		static void RigidBody2DComponent_ApplyTorque(UUID uuid, float torque, bool wake)
+		{
+			Entity entity = ScriptEngine::GetEntity(uuid);
+
+			// TODO: create a physics engine that can encapsulate b2 calls e.g.
+			auto body = (b2Body*)entity.GetComponents<RigidBody2DComponent>().RuntimeBody;
+
+			body->ApplyTorque(torque, wake);
+		}
+
 		static void RigidBody2DComponent_GetVelocity(UUID uuid, glm::vec2* velocity)
 		{
 			Entity entity = ScriptEngine::GetEntity(uuid);
@@ -386,6 +396,16 @@ namespace Zahra
 			auto body = (b2Body*)entity.GetComponents<RigidBody2DComponent>().RuntimeBody;
 
 			*velocity = { body->GetLinearVelocity().x, body->GetLinearVelocity().y };
+		}
+
+		static float RigidBody2DComponent_GetAngularVelocity(UUID uuid)
+		{
+			Entity entity = ScriptEngine::GetEntity(uuid);
+
+			// TODO: create a physics engine that can encapsulate b2 calls e.g.
+			auto body = (b2Body*)entity.GetComponents<RigidBody2DComponent>().RuntimeBody;
+
+			return body->GetAngularVelocity();
 		}
 
 		static int RigidBody2DComponent_GetBodyType(UUID uuid)
@@ -679,7 +699,9 @@ namespace Zahra
 		// 2D RIGID BODY COMPONENT
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
+		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyTorque);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetVelocity);
+		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetAngularVelocity);
 
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		Z_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);

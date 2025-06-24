@@ -1,5 +1,5 @@
 Scene: warrior.zsc
-ActiveCameraUUID: 9659017712655211954
+ActiveCameraUUID: 13583177656767555873
 Entities:
   - Entity: 6774678113904311529
     TagComponent:
@@ -27,39 +27,16 @@ Entities:
       Animated: false
   - Entity: 13583177656767555873
     TagComponent:
-      Tag: circle
+      Tag: PLAYER
     TransformComponent:
-      Translation: [0.0156498402, -5, 0.300000012]
-      EulerAngles: [0, -0, 0]
-      Scale: [1, 1, 1]
-    CircleComponent:
-      Colour: [0.199639216, 0.339776397, 0.718146682, 1]
-      Thickness: 1
-      Fade: 0.00499999989
-    ScriptComponent:
-      ScriptName: Bud.Examples.Player
-      FieldValues:
-        InputStrength: 500
-        Drag: 20
-        IgnoreGravity: true
-        WASD: true
-    RigidBody2DComponent:
-      Type: Dynamic
-      FixedRotation: true
-    RectColliderComponent:
-      Offset: [0, 0]
-      HalfExtent: [0.5, 0.5]
-      Density: 1
-      Friction: 0
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 9659017712655211954
-    TagComponent:
-      Tag: camera
-    TransformComponent:
-      Translation: [0, -3.70000005, 10]
+      Translation: [0, -5, 0.100000001]
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
+    SpriteComponent:
+      Tint: [1, 1, 1, 1]
+      TextureHandle: 0
+      TextureTiling: 1
+      Animated: false
     CameraComponent:
       Camera:
         ProjectionType: Perspective
@@ -71,14 +48,25 @@ Entities:
         PerspectiveFarClip: 1000
       FixedAspectRatio: false
     ScriptComponent:
-      ScriptName: Bud.Examples.Camera
+      ScriptName: Bud.Examples.FirstPerson
       FieldValues:
-        targetID: 0
-        followLag: 0.100000001
-        zoomSpeed: 1
+        InputStrength_Linear: 500
+        InputStrength_Rotation: 5
+        Drag_Linear: 50
+        Drag_Rotation: 10
+    RigidBody2DComponent:
+      Type: Dynamic
+      FixedRotation: false
+    CircleColliderComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0
   - Entity: 4420734887549287321
     TagComponent:
-      Tag: collider
+      Tag: wallCollider
     TransformComponent:
       Translation: [0, 0, 0]
       EulerAngles: [0, -0, 0]
@@ -98,7 +86,7 @@ Entities:
       Tag: wallE
     TransformComponent:
       Translation: [2, 0, 1]
-      EulerAngles: [1.57079995, 0, 1.57000005]
+      EulerAngles: [1.57079995, 0, 1.57079637]
       Scale: [3, 2, 1]
     SpriteComponent:
       Tint: [0.451737463, 0.279065639, 0.279065639, 1]
@@ -122,7 +110,7 @@ Entities:
       Tag: wallW
     TransformComponent:
       Translation: [-2, 0, 1]
-      EulerAngles: [1.57079995, 0, 1.57000005]
+      EulerAngles: [1.57079995, 0, 1.57079637]
       Scale: [3, 2, 1]
     SpriteComponent:
       Tint: [0.787644804, 0.237205774, 0.237205774, 1]

@@ -16,7 +16,7 @@ namespace Bud.Examples
 		// fields can be accessed and initialised (at script instantiation)
 		[ExposedField] private float InputStrength;
 		[ExposedField] public float Drag;
-		[ExposedField] public bool IgnoreGravity;
+		[ExposedField] public bool AffectedByGravity;
 		[ExposedField] public bool WASD;
 		
 		// The OnCreate method will be called after script instantiation
@@ -50,8 +50,10 @@ namespace Bud.Examples
 			}
 
 			force.Normalise();
-			force.Y *= 2.0f;
 			force *= InputStrength;
+
+			if (AffectedByGravity)
+				force.Y *= 2.0f;
 
 			float mass = .0f;
 			if (HasComponent<CircleColliderComponent>())
@@ -65,8 +67,8 @@ namespace Bud.Examples
 				mass = density * transform.Scale.X * transform.Scale.Y;
 			}
 
-			if (IgnoreGravity)
-				force.Y += 9.8f * mass;
+			if (AffectedByGravity)
+				force.Y += -9.8f * mass;
 
 			Vector2 velocity = body.GetVelocity();
 			force += velocity * -velocity.Norm() * Drag;

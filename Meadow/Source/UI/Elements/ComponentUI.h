@@ -315,7 +315,7 @@ namespace Zahra
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2);
 			ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
 
-			glm::vec3 eulers = transform.GetEulers();
+			glm::vec3 eulers = glm::degrees(transform.GetEulers());
 			{
 				ImGui::PushStyleColor(ImGuiCol_Button,			ImVec4(MEADOW_RED_1, 1.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered,	ImVec4(MEADOW_RED_2, 1.0f));
@@ -330,7 +330,7 @@ namespace Zahra
 
 				ImGui::SameLine();
 				
-				ImGui::DragFloat("##X", &eulers.x, glm::radians(1.0f), .0f, .0f, "%.2f");
+				ImGui::DragFloat("##X", &eulers.x, 1.0f, .0f, .0f, "%.2f");
 				ImGui::PopItemWidth();
 			}
 			ImGui::SameLine();
@@ -348,7 +348,7 @@ namespace Zahra
 
 				ImGui::SameLine();
 
-				ImGui::DragFloat("##Y", &eulers.y, glm::radians(1.0f), .0f, .0f, "%.2f");
+				ImGui::DragFloat("##Y", &eulers.y, 1.0f, .0f, .0f, "%.2f");
 				ImGui::PopItemWidth();
 			}
 			ImGui::SameLine();
@@ -369,14 +369,15 @@ namespace Zahra
 				}
 				ImGui::SameLine();
 
-				ImGui::DragFloat("##Z", &eulers.z, glm::radians(1.0f), .0f, .0f, "%.2f");
+				ImGui::DragFloat("##Z", &eulers.z, 1.0f, .0f, .0f, "%.2f");
 				ImGui::PopItemWidth();
 			}
 			ImGui::PopStyleVar(2);
 			ImGui::PopID();
 
-			eulersChanged = eulers == transform.GetEulers();
-			transform.SetRotation(eulers);
+			glm::vec3 backToRads = glm::radians(eulers);
+			eulersChanged = backToRads == transform.GetEulers();
+			transform.SetRotation(backToRads);
 
 			return eulersChanged;
 		}

@@ -199,10 +199,20 @@ namespace Djinn
 			Zahra.RigidBody2DComponent_ApplyForce(Entity.UUID, ref force, wake);
 		}
 
+		public void ApplyTorque(float torque, bool wake)
+		{
+			Zahra.RigidBody2DComponent_ApplyTorque(Entity.UUID, torque, wake);
+		}
+
 		public Vector2 GetVelocity()
 		{
 			Zahra.RigidBody2DComponent_GetVelocity(Entity.UUID, out Vector2 velocity);
 			return velocity;
+		}
+
+		public float GetAngularVelocity()
+		{
+			return Zahra.RigidBody2DComponent_GetAngularVelocity(Entity.UUID);
 		}
 
 		public BodyType GetBodyType

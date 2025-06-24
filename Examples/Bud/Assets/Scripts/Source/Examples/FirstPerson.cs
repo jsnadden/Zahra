@@ -23,6 +23,9 @@ namespace Bud.Examples
 			transform = GetComponent<TransformComponent>();
 			body = GetComponent<RigidBody2DComponent>();
 			camera = GetComponent<CameraComponent>();
+
+			transform.Translation = new Vector3(0.0f, -5.0f, 1.0f);
+			transform.EulerAngles = new Vector3(0.5f * (float)Math.PI, 0.0f, 0.0f);
 		}
 
 		// The OnEarlyUpdate method will be called each frame, before the physics engine is updated
@@ -45,9 +48,10 @@ namespace Bud.Examples
 
 			}
 
+			// TODO: thresholds for norms of velocity/angular velocity, below which they get set to zero
+
 			// Handle movement input
 			Vector3 force = Vector3.Zero;
-			float torque = 0.0f;
 
 			if (Input.IsKeyDown(KeyCode.Q))
 			{
@@ -74,29 +78,31 @@ namespace Bud.Examples
 			Quaternion rotation = new Quaternion(direction);
 			force = rotation.Rotate(force);
 
-			// Note: this is a temporary hack, to ignore Zahra's default gravity (// TODO: deal with this)
-			force.Y += 9.8f * mass;
-
 			Vector2 force2 = force.XY;
 
 			Vector2 velocity = body.GetVelocity();
-			force2 += velocity * -velocity.Norm() * Drag_Linear;
+			force2 += velocity * velocity.Norm() * Drag_Linear * -1.0f;
 
 			body.ApplyForce(force2, true);
-			
-			// TODO: need to add GetAngularVelocity and ApplyTorque via ScriptGlue
-			/*// Handle rotation input
+
+			// Handle rotation input
+			float torque = 0.0f;
+
 			if (Input.IsKeyDown(KeyCode.A))
 			{
 				torque = 1.0f;
 			}
-			else if (Input.IsKeyDown(KeyCode.S))
+			else if (Input.IsKeyDown(KeyCode.D))
 			{
 				torque = -1.0f;
 			}
 
-			torque *= InputStrength_Rotation;*/
+			torque *= InputStrength_Rotation;
 
+			float angularVelocity = body.GetAngularVelocity();
+			torque += angularVelocity * Math.Abs(angularVelocity) * Drag_Rotation * -1.0f;
+
+			body.ApplyTorque(torque, true);
 		}
 
 		// The OnLateUpdate method will be called each frame, after the physics engine is updated

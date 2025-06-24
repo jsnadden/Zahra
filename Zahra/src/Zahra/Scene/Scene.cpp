@@ -387,7 +387,8 @@ namespace Zahra
 
 	void Scene::InitPhysicsWorld()
 	{
-		b2Vec2 gravity = { .0f, -9.8f };
+		// TODO: expose gravity values to editor (should be serialised with the scene too)
+		b2Vec2 gravity = { .0f, .0f };
 		m_PhysicsWorld = std::make_unique<b2World>(gravity);
 
 		auto view = m_Registry.view<RigidBody2DComponent>();
