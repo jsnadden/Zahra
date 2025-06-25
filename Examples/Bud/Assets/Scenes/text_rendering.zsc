@@ -1,4 +1,4 @@
-Scene: lavenderBG.zsc
+Scene: text_rendering.zsc
 Entities:
   - Entity: 9634006538016531241
     TagComponent:

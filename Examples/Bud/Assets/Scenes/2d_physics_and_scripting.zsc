@@ -1,4 +1,4 @@
-Scene: shades.zsc
+Scene: 2d_physics_and_scripting.zsc
 ActiveCameraUUID: 11346088561474433269
 Entities:
   - Entity: 11346088561474433269

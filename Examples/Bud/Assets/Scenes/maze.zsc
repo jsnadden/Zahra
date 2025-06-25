@@ -1,11 +1,11 @@
-Scene: warrior.zsc
+Scene: maze.zsc
 ActiveCameraUUID: 13583177656767555873
 Entities:
   - Entity: 6774678113904311529
     TagComponent:
       Tag: grass
     TransformComponent:
-      Translation: [0, 0, 2.98023224e-08]
+      Translation: [0, 5, 2.98023224e-08]
       EulerAngles: [0, 0, 0]
       Scale: [20, 20, 0.999964952]
     SpriteComponent:
@@ -17,7 +17,7 @@ Entities:
     TagComponent:
       Tag: roof
     TransformComponent:
-      Translation: [0, 0, 2]
+      Translation: [0, 5, 2]
       EulerAngles: [0, -0, 0]
       Scale: [4, 3, 0.999985218]
     SpriteComponent:
@@ -29,7 +29,7 @@ Entities:
     TagComponent:
       Tag: PLAYER
     TransformComponent:
-      Translation: [0, -5, 0.100000001]
+      Translation: [0, 0, 0.100000001]
       EulerAngles: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
@@ -68,7 +68,7 @@ Entities:
     TagComponent:
       Tag: wallCollider
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [0, 5, 0]
       EulerAngles: [0, -0, 0]
       Scale: [4.19999981, 3.20000005, 0.999985218]
     RigidBody2DComponent:
@@ -85,7 +85,7 @@ Entities:
     TagComponent:
       Tag: wallE
     TransformComponent:
-      Translation: [2, 0, 1]
+      Translation: [2, 5, 1]
       EulerAngles: [1.57079995, 0, 1.57079637]
       Scale: [3, 2, 1]
     SpriteComponent:
@@ -97,7 +97,7 @@ Entities:
     TagComponent:
       Tag: wallS
     TransformComponent:
-      Translation: [0, -1.5, 1]
+      Translation: [0, 3.5, 1]
       EulerAngles: [1.57079995, 0, 0]
       Scale: [4, 2, 1]
     SpriteComponent:
@@ -109,7 +109,7 @@ Entities:
     TagComponent:
       Tag: wallW
     TransformComponent:
-      Translation: [-2, 0, 1]
+      Translation: [-2, 5, 1]
       EulerAngles: [1.57079995, 0, 1.57079637]
       Scale: [3, 2, 1]
     SpriteComponent:
@@ -121,7 +121,7 @@ Entities:
     TagComponent:
       Tag: wallN
     TransformComponent:
-      Translation: [0, 1.5, 1]
+      Translation: [0, 6.5, 1]
       EulerAngles: [1.57079995, 0, 0]
       Scale: [4, 2, 1]
     SpriteComponent:
